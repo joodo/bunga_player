@@ -164,28 +164,29 @@ class _MainScreenState extends State<MainScreen> {
         );
     }
 
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        body,
-        CallbackShortcuts(
-          bindings: <ShortcutActivator, VoidCallback>{
-            const SingleActivator(LogicalKeyboardKey.f12): () {
-              setState(() {
-                _showLog = !_showLog;
-              });
-            },
-          },
-          child: Focus(
-            autofocus: true,
-            child: Visibility(
-              maintainState: true,
-              visible: _showLog,
-              child: const LogView(),
-            ),
+    return FocusScope(
+      autofocus: true,
+      onKey: (node, event) {
+        if (event is RawKeyUpEvent) return KeyEventResult.ignored;
+        if (event.logicalKey == LogicalKeyboardKey.f12) {
+          setState(() {
+            _showLog = !_showLog;
+          });
+          return KeyEventResult.handled;
+        }
+        return KeyEventResult.ignored;
+      },
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          body,
+          Visibility(
+            maintainState: true,
+            visible: _showLog,
+            child: const LogView(),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
