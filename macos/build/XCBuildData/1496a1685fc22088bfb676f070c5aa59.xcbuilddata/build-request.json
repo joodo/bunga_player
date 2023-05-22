@@ -1,0 +1,88 @@
+{
+  "buildCommand" : {
+    "command" : "prepareForIndexing",
+    "enableIndexBuildArena" : false,
+    "targets" : null
+  },
+  "configuredTargets" : [
+    {
+      "guid" : "bfdfe7dc352907fc980b868725387e989d8b2146a8145768218b852a9444a007"
+    },
+    {
+      "guid" : "bfdfe7dc352907fc980b868725387e98312b4bc59bbbe2c06c205bf4da6737f5"
+    },
+    {
+      "guid" : "bfdfe7dc352907fc980b868725387e98a09f89f66b716da1ab2ec5e473d4f730"
+    },
+    {
+      "guid" : "bfdfe7dc352907fc980b868725387e98144902882b713248a71c322fd5b2f4ee"
+    },
+    {
+      "guid" : "bfdfe7dc352907fc980b868725387e98cafaa38681902e5378d53a6059c379e5"
+    },
+    {
+      "guid" : "bfdfe7dc352907fc980b868725387e98335cacc000493537cb96f67c69446a33"
+    },
+    {
+      "guid" : "bfdfe7dc352907fc980b868725387e9838ecaef929b6869be85db078b3845f7d"
+    },
+    {
+      "guid" : "bfdfe7dc352907fc980b868725387e98775e1f124668baaffa71bd8dba023a03"
+    },
+    {
+      "guid" : "bfdfe7dc352907fc980b868725387e98ef586bf23362aebce5c719b4482fa695"
+    },
+    {
+      "guid" : "bfdfe7dc352907fc980b868725387e9830037b09fee48cfce1f8562d753688c8"
+    },
+    {
+      "guid" : "bfdfe7dc352907fc980b868725387e9849c5bdbe31e3b466d37bab9271baf60a"
+    },
+    {
+      "guid" : "bfdfe7dc352907fc980b868725387e98f65051f945914233fdbfe37ca8c6b1f0"
+    },
+    {
+      "guid" : "bfdfe7dc352907fc980b868725387e988b00677317e68c893806c8a0b4d24dab"
+    },
+    {
+      "guid" : "bfdfe7dc352907fc980b868725387e9828cab1f188854e0a973e6ff6905c5ffe"
+    },
+    {
+      "guid" : "bfdfe7dc352907fc980b868725387e98d721cf7b82bd1aed9c61660da153a2a8"
+    },
+    {
+      "guid" : "bfdfe7dc352907fc980b868725387e98f2696dd24e64fe8ed5d038e65ee30fd7"
+    }
+  ],
+  "containerPath" : "/Users/lianghanzhong/workplace/bunga_player/macos/Pods/Pods.xcodeproj",
+  "continueBuildingAfterErrors" : true,
+  "enableIndexBuildArena" : false,
+  "hideShellScriptEnvironment" : false,
+  "parameters" : {
+    "action" : "build",
+    "arenaInfo" : {
+      "buildIntermediatesPath" : "",
+      "buildProductsPath" : "",
+      "derivedDataPath" : "/Users/lianghanzhong/Library/Developer/Xcode/DerivedData",
+      "indexDataStoreFolderPath" : "/Users/lianghanzhong/Library/Developer/Xcode/DerivedData/Pods-hafbxdtfmzrtdbdsifztnsextpzh/Index.noindex/DataStore",
+      "indexEnableDataStore" : true,
+      "indexPCHPath" : "/Users/lianghanzhong/Library/Developer/Xcode/DerivedData/Pods-hafbxdtfmzrtdbdsifztnsextpzh/Index.noindex/PrecompiledHeaders",
+      "pchPath" : ""
+    },
+    "configurationName" : "Release",
+    "overrides" : {
+      "synthesized" : {
+        "table" : {
+          "ENABLE_PREVIEWS" : "NO"
+        }
+      }
+    }
+  },
+  "qos" : "default",
+  "schemeCommand" : "launch",
+  "showNonLoggedProgress" : true,
+  "useDryRun" : true,
+  "useImplicitDependencies" : false,
+  "useLegacyBuildLocations" : false,
+  "useParallelTargets" : false
+}

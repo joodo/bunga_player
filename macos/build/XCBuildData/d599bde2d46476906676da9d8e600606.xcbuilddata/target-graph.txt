@@ -1,0 +1,46 @@
+Target dependency graph (16 targets)
+FlutterMacOS in Pods, no dependencies
+ReachabilitySwift in Pods, no dependencies
+connectivity_plus in Pods, depends on:
+FlutterMacOS in Pods (explicit)
+ReachabilitySwift in Pods (explicit)
+file_selector_macos in Pods, depends on:
+FlutterMacOS in Pods (explicit)
+flutter_meedu_videoplayer in Pods, depends on:
+FlutterMacOS in Pods (explicit)
+media_kit_libs_macos_video in Pods, depends on:
+FlutterMacOS in Pods (explicit)
+media_kit_native_event_loop in Pods, depends on:
+FlutterMacOS in Pods (explicit)
+media_kit_video in Pods, depends on:
+FlutterMacOS in Pods (explicit)
+path_provider_foundation in Pods, depends on:
+FlutterMacOS in Pods (explicit)
+rive_common in Pods, depends on:
+FlutterMacOS in Pods (explicit)
+screen_brightness_macos in Pods, depends on:
+FlutterMacOS in Pods (explicit)
+screen_retriever in Pods, depends on:
+FlutterMacOS in Pods (explicit)
+shared_preferences_foundation in Pods, depends on:
+FlutterMacOS in Pods (explicit)
+wakelock_macos in Pods, depends on:
+FlutterMacOS in Pods (explicit)
+window_manager in Pods, depends on:
+FlutterMacOS in Pods (explicit)
+Pods-Runner in Pods, depends on:
+FlutterMacOS in Pods (explicit)
+ReachabilitySwift in Pods (explicit)
+connectivity_plus in Pods (explicit)
+file_selector_macos in Pods (explicit)
+flutter_meedu_videoplayer in Pods (explicit)
+media_kit_libs_macos_video in Pods (explicit)
+media_kit_native_event_loop in Pods (explicit)
+media_kit_video in Pods (explicit)
+path_provider_foundation in Pods (explicit)
+rive_common in Pods (explicit)
+screen_brightness_macos in Pods (explicit)
+screen_retriever in Pods (explicit)
+shared_preferences_foundation in Pods (explicit)
+wakelock_macos in Pods (explicit)
+window_manager in Pods (explicit)
