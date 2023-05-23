@@ -55,6 +55,7 @@ dependencies:
     git:
       url: https://github.com/joodo/updat.git
       ref: main
+  bot_toast: ^4.0.3
 
 dependency_overrides:
   #win32: ^4.0.0

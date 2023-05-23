@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:bot_toast/bot_toast.dart';
 import 'package:bunga_player/common/im.dart';
 import 'package:bunga_player/common/logger.dart';
 import 'package:bunga_player/common/snack_bar.dart';
@@ -79,6 +80,8 @@ class BungaApp extends StatelessWidget {
     return MaterialApp(
       title: 'Bunga Player',
       scaffoldMessengerKey: globalMessengerKey,
+      builder: BotToastInit(),
+      navigatorObservers: [BotToastNavigatorObserver()],
       theme: ThemeData(
         brightness: Brightness.dark,
         useMaterial3: true,
