@@ -28,6 +28,7 @@ class IM extends ChangeNotifier {
       logger.e(e);
       return false;
     }
+    logger.i('Current user: ${_user?.name}');
     return true;
   }
 
@@ -117,6 +118,9 @@ class IM extends ChangeNotifier {
   }
 
   void _onNewMessage(Event event) {
+    logger.i('Reeceive message from ${event.user?.name}');
+    logger.i('Message content: ${event.message?.text}');
+
     final userID = event.user!.id;
     if (userID == _user!.id) return;
 
@@ -127,25 +131,26 @@ class IM extends ChangeNotifier {
       bool canShowSnackBar = true;
       if (_askID != null) canShowSnackBar = false;
 
+      final isPlaying = controller.playerStatus.playing;
+      if (re.first == 'pause' && isPlaying) {
+        controller.pause();
+        showSnackBar('${event.user!.name} 暂停了视频');
+        canShowSnackBar = false;
+      }
+      if (re.first == 'play' && !isPlaying) {
+        controller.play();
+        showSnackBar('${event.user!.name} 播放了视频');
+        canShowSnackBar = false;
+      }
+
       final position = controller.position.value;
-      final remotePosition = Duration(milliseconds: int.parse(re.last)) +
-          DateTime.now().difference(event.message!.createdAt);
+      final remotePosition = Duration(milliseconds: int.parse(re.last));
       if ((position - remotePosition).inMilliseconds.abs() > 1000) {
         controller.seekTo(remotePosition);
         if (canShowSnackBar) {
           showSnackBar('${event.user!.name} 调整了进度');
           canShowSnackBar = false;
         }
-      }
-
-      final isPlaying = controller.playerStatus.playing;
-      if (re.first == 'pause' && isPlaying) {
-        controller.pause();
-        if (canShowSnackBar) showSnackBar('${event.user!.name} 暂停了视频');
-      }
-      if (re.first == 'play' && !isPlaying) {
-        controller.play();
-        if (canShowSnackBar) showSnackBar('${event.user!.name} 播放了视频');
       }
     }
 

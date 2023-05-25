@@ -6,6 +6,7 @@ final loggerStream = StreamOutput();
 final logger = Logger(
   output: loggerStream,
   printer: SimplePrinter(),
+  level: Level.info,
 );
 
 class LogView extends StatefulWidget {
