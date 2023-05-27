@@ -4,7 +4,7 @@ import 'package:bunga_player/common/im.dart';
 import 'package:bunga_player/common/logger.dart';
 import 'package:bunga_player/common/snack_bar.dart';
 import 'package:bunga_player/common/video_controller.dart';
-import 'package:bunga_player/screens/player_widget.dart';
+import 'package:bunga_player/screens/player_widget/player_widget.dart';
 import 'package:crclib/catalog.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
@@ -147,12 +147,9 @@ class _MainScreenState extends State<MainScreen> {
         );
         break;
       case UIState.playVideo:
-        body = Container(
-          decoration: const BoxDecoration(color: Colors.black),
-          child: PlayerWidget(
-            videoPath: _videoPath!,
-            groupID: _groupID!,
-          ),
+        body = PlayerWidget(
+          videoPath: _videoPath!,
+          groupID: _groupID!,
         );
         break;
       case UIState.unknown:

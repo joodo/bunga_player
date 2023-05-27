@@ -2,9 +2,10 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:bunga_player/common/im.dart';
+import 'package:bunga_player/common/logger.dart';
 import 'package:bunga_player/common/video_controller.dart';
-import 'package:bunga_player/screens/video_progress_widget.dart';
-import 'package:bunga_player/utils.dart';
+import 'package:bunga_player/screens/player_widget/control_section.dart';
+import 'package:bunga_player/screens/player_widget/video_progress_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_meedu_videoplayer/meedu_player.dart' as meedu;
@@ -33,6 +34,8 @@ class _PlayerWidgetState extends State<PlayerWidget> with WindowListener {
 
   bool _isUIHidden = false;
   late final RestartableTimer _hideUITimer;
+
+  final _externalSubtitleSettings = ExternalSubtitleSettings();
 
   @override
   void initState() {
@@ -72,17 +75,21 @@ class _PlayerWidgetState extends State<PlayerWidget> with WindowListener {
     });
   }
 
+  final _controlSectionKey = GlobalKey<State<ControlSection>>();
   @override
   Widget build(Object context) {
     final videoSection = VideoSection(
       onTap: _togglePlaying,
       onDoubleTap: _toggleFullscreen,
+      externalSubtitleSettings: _externalSubtitleSettings,
     );
     final controlSection = ControlSection(
+      key: _controlSectionKey,
       isFullScreen: _isFullScreen,
       onToggleFullScreenPressed: _toggleFullscreen,
       onVolumeSlideChanged: _setVolume,
       onTogglePlayingPressed: _togglePlaying,
+      externalSubtitleSettings: _externalSubtitleSettings,
     );
     final progressSection = ProgressSection(
       onChangeEnd: _seekingFinished,
@@ -306,23 +313,52 @@ class RoomSection extends StatelessWidget {
   }
 }
 
-class VideoSection extends StatelessWidget {
+class VideoSection extends StatefulWidget {
   final VoidCallback? onDoubleTap;
   final VoidCallback? onTap;
+
+  final ExternalSubtitleSettings externalSubtitleSettings;
 
   const VideoSection({
     super.key,
     this.onDoubleTap,
     this.onTap,
+    required this.externalSubtitleSettings,
   });
+
+  @override
+  State<VideoSection> createState() => _VideoSectionState();
+}
+
+class _VideoSectionState extends State<VideoSection> {
+  @override
+  void initState() {
+    super.initState();
+
+    widget.externalSubtitleSettings.path.addListener(_onSubtitleChanged);
+  }
+
+  @override
+  void dispose() {
+    widget.externalSubtitleSettings.path.removeListener(_onSubtitleChanged);
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onDoubleTap: onDoubleTap,
-      onTap: onTap,
+      onDoubleTap: widget.onDoubleTap,
+      onTap: widget.onTap,
       child: meedu.MeeduVideoPlayer(controller: VideoController.instance()),
     );
+  }
+
+  Future<void> _onSubtitleChanged() async {
+    final subPath = widget.externalSubtitleSettings.path.value;
+    if (subPath == 'NONE' || subPath == null) {
+      return;
+    }
+    logger.i('Subtitle initial finished: $subPath');
   }
 }
 
@@ -370,155 +406,6 @@ class _ProgressSectionState extends State<ProgressSection> {
           },
         );
       },
-    );
-  }
-}
-
-class ControlSection extends StatefulWidget {
-  final bool isFullScreen;
-  final VoidCallback? onTogglePlayingPressed;
-  final ValueSetter<double>? onVolumeSlideChanged;
-  final VoidCallback? onToggleFullScreenPressed;
-
-  const ControlSection({
-    super.key,
-    required this.isFullScreen,
-    this.onTogglePlayingPressed,
-    this.onVolumeSlideChanged,
-    this.onToggleFullScreenPressed,
-  });
-  @override
-  State<ControlSection> createState() => _VideoControlState();
-}
-
-class _VideoControlState extends State<ControlSection> {
-  bool _showTotalTime = true;
-
-  @override
-  Widget build(BuildContext context) {
-    final controller = VideoController.instance();
-    return Stack(
-      children: [
-        Row(
-          children: [
-            const SizedBox(width: 8),
-            StreamBuilder(
-              stream: controller.playerStatus.status.stream,
-              builder: (context, snapshot) {
-                bool isPlaying = controller.playerStatus.status.value ==
-                    meedu.PlayerStatus.playing;
-                return IconButton(
-                  icon: isPlaying
-                      ? const Icon(Icons.pause)
-                      : const Icon(Icons.play_arrow),
-                  iconSize: 36,
-                  onPressed: widget.onTogglePlayingPressed,
-                );
-              },
-            ),
-            const SizedBox(width: 8),
-            StreamBuilder(
-              stream: controller.volume.stream,
-              builder: (context, snapshot) {
-                double volume = snapshot.data ?? controller.volume.value;
-                return Row(
-                  children: [
-                    StreamBuilder(
-                      stream: controller.mute.stream,
-                      builder: (context, snapshot) {
-                        bool isMute = snapshot.data ?? controller.mute.value;
-                        return IconButton(
-                          icon: isMute
-                              ? const Icon(Icons.volume_mute)
-                              : volume > 0.5
-                                  ? const Icon(Icons.volume_up)
-                                  : const Icon(Icons.volume_down),
-                          onPressed: () => controller.setMute(!isMute),
-                        );
-                      },
-                    ),
-                    const SizedBox(width: 8),
-                    SizedBox(
-                      width: 100,
-                      child: SliderTheme(
-                        data: SliderThemeData(
-                          activeTrackColor:
-                              Theme.of(context).colorScheme.secondary,
-                          thumbColor: Theme.of(context).colorScheme.secondary,
-                          valueIndicatorColor:
-                              Theme.of(context).colorScheme.secondary,
-                          trackShape: SliderCustomTrackShape(),
-                          showValueIndicator: ShowValueIndicator.always,
-                        ),
-                        child: Slider(
-                          value: volume,
-                          max: 1.0,
-                          label: (volume * 100).toInt().toString(),
-                          onChanged: widget.onVolumeSlideChanged,
-                          focusNode: FocusNode(canRequestFocus: false),
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
-            const Spacer(),
-            /*
-            IconButton(
-              icon: const Icon(Icons.call),
-              onPressed: () {
-                logger.d('debug message!!');
-              },
-            ),
-            const SizedBox(width: 8),
-            IconButton(
-              icon: const Icon(Icons.subtitles),
-              onPressed: () {},
-            ),
-            const SizedBox(width: 8),
-            IconButton(
-              icon: const Icon(Icons.settings),
-              onPressed: () {},
-            ),
-            const SizedBox(width: 8),
-            */
-            IconButton(
-              icon: widget.isFullScreen
-                  ? const Icon(Icons.fullscreen_exit)
-                  : const Icon(Icons.fullscreen),
-              onPressed: widget.onToggleFullScreenPressed,
-            ),
-            const SizedBox(width: 8),
-          ],
-        ),
-        Center(
-          child: TextButton(
-            child: StreamBuilder(
-              stream: controller.position.stream,
-              builder: (context, snapshot) {
-                final duration = controller.duration.value;
-                final position = snapshot.data ?? controller.position.value;
-                final String positionString = dToHHmmss(position);
-
-                final String displayString;
-                if (_showTotalTime) {
-                  final durationString = dToHHmmss(duration);
-                  displayString = '$positionString / $durationString';
-                } else {
-                  final remainString = dToHHmmss(duration - position);
-                  displayString = '$positionString - $remainString';
-                }
-                return Text(
-                  displayString,
-                  style: Theme.of(context).textTheme.labelMedium,
-                );
-              },
-            ),
-            onPressed: () => setState(() => _showTotalTime = !_showTotalTime),
-          ),
-        ),
-      ],
     );
   }
 }
