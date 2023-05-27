@@ -27,7 +27,10 @@ class _LogViewState extends State<LogView> {
         child: StreamBuilder(
           stream: loggerStream.stream,
           builder: (context, snapshot) {
-            if (snapshot.data != null) _logs.addAll(snapshot.data!);
+            if (snapshot.data != null) {
+              _logs.addAll(snapshot.data!);
+              debugPrint(snapshot.data!.join('\n'));
+            }
             return Text(_logs.join('\n'));
           },
         ),

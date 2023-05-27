@@ -118,8 +118,8 @@ class IM extends ChangeNotifier {
   }
 
   void _onNewMessage(Event event) {
-    logger.i('Reeceive message from ${event.user?.name}');
-    logger.i('Message content: ${event.message?.text}');
+    logger
+        .i('Reeceive message from ${event.user?.name}: ${event.message?.text}');
 
     final userID = event.user!.id;
     if (userID == _user!.id) return;
