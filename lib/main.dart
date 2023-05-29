@@ -22,7 +22,6 @@ void main() async {
   await windowManager.ensureInitialized();
 
   packageInfo = await PackageInfo.fromPlatform();
-  logger.i('Current version: ${packageInfo.version}');
 
   runApp(
     ChangeNotifierProvider(
@@ -45,7 +44,8 @@ class BungaApp extends StatelessWidget {
         ));
 
         final latestVersion = jsonDecode(data.body)["tag_name"];
-        logger.i('Latest version: $latestVersion');
+        logger.i(
+            'Current version: ${packageInfo.version}.\nLatest version: $latestVersion');
         return latestVersion;
       },
       getBinaryUrl: (version) async {

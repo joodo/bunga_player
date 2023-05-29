@@ -65,8 +65,9 @@ class IMController extends ChangeNotifier {
         },
         onUserOffline: (RtcConnection connection, int remoteUid,
             UserOfflineReasonType reason) {
-          logger.i("Remote user uid:$remoteUid left the channel");
           _callChannelUsers.remove(remoteUid);
+          logger.i(
+              "Remote user uid:$remoteUid left the channel\nUser remain: $_callChannelUsers");
           if (_callChannelUsers.isEmpty) {
             hangUpCall();
           }
