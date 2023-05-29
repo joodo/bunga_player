@@ -1,4 +1,5 @@
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:bunga_player/common/logger.dart';
 import 'package:bunga_player/common/snack_bar.dart';
 import 'package:bunga_player/common/video_controller.dart';
@@ -36,6 +37,7 @@ class IMController extends ChangeNotifier {
       cancelCallAsking();
     },
   )..cancel();
+  final List<int> _callChannelUsers = [];
 
   @override
   void dispose() async {
@@ -44,28 +46,33 @@ class IMController extends ChangeNotifier {
   }
 
   void setupVoiceSDKEngine() async {
-    print('init start');
     try {
       await [Permission.microphone].request();
-    } catch (e) {}
+    } catch (e) {
+      logger.e(e);
+    }
 
     await _agoraEngine
         .initialize(const RtcEngineContext(appId: AgoraKey.appID));
     _agoraEngine.registerEventHandler(
       RtcEngineEventHandler(
         onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
-          print("Local user uid:${connection.localUid} joined the channel");
+          logger.i("Local user uid:${connection.localUid} joined the channel");
         },
         onUserJoined: (RtcConnection connection, int remoteUid, int elapsed) {
-          print("Remote user uid:$remoteUid joined the channel");
+          logger.i("Remote user uid:$remoteUid joined the voice channel");
+          _callChannelUsers.add(remoteUid);
         },
         onUserOffline: (RtcConnection connection, int remoteUid,
             UserOfflineReasonType reason) {
-          print("Remote user uid:$remoteUid left the channel");
+          logger.i("Remote user uid:$remoteUid left the channel");
+          _callChannelUsers.remove(remoteUid);
+          if (_callChannelUsers.isEmpty) {
+            hangUpCall();
+          }
         },
       ),
     );
-    print('init finished');
   }
 
   Future<bool> login(String userName) async {
@@ -128,11 +135,13 @@ class IMController extends ChangeNotifier {
       _watchers!.add(event.user!);
       notifyListeners();
       showSnackBar('${event.user!.name} 已加入');
+      AudioPlayer().play(AssetSource('sounds/user_join.wav'));
     });
     _channel!.on('user.watching.stop').listen((event) {
       _watchers!.removeWhere((element) => element.id == event.user!.id);
       notifyListeners();
       showSnackBar('${event.user!.name} 已离开');
+      AudioPlayer().play(AssetSource('sounds/user_leave.wav'));
 
       // Some leave when I'm asking call, means he rejects me
       if (callStatus.value == CallStatus.callOut) {
@@ -369,6 +378,12 @@ class IMController extends ChangeNotifier {
     _leaveCallChannel();
   }
 
+  // range 0 ~ 400
+  void setVoiceVolume(int volume) async {
+    assert(volume >= 0 && volume <= 400);
+    await _agoraEngine.adjustPlaybackSignalVolume(volume);
+  }
+
   void _joinCallChannel() async {
     final callResponse = await _chatClient.createCall(
       callId: _channel!.id!,
@@ -384,17 +399,17 @@ class IMController extends ChangeNotifier {
       clientRoleType: ClientRoleType.clientRoleBroadcaster,
       channelProfile: ChannelProfileType.channelProfileCommunication,
     );
-    print(tokenResponse.token);
-    print(call.agora!.channel);
-    print(tokenResponse.agoraUid!);
-    print(tokenResponse.agoraAppId);
+    logger.i('''try join voice channel
+    token: ${tokenResponse.token!}
+    channelId: ${call.agora!.channel}
+    uid: ${tokenResponse.agoraUid!}
+    ''');
     await _agoraEngine.joinChannel(
       token: tokenResponse.token!,
       channelId: call.agora!.channel,
       uid: tokenResponse.agoraUid!,
       options: options,
     );
-    logger.i('Join voice channel finished');
   }
 
   void _leaveCallChannel() {

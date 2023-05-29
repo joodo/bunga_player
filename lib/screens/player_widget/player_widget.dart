@@ -262,20 +262,16 @@ class RoomSection extends StatelessWidget {
         ),
         child: Consumer<IMController>(
           builder: (context, iM, child) {
-            if (iM.watchers == null || iM.watchers!.length < 2) {
+            if (iM.watchers == null || iM.watchers!.isEmpty) {
               return const SizedBox.shrink();
             }
 
             String text = '';
             for (var user in iM.watchers!) {
-              if (user.name != iM.userName) {
-                text += '${user.name}, ';
-              }
+              text += '${user.name}, ';
             }
 
-            if (text.length < 2) return const SizedBox.shrink();
             text = text.substring(0, text.length - 2);
-
             text += ' 在和你一起看';
 
             return Text(

@@ -3,5 +3,8 @@
 class StreamKey {
   static const appId = 'APP_ID';
   static const appKey = 'APP_KEY';
-  static const appSecret = 'APP_SECRET';
+}
+
+class AgoraKey {
+  static const appID = 'APP_ID';
 }

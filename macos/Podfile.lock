@@ -33,6 +33,8 @@ PODS:
   - AgoraRtcEngine_macOS/VideoCodecEnc (4.2.0)
   - AgoraRtcEngine_macOS/VirtualBackground (4.2.0)
   - AgoraRtcEngine_macOS/VQA (4.2.0)
+  - audioplayers_darwin (0.0.1):
+    - FlutterMacOS
   - connectivity_plus (0.0.1):
     - FlutterMacOS
     - ReachabilitySwift
@@ -73,6 +75,7 @@ PODS:
 
 DEPENDENCIES:
   - agora_rtc_engine (from `Flutter/ephemeral/.symlinks/plugins/agora_rtc_engine/macos`)
+  - audioplayers_darwin (from `Flutter/ephemeral/.symlinks/plugins/audioplayers_darwin/macos`)
   - connectivity_plus (from `Flutter/ephemeral/.symlinks/plugins/connectivity_plus/macos`)
   - file_selector_macos (from `Flutter/ephemeral/.symlinks/plugins/file_selector_macos/macos`)
   - flutter_meedu_videoplayer (from `Flutter/ephemeral/.symlinks/plugins/flutter_meedu_videoplayer/macos`)
@@ -100,6 +103,8 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   agora_rtc_engine:
     :path: Flutter/ephemeral/.symlinks/plugins/agora_rtc_engine/macos
+  audioplayers_darwin:
+    :path: Flutter/ephemeral/.symlinks/plugins/audioplayers_darwin/macos
   connectivity_plus:
     :path: Flutter/ephemeral/.symlinks/plugins/connectivity_plus/macos
   file_selector_macos:
@@ -139,6 +144,7 @@ SPEC CHECKSUMS:
   agora_rtc_engine: dfc8e0862cbf0c6c3be2ed1ee74d0c1ae9ac3ec9
   AgoraIrisRTC_macOS: c084f521da55b27ba0b18e0545ea01d19547890e
   AgoraRtcEngine_macOS: 428dd3bf05b1107bd201318e353604b4feb4f41f
+  audioplayers_darwin: dcad41de4fbd0099cb3749f7ab3b0cb8f70b810c
   connectivity_plus: 18d3c32514c886e046de60e9c13895109866c747
   file_selector_macos: 0f85c1108e2fd597b58246bc0b0c1cb483d7593b
   flutter_meedu_videoplayer: fceb30a833044aaf6410c5da53c3d61ab3d6abbb

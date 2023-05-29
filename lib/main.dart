@@ -22,6 +22,7 @@ void main() async {
   await windowManager.ensureInitialized();
 
   packageInfo = await PackageInfo.fromPlatform();
+  logger.i('Current version: ${packageInfo.version}');
 
   runApp(
     ChangeNotifierProvider(

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:bunga_player/common/im.dart';
 import 'package:bunga_player/common/logger.dart';
 import 'package:bunga_player/common/snack_bar.dart';
@@ -299,7 +300,7 @@ class CatWidget extends StatelessWidget {
         SizedBox(
           height: 400,
           child: RiveAnimation.asset(
-            'images/wake_up_the_black_cat.riv',
+            'assets/images/wake_up_the_black_cat.riv',
             onInit: (Artboard artboard) {
               final controller = StateMachineController.fromArtboard(
                   artboard, 'State Machine 1');

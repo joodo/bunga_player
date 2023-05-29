@@ -1,4 +1,5 @@
 import 'package:animated_text_kit/animated_text_kit.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:bunga_player/common/im.dart';
 import 'package:bunga_player/common/video_controller.dart';
 import 'package:bunga_player/screens/player_widget/video_progress_widget.dart';
@@ -69,12 +70,36 @@ class _ControlSectionState extends State<ControlSection> {
   SubtitleControlUIState _subtitleUIState = SubtitleControlUIState.delay;
   final List<DropdownMenuItem<String>> _subtitleDropdowns = [];
 
+  // for voice
+  final _voiceVolume = ValueNotifier<int>(100);
+  final _voiceMute = ValueNotifier<bool>(false);
+
   @override
   void initState() {
     super.initState();
 
     final iMController = Provider.of<IMController>(context, listen: false);
     iMController.callStatus.addListener(_onCallStatusChanged);
+
+    // for call
+    _voiceVolume.addListener(() {
+      iMController.setVoiceVolume(_voiceVolume.value);
+    });
+    _voiceMute.addListener(() {
+      iMController.setVoiceVolume(_voiceMute.value ? 0 : _voiceVolume.value);
+    });
+
+    final player = AudioPlayer(playerId: 'voice_call');
+    player.setSource(AssetSource('sounds/call.wav'));
+    final callStatus = iMController.callStatus;
+    callStatus.addListener(() {
+      if (callStatus.value == CallStatus.callIn ||
+          callStatus.value == CallStatus.callOut) {
+        player.resume();
+      } else {
+        player.stop();
+      }
+    });
   }
 
   @override
@@ -467,6 +492,41 @@ class _ControlSectionState extends State<ControlSection> {
                     const SizedBox(width: 16),
                     const Text('语音通话中'),
                     const Spacer(),
+                    ValueListenableBuilder(
+                      valueListenable: _voiceMute,
+                      builder: (context, isMute, child) => IconButton(
+                        icon: isMute
+                            ? const Icon(Icons.volume_mute)
+                            : const Icon(Icons.volume_up),
+                        onPressed: () => _voiceMute.value = !isMute,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    ValueListenableBuilder(
+                      valueListenable: _voiceVolume,
+                      builder: (context, volume, child) =>
+                          ValueListenableBuilder(
+                        valueListenable: _voiceMute,
+                        builder: (context, isMute, child) => SizedBox(
+                          width: 100,
+                          child: SliderTheme(
+                            data: sliderThemeData(context),
+                            child: Slider(
+                              value: isMute ? 0 : volume.toDouble(),
+                              max: 200,
+                              divisions: 200,
+                              label: volume.toString(),
+                              onChanged: (value) {
+                                _voiceMute.value = false;
+                                _voiceVolume.value = value.toInt();
+                              },
+                              focusNode: FocusNode(canRequestFocus: false),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
                     CallOperationalButton(
                       color: Colors.red,
                       icon: Icons.call_end,
