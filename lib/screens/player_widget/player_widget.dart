@@ -49,9 +49,7 @@ class _PlayerWidgetState extends State<PlayerWidget> with WindowListener {
       });
     });
 
-    _adjectWindowSize();
-
-    final iM = Provider.of<IM>(context, listen: false);
+    final iM = Provider.of<IMController>(context, listen: false);
     iM.askPosition();
   }
 
@@ -212,28 +210,6 @@ class _PlayerWidgetState extends State<PlayerWidget> with WindowListener {
     );
   }
 
-  @override
-  void onWindowResized() {
-    Future.delayed(const Duration(milliseconds: 800), () {
-      if (!_isFullScreen) _adjectWindowSize();
-    });
-  }
-
-  void _adjectWindowSize() async {
-    final controller = VideoController.instance().videoPlayerController;
-    if (controller == null) return;
-
-    var videoRatio = controller.value.size.aspectRatio;
-    var currentWidth = (await windowManager.getSize()).width;
-    var titleHeight = await windowManager.getTitleBarHeight();
-
-    var targetHeight = titleHeight +
-        _roomSectionHeight +
-        _controlSectionHeight +
-        currentWidth / videoRatio;
-    await windowManager.setSize(Size(currentWidth, targetHeight));
-  }
-
   void _setFullScreen(bool isFullScreen) {
     windowManager.setFullScreen(isFullScreen);
   }
@@ -246,7 +222,7 @@ class _PlayerWidgetState extends State<PlayerWidget> with WindowListener {
     final controller = VideoController.instance();
     controller.togglePlay().then((_) {
       Future.delayed(Duration.zero, () {
-        final iM = Provider.of<IM>(context, listen: false);
+        final iM = Provider.of<IMController>(context, listen: false);
         iM.sendStatus();
       });
     });
@@ -261,7 +237,7 @@ class _PlayerWidgetState extends State<PlayerWidget> with WindowListener {
   void _seekingFinished(Duration position) {
     final controller = VideoController.instance();
     controller.seekTo(position).then((_) {
-      final iM = Provider.of<IM>(context, listen: false);
+      final iM = Provider.of<IMController>(context, listen: false);
       iM.sendStatus();
     });
   }
@@ -284,7 +260,7 @@ class RoomSection extends StatelessWidget {
           vertical: 8,
           horizontal: 16,
         ),
-        child: Consumer<IM>(
+        child: Consumer<IMController>(
           builder: (context, iM, child) {
             if (iM.watchers == null || iM.watchers!.length < 2) {
               return const SizedBox.shrink();
