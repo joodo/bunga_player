@@ -45,10 +45,15 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
 
+    // Agora
+    final iMController = Provider.of<IMController>(context, listen: false);
+    iMController.setupVoiceSDKEngine();
+
     // Window
     windowManager.setTitle('Bunga Player');
     windowManager.setMinimumSize(const Size(800, 600));
 
+    // Auto login
     SharedPreferences.getInstance().then((value) {
       _prefs = value;
       final String? userName = _prefs!.getString('user_name');
@@ -192,7 +197,7 @@ class _MainScreenState extends State<MainScreen> {
       _uIState = UIState.registerInProgress;
     });
 
-    final iM = Provider.of<IM>(context, listen: false);
+    final iM = Provider.of<IMController>(context, listen: false);
 
     bool success = await iM.login(userName);
     if (!success) {
@@ -214,7 +219,7 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void _logout() async {
-    final iM = Provider.of<IM>(context, listen: false);
+    final iM = Provider.of<IMController>(context, listen: false);
     await iM.logout();
 
     await _prefs!.remove('user_name');
@@ -225,7 +230,7 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void _openVideo() async {
-    final iM = Provider.of<IM>(context, listen: false);
+    final iM = Provider.of<IMController>(context, listen: false);
 
     const typeGroup = XTypeGroup(
       label: 'videos',

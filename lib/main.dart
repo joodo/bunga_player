@@ -25,7 +25,7 @@ void main() async {
 
   runApp(
     ChangeNotifierProvider(
-      create: (context) => IM(),
+      create: (context) => IMController(),
       child: const BungaApp(),
     ),
   );

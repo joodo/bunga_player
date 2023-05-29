@@ -3,12 +3,15 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  agora_rtc_engine
   connectivity_plus
   file_selector_windows
   flutter_meedu_videoplayer
   fullscreen_window
+  iris_method_channel
   media_kit_libs_windows_video
   media_kit_video
+  permission_handler_windows
   rive_common
   screen_brightness_windows
   screen_retriever

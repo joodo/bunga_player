@@ -1,13 +1,17 @@
+import 'package:animated_text_kit/animated_text_kit.dart';
+import 'package:bunga_player/common/im.dart';
 import 'package:bunga_player/common/video_controller.dart';
 import 'package:bunga_player/screens/player_widget/video_progress_widget.dart';
 import 'package:bunga_player/utils.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_meedu_videoplayer/meedu_player.dart' as meedu;
+import 'package:provider/provider.dart';
 
 enum ControlUIState {
   main,
   subtitle,
+  call,
 }
 
 enum SubtitleControlUIState {
@@ -66,13 +70,28 @@ class _ControlSectionState extends State<ControlSection> {
   final List<DropdownMenuItem<String>> _subtitleDropdowns = [];
 
   @override
+  void initState() {
+    super.initState();
+
+    final iMController = Provider.of<IMController>(context, listen: false);
+    iMController.callStatus.addListener(_onCallStatusChanged);
+  }
+
+  @override
+  void dispose() {
+    final iMController = Provider.of<IMController>(context, listen: false);
+    iMController.callStatus.removeListener(_onCallStatusChanged);
+
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final controller = VideoController.instance();
 
-    final Widget content;
     switch (_uiState) {
       case ControlUIState.main:
-        content = Stack(
+        return Stack(
           children: [
             Row(
               children: [
@@ -132,14 +151,13 @@ class _ControlSectionState extends State<ControlSection> {
                   },
                 ),
                 const Spacer(),
-                /*
-            IconButton(
-              icon: const Icon(Icons.call),
-              onPressed: () {
-                logger.d('debug message!!');
-              },
-            ),
+                CallButton(
+                  onPressed: () => setState(() {
+                    _uiState = ControlUIState.call;
+                  }),
+                ),
                 const SizedBox(width: 8),
+                /*
             IconButton(
               icon: const Icon(Icons.settings),
               onPressed: () {},
@@ -191,7 +209,7 @@ class _ControlSectionState extends State<ControlSection> {
             ),
           ],
         );
-        break;
+
       case ControlUIState.subtitle:
         final listenable = {
           SubtitleControlUIState.delay: widget.externalSubtitleSettings.delay,
@@ -209,8 +227,7 @@ class _ControlSectionState extends State<ControlSection> {
           SubtitleControlUIState.position: 0.0,
           SubtitleControlUIState.size: 0.05,
         }[_subtitleUIState]!;
-
-        content = Row(
+        return Row(
           children: [
             const SizedBox(width: 8),
             IconButton(
@@ -383,9 +400,213 @@ class _ControlSectionState extends State<ControlSection> {
             */
           ],
         );
-        break;
-    }
 
-    return content;
+      case ControlUIState.call:
+        final iMController = Provider.of<IMController>(context, listen: false);
+        return ValueListenableBuilder(
+          valueListenable: iMController.callStatus,
+          builder: (context, callStatus, child) {
+            switch (iMController.callStatus.value) {
+              case CallStatus.callIn:
+                return Row(
+                  children: [
+                    const SizedBox(width: 8),
+                    child!,
+                    const SizedBox(width: 16),
+                    AnimatedTextKit(
+                      animatedTexts: [FadeAnimatedText('收到语音通话请求')],
+                      repeatForever: true,
+                      pause: Duration.zero,
+                    ),
+                    const Spacer(),
+                    CallOperationalButton(
+                      color: Colors.green,
+                      icon: Icons.call,
+                      onPressed: iMController.acceptCallAsking,
+                    ),
+                    const SizedBox(width: 16),
+                    CallOperationalButton(
+                      color: Colors.red,
+                      icon: Icons.call_end,
+                      onPressed: iMController.rejectCallAsking,
+                    ),
+                    const SizedBox(width: 16),
+                  ],
+                );
+              case CallStatus.callOut:
+                return Row(
+                  children: [
+                    const SizedBox(width: 8),
+                    child!,
+                    const SizedBox(width: 16),
+                    const Text('正在等待接听'),
+                    AnimatedTextKit(
+                      animatedTexts: [
+                        TyperAnimatedText(
+                          '...',
+                          speed: const Duration(milliseconds: 500),
+                        )
+                      ],
+                      repeatForever: true,
+                      pause: const Duration(milliseconds: 500),
+                    ),
+                    const Spacer(),
+                    CallOperationalButton(
+                      color: Colors.red,
+                      icon: Icons.call_end,
+                      onPressed: iMController.cancelCallAsking,
+                    ),
+                    const SizedBox(width: 16),
+                  ],
+                );
+              case CallStatus.calling:
+                return Row(
+                  children: [
+                    const SizedBox(width: 8),
+                    child!,
+                    const SizedBox(width: 16),
+                    const Text('语音通话中'),
+                    const Spacer(),
+                    CallOperationalButton(
+                      color: Colors.red,
+                      icon: Icons.call_end,
+                      onPressed: iMController.hangUpCall,
+                    ),
+                    const SizedBox(width: 16),
+                  ],
+                );
+              default:
+                return const SizedBox.shrink();
+            }
+          },
+          child: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => setState(() {
+              _uiState = ControlUIState.main;
+            }),
+          ),
+        );
+    }
+  }
+
+  void _onCallStatusChanged() {
+    final iMController = Provider.of<IMController>(context, listen: false);
+    switch (iMController.callStatus.value) {
+      case CallStatus.none:
+        if (_uiState == ControlUIState.call) {
+          setState(() {
+            _uiState = ControlUIState.main;
+          });
+        }
+        break;
+      case CallStatus.callIn:
+        setState(() {
+          _uiState = ControlUIState.call;
+        });
+        break;
+      default:
+        {}
+    }
+  }
+}
+
+class CallOperationalButton extends StatelessWidget {
+  final VoidCallback? onPressed;
+  final Color color;
+  final IconData icon;
+
+  const CallOperationalButton({
+    super.key,
+    this.onPressed,
+    required this.color,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      style: ButtonStyle(
+        fixedSize: const MaterialStatePropertyAll<Size>(Size(100, 36)),
+        backgroundColor: MaterialStatePropertyAll<Color>(color),
+      ),
+      color: Colors.white70,
+      icon: Icon(icon),
+      onPressed: onPressed,
+    );
+  }
+}
+
+class CallButton extends StatefulWidget {
+  final VoidCallback? onPressed;
+
+  const CallButton({
+    super.key,
+    this.onPressed,
+  });
+
+  @override
+  State<CallButton> createState() => _CallButtonState();
+}
+
+class _CallButtonState extends State<CallButton> with TickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    duration: const Duration(seconds: 1),
+    upperBound: 0.2,
+    vsync: this,
+  )..repeat(reverse: true);
+  late final Animation<double> _animation = CurvedAnimation(
+    parent: _controller,
+    curve: Curves.bounceInOut,
+  );
+
+  @override
+  void dispose() {
+    // FIXME: keep jumping "Looking up a deactivated widget's ancestor is unsafe"
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final iMController = Provider.of<IMController>(context, listen: false);
+
+    return ValueListenableBuilder(
+      valueListenable: iMController.callStatus,
+      builder: (context, callStatus, child) {
+        switch (callStatus) {
+          case CallStatus.none:
+            return IconButton(
+              icon: const Icon(Icons.call),
+              onPressed: () {
+                iMController.startCallAsking();
+                widget.onPressed?.call();
+              },
+            );
+          case CallStatus.callOut:
+          case CallStatus.calling:
+            return IconButton(
+              style: const ButtonStyle(
+                backgroundColor: MaterialStatePropertyAll<Color>(Colors.green),
+              ),
+              color: Colors.white70,
+              icon: const Icon(Icons.call),
+              onPressed: widget.onPressed,
+            );
+          case CallStatus.callIn:
+            return RotationTransition(
+              turns: _animation,
+              child: IconButton(
+                style: const ButtonStyle(
+                  backgroundColor:
+                      MaterialStatePropertyAll<Color>(Colors.green),
+                ),
+                color: Colors.white70,
+                icon: const Icon(Icons.call),
+                onPressed: widget.onPressed,
+              ),
+            );
+        }
+      },
+    );
   }
 }
