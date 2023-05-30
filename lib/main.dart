@@ -45,7 +45,7 @@ class BungaApp extends StatelessWidget {
 
         final latestVersion = jsonDecode(data.body)["tag_name"];
         logger.i(
-            'Current version: ${packageInfo.version}.\nLatest version: $latestVersion');
+            'Current version: ${packageInfo.version}, Latest version: $latestVersion');
         return latestVersion;
       },
       getBinaryUrl: (version) async {
