@@ -1,41 +1,20 @@
 name: bunga_player
 description: A video player which can let users watch together.
 
-# The following line prevents the package from being accidentally published to
-# pub.dev using `flutter pub publish`. This is preferred for private packages.
+
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-# The following defines the version and build number for your application.
-# A version number is three numbers separated by dots, like 1.2.43
-# followed by an optional build number separated by a +.
-# Both the version and the builder number may be overridden in flutter
-# build by specifying --build-name and --build-number, respectively.
-# In Android, build-name is used as versionName while build-number used as versionCode.
-# Read more about Android versioning at https://developer.android.com/studio/publish/versioning
-# In iOS, build-name is used as CFBundleShortVersionString while build-number is used as CFBundleVersion.
-# Read more about iOS versioning at
-# https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-# In Windows, build-name is used as the major, minor, and patch parts
-# of the product and file versions while build-number is used as the build suffix.
+
 version: 0.1.0
+
 
 environment:
   sdk: '>=2.18.4 <3.0.0'
 
-# Dependencies specify other packages that your package needs in order to work.
-# To automatically upgrade your package dependencies to the latest versions
-# consider running `flutter pub upgrade --major-versions`. Alternatively,
-# dependencies can be manually updated by changing the version numbers below to
-# the latest version available on pub.dev. To see which dependencies have newer
-# versions available, run `flutter pub outdated`.
+
 dependencies:
   flutter:
     sdk: flutter
-
-
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.2
   
   file_selector: ^0.9.3
   flutter_meedu_videoplayer: ^4.2.10
@@ -43,18 +22,12 @@ dependencies:
   rive: ^0.11.0
   shared_preferences: ^2.1.1
   async: ^2.11.0
-  crypto: ^3.0.3
-  archive: ^3.3.7
   crclib: ^3.0.0
   provider: ^6.0.5
   stream_chat_flutter_core: ^6.1.0
   logger: ^1.3.0
-  package_info_plus: ^3.1.2
-  http: ^0.13.6
-  updat:
-    git:
-      url: https://github.com/joodo/updat.git
-      ref: main
+  package_info_plus: ^4.0.0
+  updat: ^1.3.0
   bot_toast: ^4.0.3
   animated_text_kit: ^4.2.2
   agora_rtc_engine: ^6.2.0
@@ -62,7 +35,10 @@ dependencies:
   audioplayers: ^4.0.1
 
 dependency_overrides:
-  #win32: ^4.0.0
+  # solve flutter_meedu_videoplayer ^4.2.10 and package_info_plus ^4.0.0 of wakelock_windows
+  win32: ^4.0.0
+  # solve stream_chat_flutter_core ^6.1.0 and http ^1.0.0
+  http: ^1.0.0
 
 
 dev_dependencies:
