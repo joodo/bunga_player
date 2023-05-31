@@ -1,16 +1,13 @@
 import 'dart:io';
 
-import 'package:bunga_player/common/im.dart';
-import 'package:bunga_player/common/logger.dart';
+import 'package:bunga_player/common/im_controller.dart';
 import 'package:bunga_player/common/snack_bar.dart';
 import 'package:bunga_player/common/video_controller.dart';
 import 'package:bunga_player/screens/player_widget/player_widget.dart';
 import 'package:crclib/catalog.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_meedu_videoplayer/meedu_player.dart';
-import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:rive/rive.dart';
@@ -21,7 +18,6 @@ enum UIState {
   greeting,
   loadVideoInProgress,
   playVideo,
-  unknown,
 }
 
 class MainScreen extends StatefulWidget {
@@ -39,15 +35,9 @@ class _MainScreenState extends State<MainScreen> {
   String? _videoPath;
   String? _groupID;
 
-  bool _showLog = false;
-
   @override
   void initState() {
     super.initState();
-
-    // Agora
-    final iMController = Provider.of<IMController>(context, listen: false);
-    iMController.setupVoiceSDKEngine();
 
     // Window
     windowManager.setTitle('Bunga Player');
@@ -68,10 +58,9 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final Widget body;
     switch (_uIState) {
       case UIState.register:
-        body = Column(
+        return Column(
           children: [
             const Expanded(
               child: CatWidget(
@@ -87,9 +76,8 @@ class _MainScreenState extends State<MainScreen> {
             ),
           ],
         );
-        break;
       case UIState.registerInProgress:
-        body = const Column(
+        return const Column(
           children: [
             Expanded(
               child: CatWidget(
@@ -103,10 +91,9 @@ class _MainScreenState extends State<MainScreen> {
             ),
           ],
         );
-        break;
       case UIState.greeting:
         final userName = _prefs!.getString('user_name');
-        body = Column(
+        return Column(
           children: [
             Expanded(
               child: CatWidget(
@@ -123,9 +110,8 @@ class _MainScreenState extends State<MainScreen> {
             ),
           ],
         );
-        break;
       case UIState.loadVideoInProgress:
-        body = const Stack(
+        return const Stack(
           fit: StackFit.expand,
           children: [
             Column(
@@ -150,46 +136,12 @@ class _MainScreenState extends State<MainScreen> {
             ),
           ],
         );
-        break;
       case UIState.playVideo:
-        body = PlayerWidget(
+        return PlayerWidget(
           videoPath: _videoPath!,
           groupID: _groupID!,
         );
-        break;
-      case UIState.unknown:
-        return Center(
-          child: Text(
-            '出问题了……',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-        );
     }
-
-    return FocusScope(
-      autofocus: true,
-      onKey: (node, event) {
-        if (event is RawKeyUpEvent) return KeyEventResult.ignored;
-        if (event.logicalKey == LogicalKeyboardKey.f12) {
-          setState(() {
-            _showLog = !_showLog;
-          });
-          return KeyEventResult.handled;
-        }
-        return KeyEventResult.ignored;
-      },
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          body,
-          Visibility(
-            maintainState: true,
-            visible: _showLog,
-            child: const LogView(),
-          ),
-        ],
-      ),
-    );
   }
 
   void _registerUser(String userName) async {
@@ -197,9 +149,7 @@ class _MainScreenState extends State<MainScreen> {
       _uIState = UIState.registerInProgress;
     });
 
-    final iM = Provider.of<IMController>(context, listen: false);
-
-    bool success = await iM.login(userName);
+    bool success = await IMController().login(userName);
     if (!success) {
       showSnackBar('连接母星失败');
       setState(() {
@@ -219,8 +169,7 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void _logout() async {
-    final iM = Provider.of<IMController>(context, listen: false);
-    await iM.logout();
+    await IMController().logout();
 
     await _prefs!.remove('user_name');
 
@@ -230,8 +179,6 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void _openVideo() async {
-    final iM = Provider.of<IMController>(context, listen: false);
-
     const typeGroup = XTypeGroup(
       label: 'videos',
       extensions: <String>['mp4', 'mkv', 'avi', 'rmvb', 'mpg', 'mpeg'],
@@ -249,7 +196,8 @@ class _MainScreenState extends State<MainScreen> {
           .single;
       final crcString = crcValue.toString();
 
-      final success = await iM.createOrJoinGroup(crcString, file.name);
+      final success =
+          await IMController().createOrJoinGroup(crcString, file.name);
       if (success) {
         // Open video
         final controller = VideoController.instance();

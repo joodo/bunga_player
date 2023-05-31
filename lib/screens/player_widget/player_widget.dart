@@ -1,15 +1,13 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:bunga_player/common/im.dart';
-import 'package:bunga_player/common/logger.dart';
+import 'package:bunga_player/common/im_controller.dart';
 import 'package:bunga_player/common/video_controller.dart';
 import 'package:bunga_player/screens/player_widget/control_section.dart';
 import 'package:bunga_player/screens/player_widget/video_progress_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_meedu_videoplayer/meedu_player.dart' as meedu;
-import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:async/async.dart';
 
@@ -28,14 +26,10 @@ class PlayerWidget extends StatefulWidget {
 }
 
 class _PlayerWidgetState extends State<PlayerWidget> with WindowListener {
-  final _roomSectionHeight = 36.0;
-  final _controlSectionHeight = 64.0;
   bool _isFullScreen = false;
 
   bool _isUIHidden = false;
   late final RestartableTimer _hideUITimer;
-
-  final _externalSubtitleSettings = ExternalSubtitleSettings();
 
   @override
   void initState() {
@@ -49,8 +43,7 @@ class _PlayerWidgetState extends State<PlayerWidget> with WindowListener {
       });
     });
 
-    final iM = Provider.of<IMController>(context, listen: false);
-    iM.askPosition();
+    IMController().askPosition();
   }
 
   @override
@@ -76,18 +69,15 @@ class _PlayerWidgetState extends State<PlayerWidget> with WindowListener {
   final _controlSectionKey = GlobalKey<State<ControlSection>>();
   @override
   Widget build(Object context) {
+    const roomSectionHeight = 36.0;
+    const controlSectionHeight = 64.0;
+
     final videoSection = VideoSection(
       onTap: _togglePlaying,
       onDoubleTap: _toggleFullscreen,
-      externalSubtitleSettings: _externalSubtitleSettings,
     );
     final controlSection = ControlSection(
       key: _controlSectionKey,
-      isFullScreen: _isFullScreen,
-      onToggleFullScreenPressed: _toggleFullscreen,
-      onVolumeSlideChanged: _setVolume,
-      onTogglePlayingPressed: _togglePlaying,
-      externalSubtitleSettings: _externalSubtitleSettings,
     );
     final progressSection = ProgressSection(
       onChangeEnd: _seekingFinished,
@@ -120,19 +110,19 @@ class _PlayerWidgetState extends State<PlayerWidget> with WindowListener {
             child: Stack(
               fit: StackFit.loose,
               children: [
-                RoomSection(fixedHeight: _roomSectionHeight),
+                const RoomSection(),
                 Positioned(
                   bottom: 0,
                   left: 0,
                   right: 0,
-                  height: _controlSectionHeight,
+                  height: controlSectionHeight,
                   child: Container(
                     decoration: const BoxDecoration(color: Color(0xC0000000)),
                     child: controlSection,
                   ),
                 ),
                 Positioned(
-                  bottom: _controlSectionHeight - 8,
+                  bottom: controlSectionHeight - 8,
                   left: 0,
                   right: 0,
                   height: 16,
@@ -147,24 +137,32 @@ class _PlayerWidgetState extends State<PlayerWidget> with WindowListener {
       body = Stack(
         fit: StackFit.expand,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              RoomSection(fixedHeight: _roomSectionHeight),
-              Expanded(
-                child: videoSection,
-              ),
-              SizedBox(
-                height: _controlSectionHeight,
-                child: controlSection,
-              ),
-            ],
-          ),
-          Positioned(
-            bottom: _controlSectionHeight - 8,
+          const Positioned(
+            top: 0,
+            height: roomSectionHeight,
             left: 0,
             right: 0,
+            child: RoomSection(),
+          ),
+          Positioned(
+            top: roomSectionHeight,
+            bottom: controlSectionHeight,
+            left: 0,
+            right: 0,
+            child: videoSection,
+          ),
+          Positioned(
+            height: controlSectionHeight,
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: controlSection,
+          ),
+          Positioned(
+            bottom: controlSectionHeight - 8,
             height: 16,
+            left: 0,
+            right: 0,
             child: progressSection,
           ),
         ],
@@ -200,7 +198,7 @@ class _PlayerWidgetState extends State<PlayerWidget> with WindowListener {
           _togglePlaying();
         },
         const SingleActivator(LogicalKeyboardKey.escape): () {
-          _setFullScreen(false);
+          windowManager.setFullScreen(false);
         },
       },
       child: Focus(
@@ -210,20 +208,15 @@ class _PlayerWidgetState extends State<PlayerWidget> with WindowListener {
     );
   }
 
-  void _setFullScreen(bool isFullScreen) {
-    windowManager.setFullScreen(isFullScreen);
-  }
-
   void _toggleFullscreen() {
-    _setFullScreen(!_isFullScreen);
+    windowManager.setFullScreen(!_isFullScreen);
   }
 
   void _togglePlaying() {
     final controller = VideoController.instance();
     controller.togglePlay().then((_) {
       Future.delayed(Duration.zero, () {
-        final iM = Provider.of<IMController>(context, listen: false);
-        iM.sendStatus();
+        IMController().sendStatus();
       });
     });
   }
@@ -237,49 +230,36 @@ class _PlayerWidgetState extends State<PlayerWidget> with WindowListener {
   void _seekingFinished(Duration position) {
     final controller = VideoController.instance();
     controller.seekTo(position).then((_) {
-      final iM = Provider.of<IMController>(context, listen: false);
-      iM.sendStatus();
+      IMController().sendStatus();
     });
   }
 }
 
 class RoomSection extends StatelessWidget {
-  final double fixedHeight;
-
-  const RoomSection({
-    super.key,
-    required this.fixedHeight,
-  });
+  const RoomSection({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: fixedHeight,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          vertical: 8,
-          horizontal: 16,
-        ),
-        child: Consumer<IMController>(
-          builder: (context, iM, child) {
-            if (iM.watchers == null || iM.watchers!.isEmpty) {
-              return const SizedBox.shrink();
-            }
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        vertical: 8,
+        horizontal: 16,
+      ),
+      child: ListenableBuilder(
+        listenable: IMController().channelWatchers,
+        builder: (context, child) {
+          String text = IMController()
+              .channelWatchers
+              .toStringExcept(IMController().currentUser!);
+          if (text.isEmpty) {
+            return const SizedBox.shrink();
+          }
 
-            String text = '';
-            for (var user in iM.watchers!) {
-              text += '${user.name}, ';
-            }
-
-            text = text.substring(0, text.length - 2);
-            text += ' 在和你一起看';
-
-            return Text(
-              text,
-              textAlign: TextAlign.left,
-            );
-          },
-        ),
+          return Text(
+            '$text 在和你一起看',
+            textAlign: TextAlign.left,
+          );
+        },
       ),
     );
   }
@@ -289,13 +269,10 @@ class VideoSection extends StatefulWidget {
   final VoidCallback? onDoubleTap;
   final VoidCallback? onTap;
 
-  final ExternalSubtitleSettings externalSubtitleSettings;
-
   const VideoSection({
     super.key,
     this.onDoubleTap,
     this.onTap,
-    required this.externalSubtitleSettings,
   });
 
   @override
@@ -306,13 +283,10 @@ class _VideoSectionState extends State<VideoSection> {
   @override
   void initState() {
     super.initState();
-
-    widget.externalSubtitleSettings.path.addListener(_onSubtitleChanged);
   }
 
   @override
   void dispose() {
-    widget.externalSubtitleSettings.path.removeListener(_onSubtitleChanged);
     super.dispose();
   }
 
@@ -323,14 +297,6 @@ class _VideoSectionState extends State<VideoSection> {
       onTap: widget.onTap,
       child: meedu.MeeduVideoPlayer(controller: VideoController.instance()),
     );
-  }
-
-  Future<void> _onSubtitleChanged() async {
-    final subPath = widget.externalSubtitleSettings.path.value;
-    if (subPath == 'NONE' || subPath == null) {
-      return;
-    }
-    logger.i('Subtitle initial finished: $subPath');
   }
 }
 

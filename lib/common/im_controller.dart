@@ -7,6 +7,7 @@ import 'package:bunga_player/secrets/secrets.dart';
 import 'package:flutter/foundation.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:stream_chat_flutter_core/stream_chat_flutter_core.dart';
+import 'package:collection/collection.dart';
 
 enum CallStatus {
   none,
@@ -15,18 +16,31 @@ enum CallStatus {
   calling,
 }
 
-class IMController extends ChangeNotifier {
+class IMController {
+  // Singleton
+  static final _instance = IMController._internal();
+  factory IMController() => _instance;
+
+  IMController._internal() {
+    // Agora
+    _setupVoiceSDKEngine();
+  }
+
+  void dispose() async {
+    await _agoraEngine.leaveChannel();
+  }
+
   final _chatClient = StreamChatClient(
     StreamKey.appKey,
     logLevel: Level.WARNING,
   );
 
-  final _agoraEngine = createAgoraRtcEngine();
-
   OwnUser? _user;
+  User? get currentUser => _user;
   String? get userName => _user?.name;
 
   // for call
+  final _agoraEngine = createAgoraRtcEngine();
   final callStatus = ValueNotifier<CallStatus>(CallStatus.none);
   String? _callAskingMessageId;
   List<String>? _myCallAskingHopeList;
@@ -39,13 +53,7 @@ class IMController extends ChangeNotifier {
   )..cancel();
   final List<int> _callChannelUsers = [];
 
-  @override
-  void dispose() async {
-    await _agoraEngine.leaveChannel();
-    super.dispose();
-  }
-
-  void setupVoiceSDKEngine() async {
+  void _setupVoiceSDKEngine() async {
     try {
       await [Permission.microphone].request();
     } catch (e) {
@@ -105,8 +113,8 @@ class IMController extends ChangeNotifier {
   }
 
   Channel? _channel;
-  List<User>? _watchers;
-  List<User>? get watchers => _watchers;
+  final _channelWatchers = ChannelWatchers();
+  ChannelWatchers get channelWatchers => _channelWatchers;
   Future<bool> createOrJoinGroup(String channelID, String channelName) async {
     _channel = _chatClient.channel(
       'livestream',
@@ -118,13 +126,7 @@ class IMController extends ChangeNotifier {
 
     try {
       await _channel!.watch();
-      final result = await _channel!.query(
-        watch: true,
-        watchersPagination: const PaginationParams(limit: 100, offset: 0),
-      );
-      _watchers = result.watchers!
-        ..removeWhere((element) => element.id == _user!.id);
-      notifyListeners();
+      await _channelWatchers.queryFromChannel(_channel!);
     } catch (e) {
       logger.e(e);
       return false;
@@ -133,18 +135,17 @@ class IMController extends ChangeNotifier {
     _channel!.on('message.new').listen(_onNewMessage);
     _channel!.on('user.watching.start').listen((event) {
       if (event.user!.id == _user!.id) return;
-      _watchers!.add(event.user!);
-      notifyListeners();
-      showSnackBar('${event.user!.name} 已加入');
-      AudioPlayer().play(AssetSource('sounds/user_join.wav'));
+      if (_channelWatchers.addUser(event.user!)) {
+        showSnackBar('${event.user!.name} 已加入');
+        AudioPlayer().play(AssetSource('sounds/user_join.wav'));
+      }
     });
     _channel!.on('user.watching.stop').listen((event) {
-      _watchers!.removeWhere((element) => element.id == event.user!.id);
-      notifyListeners();
+      _channelWatchers.removeUser(event.user!);
       showSnackBar('${event.user!.name} 已离开');
       AudioPlayer().play(AssetSource('sounds/user_leave.wav'));
 
-      // Some leave when I'm asking call, means he rejects me
+      // Someone leave when I'm asking call, means he rejects me
       if (callStatus.value == CallStatus.callOut) {
         _myCallAskingIsRejectedBy(event.user!);
       }
@@ -329,7 +330,8 @@ class IMController extends ChangeNotifier {
     _callAskingMessageId = await sendMessage(message);
 
     if (_callAskingMessageId != null) {
-      _myCallAskingHopeList = _watchers!.map((e) => e.id).toList();
+      _myCallAskingHopeList =
+          _channelWatchers.watchers!.map((e) => e.id).toList();
       logger.i('start call asking, hope list: $_myCallAskingHopeList');
 
       _callAskingTimeOutTimer.reset();
@@ -415,5 +417,54 @@ class IMController extends ChangeNotifier {
 
   void _leaveCallChannel() {
     _agoraEngine.leaveChannel();
+  }
+}
+
+class ChannelWatchers extends ChangeNotifier {
+  List<User>? _watchers;
+  List<User>? get watchers => _watchers;
+
+  Future<void> queryFromChannel(Channel channel) async {
+    final result = await channel.query(
+      watch: true,
+      watchersPagination: const PaginationParams(limit: 100, offset: 0),
+    );
+    _watchers = result.watchers!;
+    notifyListeners();
+  }
+
+  void removeUser(User user) {
+    _watchers?.removeWhere((element) => element.id == user.id);
+    notifyListeners();
+  }
+
+  // return false if user already exist
+  bool addUser(User user) {
+    if (_watchers == null ||
+        _watchers!.firstWhereOrNull((watcher) => watcher.id == user.id) !=
+            null) {
+      return false;
+    }
+    _watchers!.add(user);
+    notifyListeners();
+    return true;
+  }
+
+  String toStringExcept(User exceptUser) {
+    if (_watchers == null) return '';
+
+    String result = '';
+    for (var user in _watchers!) {
+      if (user.id == exceptUser.id) continue;
+      result += '${user.name}, ';
+    }
+
+    try {
+      result = result.substring(0, result.length - 2);
+    } catch (e) {
+      return '';
+    }
+
+    return result;
   }
 }
