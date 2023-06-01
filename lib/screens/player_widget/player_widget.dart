@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:bunga_player/common/fullscreen.dart';
 import 'package:bunga_player/common/im_controller.dart';
 import 'package:bunga_player/common/video_controller.dart';
 import 'package:bunga_player/screens/player_widget/control_section.dart';
@@ -8,7 +9,6 @@ import 'package:bunga_player/screens/player_widget/video_progress_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_meedu_videoplayer/meedu_player.dart' as meedu;
-import 'package:window_manager/window_manager.dart';
 import 'package:async/async.dart';
 
 class PlayerWidget extends StatefulWidget {
@@ -25,17 +25,13 @@ class PlayerWidget extends StatefulWidget {
   State<PlayerWidget> createState() => _PlayerWidgetState();
 }
 
-class _PlayerWidgetState extends State<PlayerWidget> with WindowListener {
-  bool _isFullScreen = false;
-
+class _PlayerWidgetState extends State<PlayerWidget> {
   bool _isUIHidden = false;
   late final RestartableTimer _hideUITimer;
 
   @override
   void initState() {
     super.initState();
-
-    windowManager.addListener(this);
 
     _hideUITimer = RestartableTimer(const Duration(seconds: 3), () {
       setState(() {
@@ -46,26 +42,6 @@ class _PlayerWidgetState extends State<PlayerWidget> with WindowListener {
     IMController().askPosition();
   }
 
-  @override
-  void dispose() {
-    windowManager.removeListener(this);
-    super.dispose();
-  }
-
-  @override
-  void onWindowEnterFullScreen() {
-    setState(() {
-      _isFullScreen = true;
-    });
-  }
-
-  @override
-  void onWindowLeaveFullScreen() {
-    setState(() {
-      _isFullScreen = false;
-    });
-  }
-
   final _controlSectionKey = GlobalKey<State<ControlSection>>();
   @override
   Widget build(Object context) {
@@ -74,7 +50,7 @@ class _PlayerWidgetState extends State<PlayerWidget> with WindowListener {
 
     final videoSection = VideoSection(
       onTap: _togglePlaying,
-      onDoubleTap: _toggleFullscreen,
+      onDoubleTap: FullScreen().toggle,
     );
     final controlSection = ControlSection(
       key: _controlSectionKey,
@@ -83,91 +59,96 @@ class _PlayerWidgetState extends State<PlayerWidget> with WindowListener {
       onChangeEnd: _seekingFinished,
     );
 
-    final Widget body;
-    if (_isFullScreen) {
-      body = Stack(
-        fit: StackFit.expand,
-        children: [
-          MouseRegion(
-            opaque: false,
-            cursor: _isUIHidden
-                ? SystemMouseCursors.none
-                : SystemMouseCursors.basic,
-            onEnter: (event) => _hideUITimer.reset(),
-            onExit: (event) => _hideUITimer.cancel(),
-            onHover: (event) {
-              _hideUITimer.reset();
-              setState(() {
-                _isUIHidden = false;
-              });
-            },
-            child: videoSection,
-          ),
-          AnimatedOpacity(
-            opacity: _isUIHidden ? 0.0 : 1.0,
-            curve: Curves.easeInCubic,
-            duration: const Duration(milliseconds: 200),
-            child: Stack(
-              fit: StackFit.loose,
-              children: [
-                const RoomSection(),
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  height: controlSectionHeight,
-                  child: Container(
-                    decoration: const BoxDecoration(color: Color(0xC0000000)),
-                    child: controlSection,
-                  ),
+    final body = ValueListenableBuilder(
+      valueListenable: FullScreen().notifier,
+      builder: (context, isFullScreen, child) {
+        if (isFullScreen) {
+          return Stack(
+            fit: StackFit.expand,
+            children: [
+              MouseRegion(
+                opaque: false,
+                cursor: _isUIHidden
+                    ? SystemMouseCursors.none
+                    : SystemMouseCursors.basic,
+                onEnter: (event) => _hideUITimer.reset(),
+                onExit: (event) => _hideUITimer.cancel(),
+                onHover: (event) {
+                  _hideUITimer.reset();
+                  setState(() {
+                    _isUIHidden = false;
+                  });
+                },
+                child: videoSection,
+              ),
+              AnimatedOpacity(
+                opacity: _isUIHidden ? 0.0 : 1.0,
+                curve: Curves.easeInCubic,
+                duration: const Duration(milliseconds: 200),
+                child: Stack(
+                  fit: StackFit.loose,
+                  children: [
+                    const RoomSection(),
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      height: controlSectionHeight,
+                      child: Container(
+                        decoration:
+                            const BoxDecoration(color: Color(0xC0000000)),
+                        child: controlSection,
+                      ),
+                    ),
+                    Positioned(
+                      bottom: controlSectionHeight - 8,
+                      left: 0,
+                      right: 0,
+                      height: 16,
+                      child: progressSection,
+                    ),
+                  ],
                 ),
-                Positioned(
-                  bottom: controlSectionHeight - 8,
-                  left: 0,
-                  right: 0,
-                  height: 16,
-                  child: progressSection,
-                ),
-              ],
-            ),
-          ),
-        ],
-      );
-    } else {
-      body = Stack(
-        fit: StackFit.expand,
-        children: [
-          const Positioned(
-            top: 0,
-            height: roomSectionHeight,
-            left: 0,
-            right: 0,
-            child: RoomSection(),
-          ),
-          Positioned(
-            top: roomSectionHeight,
-            bottom: controlSectionHeight,
-            left: 0,
-            right: 0,
-            child: videoSection,
-          ),
-          Positioned(
-            height: controlSectionHeight,
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: controlSection,
-          ),
-          Positioned(
-            bottom: controlSectionHeight - 8,
-            height: 16,
-            left: 0,
-            right: 0,
-            child: progressSection,
-          ),
-        ],
-      );
-    }
+              ),
+            ],
+          );
+        } else {
+          return Stack(
+            fit: StackFit.expand,
+            children: [
+              const Positioned(
+                top: 0,
+                height: roomSectionHeight,
+                left: 0,
+                right: 0,
+                child: RoomSection(),
+              ),
+              Positioned(
+                top: roomSectionHeight,
+                bottom: controlSectionHeight,
+                left: 0,
+                right: 0,
+                child: videoSection,
+              ),
+              Positioned(
+                height: controlSectionHeight,
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: controlSection,
+              ),
+              Positioned(
+                bottom: controlSectionHeight - 8,
+                height: 16,
+                left: 0,
+                right: 0,
+                child: progressSection,
+              ),
+            ],
+          );
+        }
+      },
+    );
 
     return CallbackShortcuts(
       bindings: <ShortcutActivator, VoidCallback>{
@@ -198,7 +179,7 @@ class _PlayerWidgetState extends State<PlayerWidget> with WindowListener {
           _togglePlaying();
         },
         const SingleActivator(LogicalKeyboardKey.escape): () {
-          windowManager.setFullScreen(false);
+          FullScreen().set(false);
         },
       },
       child: Focus(
@@ -206,10 +187,6 @@ class _PlayerWidgetState extends State<PlayerWidget> with WindowListener {
         child: body,
       ),
     );
-  }
-
-  void _toggleFullscreen() {
-    windowManager.setFullScreen(!_isFullScreen);
   }
 
   void _togglePlaying() {

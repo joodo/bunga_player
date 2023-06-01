@@ -1,12 +1,12 @@
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:bunga_player/common/fullscreen.dart';
 import 'package:bunga_player/common/im_controller.dart';
 import 'package:bunga_player/common/video_controller.dart';
 import 'package:bunga_player/screens/player_widget/video_progress_widget.dart';
 import 'package:bunga_player/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_meedu_videoplayer/meedu_player.dart' as meedu;
-import 'package:window_manager/window_manager.dart';
 
 enum ControlUIState {
   main,
@@ -161,7 +161,15 @@ class _ControlSectionState extends State<ControlSection> {
                 ),
                 const SizedBox(width: 8),
             */
-                const FullScreenButtton(),
+                ValueListenableBuilder(
+                  valueListenable: FullScreen().notifier,
+                  builder: (context, isFullScreen, child) => IconButton(
+                    icon: isFullScreen
+                        ? const Icon(Icons.fullscreen_exit)
+                        : const Icon(Icons.fullscreen),
+                    onPressed: FullScreen().toggle,
+                  ),
+                ),
                 const SizedBox(width: 8),
               ],
             ),
@@ -345,54 +353,6 @@ class _ControlSectionState extends State<ControlSection> {
     } else {
       player.stop();
     }
-  }
-}
-
-class FullScreenButtton extends StatefulWidget {
-  const FullScreenButtton({super.key});
-
-  @override
-  State<FullScreenButtton> createState() => _FullScreenButttonState();
-}
-
-class _FullScreenButttonState extends State<FullScreenButtton>
-    with WindowListener {
-  bool _isFullScreen = false;
-
-  @override
-  void initState() {
-    super.initState();
-    windowManager.addListener(this);
-  }
-
-  @override
-  void dispose() {
-    windowManager.removeListener(this);
-    super.dispose();
-  }
-
-  @override
-  void onWindowEnterFullScreen() {
-    setState(() {
-      _isFullScreen = true;
-    });
-  }
-
-  @override
-  void onWindowLeaveFullScreen() {
-    setState(() {
-      _isFullScreen = false;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return IconButton(
-      icon: _isFullScreen
-          ? const Icon(Icons.fullscreen_exit)
-          : const Icon(Icons.fullscreen),
-      onPressed: () => windowManager.setFullScreen(!_isFullScreen),
-    );
   }
 }
 
