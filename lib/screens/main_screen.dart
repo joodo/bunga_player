@@ -7,7 +7,6 @@ import 'package:bunga_player/screens/player_widget/player_widget.dart';
 import 'package:crclib/catalog.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_meedu_videoplayer/meedu_player.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:rive/rive.dart';
@@ -31,9 +30,6 @@ class _MainScreenState extends State<MainScreen> {
   var _uIState = UIState.register;
 
   SharedPreferences? _prefs;
-
-  String? _videoPath;
-  String? _groupID;
 
   @override
   void initState() {
@@ -137,10 +133,7 @@ class _MainScreenState extends State<MainScreen> {
           ],
         );
       case UIState.playVideo:
-        return PlayerWidget(
-          videoPath: _videoPath!,
-          groupID: _groupID!,
-        );
+        return const PlayerWidget();
     }
   }
 
@@ -200,20 +193,10 @@ class _MainScreenState extends State<MainScreen> {
           await IMController().createOrJoinGroup(crcString, file.name);
       if (success) {
         // Open video
-        final controller = VideoController.instance();
-        await controller.setDataSource(
-          DataSource(
-            type: DataSourceType.file,
-            file: File(file.path),
-          ),
-          autoplay: false,
-        );
-        controller.onVideoFitChange(BoxFit.contain);
+        VideoController().source.value = file.path;
 
         setState(() {
           windowManager.setTitle(file.name);
-          _videoPath = file.path;
-          _groupID = crcString;
           _uIState = UIState.playVideo;
         });
       } else {

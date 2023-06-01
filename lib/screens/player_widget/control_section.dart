@@ -6,7 +6,7 @@ import 'package:bunga_player/common/video_controller.dart';
 import 'package:bunga_player/screens/player_widget/video_progress_widget.dart';
 import 'package:bunga_player/utils.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_meedu_videoplayer/meedu_player.dart' as meedu;
+import 'package:multi_value_listenable_builder/multi_value_listenable_builder.dart';
 
 enum ControlUIState {
   main,
@@ -32,9 +32,6 @@ class ControlSection extends StatefulWidget {
 
 class _ControlSectionState extends State<ControlSection> {
   var _uiState = ControlUIState.main;
-
-  // for state main
-  bool _showTotalTime = true;
 
   // for voice
   final _voiceVolume = ValueNotifier<int>(100);
@@ -66,8 +63,6 @@ class _ControlSectionState extends State<ControlSection> {
 
   @override
   Widget build(BuildContext context) {
-    final controller = VideoController.instance();
-
     switch (_uiState) {
       case ControlUIState.main:
         return Stack(
@@ -75,84 +70,65 @@ class _ControlSectionState extends State<ControlSection> {
             Row(
               children: [
                 const SizedBox(width: 8),
-                StreamBuilder(
-                  stream: controller.playerStatus.status.stream,
-                  builder: (context, snapshot) {
-                    bool isPlaying = controller.playerStatus.status.value ==
-                        meedu.PlayerStatus.playing;
-                    return IconButton(
-                      icon: isPlaying
-                          ? const Icon(Icons.pause)
-                          : const Icon(Icons.play_arrow),
-                      iconSize: 36,
-                      onPressed: () {
-                        final controller = VideoController.instance();
-                        controller.togglePlay().then((_) {
-                          Future.delayed(Duration.zero, () {
-                            IMController().sendStatus();
-                          });
-                        });
-                      },
-                    );
-                  },
+                // Play button
+                ValueListenableBuilder(
+                  valueListenable: VideoController().isPlaying,
+                  builder: (context, isPlaying, child) => IconButton(
+                    icon: isPlaying
+                        ? const Icon(Icons.pause)
+                        : const Icon(Icons.play_arrow),
+                    iconSize: 36,
+                    onPressed: VideoController().togglePlay,
+                  ),
                 ),
                 const SizedBox(width: 8),
-                StreamBuilder(
-                  stream: controller.volume.stream,
-                  builder: (context, snapshot) {
-                    double volume = snapshot.data ?? controller.volume.value;
-                    return Row(
-                      children: [
-                        StreamBuilder(
-                          stream: controller.mute.stream,
-                          builder: (context, snapshot) {
-                            bool isMute =
-                                snapshot.data ?? controller.mute.value;
-                            return IconButton(
-                              icon: isMute
-                                  ? const Icon(Icons.volume_mute)
-                                  : volume > 0.5
-                                      ? const Icon(Icons.volume_up)
-                                      : const Icon(Icons.volume_down),
-                              onPressed: () => controller.setMute(!isMute),
-                            );
-                          },
-                        ),
-                        const SizedBox(width: 8),
-                        SizedBox(
-                          width: 100,
-                          child: SliderTheme(
-                            data: sliderThemeData(context),
-                            child: Slider(
-                              value: volume,
-                              max: 1.0,
-                              label: (volume * 100).toInt().toString(),
-                              onChanged: (value) {
-                                final controller = VideoController.instance();
-                                controller.setMute(false);
-                                controller.setVolume(volume);
-                              },
-                              focusNode: FocusNode(canRequestFocus: false),
-                            ),
-                          ),
-                        ),
-                      ],
-                    );
-                  },
+
+                // Volume section
+                ValueListenableBuilder(
+                  valueListenable: VideoController().isMute,
+                  builder: (context, isMute, child) => IconButton(
+                    icon: isMute
+                        ? const Icon(Icons.volume_mute)
+                        : const Icon(Icons.volume_up),
+                    onPressed: () => VideoController().isMute.value = !isMute,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                MultiValueListenableBuilder(
+                  valueListenables: [
+                    VideoController().volume,
+                    VideoController().isMute,
+                  ],
+                  builder: (context, values, child) => SizedBox(
+                    width: 100,
+                    child: SliderTheme(
+                      data: sliderThemeData(context),
+                      child: Slider(
+                        value: values[1] ? 0.0 : values[0],
+                        max: 100.0,
+                        label: '${values[0].toInt()}%',
+                        onChanged: (value) =>
+                            VideoController().volume.value = value,
+                        focusNode: FocusNode(canRequestFocus: false),
+                      ),
+                    ),
+                  ),
                 ),
                 const Spacer(),
+
+                // Call Button
                 CallButton(
                   onPressed: () => setState(() {
                     _uiState = ControlUIState.call;
                   }),
                 ),
                 const SizedBox(width: 8),
-                /*
-            IconButton(
-              icon: const Icon(Icons.settings),
-              onPressed: () {},
-            ),
-            const SizedBox(width: 8),
+/*
+                IconButton(
+                  icon: const Icon(Icons.settings),
+                  onPressed: () {},
+                ),
+                const SizedBox(width: 8),
                 IconButton(
                   icon: const Icon(Icons.subtitles),
                   onPressed: () => setState(() {
@@ -160,7 +136,8 @@ class _ControlSectionState extends State<ControlSection> {
                   }),
                 ),
                 const SizedBox(width: 8),
-            */
+*/
+                // Full screen button
                 ValueListenableBuilder(
                   valueListenable: FullScreen().notifier,
                   builder: (context, isFullScreen, child) => IconButton(
@@ -173,33 +150,7 @@ class _ControlSectionState extends State<ControlSection> {
                 const SizedBox(width: 8),
               ],
             ),
-            Center(
-              child: TextButton(
-                child: StreamBuilder(
-                  stream: controller.position.stream,
-                  builder: (context, snapshot) {
-                    final duration = controller.duration.value;
-                    final position = snapshot.data ?? controller.position.value;
-                    final String positionString = dToHHmmss(position);
-
-                    final String displayString;
-                    if (_showTotalTime) {
-                      final durationString = dToHHmmss(duration);
-                      displayString = '$positionString / $durationString';
-                    } else {
-                      final remainString = dToHHmmss(duration - position);
-                      displayString = '$positionString - $remainString';
-                    }
-                    return Text(
-                      displayString,
-                      style: Theme.of(context).textTheme.labelMedium,
-                    );
-                  },
-                ),
-                onPressed: () =>
-                    setState(() => _showTotalTime = !_showTotalTime),
-              ),
-            ),
+            const Center(child: DurationButton()),
           ],
         );
 
@@ -353,6 +304,46 @@ class _ControlSectionState extends State<ControlSection> {
     } else {
       player.stop();
     }
+  }
+}
+
+class DurationButton extends StatefulWidget {
+  const DurationButton({super.key});
+
+  @override
+  State<DurationButton> createState() => _DurationButtonState();
+}
+
+class _DurationButtonState extends State<DurationButton> {
+  bool _showTotalTime = true;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton(
+      child: MultiValueListenableBuilder(
+        valueListenables: [
+          VideoController().position,
+          VideoController().duration,
+        ],
+        builder: (context, values, child) {
+          final String positionString = dToHHmmss(values[0]);
+
+          final String displayString;
+          if (_showTotalTime) {
+            final durationString = dToHHmmss(values[1]);
+            displayString = '$positionString / $durationString';
+          } else {
+            final remainString = dToHHmmss(values[1] - values[0]);
+            displayString = '$positionString - $remainString';
+          }
+          return Text(
+            displayString,
+            style: Theme.of(context).textTheme.labelMedium,
+          );
+        },
+      ),
+      onPressed: () => setState(() => _showTotalTime = !_showTotalTime),
+    );
   }
 }
 

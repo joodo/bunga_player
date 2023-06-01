@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:math';
 
 import 'package:bunga_player/common/fullscreen.dart';
@@ -8,18 +7,11 @@ import 'package:bunga_player/screens/player_widget/control_section.dart';
 import 'package:bunga_player/screens/player_widget/video_progress_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_meedu_videoplayer/meedu_player.dart' as meedu;
 import 'package:async/async.dart';
+import 'package:media_kit_video/media_kit_video.dart' as media_kit_video;
 
 class PlayerWidget extends StatefulWidget {
-  final String videoPath;
-  final String groupID;
-
-  const PlayerWidget({
-    super.key,
-    required this.videoPath,
-    required this.groupID,
-  });
+  const PlayerWidget({super.key});
 
   @override
   State<PlayerWidget> createState() => _PlayerWidgetState();
@@ -48,16 +40,11 @@ class _PlayerWidgetState extends State<PlayerWidget> {
     const roomSectionHeight = 36.0;
     const controlSectionHeight = 64.0;
 
-    final videoSection = VideoSection(
-      onTap: _togglePlaying,
-      onDoubleTap: FullScreen().toggle,
-    );
+    const videoSection = VideoSection();
     final controlSection = ControlSection(
       key: _controlSectionKey,
     );
-    final progressSection = ProgressSection(
-      onChangeEnd: _seekingFinished,
-    );
+    const progressSection = VideoProgressWidget();
 
     final body = ValueListenableBuilder(
       valueListenable: FullScreen().notifier,
@@ -100,7 +87,7 @@ class _PlayerWidgetState extends State<PlayerWidget> {
                         child: controlSection,
                       ),
                     ),
-                    Positioned(
+                    const Positioned(
                       bottom: controlSectionHeight - 8,
                       left: 0,
                       right: 0,
@@ -123,7 +110,7 @@ class _PlayerWidgetState extends State<PlayerWidget> {
                 right: 0,
                 child: RoomSection(),
               ),
-              Positioned(
+              const Positioned(
                 top: roomSectionHeight,
                 bottom: controlSectionHeight,
                 left: 0,
@@ -137,7 +124,7 @@ class _PlayerWidgetState extends State<PlayerWidget> {
                 right: 0,
                 child: controlSection,
               ),
-              Positioned(
+              const Positioned(
                 bottom: controlSectionHeight - 8,
                 height: 16,
                 left: 0,
@@ -153,30 +140,26 @@ class _PlayerWidgetState extends State<PlayerWidget> {
     return CallbackShortcuts(
       bindings: <ShortcutActivator, VoidCallback>{
         const SingleActivator(LogicalKeyboardKey.arrowUp): () {
-          final controller = VideoController.instance();
-          final targetVolume = min(controller.volume.value + 0.1, 1.0);
-          _setVolume(targetVolume);
+          final targetVolume = min(VideoController().volume.value + 0.1, 1.0);
+          VideoController().volume.value = targetVolume;
         },
         const SingleActivator(LogicalKeyboardKey.arrowDown): () {
-          final controller = VideoController.instance();
-          final targetVolume = max(controller.volume.value - 0.1, 0.0);
-          _setVolume(targetVolume);
+          final targetVolume = max(VideoController().volume.value - 0.1, 0.0);
+          VideoController().volume.value = targetVolume;
         },
         const SingleActivator(LogicalKeyboardKey.arrowLeft): () {
-          final controller = VideoController.instance();
           final targetPosition =
-              max(controller.position.value.inMilliseconds - 5000, 0);
-          _seekingFinished(Duration(milliseconds: targetPosition));
+              max(VideoController().position.value.inMilliseconds - 5000, 0);
+          VideoController().jumpTo(Duration(milliseconds: targetPosition));
         },
         const SingleActivator(LogicalKeyboardKey.arrowRight): () {
-          final controller = VideoController.instance();
           final targetPosition = min(
-              controller.position.value.inMilliseconds + 5000,
-              controller.duration.value.inMilliseconds);
-          _seekingFinished(Duration(milliseconds: targetPosition));
+              VideoController().position.value.inMilliseconds + 5000,
+              VideoController().duration.value.inMilliseconds);
+          VideoController().jumpTo(Duration(milliseconds: targetPosition));
         },
         const SingleActivator(LogicalKeyboardKey.space): () {
-          _togglePlaying();
+          VideoController().togglePlay();
         },
         const SingleActivator(LogicalKeyboardKey.escape): () {
           FullScreen().set(false);
@@ -187,28 +170,6 @@ class _PlayerWidgetState extends State<PlayerWidget> {
         child: body,
       ),
     );
-  }
-
-  void _togglePlaying() {
-    final controller = VideoController.instance();
-    controller.togglePlay().then((_) {
-      Future.delayed(Duration.zero, () {
-        IMController().sendStatus();
-      });
-    });
-  }
-
-  void _setVolume(double volume) {
-    final controller = VideoController.instance();
-    controller.setMute(false);
-    controller.setVolume(volume);
-  }
-
-  void _seekingFinished(Duration position) {
-    final controller = VideoController.instance();
-    controller.seekTo(position).then((_) {
-      IMController().sendStatus();
-    });
   }
 }
 
@@ -242,85 +203,17 @@ class RoomSection extends StatelessWidget {
   }
 }
 
-class VideoSection extends StatefulWidget {
-  final VoidCallback? onDoubleTap;
-  final VoidCallback? onTap;
-
-  const VideoSection({
-    super.key,
-    this.onDoubleTap,
-    this.onTap,
-  });
-
-  @override
-  State<VideoSection> createState() => _VideoSectionState();
-}
-
-class _VideoSectionState extends State<VideoSection> {
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
+class VideoSection extends StatelessWidget {
+  const VideoSection({super.key});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onDoubleTap: widget.onDoubleTap,
-      onTap: widget.onTap,
-      child: meedu.MeeduVideoPlayer(controller: VideoController.instance()),
-    );
-  }
-}
-
-class ProgressSection extends StatefulWidget {
-  final ValueSetter<Duration>? onChangeEnd;
-
-  const ProgressSection({
-    super.key,
-    this.onChangeEnd,
-  });
-
-  @override
-  State<ProgressSection> createState() => _ProgressSectionState();
-}
-
-class _ProgressSectionState extends State<ProgressSection> {
-  Duration? _changingPosition;
-
-  @override
-  Widget build(BuildContext context) {
-    final controller = VideoController.instance();
-    return StreamBuilder(
-      stream: controller.sliderPosition.stream,
-      builder: (context, snapshot) {
-        return VideoProgressWidget(
-          position: _changingPosition ??
-              snapshot.data ??
-              controller.sliderPosition.value,
-          duration: controller.duration.value,
-          onChangeStart: (value) {
-            setState(() {
-              _changingPosition = value;
-            });
-          },
-          onChanged: (value) {
-            setState(() {
-              _changingPosition = value;
-            });
-          },
-          onChangeEnd: (value) {
-            widget.onChangeEnd?.call(_changingPosition!);
-            setState(() {
-              _changingPosition = null;
-            });
-          },
-        );
-      },
+      onDoubleTap: FullScreen().toggle,
+      onTap: VideoController().togglePlay,
+      child: media_kit_video.Video(
+        controller: VideoController().controller,
+      ),
     );
   }
 }

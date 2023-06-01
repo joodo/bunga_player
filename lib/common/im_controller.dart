@@ -154,6 +154,7 @@ class IMController {
     return true;
   }
 
+  /// return message id
   Future<String?> sendMessage(Message m) async {
     try {
       final response = await _channel!.sendMessage(m);
@@ -170,17 +171,23 @@ class IMController {
     return _askID != null;
   }
 
-  Future<bool> sendStatus() async {
-    final messageID = await sendMessage(Message(text: _statusMessage()));
+  Future<bool> sendPlayerStatus({String? quoteMessageId}) async {
+    if (_applyingStatus) return true;
+
+    final isPlay = VideoController().isPlaying.value;
+    final position = VideoController().position.value;
+
+    final messageText =
+        '${isPlay ? "play" : "pause"} at ${position.inMilliseconds}';
+    final messageID = await sendMessage(Message(
+      text: messageText,
+      quotedMessageId: quoteMessageId,
+    ));
     return messageID != null;
   }
 
-  String _statusMessage() {
-    final controller = VideoController.instance();
-    final position = controller.position.value.inMilliseconds;
-    final isPlaying = controller.playerStatus.playing;
-    return (isPlaying ? 'play at ' : 'pause at ') + position.toString();
-  }
+  // If applying status from remote, then don't send self status to remote
+  bool _applyingStatus = false;
 
   void _onNewMessage(Event event) {
     logger
@@ -190,28 +197,34 @@ class IMController {
     if (userID == _user!.id) return;
 
     final re = event.message!.text!.split(' ');
+
     void applyStatus() async {
-      final controller = VideoController.instance();
+      _applyingStatus = true;
 
       bool canShowSnackBar = true;
+      // If apply status is because asking where, then don't show snack bar
       if (_askID != null) canShowSnackBar = false;
 
-      final isPlaying = controller.playerStatus.playing;
+      final isPlaying = VideoController().isPlaying.value;
       if (re.first == 'pause' && isPlaying) {
-        controller.pause();
-        showSnackBar('${event.user!.name} 暂停了视频');
-        canShowSnackBar = false;
+        VideoController().isPlaying.value = false;
+        if (canShowSnackBar) {
+          showSnackBar('${event.user!.name} 暂停了视频');
+          canShowSnackBar = false;
+        }
       }
       if (re.first == 'play' && !isPlaying) {
-        controller.play();
-        showSnackBar('${event.user!.name} 播放了视频');
-        canShowSnackBar = false;
+        VideoController().isPlaying.value = true;
+        if (canShowSnackBar) {
+          showSnackBar('${event.user!.name} 播放了视频');
+          canShowSnackBar = false;
+        }
       }
 
-      final position = controller.position.value;
+      final position = VideoController().position.value;
       final remotePosition = Duration(milliseconds: int.parse(re.last));
       if ((position - remotePosition).inMilliseconds.abs() > 1000) {
-        controller.seekTo(remotePosition);
+        VideoController().jumpTo(remotePosition);
         if (canShowSnackBar) {
           showSnackBar('${event.user!.name} 调整了进度');
           canShowSnackBar = false;
@@ -220,11 +233,7 @@ class IMController {
     }
 
     if (re.first == 'where') {
-      final m = Message(
-        text: _statusMessage(),
-        quotedMessageId: event.message!.id,
-      );
-      sendMessage(m);
+      sendPlayerStatus(quoteMessageId: event.message!.id);
       return;
     }
 

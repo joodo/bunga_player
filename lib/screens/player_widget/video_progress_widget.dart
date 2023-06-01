@@ -1,22 +1,10 @@
 import 'package:bunga_player/utils.dart';
+import 'package:bunga_player/common/video_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:multi_value_listenable_builder/multi_value_listenable_builder.dart';
 
 class VideoProgressWidget extends StatefulWidget {
-  final Duration position;
-  final Duration duration;
-
-  final ValueSetter<Duration>? onChangeStart;
-  final ValueSetter<Duration>? onChanged;
-  final ValueSetter<Duration>? onChangeEnd;
-
-  const VideoProgressWidget({
-    super.key,
-    required this.position,
-    required this.duration,
-    this.onChangeStart,
-    this.onChangeEnd,
-    this.onChanged,
-  });
+  const VideoProgressWidget({super.key});
 
   @override
   State<VideoProgressWidget> createState() => _VideoProgressWidgetState();
@@ -53,24 +41,30 @@ class _VideoProgressWidgetState extends State<VideoProgressWidget> {
             child: child!,
           );
         },
-        child: Slider(
-          value: dToS(widget.position),
-          max: dToS(widget.duration),
-          focusNode: FocusNode(canRequestFocus: false),
-          label: dToHHmmss(widget.position),
-          onChanged: (double value) {
-            widget.onChanged?.call(sToD(value));
-          },
-          onChangeStart: (value) => setState(() {
-            _isChanging = true;
-            _slideThemeLerpT = 1.0;
-            widget.onChangeStart?.call(sToD(value));
-          }),
-          onChangeEnd: (value) => setState(() {
-            _isChanging = false;
-            if (!_isHovered) _slideThemeLerpT = 0;
-            widget.onChangeEnd?.call(sToD(value));
-          }),
+        child: MultiValueListenableBuilder(
+          valueListenables: [
+            VideoController().position,
+            VideoController().duration,
+          ],
+          builder: (context, values, child) => Slider(
+            value: dToS(VideoController().position.value),
+            max: dToS(values[1]),
+            focusNode: FocusNode(canRequestFocus: false),
+            label: dToHHmmss(values[0]),
+            onChangeStart: (value) => setState(() {
+              _isChanging = true;
+              _slideThemeLerpT = 1.0;
+              VideoController().onDraggingSliderStart(sToD(value));
+            }),
+            onChanged: (double value) {
+              VideoController().onDraggingSlider(sToD(value));
+            },
+            onChangeEnd: (value) => setState(() {
+              _isChanging = false;
+              if (!_isHovered) _slideThemeLerpT = 0;
+              VideoController().onDraggingSliderFinished(sToD(value));
+            }),
+          ),
         ),
       ),
     );

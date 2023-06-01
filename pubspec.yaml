@@ -15,9 +15,13 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+
+  media_kit: ^0.0.9
+  media_kit_video: ^0.0.12
+  media_kit_libs_macos_video: ^1.0.5
+  media_kit_libs_windows_video: ^1.0.2
   
   file_selector: ^0.9.3
-  flutter_meedu_videoplayer: ^4.2.10
   window_manager: ^0.3.2
   rive: ^0.11.0
   shared_preferences: ^2.1.1
@@ -34,6 +38,8 @@ dependencies:
   permission_handler: ^10.2.0
   audioplayers: ^4.0.1
   collection: ^1.17.1
+  multi_value_listenable_builder: ^0.0.2
+  wakelock: ^0.6.2
 
 dependency_overrides:
   # solve flutter_meedu_videoplayer ^4.2.10 and package_info_plus ^4.0.0 of wakelock_windows
