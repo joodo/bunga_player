@@ -11,6 +11,7 @@ import 'package:multi_value_listenable_builder/multi_value_listenable_builder.da
 enum ControlUIState {
   main,
   call,
+  tune,
 }
 
 class ControlSection extends StatefulWidget {
@@ -49,8 +50,16 @@ class _ControlSectionState extends State<ControlSection> {
           onCallPressed: () => setState(() {
             _uiState = ControlUIState.call;
           }),
+          onTunePressed: () => setState(() {
+            _uiState = ControlUIState.tune;
+          }),
         ),
         CallControl(
+          onBackPressed: () => setState(() {
+            _uiState = ControlUIState.main;
+          }),
+        ),
+        TuneControl(
           onBackPressed: () => setState(() {
             _uiState = ControlUIState.main;
           }),
@@ -105,10 +114,12 @@ class _ControlSectionState extends State<ControlSection> {
 
 class MainControl extends StatelessWidget {
   final VoidCallback onCallPressed;
+  final VoidCallback onTunePressed;
 
   const MainControl({
     super.key,
     required this.onCallPressed,
+    required this.onTunePressed,
   });
 
   @override
@@ -158,6 +169,7 @@ class MainControl extends StatelessWidget {
                 ),
               ),
             ),
+
             const Spacer(),
 
             // Call Button
@@ -165,12 +177,14 @@ class MainControl extends StatelessWidget {
               onPressed: onCallPressed,
             ),
             const SizedBox(width: 8),
+
+            // Tune button
+            IconButton(
+              icon: const Icon(Icons.tune),
+              onPressed: onTunePressed,
+            ),
+            const SizedBox(width: 8),
 /*
-                IconButton(
-                  icon: const Icon(Icons.settings),
-                  onPressed: () {},
-                ),
-                const SizedBox(width: 8),
                 IconButton(
                   icon: const Icon(Icons.subtitles),
                   onPressed: () {
@@ -347,6 +361,83 @@ class _CallControlState extends State<CallControl> {
       child: IconButton(
         icon: const Icon(Icons.arrow_back),
         onPressed: widget.onBackPressed,
+      ),
+    );
+  }
+}
+
+class TuneControl extends StatelessWidget {
+  final VoidCallback onBackPressed;
+
+  const TuneControl({
+    super.key,
+    required this.onBackPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        const SizedBox(width: 8),
+        // Back button
+        IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: onBackPressed,
+        ),
+        const SizedBox(width: 8),
+
+        // Contrast button
+        ControlCard(
+          child: Row(
+            children: [
+              const SizedBox(width: 16),
+              const Text('视频亮度'),
+              const SizedBox(width: 12),
+              ValueListenableBuilder(
+                valueListenable: VideoController().contrast,
+                builder: (context, contrast, child) => SizedBox(
+                  width: 100,
+                  child: Slider(
+                    value: contrast.toDouble(),
+                    max: 100,
+                    min: -30,
+                    label: '$contrast%',
+                    onChanged: (value) =>
+                        VideoController().contrast.value = value.toInt(),
+                    focusNode: FocusNode(canRequestFocus: false),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              IconButton(
+                icon: const Icon(Icons.restart_alt),
+                iconSize: 16.0,
+                onPressed: () => VideoController().contrast.value = 0,
+              ),
+              const SizedBox(width: 8),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class ControlCard extends StatelessWidget {
+  final Widget child;
+
+  const ControlCard({super.key, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 48,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surfaceTint.withAlpha(0x1A),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: child,
       ),
     );
   }

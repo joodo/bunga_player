@@ -132,6 +132,10 @@ class IMController {
       return false;
     }
 
+    if (_channelWatchers.watchers!.length > 1) {
+      _askPosition();
+    }
+
     _channel!.on('message.new').listen(_onNewMessage);
     _channel!.on('user.watching.start').listen((event) {
       if (event.user!.id == _user!.id) return;
@@ -166,9 +170,16 @@ class IMController {
   }
 
   String? _askID;
-  Future<bool> askPosition() async {
+  Future<bool> _askPosition() async {
     _askID = await sendMessage(Message(text: 'where'));
-    return _askID != null;
+    if (_askID == null) return false;
+
+    Future.delayed(const Duration(seconds: 6), () {
+      logger.w('Asked position but no one answered');
+      _askID = null;
+    });
+
+    return true;
   }
 
   Future<bool> sendPlayerStatus({String? quoteMessageId}) async {

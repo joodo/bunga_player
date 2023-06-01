@@ -30,8 +30,6 @@ class _PlayerWidgetState extends State<PlayerWidget> {
         _isUIHidden = true;
       });
     });
-
-    IMController().askPosition();
   }
 
   final _controlSectionKey = GlobalKey<State<ControlSection>>();
@@ -140,11 +138,11 @@ class _PlayerWidgetState extends State<PlayerWidget> {
     return CallbackShortcuts(
       bindings: <ShortcutActivator, VoidCallback>{
         const SingleActivator(LogicalKeyboardKey.arrowUp): () {
-          final targetVolume = min(VideoController().volume.value + 0.1, 1.0);
+          final targetVolume = min(VideoController().volume.value + 10, 100.0);
           VideoController().volume.value = targetVolume;
         },
         const SingleActivator(LogicalKeyboardKey.arrowDown): () {
-          final targetVolume = max(VideoController().volume.value - 0.1, 0.0);
+          final targetVolume = max(VideoController().volume.value - 10, 0.0);
           VideoController().volume.value = targetVolume;
         },
         const SingleActivator(LogicalKeyboardKey.arrowLeft): () {
