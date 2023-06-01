@@ -11,11 +11,10 @@ class VideoController {
   factory VideoController() => _instance;
 
   late final _player = Player();
-
-  final source = ValueNotifier<String?>(null);
-
   media_kit_video.VideoController get controller =>
       media_kit_video.VideoController(_player);
+
+  final source = ValueNotifier<String?>(null);
 
   late final duration = StreamNotifier<Duration>(
     Duration.zero,
@@ -25,6 +24,7 @@ class VideoController {
   final position = ValueNotifier<Duration>(Duration.zero);
   final volume = ValueNotifier<double>(100.0);
   final isMute = ValueNotifier<bool>(false);
+  final gamma = ValueNotifier<double>(1.0);
 
   bool _isDraggingSlider = false;
   bool _isPlayingBeforeDraggingSlider = false;
@@ -67,6 +67,13 @@ class VideoController {
         _player.setVolume(0);
       } else {
         _player.setVolume(volume.value);
+      }
+    });
+
+    gamma.addListener(() {
+      final mpvPlayer = _player.platform;
+      if (mpvPlayer is libmpvPlayer) {
+        mpvPlayer.setProperty('video-params/gamma', gamma.toString());
       }
     });
   }

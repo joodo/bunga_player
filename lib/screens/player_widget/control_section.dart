@@ -13,17 +13,6 @@ enum ControlUIState {
   call,
 }
 
-SliderThemeData sliderThemeData(context, {double thumbRadius = 10}) {
-  return SliderThemeData(
-    activeTrackColor: Theme.of(context).colorScheme.secondary,
-    thumbColor: Theme.of(context).colorScheme.secondary,
-    thumbShape: RoundSliderThumbShape(enabledThumbRadius: thumbRadius),
-    valueIndicatorColor: Theme.of(context).colorScheme.secondary,
-    trackShape: SliderCustomTrackShape(),
-    showValueIndicator: ShowValueIndicator.always,
-  );
-}
-
 class ControlSection extends StatefulWidget {
   const ControlSection({super.key});
   @override
@@ -33,25 +22,14 @@ class ControlSection extends StatefulWidget {
 class _ControlSectionState extends State<ControlSection> {
   var _uiState = ControlUIState.main;
 
-  // for voice
-  final _voiceVolume = ValueNotifier<int>(100);
-  final _voiceMute = ValueNotifier<bool>(false);
+  final _callRinger = AudioPlayer();
 
   @override
   void initState() {
     super.initState();
 
-    final player = AudioPlayer(playerId: 'voice_call');
-    player.setSource(AssetSource('sounds/call.wav'));
+    _callRinger.setSource(AssetSource('sounds/call.wav'));
     IMController().callStatus.addListener(_onCallStatusChanged);
-
-    // for call
-    _voiceVolume.addListener(() {
-      IMController().setVoiceVolume(_voiceVolume.value);
-    });
-    _voiceMute.addListener(() {
-      IMController().setVoiceVolume(_voiceMute.value ? 0 : _voiceVolume.value);
-    });
   }
 
   @override
@@ -63,217 +41,36 @@ class _ControlSectionState extends State<ControlSection> {
 
   @override
   Widget build(BuildContext context) {
-    switch (_uiState) {
-      case ControlUIState.main:
-        return Stack(
-          children: [
-            Row(
-              children: [
-                const SizedBox(width: 8),
-                // Play button
-                ValueListenableBuilder(
-                  valueListenable: VideoController().isPlaying,
-                  builder: (context, isPlaying, child) => IconButton(
-                    icon: isPlaying
-                        ? const Icon(Icons.pause)
-                        : const Icon(Icons.play_arrow),
-                    iconSize: 36,
-                    onPressed: VideoController().togglePlay,
-                  ),
-                ),
-                const SizedBox(width: 8),
+    Widget body = IndexedStack(
+      sizing: StackFit.expand,
+      index: _uiState.index,
+      children: [
+        MainControl(
+          onCallPressed: () => setState(() {
+            _uiState = ControlUIState.call;
+          }),
+        ),
+        CallControl(
+          onBackPressed: () => setState(() {
+            _uiState = ControlUIState.main;
+          }),
+        ),
+      ],
+    );
 
-                // Volume section
-                ValueListenableBuilder(
-                  valueListenable: VideoController().isMute,
-                  builder: (context, isMute, child) => IconButton(
-                    icon: isMute
-                        ? const Icon(Icons.volume_mute)
-                        : const Icon(Icons.volume_up),
-                    onPressed: () => VideoController().isMute.value = !isMute,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                MultiValueListenableBuilder(
-                  valueListenables: [
-                    VideoController().volume,
-                    VideoController().isMute,
-                  ],
-                  builder: (context, values, child) => SizedBox(
-                    width: 100,
-                    child: SliderTheme(
-                      data: sliderThemeData(context),
-                      child: Slider(
-                        value: values[1] ? 0.0 : values[0],
-                        max: 100.0,
-                        label: '${values[0].toInt()}%',
-                        onChanged: (value) =>
-                            VideoController().volume.value = value,
-                        focusNode: FocusNode(canRequestFocus: false),
-                      ),
-                    ),
-                  ),
-                ),
-                const Spacer(),
+    body = SliderTheme(
+      data: SliderThemeData(
+        activeTrackColor: Theme.of(context).colorScheme.secondary,
+        thumbColor: Theme.of(context).colorScheme.secondary,
+        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
+        valueIndicatorColor: Theme.of(context).colorScheme.secondary,
+        trackShape: SliderCustomTrackShape(),
+        showValueIndicator: ShowValueIndicator.always,
+      ),
+      child: body,
+    );
 
-                // Call Button
-                CallButton(
-                  onPressed: () => setState(() {
-                    _uiState = ControlUIState.call;
-                  }),
-                ),
-                const SizedBox(width: 8),
-/*
-                IconButton(
-                  icon: const Icon(Icons.settings),
-                  onPressed: () {},
-                ),
-                const SizedBox(width: 8),
-                IconButton(
-                  icon: const Icon(Icons.subtitles),
-                  onPressed: () => setState(() {
-                    _uiState = ControlUIState.subtitle;
-                  }),
-                ),
-                const SizedBox(width: 8),
-*/
-                // Full screen button
-                ValueListenableBuilder(
-                  valueListenable: FullScreen().notifier,
-                  builder: (context, isFullScreen, child) => IconButton(
-                    icon: isFullScreen
-                        ? const Icon(Icons.fullscreen_exit)
-                        : const Icon(Icons.fullscreen),
-                    onPressed: FullScreen().toggle,
-                  ),
-                ),
-                const SizedBox(width: 8),
-              ],
-            ),
-            const Center(child: DurationButton()),
-          ],
-        );
-
-      case ControlUIState.call:
-        return ValueListenableBuilder(
-          valueListenable: IMController().callStatus,
-          builder: (context, callStatus, child) {
-            switch (IMController().callStatus.value) {
-              case CallStatus.callIn:
-                return Row(
-                  children: [
-                    const SizedBox(width: 8),
-                    child!,
-                    const SizedBox(width: 16),
-                    AnimatedTextKit(
-                      animatedTexts: [FadeAnimatedText('收到语音通话请求')],
-                      repeatForever: true,
-                      pause: Duration.zero,
-                    ),
-                    const Spacer(),
-                    CallOperationalButton(
-                      color: Colors.green,
-                      icon: Icons.call,
-                      onPressed: IMController().acceptCallAsking,
-                    ),
-                    const SizedBox(width: 16),
-                    CallOperationalButton(
-                      color: Colors.red,
-                      icon: Icons.call_end,
-                      onPressed: IMController().rejectCallAsking,
-                    ),
-                    const SizedBox(width: 16),
-                  ],
-                );
-              case CallStatus.callOut:
-                return Row(
-                  children: [
-                    const SizedBox(width: 8),
-                    child!,
-                    const SizedBox(width: 16),
-                    const Text('正在等待接听'),
-                    AnimatedTextKit(
-                      animatedTexts: [
-                        TyperAnimatedText(
-                          '...',
-                          speed: const Duration(milliseconds: 500),
-                        )
-                      ],
-                      repeatForever: true,
-                      pause: const Duration(milliseconds: 500),
-                    ),
-                    const Spacer(),
-                    CallOperationalButton(
-                      color: Colors.red,
-                      icon: Icons.call_end,
-                      onPressed: IMController().cancelCallAsking,
-                    ),
-                    const SizedBox(width: 16),
-                  ],
-                );
-              case CallStatus.calling:
-                return Row(
-                  children: [
-                    const SizedBox(width: 8),
-                    child!,
-                    const SizedBox(width: 16),
-                    const Text('语音通话中'),
-                    const Spacer(),
-                    ValueListenableBuilder(
-                      valueListenable: _voiceMute,
-                      builder: (context, isMute, child) => IconButton(
-                        icon: isMute
-                            ? const Icon(Icons.volume_mute)
-                            : const Icon(Icons.volume_up),
-                        onPressed: () => _voiceMute.value = !isMute,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    ValueListenableBuilder(
-                      valueListenable: _voiceVolume,
-                      builder: (context, volume, child) =>
-                          ValueListenableBuilder(
-                        valueListenable: _voiceMute,
-                        builder: (context, isMute, child) => SizedBox(
-                          width: 100,
-                          child: SliderTheme(
-                            data: sliderThemeData(context),
-                            child: Slider(
-                              value: isMute ? 0 : volume.toDouble(),
-                              max: 200,
-                              divisions: 200,
-                              label: volume.toString(),
-                              onChanged: (value) {
-                                _voiceMute.value = false;
-                                _voiceVolume.value = value.toInt();
-                              },
-                              focusNode: FocusNode(canRequestFocus: false),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    CallOperationalButton(
-                      color: Colors.red,
-                      icon: Icons.call_end,
-                      onPressed: IMController().hangUpCall,
-                    ),
-                    const SizedBox(width: 16),
-                  ],
-                );
-              default:
-                return const SizedBox.shrink();
-            }
-          },
-          child: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () => setState(() {
-              _uiState = ControlUIState.main;
-            }),
-          ),
-        );
-    }
+    return body;
   }
 
   void _onCallStatusChanged() {
@@ -298,12 +95,260 @@ class _ControlSectionState extends State<ControlSection> {
     }
 
     // Play sound when call in or out
-    final player = AudioPlayer(playerId: 'voice_call');
     if (callStatus == CallStatus.callIn || callStatus == CallStatus.callOut) {
-      player.resume();
+      _callRinger.resume();
     } else {
-      player.stop();
+      _callRinger.stop();
     }
+  }
+}
+
+class MainControl extends StatelessWidget {
+  final VoidCallback onCallPressed;
+
+  const MainControl({
+    super.key,
+    required this.onCallPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Row(
+          children: [
+            const SizedBox(width: 8),
+            // Play button
+            ValueListenableBuilder(
+              valueListenable: VideoController().isPlaying,
+              builder: (context, isPlaying, child) => IconButton(
+                icon: isPlaying
+                    ? const Icon(Icons.pause)
+                    : const Icon(Icons.play_arrow),
+                iconSize: 36,
+                onPressed: VideoController().togglePlay,
+              ),
+            ),
+            const SizedBox(width: 8),
+
+            // Volume section
+            ValueListenableBuilder(
+              valueListenable: VideoController().isMute,
+              builder: (context, isMute, child) => IconButton(
+                icon: isMute
+                    ? const Icon(Icons.volume_mute)
+                    : const Icon(Icons.volume_up),
+                onPressed: () => VideoController().isMute.value = !isMute,
+              ),
+            ),
+            const SizedBox(width: 8),
+            MultiValueListenableBuilder(
+              valueListenables: [
+                VideoController().volume,
+                VideoController().isMute,
+              ],
+              builder: (context, values, child) => SizedBox(
+                width: 100,
+                child: Slider(
+                  value: values[1] ? 0.0 : values[0],
+                  max: 100.0,
+                  label: '${values[0].toInt()}%',
+                  onChanged: (value) => VideoController().volume.value = value,
+                  focusNode: FocusNode(canRequestFocus: false),
+                ),
+              ),
+            ),
+            const Spacer(),
+
+            // Call Button
+            CallButton(
+              onPressed: onCallPressed,
+            ),
+            const SizedBox(width: 8),
+/*
+                IconButton(
+                  icon: const Icon(Icons.settings),
+                  onPressed: () {},
+                ),
+                const SizedBox(width: 8),
+                IconButton(
+                  icon: const Icon(Icons.subtitles),
+                  onPressed: () {
+                    final player = VideoController().player;
+                    final mpvPlayer = player.platform as libmpvPlayer;
+                    final mpv = mpvPlayer.mpv;
+
+                    final command =
+                        'sub-add /Users/lianghanzhong/Movies/柠檬糖小孩/aaa.srt'
+                            .toNativeUtf8();
+                    mpv.mpv_command_string(mpvPlayer.ctx, command.cast());
+                    calloc.free(command);
+                  },
+                ),
+                const SizedBox(width: 8),
+*/
+
+            // Full screen button
+            ValueListenableBuilder(
+              valueListenable: FullScreen().notifier,
+              builder: (context, isFullScreen, child) => IconButton(
+                icon: isFullScreen
+                    ? const Icon(Icons.fullscreen_exit)
+                    : const Icon(Icons.fullscreen),
+                onPressed: FullScreen().toggle,
+              ),
+            ),
+            const SizedBox(width: 8),
+          ],
+        ),
+        const Center(child: DurationButton()),
+      ],
+    );
+  }
+}
+
+class CallControl extends StatefulWidget {
+  final VoidCallback onBackPressed;
+
+  const CallControl({
+    super.key,
+    required this.onBackPressed,
+  });
+
+  @override
+  State<CallControl> createState() => _CallControlState();
+}
+
+class _CallControlState extends State<CallControl> {
+  final _voiceVolume = ValueNotifier<int>(100);
+  final _voiceMute = ValueNotifier<bool>(false);
+
+  @override
+  void initState() {
+    super.initState();
+
+    _voiceVolume.addListener(() {
+      IMController().setVoiceVolume(_voiceVolume.value);
+    });
+    _voiceMute.addListener(() {
+      IMController().setVoiceVolume(_voiceMute.value ? 0 : _voiceVolume.value);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder(
+      valueListenable: IMController().callStatus,
+      builder: (context, callStatus, child) {
+        switch (IMController().callStatus.value) {
+          case CallStatus.callIn:
+            return Row(
+              children: [
+                const SizedBox(width: 8),
+                child!,
+                const SizedBox(width: 16),
+                AnimatedTextKit(
+                  animatedTexts: [FadeAnimatedText('收到语音通话请求')],
+                  repeatForever: true,
+                  pause: Duration.zero,
+                ),
+                const Spacer(),
+                CallOperationalButton(
+                  color: Colors.green,
+                  icon: Icons.call,
+                  onPressed: IMController().acceptCallAsking,
+                ),
+                const SizedBox(width: 16),
+                CallOperationalButton(
+                  color: Colors.red,
+                  icon: Icons.call_end,
+                  onPressed: IMController().rejectCallAsking,
+                ),
+                const SizedBox(width: 16),
+              ],
+            );
+          case CallStatus.callOut:
+            return Row(
+              children: [
+                const SizedBox(width: 8),
+                child!,
+                const SizedBox(width: 16),
+                const Text('正在等待接听'),
+                AnimatedTextKit(
+                  animatedTexts: [
+                    TyperAnimatedText(
+                      '...',
+                      speed: const Duration(milliseconds: 500),
+                    )
+                  ],
+                  repeatForever: true,
+                  pause: const Duration(milliseconds: 500),
+                ),
+                const Spacer(),
+                CallOperationalButton(
+                  color: Colors.red,
+                  icon: Icons.call_end,
+                  onPressed: IMController().cancelCallAsking,
+                ),
+                const SizedBox(width: 16),
+              ],
+            );
+          case CallStatus.calling:
+            return Row(
+              children: [
+                const SizedBox(width: 8),
+                child!,
+                const SizedBox(width: 16),
+                const Text('语音通话中'),
+                const Spacer(),
+                ValueListenableBuilder(
+                  valueListenable: _voiceMute,
+                  builder: (context, isMute, child) => IconButton(
+                    icon: isMute
+                        ? const Icon(Icons.volume_mute)
+                        : const Icon(Icons.volume_up),
+                    onPressed: () => _voiceMute.value = !isMute,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                MultiValueListenableBuilder(
+                  valueListenables: [
+                    _voiceVolume,
+                    _voiceMute,
+                  ],
+                  builder: (context, values, child) => SizedBox(
+                    width: 100,
+                    child: Slider(
+                      value: values[1] ? 0 : values[0].toDouble(),
+                      max: 200,
+                      divisions: 200,
+                      label: '${values[0]}%',
+                      onChanged: (value) {
+                        _voiceMute.value = false;
+                        _voiceVolume.value = value.toInt();
+                      },
+                      focusNode: FocusNode(canRequestFocus: false),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 20),
+                CallOperationalButton(
+                  color: Colors.red,
+                  icon: Icons.call_end,
+                  onPressed: IMController().hangUpCall,
+                ),
+                const SizedBox(width: 16),
+              ],
+            );
+          default:
+            return const SizedBox.shrink();
+        }
+      },
+      child: IconButton(
+        icon: const Icon(Icons.arrow_back),
+        onPressed: widget.onBackPressed,
+      ),
+    );
   }
 }
 

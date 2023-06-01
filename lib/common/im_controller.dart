@@ -341,6 +341,7 @@ class IMController {
     if (_callAskingMessageId != null) {
       _myCallAskingHopeList =
           _channelWatchers.watchers!.map((e) => e.id).toList();
+      _myCallAskingHopeList!.remove(_user!.id);
       logger.i('start call asking, hope list: $_myCallAskingHopeList');
 
       _callAskingTimeOutTimer.reset();
