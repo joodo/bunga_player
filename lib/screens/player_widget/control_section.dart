@@ -506,20 +506,22 @@ class _SubtitleControlState extends State<SubtitleControl> {
           builder: (context, value, child) {
             final textController =
                 TextEditingController(text: value.toStringAsFixed(1));
-            return Row(
+            var child = Row(
               children: [
-                SizedBox(
-                  width: 130,
-                  child: Slider(
-                    value: value < minValue
-                        ? minValue
-                        : value > maxValue
-                            ? maxValue
-                            : value,
-                    max: maxValue,
-                    min: minValue,
-                    onChanged: (value) => listenable.value = value,
-                    focusNode: FocusNode(canRequestFocus: false),
+                Flexible(
+                  child: SizedBox(
+                    width: 200,
+                    child: Slider(
+                      value: value < minValue
+                          ? minValue
+                          : value > maxValue
+                              ? maxValue
+                              : value,
+                      max: maxValue,
+                      min: minValue,
+                      onChanged: (value) => listenable.value = value,
+                      focusNode: FocusNode(canRequestFocus: false),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -578,6 +580,7 @@ class _SubtitleControlState extends State<SubtitleControl> {
                 ),
               ],
             );
+            return Expanded(child: child);
           },
         ),
       ],
