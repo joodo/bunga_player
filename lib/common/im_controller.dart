@@ -138,10 +138,6 @@ class IMController {
       return false;
     }
 
-    if (_channelWatchers.watchers!.length > 1) {
-      _askPosition();
-    }
-
     _channel!.on('message.new').listen(_onNewMessage);
     _channel!.on('user.watching.start').listen((event) {
       if (event.user!.id == _user!.id) return;
@@ -176,7 +172,9 @@ class IMController {
   }
 
   String? _askID;
-  Future<bool> _askPosition() async {
+  Future<bool> askPosition() async {
+    if (_channelWatchers.watchers!.length < 2) return true;
+
     _askID = await sendMessage(Message(text: 'where'));
     if (_askID == null) return false;
 

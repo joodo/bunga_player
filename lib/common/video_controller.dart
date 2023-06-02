@@ -133,11 +133,12 @@ class VideoController {
     });
   }
 
-  void openVideo() {
-    _player.open(
+  void openVideo() async {
+    await _player.open(
       Media(source.value!),
       play: false,
     );
+    IMController().askPosition();
   }
 
   void togglePlay() {
