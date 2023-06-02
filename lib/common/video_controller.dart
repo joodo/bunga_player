@@ -1,5 +1,6 @@
 import 'package:bunga_player/common/im_controller.dart';
 import 'package:collection/collection.dart';
+import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart' as media_kit_video;
@@ -24,7 +25,7 @@ class VideoController {
   final position = ValueNotifier<Duration>(Duration.zero);
   final volume = ValueNotifier<double>(100.0);
   final isMute = ValueNotifier<bool>(false);
-  final contrast = ValueNotifier<int>(0);
+  final contrast = ValueNotifierWithReset<int>(0);
 
   late final tracks = StreamNotifier<Tracks?>(
     initialValue: null,
@@ -35,8 +36,14 @@ class VideoController {
     stream: _player.streams.track,
   );
 
+  final subDelay = ValueNotifierWithReset<double>(0.0); // sub-delay
+  final subSize = ValueNotifierWithReset<double>(55.0); // sub-font-size
+  final subPosition = ValueNotifierWithReset<double>(100.0); // sub-pos=<0-150>
+
   bool _isDraggingSlider = false;
   bool _isPlayingBeforeDraggingSlider = false;
+
+  bool _isWaitingSubtitleLoaded = false;
 
   VideoController._internal() {
     MediaKit.ensureInitialized();
@@ -85,6 +92,35 @@ class VideoController {
         mpvPlayer.setProperty('contrast', contrast.value.toString());
       }
     });
+
+    // auto load new opened subtitle
+    tracks.addListener(() {
+      if (_isWaitingSubtitleLoaded) {
+        final subtitleTrack = tracks.value!.subtitle.last;
+        _player.setSubtitleTrack(subtitleTrack);
+        _isWaitingSubtitleLoaded = false;
+      }
+    });
+
+    subDelay.addListener(() {
+      final mpvPlayer = _player.platform;
+      if (mpvPlayer is libmpvPlayer) {
+        mpvPlayer.setProperty('sub-delay', subDelay.value.toStringAsFixed(2));
+      }
+    });
+    subSize.addListener(() {
+      final mpvPlayer = _player.platform;
+      if (mpvPlayer is libmpvPlayer) {
+        mpvPlayer.setProperty(
+            'sub-font-size', subSize.value.toInt().toString());
+      }
+    });
+    subPosition.addListener(() {
+      final mpvPlayer = _player.platform;
+      if (mpvPlayer is libmpvPlayer) {
+        mpvPlayer.setProperty('sub-pos', subPosition.value.toInt().toString());
+      }
+    });
   }
 
   void togglePlay() {
@@ -122,6 +158,24 @@ class VideoController {
     if (audioTrack == null) return;
     _player.setAudioTrack(audioTrack);
   }
+
+  void setSubtitleTrack(String? id) {
+    final subtitleTrack =
+        tracks.value?.subtitle.firstWhereOrNull((e) => e.id == id);
+    if (subtitleTrack == null) return;
+    _player.setSubtitleTrack(subtitleTrack);
+  }
+
+  void addSubtitleTrack(String source) {
+    final mpvPlayer = _player.platform;
+    if (mpvPlayer is libmpvPlayer) {
+      final mpv = mpvPlayer.mpv;
+      final command = 'sub-add "$source" auto'.toNativeUtf8();
+      mpv.mpv_command_string(mpvPlayer.ctx, command.cast());
+      calloc.free(command);
+      _isWaitingSubtitleLoaded = true;
+    }
+  }
 }
 
 class StreamNotifier<T> extends ValueListenable<T> {
@@ -149,4 +203,16 @@ class StreamNotifier<T> extends ValueListenable<T> {
 
   @override
   T get value => _value;
+}
+
+class ValueNotifierWithReset<T> extends ValueNotifier<T> {
+  late T _initValue;
+
+  ValueNotifierWithReset(T value) : super(value) {
+    _initValue = value;
+  }
+
+  void reset() {
+    value = _initValue;
+  }
 }
