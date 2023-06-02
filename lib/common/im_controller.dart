@@ -249,6 +249,8 @@ class IMController {
           canShowSnackBar = false;
         }
       }
+
+      _applyingStatus = false;
     }
 
     if (re.first == 'where') {
