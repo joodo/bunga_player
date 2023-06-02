@@ -1,6 +1,6 @@
 import 'package:bunga_player/common/im_controller.dart';
-import 'package:bunga_player/utils.dart';
-import 'package:flutter/material.dart';
+import 'package:collection/collection.dart';
+import 'package:flutter/foundation.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart' as media_kit_video;
 import 'package:wakelock/wakelock.dart';
@@ -17,14 +17,23 @@ class VideoController {
   final source = ValueNotifier<String?>(null);
 
   late final duration = StreamNotifier<Duration>(
-    Duration.zero,
-    _player.streams.duration,
+    initialValue: Duration.zero,
+    stream: _player.streams.duration,
   );
   final isPlaying = ValueNotifier<bool>(false);
   final position = ValueNotifier<Duration>(Duration.zero);
   final volume = ValueNotifier<double>(100.0);
   final isMute = ValueNotifier<bool>(false);
   final contrast = ValueNotifier<int>(0);
+
+  late final tracks = StreamNotifier<Tracks?>(
+    initialValue: null,
+    stream: _player.streams.tracks,
+  );
+  late final track = StreamNotifier<Track?>(
+    initialValue: null,
+    stream: _player.streams.track,
+  );
 
   bool _isDraggingSlider = false;
   bool _isPlayingBeforeDraggingSlider = false;
@@ -107,4 +116,37 @@ class VideoController {
 
     IMController().sendPlayerStatus();
   }
+
+  void setAudioTrack(String? id) {
+    final audioTrack = tracks.value?.audio.firstWhereOrNull((e) => e.id == id);
+    if (audioTrack == null) return;
+    _player.setAudioTrack(audioTrack);
+  }
+}
+
+class StreamNotifier<T> extends ValueListenable<T> {
+  late final Stream<T> _stream;
+  final List<VoidCallback> _listeners = [];
+  late T _value;
+
+  StreamNotifier({required T initialValue, required Stream<T> stream}) {
+    _value = initialValue;
+    _stream = stream;
+
+    _stream.listen((value) {
+      _value = value;
+      for (var callback in _listeners) {
+        callback.call();
+      }
+    });
+  }
+
+  @override
+  void addListener(VoidCallback listener) => _listeners.add(listener);
+
+  @override
+  void removeListener(VoidCallback listener) => _listeners.remove(listener);
+
+  @override
+  T get value => _value;
 }

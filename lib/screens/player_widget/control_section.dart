@@ -6,6 +6,7 @@ import 'package:bunga_player/common/video_controller.dart';
 import 'package:bunga_player/screens/player_widget/video_progress_widget.dart';
 import 'package:bunga_player/utils.dart';
 import 'package:flutter/material.dart';
+import 'package:media_kit/media_kit.dart';
 import 'package:multi_value_listenable_builder/multi_value_listenable_builder.dart';
 
 enum ControlUIState {
@@ -418,6 +419,45 @@ class TuneControl extends StatelessWidget {
             ],
           ),
         ),
+        const SizedBox(width: 16),
+
+        // Audio tracks section
+        ControlCard(
+          child: MultiValueListenableBuilder(
+            valueListenables: [
+              VideoController().track,
+              VideoController().tracks,
+            ],
+            builder: (context, values, child) {
+              var audioTracks = values[1]?.audio as List<AudioTrack>?;
+
+              return Row(
+                children: [
+                  const SizedBox(width: 16),
+                  const Text('音频轨道'),
+                  const SizedBox(width: 8),
+                  SizedBox(
+                    width: 200,
+                    height: 36,
+                    child: ControlComboBox(
+                      items: audioTracks
+                              ?.map((e) => DropdownMenuItem<String>(
+                                    value: e.id,
+                                    child: Text(
+                                        '[${e.id}] ${e.title ?? ""}(${e.language ?? "Unknown"})'),
+                                  ))
+                              .toList() ??
+                          [],
+                      value: values[0]?.audio.id,
+                      onChanged: VideoController().setAudioTrack,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                ],
+              );
+            },
+          ),
+        ),
       ],
     );
   }
@@ -438,6 +478,59 @@ class ControlCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
         ),
         child: child,
+      ),
+    );
+  }
+}
+
+class ControlComboBox extends StatelessWidget {
+  final List<DropdownMenuItem<String>> items;
+  final String? value;
+  final ValueSetter<String?> onChanged;
+
+  const ControlComboBox({
+    super.key,
+    required this.items,
+    this.value,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InputDecorator(
+      decoration: const InputDecoration(
+        contentPadding: EdgeInsets.symmetric(vertical: 4),
+        border: OutlineInputBorder(),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          items: items,
+          value: value,
+          onChanged: onChanged,
+          padding: const EdgeInsets.only(
+            left: 12,
+            right: 4,
+            top: 8,
+            bottom: 8,
+          ),
+          borderRadius: BorderRadius.circular(4),
+          style: Theme.of(context).textTheme.bodyMedium,
+          isExpanded: true,
+          isDense: true,
+          itemHeight: null,
+          focusColor: Colors.transparent,
+          selectedItemBuilder: (context) => items
+              .map(
+                (e) => DropdownMenuItem<String>(
+                  value: e.value,
+                  child: Text(
+                    (e.child as Text).data!,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              )
+              .toList(),
+        ),
       ),
     );
   }

@@ -174,7 +174,15 @@ class _MainScreenState extends State<MainScreen> {
   void _openVideo() async {
     const typeGroup = XTypeGroup(
       label: 'videos',
-      extensions: <String>['mp4', 'mkv', 'avi', 'rmvb', 'mpg', 'mpeg'],
+      extensions: <String>[
+        'mp4',
+        'mkv',
+        'avi',
+        'rmvb',
+        'mpg',
+        'mpeg',
+        'mov',
+      ],
     );
     final file = await openFile(acceptedTypeGroups: <XTypeGroup>[typeGroup]);
     if (file != null) {
