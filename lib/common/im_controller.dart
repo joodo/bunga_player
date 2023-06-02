@@ -181,8 +181,10 @@ class IMController {
     if (_askID == null) return false;
 
     Future.delayed(const Duration(seconds: 6), () {
-      logger.w('Asked position but no one answered');
-      _askID = null;
+      if (_askID != null) {
+        logger.w('Asked position but no one answered');
+        _askID = null;
+      }
     });
 
     return true;
