@@ -17,6 +17,7 @@ dependencies:
     sdk: flutter
 
   media_kit: ^0.0.9
+  media_kit_native_event_loop: ^1.0.4
   media_kit_video: ^0.0.12
   media_kit_libs_macos_video: ^1.0.5
   media_kit_libs_windows_video: ^1.0.2

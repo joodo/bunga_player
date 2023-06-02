@@ -28,6 +28,7 @@ class IMController {
 
   void dispose() async {
     await _agoraEngine.leaveChannel();
+    await _agoraEngine.release();
   }
 
   final _chatClient = StreamChatClient(
