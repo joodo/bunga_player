@@ -1,4 +1,5 @@
 import 'package:bunga_player/common/im_controller.dart';
+import 'package:bunga_player/common/logger.dart';
 import 'package:collection/collection.dart';
 import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
@@ -14,8 +15,9 @@ class VideoController {
   late final _player = Player(
     configuration: const PlayerConfiguration(logLevel: MPVLogLevel.warn),
   );
-  media_kit_video.VideoController get controller =>
-      media_kit_video.VideoController(_player);
+
+  late final _controller = media_kit_video.VideoController(_player);
+  media_kit_video.VideoController get controller => _controller;
 
   final source = ValueNotifier<String?>(null);
 
@@ -49,6 +51,9 @@ class VideoController {
 
   VideoController._internal() {
     MediaKit.ensureInitialized();
+
+    _player.streams.log
+        .listen((event) => logger.i('Player log: ${event.text}'));
 
     source.addListener(() {
       if (source.value != null) {
@@ -171,6 +176,7 @@ class VideoController {
   void addSubtitleTrack(String source) {
     final mpvPlayer = _player.platform;
     if (mpvPlayer is libmpvPlayer) {
+      source = source.replaceAll('\\', '\\\\');
       final mpv = mpvPlayer.mpv;
       final command = 'sub-add "$source" auto'.toNativeUtf8();
       mpv.mpv_command_string(mpvPlayer.ctx, command.cast());

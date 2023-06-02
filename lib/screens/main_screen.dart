@@ -197,7 +197,10 @@ class _MainScreenState extends State<MainScreen> {
           await IMController().createOrJoinGroup(crcString, file.name);
       if (success) {
         // Open video
-        VideoController().source.value = file.path;
+        // Delay for windows
+        Future.delayed(Duration.zero, () {
+          VideoController().source.value = file.path;
+        });
 
         setState(() {
           windowManager.setTitle(file.name);
