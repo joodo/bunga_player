@@ -11,7 +11,9 @@ class VideoController {
   static final _instance = VideoController._internal();
   factory VideoController() => _instance;
 
-  late final _player = Player();
+  late final _player = Player(
+    configuration: const PlayerConfiguration(logLevel: MPVLogLevel.warn),
+  );
   media_kit_video.VideoController get controller =>
       media_kit_video.VideoController(_player);
 

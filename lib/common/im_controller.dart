@@ -60,8 +60,10 @@ class IMController {
       logger.e(e);
     }
 
-    await _agoraEngine
-        .initialize(const RtcEngineContext(appId: AgoraKey.appID));
+    await _agoraEngine.initialize(const RtcEngineContext(
+      appId: AgoraKey.appID,
+      logConfig: LogConfig(level: LogLevel.logLevelWarn),
+    ));
     _agoraEngine.registerEventHandler(
       RtcEngineEventHandler(
         onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
