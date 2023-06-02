@@ -57,10 +57,13 @@ class VideoController {
 
     source.addListener(() {
       if (source.value != null) {
+        // FIXME: open must execute after Video widget loaded
+        /*
         _player.open(
           Media(source.value!),
           play: false,
         );
+        */
       }
     });
 
@@ -128,6 +131,13 @@ class VideoController {
         mpvPlayer.setProperty('sub-pos', subPosition.value.toInt().toString());
       }
     });
+  }
+
+  void openVideo() {
+    _player.open(
+      Media(source.value!),
+      play: false,
+    );
   }
 
   void togglePlay() {

@@ -206,6 +206,8 @@ class VideoSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // FIXME: open must execute after Video widget loaded
+    Future.delayed(Duration.zero, VideoController().openVideo);
     return GestureDetector(
       onDoubleTap: FullScreen().toggle,
       onTap: VideoController().togglePlay,
