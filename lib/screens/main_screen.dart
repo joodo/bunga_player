@@ -350,7 +350,7 @@ class VideoOpenWidget extends StatelessWidget {
         const SizedBox(width: 16),
         OutlinedButton(
           onPressed: onLogoutPressed,
-          child: const Text('别这么叫我'),
+          child: const Text('换个名字'),
         ),
       ],
     );
