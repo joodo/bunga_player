@@ -76,10 +76,8 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/images/wake_up_the_black_cat.riv
-    - assets/sounds/call.wav
-    - assets/sounds/user_join.wav
-    - assets/sounds/user_leave.wav
+    - assets/images/
+    - assets/sounds/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

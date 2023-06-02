@@ -69,7 +69,9 @@ class IMController {
         },
         onUserJoined: (RtcConnection connection, int remoteUid, int elapsed) {
           logger.i("Remote user uid:$remoteUid joined the voice channel");
-          _callChannelUsers.add(remoteUid);
+          if (connection.localUid != remoteUid) {
+            _callChannelUsers.add(remoteUid);
+          }
         },
         onUserOffline: (RtcConnection connection, int remoteUid,
             UserOfflineReasonType reason) {
@@ -77,6 +79,7 @@ class IMController {
           logger.i(
               "Remote user uid:$remoteUid left the channel\nUser remain: $_callChannelUsers");
           if (_callChannelUsers.isEmpty) {
+            showSnackBar('对方已挂断');
             hangUpCall();
           }
         },
@@ -399,6 +402,7 @@ class IMController {
 
   void hangUpCall() {
     callStatus.value = CallStatus.none;
+    AudioPlayer().play(AssetSource('sounds/hang_up.wav'));
     _leaveCallChannel();
   }
 
