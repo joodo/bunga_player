@@ -35,10 +35,6 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
 
-    // Window
-    windowManager.setTitle('Bunga Player');
-    windowManager.setMinimumSize(const Size(800, 600));
-
     // Auto login
     SharedPreferences.getInstance().then((value) {
       _prefs = value;

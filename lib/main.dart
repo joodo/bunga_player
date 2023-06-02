@@ -12,6 +12,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await windowManager.ensureInitialized();
+  windowManager.setMinimumSize(const Size(800, 600));
 
   packageInfo = await PackageInfo.fromPlatform();
 
