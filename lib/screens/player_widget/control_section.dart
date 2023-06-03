@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:multi_value_listenable_builder/multi_value_listenable_builder.dart';
+import 'package:window_manager/window_manager.dart';
 
 enum ControlUIState {
   main,
@@ -44,12 +45,16 @@ class _ControlSectionState extends State<ControlSection> {
 
     _callRinger.setSource(AssetSource('sounds/call.wav'));
     IMController().callStatus.addListener(_onCallStatusChanged);
+
+    // FIXME: exit full screen makes layout a mass in Windows
+    FullScreen().notifier.addListener(_onFullScreenChanged);
   }
 
   @override
   void dispose() {
     widget.isUIHidden.removeListener(_onUIHiddenChanged);
     IMController().callStatus.removeListener(_onCallStatusChanged);
+    FullScreen().notifier.removeListener(_onFullScreenChanged);
 
     super.dispose();
   }
@@ -139,6 +144,14 @@ class _ControlSectionState extends State<ControlSection> {
       setState(() {
         _uiState = ControlUIState.main;
       });
+    }
+  }
+
+  void _onFullScreenChanged() async {
+    if (FullScreen().notifier.value == false) {
+      var size = await windowManager.getSize();
+      size += const Offset(1, 1);
+      windowManager.setSize(size);
     }
   }
 }
