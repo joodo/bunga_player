@@ -18,7 +18,7 @@ class PlayerWidget extends StatefulWidget {
 }
 
 class _PlayerWidgetState extends State<PlayerWidget> {
-  bool _isUIHidden = false;
+  final _isUIHidden = ValueNotifier<bool>(false);
   late final RestartableTimer _hideUITimer;
 
   @override
@@ -26,9 +26,7 @@ class _PlayerWidgetState extends State<PlayerWidget> {
     super.initState();
 
     _hideUITimer = RestartableTimer(const Duration(seconds: 3), () {
-      setState(() {
-        _isUIHidden = true;
-      });
+      _isUIHidden.value = true;
     });
 
     // FIXME: open must execute after Video widget loaded
@@ -44,6 +42,7 @@ class _PlayerWidgetState extends State<PlayerWidget> {
     const videoSection = VideoSection();
     final controlSection = ControlSection(
       key: _controlSectionKey,
+      isUIHidden: _isUIHidden,
     );
     const progressSection = VideoProgressWidget();
 
@@ -54,25 +53,30 @@ class _PlayerWidgetState extends State<PlayerWidget> {
           return Stack(
             fit: StackFit.expand,
             children: [
-              MouseRegion(
-                opaque: false,
-                cursor: _isUIHidden
-                    ? SystemMouseCursors.none
-                    : SystemMouseCursors.basic,
-                onEnter: (event) => _hideUITimer.reset(),
-                onExit: (event) => _hideUITimer.cancel(),
-                onHover: (event) {
-                  _hideUITimer.reset();
-                  setState(() {
-                    _isUIHidden = false;
-                  });
-                },
-                child: videoSection,
+              videoSection,
+              ValueListenableBuilder(
+                valueListenable: _isUIHidden,
+                builder: (context, isUIHidden, child) => MouseRegion(
+                  opaque: false,
+                  cursor: isUIHidden
+                      ? SystemMouseCursors.none
+                      : SystemMouseCursors.basic,
+                  onEnter: (event) => _hideUITimer.reset(),
+                  onExit: (event) => _hideUITimer.cancel(),
+                  onHover: (event) {
+                    _hideUITimer.reset();
+                    _isUIHidden.value = false;
+                  },
+                ),
               ),
-              AnimatedOpacity(
-                opacity: _isUIHidden ? 0.0 : 1.0,
-                curve: Curves.easeInCubic,
-                duration: const Duration(milliseconds: 200),
+              ValueListenableBuilder(
+                valueListenable: _isUIHidden,
+                builder: (context, isUIHidden, child) => AnimatedOpacity(
+                  opacity: isUIHidden ? 0.0 : 1.0,
+                  curve: Curves.easeInCubic,
+                  duration: const Duration(milliseconds: 200),
+                  child: child,
+                ),
                 child: Stack(
                   fit: StackFit.loose,
                   children: [

@@ -25,7 +25,8 @@ enum SubtitleControlUIState {
 }
 
 class ControlSection extends StatefulWidget {
-  const ControlSection({super.key});
+  final ValueNotifier<bool> isUIHidden;
+  const ControlSection({super.key, required this.isUIHidden});
   @override
   State<ControlSection> createState() => _ControlSectionState();
 }
@@ -39,12 +40,15 @@ class _ControlSectionState extends State<ControlSection> {
   void initState() {
     super.initState();
 
+    widget.isUIHidden.addListener(_onUIHiddenChanged);
+
     _callRinger.setSource(AssetSource('sounds/call.wav'));
     IMController().callStatus.addListener(_onCallStatusChanged);
   }
 
   @override
   void dispose() {
+    widget.isUIHidden.removeListener(_onUIHiddenChanged);
     IMController().callStatus.removeListener(_onCallStatusChanged);
 
     super.dispose();
@@ -126,6 +130,15 @@ class _ControlSectionState extends State<ControlSection> {
       _callRinger.resume();
     } else {
       _callRinger.stop();
+    }
+  }
+
+  void _onUIHiddenChanged() {
+    // When show again
+    if (widget.isUIHidden.value == false) {
+      setState(() {
+        _uiState = ControlUIState.main;
+      });
     }
   }
 }
