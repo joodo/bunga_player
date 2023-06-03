@@ -52,7 +52,7 @@ class IMController {
       cancelCallAsking();
     },
   )..cancel();
-  final List<int> _callChannelUsers = [];
+  final Set<int> _callChannelUsers = {};
 
   void _setupVoiceSDKEngine() async {
     try {
@@ -68,10 +68,10 @@ class IMController {
     _agoraEngine.registerEventHandler(
       RtcEngineEventHandler(
         onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
-          logger.i("Local user uid:${connection.localUid} joined the channel");
+          logger.i("Voice call: Local user uid:${connection.localUid} joined.");
         },
         onUserJoined: (RtcConnection connection, int remoteUid, int elapsed) {
-          logger.i("Remote user uid:$remoteUid joined the voice channel");
+          logger.i("Voice call: Remote user uid:$remoteUid joined.");
           if (connection.localUid != remoteUid) {
             _callChannelUsers.add(remoteUid);
           }
@@ -80,7 +80,7 @@ class IMController {
             UserOfflineReasonType reason) {
           _callChannelUsers.remove(remoteUid);
           logger.i(
-              "Remote user uid:$remoteUid left the channel\nUser remain: $_callChannelUsers");
+              "Voice call: Remote user uid:$remoteUid left.\nUser remain: $_callChannelUsers");
           if (_callChannelUsers.isEmpty) {
             showSnackBar('对方已挂断');
             hangUpCall();
