@@ -1,9 +1,10 @@
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:bunga_player/common/logger.dart';
+import 'package:bunga_player/common/popmoji_controller.dart';
 import 'package:bunga_player/common/snack_bar.dart';
 import 'package:bunga_player/common/video_controller.dart';
-import 'package:bunga_player/secrets/secrets.dart';
+import 'package:bunga_player/constants/secrets.dart';
 import 'package:flutter/foundation.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:stream_chat_flutter_core/stream_chat_flutter_core.dart';
@@ -208,12 +209,15 @@ class IMController {
 
   void _onNewMessage(Event event) {
     logger
-        .i('Reeceive message from ${event.user?.name}: ${event.message?.text}');
+        .i('Receive message from ${event.user?.name}: ${event.message?.text}');
+
+    final re = event.message!.text!.split(' ');
+    if (re.first == 'popmoji') {
+      PopmojiController().receive(re[1]);
+    }
 
     final userID = event.user!.id;
     if (userID == _user!.id) return;
-
-    final re = event.message!.text!.split(' ');
 
     void applyStatus() async {
       _applyingStatus = true;

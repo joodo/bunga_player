@@ -2,12 +2,15 @@ import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:bunga_player/common/fullscreen.dart';
 import 'package:bunga_player/common/im_controller.dart';
+import 'package:bunga_player/common/popmoji_controller.dart';
 import 'package:bunga_player/common/video_controller.dart';
+import 'package:bunga_player/constants/constants.dart';
 import 'package:bunga_player/screens/player_widget/video_progress_widget.dart';
 import 'package:bunga_player/utils.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:multi_value_listenable_builder/multi_value_listenable_builder.dart';
 import 'package:window_manager/window_manager.dart';
@@ -15,6 +18,7 @@ import 'package:window_manager/window_manager.dart';
 enum ControlUIState {
   main,
   call,
+  popmoji,
   subtitle,
   tune,
 }
@@ -66,17 +70,16 @@ class _ControlSectionState extends State<ControlSection> {
       index: _uiState.index,
       children: [
         MainControl(
-          onCallPressed: () => setState(() {
-            _uiState = ControlUIState.call;
-          }),
-          onSubtitlePressed: () => setState(() {
-            _uiState = ControlUIState.subtitle;
-          }),
-          onTunePressed: () => setState(() {
-            _uiState = ControlUIState.tune;
+          onStateButtonPressed: (state) => setState(() {
+            _uiState = state;
           }),
         ),
         CallControl(
+          onBackPressed: () => setState(() {
+            _uiState = ControlUIState.main;
+          }),
+        ),
+        PopmojiControl(
           onBackPressed: () => setState(() {
             _uiState = ControlUIState.main;
           }),
@@ -157,15 +160,11 @@ class _ControlSectionState extends State<ControlSection> {
 }
 
 class MainControl extends StatelessWidget {
-  final VoidCallback onCallPressed;
-  final VoidCallback onTunePressed;
-  final VoidCallback onSubtitlePressed;
+  final ValueSetter<ControlUIState> onStateButtonPressed;
 
   const MainControl({
     super.key,
-    required this.onCallPressed,
-    required this.onTunePressed,
-    required this.onSubtitlePressed,
+    required this.onStateButtonPressed,
   });
 
   @override
@@ -220,21 +219,28 @@ class MainControl extends StatelessWidget {
 
             // Call Button
             CallButton(
-              onPressed: onCallPressed,
+              onPressed: () => onStateButtonPressed(ControlUIState.call),
+            ),
+            const SizedBox(width: 8),
+
+            // Popmoji Button
+            IconButton(
+              icon: const Icon(Icons.mood),
+              onPressed: () => onStateButtonPressed(ControlUIState.popmoji),
             ),
             const SizedBox(width: 8),
 
             // Subtitle Button
             IconButton(
               icon: const Icon(Icons.subtitles),
-              onPressed: onSubtitlePressed,
+              onPressed: () => onStateButtonPressed(ControlUIState.subtitle),
             ),
             const SizedBox(width: 8),
 
             // Tune button
             IconButton(
               icon: const Icon(Icons.tune),
-              onPressed: onTunePressed,
+              onPressed: () => onStateButtonPressed(ControlUIState.tune),
             ),
             const SizedBox(width: 8),
 
@@ -398,6 +404,77 @@ class _CallControlState extends State<CallControl> {
         icon: const Icon(Icons.arrow_back),
         onPressed: widget.onBackPressed,
       ),
+    );
+  }
+}
+
+class PopmojiControl extends StatelessWidget {
+  final VoidCallback onBackPressed;
+
+  const PopmojiControl({
+    super.key,
+    required this.onBackPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final List<Widget> emojiButtons = [];
+    String? previousCode;
+    for (var rune in Popmoji.emojis.runes) {
+      var code = rune.toRadixString(16);
+      if (code.length < 5) {
+        if (previousCode == null) {
+          previousCode = code;
+        } else {
+          code = '${previousCode}_$code';
+          final svg = SvgPicture.asset(
+            'assets/images/emojis/u$previousCode.svg',
+            height: 24,
+          );
+          previousCode = null;
+
+          emojiButtons.add(IconButton(
+            icon: svg,
+            onPressed: () {
+              PopmojiController().send(code);
+            },
+          ));
+        }
+        continue;
+      }
+
+      final svg = SvgPicture.asset(
+        'assets/images/emojis/u$code.svg',
+        height: 24,
+      );
+      emojiButtons.add(IconButton(
+        icon: svg,
+        onPressed: () {
+          PopmojiController().send(code);
+          onBackPressed();
+        },
+      ));
+    }
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const SizedBox(width: 8),
+        // Back button
+        IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: onBackPressed,
+        ),
+        const SizedBox(width: 8),
+
+        Expanded(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(children: [...emojiButtons]),
+          ),
+        ),
+        const SizedBox(width: 8),
+      ],
     );
   }
 }
@@ -885,7 +962,6 @@ class _CallButtonState extends State<CallButton> with TickerProviderStateMixin {
 
   @override
   void dispose() {
-    // FIXME: keep jumping "Looking up a deactivated widget's ancestor is unsafe"
     _controller.dispose();
     super.dispose();
   }

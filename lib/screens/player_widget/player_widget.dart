@@ -4,6 +4,7 @@ import 'package:bunga_player/common/fullscreen.dart';
 import 'package:bunga_player/common/im_controller.dart';
 import 'package:bunga_player/common/video_controller.dart';
 import 'package:bunga_player/screens/player_widget/control_section.dart';
+import 'package:bunga_player/screens/player_widget/popmoji_player.dart';
 import 'package:bunga_player/screens/player_widget/video_progress_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -216,8 +217,14 @@ class VideoSection extends StatelessWidget {
     return GestureDetector(
       onDoubleTap: FullScreen().toggle,
       onTap: VideoController().togglePlay,
-      child: media_kit_video.Video(
-        controller: VideoController().controller,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          media_kit_video.Video(
+            controller: VideoController().controller,
+          ),
+          const PopmojiPlayer(),
+        ],
       ),
     );
   }
