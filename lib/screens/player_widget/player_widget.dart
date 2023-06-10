@@ -9,7 +9,6 @@ import 'package:bunga_player/screens/player_widget/video_progress_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:async/async.dart';
-import 'package:media_kit_video/media_kit_video.dart' as media_kit_video;
 
 class PlayerWidget extends StatefulWidget {
   const PlayerWidget({super.key});
@@ -29,9 +28,6 @@ class _PlayerWidgetState extends State<PlayerWidget> {
     _hideUITimer = RestartableTimer(const Duration(seconds: 3), () {
       _isUIHidden.value = true;
     });
-
-    // FIXME: open must execute after Video widget loaded
-    Future.delayed(Duration.zero, VideoController().openVideo);
   }
 
   final _controlSectionKey = GlobalKey<State<ControlSection>>();
@@ -220,9 +216,7 @@ class VideoSection extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          media_kit_video.Video(
-            controller: VideoController().controller,
-          ),
+          VideoController().video,
           const PopmojiPlayer(),
         ],
       ),

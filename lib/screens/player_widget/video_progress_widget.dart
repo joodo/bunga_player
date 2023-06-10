@@ -48,6 +48,7 @@ class _VideoProgressWidgetState extends State<VideoProgressWidget> {
           ],
           builder: (context, values, child) => Slider(
             value: dToS(VideoController().position.value),
+            secondaryTrackValue: dToS(VideoController().buffer.value),
             max: dToS(values[1]),
             focusNode: FocusNode(canRequestFocus: false),
             label: dToHHmmss(values[0]),

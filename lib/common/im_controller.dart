@@ -122,13 +122,14 @@ class IMController {
   Channel? _channel;
   final _channelWatchers = ChannelWatchers();
   ChannelWatchers get channelWatchers => _channelWatchers;
-  Future<bool> createOrJoinGroup(String channelID, String channelName) async {
+  Future<bool> createOrJoinGroup(
+    String channelID, {
+    Map<String, Object?>? extraData,
+  }) async {
     _channel = _chatClient.channel(
       'livestream',
       id: channelID,
-      extraData: {
-        'name': channelName,
-      },
+      extraData: extraData,
     );
 
     try {
@@ -335,6 +336,21 @@ class IMController {
         _myCallAskingIsRejectedBy(event.user!);
       }
     }
+  }
+
+  Future<List<Channel>> fetchChannels() async {
+    final filter = Filter.equal('video_type', 'bilibili');
+    final channels = await _chatClient
+        .queryChannels(
+          filter: filter,
+          channelStateSort: [
+            const SortOption("last_message_at", direction: SortOption.DESC)
+          ],
+          watch: false,
+          state: false,
+        )
+        .last;
+    return channels;
   }
 
   void _myCallAskingHasBeenAccepted() {

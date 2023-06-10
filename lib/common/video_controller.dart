@@ -17,13 +17,16 @@ class VideoController {
   );
 
   late final _controller = media_kit_video.VideoController(_player);
-  media_kit_video.VideoController get controller => _controller;
-
-  final source = ValueNotifier<String?>(null);
+  late final _video = media_kit_video.Video(controller: _controller);
+  media_kit_video.Video get video => _video;
 
   late final duration = StreamNotifier<Duration>(
     initialValue: Duration.zero,
     stream: _player.streams.duration,
+  );
+  late final buffer = StreamNotifier<Duration>(
+    initialValue: Duration.zero,
+    stream: _player.streams.buffer,
   );
   final isPlaying = ValueNotifier<bool>(false);
   final position = ValueNotifier<Duration>(Duration.zero);
@@ -55,22 +58,14 @@ class VideoController {
     _player.streams.log
         .listen((event) => logger.i('Player log: ${event.text}'));
 
-    source.addListener(() {
-      if (source.value != null) {
-        // FIXME: open must execute after Video widget loaded
-        /*
-        _player.open(
-          Media(source.value!),
-          play: false,
-        );
-        */
-      }
-    });
-
     _player.streams.position.listen((positionValue) {
       if (!_isDraggingSlider) {
         position.value = positionValue;
       }
+    });
+
+    duration.addListener(() {
+      // FIXME: remove this listener will cause duration always 0. WHY?!!
     });
 
     isPlaying.addListener(() {
@@ -133,11 +128,17 @@ class VideoController {
     });
   }
 
-  void openVideo() async {
+  Future<void> loadVideo(String source) async {
     await _player.open(
-      Media(source.value!),
+      Media(
+        source,
+        httpHeaders: {'Referer': 'https://www.bilibili.com/'},
+      ),
       play: false,
     );
+
+    await _controller.waitUntilFirstFrameRendered;
+
     IMController().askPosition();
   }
 
