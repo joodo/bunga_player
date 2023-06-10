@@ -50,7 +50,6 @@ class _ControlSectionState extends State<ControlSection> {
     _callRinger.setSource(AssetSource('sounds/call.wav'));
     IMController().callStatus.addListener(_onCallStatusChanged);
 
-    // FIXME: exit full screen makes layout a mass in Windows
     FullScreen().notifier.addListener(_onFullScreenChanged);
   }
 
@@ -151,6 +150,7 @@ class _ControlSectionState extends State<ControlSection> {
   }
 
   void _onFullScreenChanged() async {
+    // HACK: exit full screen makes layout a mass in Windows
     if (FullScreen().notifier.value == false) {
       var size = await windowManager.getSize();
       size += const Offset(1, 1);

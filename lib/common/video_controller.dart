@@ -65,7 +65,7 @@ class VideoController {
     });
 
     duration.addListener(() {
-      // FIXME: remove this listener will cause duration always 0. WHY?!!
+      // HACK: remove this listener will cause duration always 0. WHY?!!
     });
 
     isPlaying.addListener(() {
