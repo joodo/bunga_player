@@ -8,3 +8,7 @@ class StreamKey {
 class AgoraKey {
   static const appID = 'APP_ID';
 }
+
+class BungaKey {
+  static const key = 'KEY';
+}
