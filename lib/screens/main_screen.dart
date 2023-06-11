@@ -246,6 +246,7 @@ class _MainScreenState extends State<MainScreen> {
           .single;
       final crcString = crcValue.toString();
 
+      await VideoController().loadVideo(file.path);
       final success = await IMController().createOrJoinGroup(
         crcString,
         extraData: {
@@ -254,7 +255,6 @@ class _MainScreenState extends State<MainScreen> {
         },
       );
       if (success) {
-        await VideoController().loadVideo(file.path);
         setState(() {
           windowManager.setTitle(file.name);
           _uIState = UIState.playVideo;

@@ -131,9 +131,12 @@ class VideoController {
   Future<void> loadVideo(source) async {
     if (source is String) {
       // local file
-      await _player.open(Media(source), play: false);
-      await _controller.waitUntilFirstFrameRendered;
-      IMController().askPosition();
+      // HACK: Windows will fail if open instantly
+      Future.delayed(const Duration(seconds: 1), () async {
+        await _player.open(Media(source), play: false);
+        await _controller.waitUntilFirstFrameRendered;
+        IMController().askPosition();
+      });
     } else if (source is List<String>) {
       // bilibili video urls
       for (var url in source) {
