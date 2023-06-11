@@ -55,8 +55,8 @@ class VideoController {
   VideoController._internal() {
     MediaKit.ensureInitialized();
 
-    _player.streams.log
-        .listen((event) => logger.i('Player log: ${event.text}'));
+    _player.streams.log.listen(
+        (event) => logger.i('Player log: [${event.prefix}]${event.text}'));
 
     _player.streams.position.listen((positionValue) {
       if (!_isDraggingSlider) {
@@ -128,16 +128,42 @@ class VideoController {
     });
   }
 
-  Future<void> loadVideo(String source) async {
-    await _player.open(
-      Media(
-        source,
-        httpHeaders: {'Referer': 'https://www.bilibili.com/'},
-      ),
-      play: false,
-    );
+  Future<void> loadVideo(source) async {
+    if (source is String) {
+      // local file
+      await _player.open(Media(source), play: false);
+      await _controller.waitUntilFirstFrameRendered;
+      IMController().askPosition();
+    } else if (source is List<String>) {
+      // bilibili video urls
+      for (var url in source) {
+        await _player.open(
+          Media(
+            url,
+            httpHeaders: {'Referer': 'https://www.bilibili.com/'},
+          ),
+          play: false,
+        );
 
-    await _controller.waitUntilFirstFrameRendered;
+        bool success = true;
+        await Future.any([
+          () async {
+            // HACK: To found whether network media open success
+            // as player log level is WARN, there's no log if it's success
+            await _player.streams.log.first;
+            success = false;
+          }(),
+          _controller.waitUntilFirstFrameRendered,
+        ]);
+        if (success) return;
+
+        logger.w('Fail to open source $source, try next one');
+      }
+
+      throw 'All source tested, no one success';
+    } else {
+      throw 'Unknown media source';
+    }
 
     IMController().askPosition();
   }

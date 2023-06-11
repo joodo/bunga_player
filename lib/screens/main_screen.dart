@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
+import 'package:bunga_player/common/bili_video.dart';
 import 'package:bunga_player/common/im_controller.dart';
 import 'package:bunga_player/common/logger.dart';
 import 'package:bunga_player/common/snack_bar.dart';
@@ -13,7 +13,6 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:rive/rive.dart';
-import 'package:http/http.dart' as http;
 
 enum UIState {
   register,
@@ -23,55 +22,21 @@ enum UIState {
   playVideo,
 }
 
-class BiliVideoInfo {
-  final String title;
-  final String bvid;
-  final String aid;
-  final String cid;
-  final String pic;
-  final int totalP;
-  final int p;
-  final String url;
-  final bool isHD;
-
-  BiliVideoInfo({
-    required this.title,
-    required this.bvid,
-    required this.aid,
-    required this.cid,
-    required this.pic,
-    required this.totalP,
-    required this.p,
-    required this.url,
-    required this.isHD,
-  });
-
-  factory BiliVideoInfo.fromJson(Map<String, dynamic> json) => BiliVideoInfo(
-        title: json["title"],
-        bvid: json["bvid"],
-        aid: json["aid"].toString(),
-        cid: json["cid"].toString(),
-        pic: json["pic"],
-        totalP: json["totalP"],
-        p: json["p"] ?? 1,
-        url: json["url"],
-        isHD: json["isHD"],
-      );
-}
-
 class BiliChannelInfo {
   final String id;
   final String name;
   final String pic;
   final String creator;
-  final String url;
+  final String bvid;
+  final int p;
 
   BiliChannelInfo({
     required this.id,
     required this.name,
     required this.pic,
     required this.creator,
-    required this.url,
+    required this.bvid,
+    required this.p,
   });
 }
 
@@ -303,72 +268,60 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void _openBilibili() async {
-    // Get url from dialog
     final result = await showDialog(
       context: context,
       builder: (context) => const BiliDialog(),
     );
 
-    if (result is String && result.isNotEmpty) {
-      setState(() {
-        _uIState = UIState.loadVideoInProgress;
-      });
-      try {
-        final response = await http.get(Uri.parse(
-          'https://www.joodo.club/api/parse_bilibili?url=${Uri.encodeComponent(result)}',
-        ));
-        final videoInfo = BiliVideoInfo.fromJson(jsonDecode(response.body));
-        if (!videoInfo.isHD) {
-          showSnackBar('无法获取高清视频');
-          logger.w('Bilibili: Cookie of serverless funtion outdated');
-        }
-
-        final title = videoInfo.totalP > 1
-            ? '${videoInfo.title} [${videoInfo.p}/${videoInfo.totalP}]'
-            : videoInfo.title;
-
-        await IMController().createOrJoinGroup(
-          'bili_${videoInfo.cid}',
-          extraData: {
-            'video_type': 'bilibili',
-            'name': title,
-            'pic': videoInfo.pic,
-            'url': videoInfo.url,
-          },
-        );
-        await VideoController().loadVideo(videoInfo.url);
-
+    String failedString = '';
+    try {
+      final BiliVideo biliVideo;
+      if (result is String && result.isNotEmpty) {
+        // Parse bilibili url
         setState(() {
-          windowManager.setTitle(title);
-          _uIState = UIState.playVideo;
+          _uIState = UIState.loadVideoInProgress;
         });
-      } catch (e) {
-        logger.e(e);
-        showSnackBar('解析失败');
+        failedString = '解析失败';
+        biliVideo = await BiliVideo.fromUrl(Uri.parse(result));
+      } else if (result is BiliChannelInfo) {
+        // Parse bvid and p
         setState(() {
-          _uIState = UIState.greeting;
+          _uIState = UIState.loadVideoInProgress;
         });
+        failedString = '加入失败';
+        biliVideo = BiliVideo(bvid: result.bvid, p: result.p);
+      } else {
+        return;
       }
-    }
 
-    if (result is BiliChannelInfo) {
-      setState(() {
-        _uIState = UIState.loadVideoInProgress;
-      });
-      try {
-        await IMController().createOrJoinGroup(result.id);
-        await VideoController().loadVideo(result.url);
-        setState(() {
-          windowManager.setTitle(result.name);
-          _uIState = UIState.playVideo;
-        });
-      } catch (e) {
-        logger.e(e);
-        showSnackBar('加入失败');
-        setState(() {
-          _uIState = UIState.greeting;
-        });
+      await biliVideo.fetch();
+      if (!biliVideo.isHD) {
+        showSnackBar('无法获取高清视频');
+        logger.w('Bilibili: Cookie of serverless funtion outdated');
       }
+
+      await VideoController().loadVideo(biliVideo.videoUrls);
+      await IMController().createOrJoinGroup(
+        'bili_${biliVideo.cid}',
+        extraData: {
+          'video_type': 'bilibili',
+          'name': biliVideo.title,
+          'pic': biliVideo.pic,
+          'bvid': biliVideo.bvid,
+          'p': biliVideo.p,
+        },
+      );
+
+      setState(() {
+        windowManager.setTitle(biliVideo.title);
+        _uIState = UIState.playVideo;
+      });
+    } catch (e) {
+      logger.e(e);
+      showSnackBar(failedString);
+      setState(() {
+        _uIState = UIState.greeting;
+      });
     }
   }
 }
@@ -376,7 +329,7 @@ class _MainScreenState extends State<MainScreen> {
 class CatWidget extends StatelessWidget {
   final String hintText;
   final bool isCatWaken;
-  // FIXME: Dirty static
+  // HACK: Dirty static
   static SMIBool? _isCatAwakeInput;
 
   const CatWidget({
@@ -509,12 +462,12 @@ class VideoOpenWidget extends StatelessWidget {
         const SizedBox(width: 16),
         FilledButton(
           onPressed: onOpenPressed,
-          child: const Text('打开视频'),
+          child: const Text('打开视频文件'),
         ),
         const SizedBox(width: 16),
         FilledButton(
           onPressed: onOpenLinkPressed,
-          child: const Text('打开 B 站链接'),
+          child: const Text('Bilibili 视频'),
         ),
       ],
     );
@@ -564,7 +517,7 @@ class _BiliDialogState extends State<BiliDialog> {
               style: themeData.textTheme.headlineSmall,
             ),
             const SizedBox(height: 16),
-            // FIXME: cannot use listview because bug
+            // HACK: cannot use listview because bug
             // https://github.com/flutter/flutter/issues/26527
             _channels.isEmpty
                 ? const SizedBox(
@@ -606,6 +559,9 @@ class _BiliDialogState extends State<BiliDialog> {
                   extentOffset: _textController.text.length,
                 );
               },
+              onSubmitted: (text) {
+                if (text.isNotEmpty) _onSubmitBiliUrl();
+              },
             ),
           ],
         ),
@@ -615,12 +571,19 @@ class _BiliDialogState extends State<BiliDialog> {
           onPressed: () => Navigator.pop(context, null),
           child: const Text('取消'),
         ),
-        TextButton(
-          onPressed: () => Navigator.pop(context, _textController.text),
-          child: const Text('解析'),
+        ValueListenableBuilder(
+          valueListenable: _textController,
+          builder: (context, value, child) => TextButton(
+            onPressed: value.text.isEmpty ? null : _onSubmitBiliUrl,
+            child: const Text('解析'),
+          ),
         ),
       ],
     );
+  }
+
+  void _onSubmitBiliUrl() {
+    Navigator.pop(context, _textController.text);
   }
 
   Widget _createVideoCard(BiliChannelInfo channelInfo) {
@@ -725,7 +688,8 @@ class _BiliDialogState extends State<BiliDialog> {
                   name: channel.name!,
                   pic: channel.extraData['pic'] as String,
                   creator: channel.createdBy!.name,
-                  url: channel.extraData['url'] as String,
+                  bvid: channel.extraData['bvid'] as String,
+                  p: channel.extraData['p'] as int,
                 ))
             .toList();
       });
