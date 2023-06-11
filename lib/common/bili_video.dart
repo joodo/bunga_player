@@ -28,12 +28,12 @@ class BiliVideo {
     // fetch cookie
     var response = await http.get(Uri.parse(
         'https://www.joodo.club/api/bilibili-sessdata?key=${BungaKey.key}'));
-    final String sess;
+    final String? sess;
     if (response.statusCode == 200) {
       sess = response.body;
       isHD = true;
     } else {
-      sess = '';
+      sess = null;
       isHD = false;
     }
 
@@ -60,7 +60,7 @@ class BiliVideo {
     response = await http.get(
       Uri.parse(
           'https://api.bilibili.com/x/player/playurl?avid=$aid&cid=$cid&qn=112'),
-      headers: {"Cookie": 'SESSDATA=$sess'},
+      headers: sess == null ? null : {"Cookie": 'SESSDATA=$sess'},
     );
     logger.i('Bili video playurl: ${response.body}');
     responseData = jsonDecode(response.body);
