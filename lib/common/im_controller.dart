@@ -37,9 +37,7 @@ class IMController {
     logLevel: Level.WARNING,
   );
 
-  OwnUser? _user;
-  User? get currentUser => _user;
-  String? get userName => _user?.name;
+  final currentUserNotifier = ValueNotifier<User?>(null);
 
   // for call
   final _agoraEngine = createAgoraRtcEngine();
@@ -91,27 +89,23 @@ class IMController {
     );
   }
 
-  Future<bool> login(String userName) async {
-    try {
-      final userID = userName.hashCode.toString();
-      _user = await _chatClient.connectUser(
-        User(
-          id: userID,
-          name: userName,
-        ),
-        _chatClient.devToken(userID).rawValue,
-      );
-    } catch (e) {
-      logger.e(e);
-      return false;
-    }
-    logger.i('Current user: ${_user?.name}');
-    return true;
+  Future<void> login(String userName) async {
+    final userID = userName.hashCode.toString();
+    currentUserNotifier.value = await _chatClient.connectUser(
+      User(
+        id: userID,
+        name: userName,
+      ),
+      _chatClient.devToken(userID).rawValue,
+    );
+
+    logger.i('Current user: ${currentUserNotifier.value!.name}');
   }
 
   Future<bool> logout() async {
     try {
       await _chatClient.disconnectUser();
+      currentUserNotifier.value = null;
     } catch (e) {
       logger.e(e);
       return false;
@@ -122,7 +116,7 @@ class IMController {
   Channel? _channel;
   final _channelWatchers = ChannelWatchers();
   ChannelWatchers get channelWatchers => _channelWatchers;
-  Future<bool> createOrJoinGroup(
+  Future<void> createOrJoinGroup(
     String channelID, {
     Map<String, Object?>? extraData,
   }) async {
@@ -132,17 +126,12 @@ class IMController {
       extraData: extraData,
     );
 
-    try {
-      await _channel!.watch();
-      await _channelWatchers.queryFromChannel(_channel!);
-    } catch (e) {
-      logger.e(e);
-      return false;
-    }
+    await _channel!.watch();
+    await _channelWatchers.queryFromChannel(_channel!);
 
     _channel!.on('message.new').listen(_onNewMessage);
     _channel!.on('user.watching.start').listen((event) {
-      if (event.user!.id == _user!.id) return;
+      if (event.user!.id == currentUserNotifier.value!.id) return;
       if (_channelWatchers.addUser(event.user!)) {
         showSnackBar('${event.user!.name} 已加入');
         AudioPlayer().play(AssetSource('sounds/user_join.wav'));
@@ -158,8 +147,6 @@ class IMController {
         _myCallAskingIsRejectedBy(event.user!);
       }
     });
-
-    return true;
   }
 
   /// return message id
@@ -218,7 +205,7 @@ class IMController {
     }
 
     final userID = event.user!.id;
-    if (userID == _user!.id) return;
+    if (userID == currentUserNotifier.value!.id) return;
 
     void applyStatus() async {
       _applyingStatus = true;
@@ -380,7 +367,7 @@ class IMController {
     if (_callAskingMessageId != null) {
       _myCallAskingHopeList =
           _channelWatchers.watchers!.map((e) => e.id).toList();
-      _myCallAskingHopeList!.remove(_user!.id);
+      _myCallAskingHopeList!.remove(currentUserNotifier.value!.id);
       logger.i('start call asking, hope list: $_myCallAskingHopeList');
 
       _callAskingTimeOutTimer.reset();

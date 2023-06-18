@@ -131,12 +131,9 @@ class VideoController {
   Future<void> loadVideo(source) async {
     if (source is String) {
       // local file
-      // HACK: Windows will fail if open instantly
-      Future.delayed(const Duration(seconds: 1), () async {
-        await _player.open(Media(source), play: false);
-        await _controller.waitUntilFirstFrameRendered;
-        IMController().askPosition();
-      });
+      await _player.open(Media(source), play: false);
+      await _controller.waitUntilFirstFrameRendered;
+      IMController().askPosition();
     } else if (source is List<String>) {
       // bilibili video urls
       for (var url in source) {
@@ -152,14 +149,12 @@ class VideoController {
         await Future.any([
           () async {
             // HACK: To found whether network media open success
-            // as player log level is WARN, there's no log if it's success
-            await _player.streams.log.first;
+            await Future.delayed(const Duration(seconds: 6));
             success = false;
           }(),
           _controller.waitUntilFirstFrameRendered,
         ]);
         if (success) return;
-
         logger.w('Fail to open source $source, try next one');
       }
 
@@ -172,10 +167,12 @@ class VideoController {
   }
 
   void togglePlay() {
+    if (_player.state.playlist.medias.isEmpty) return;
     isPlaying.value = !isPlaying.value;
   }
 
   void jumpTo(Duration target) {
+    if (_player.state.playlist.medias.isEmpty) return;
     position.value = target;
     _player.seek(target);
     IMController().sendPlayerStatus();
