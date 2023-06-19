@@ -25,45 +25,50 @@ class BiliVideo {
   Future<void> fetch() async {
     logger.i('Bili video: start fetch BV=$bvid, p=$p');
 
-    // fetch cookie
-    var response = await http.get(Uri.parse(
-        'https://www.joodo.club/api/bilibili-sessdata?key=${BungaKey.key}'));
-    final String? sess;
-    if (response.statusCode == 200) {
-      sess = response.body;
-      isHD = true;
-    } else {
-      sess = null;
-      isHD = false;
-    }
+    late final String? sess;
+    await Future.wait([
+      () async {
+        // fetch cookie
+        final response = await http.get(Uri.parse(
+            'https://www.joodo.club/api/bilibili-sessdata?key=${BungaKey.key}'));
+        if (response.statusCode == 200) {
+          sess = response.body;
+          isHD = true;
+        } else {
+          sess = null;
+          isHD = false;
+        }
+      }(),
+      () async {
+        // fetch video info
+        final response = await http.get(Uri.parse(
+            'https://api.bilibili.com/x/web-interface/view?bvid=$bvid'));
+        logger.i('Bili video info: ${response.body}');
+        final responseData = jsonDecode(response.body);
+        if (responseData['code'] != 0) {
+          throw 'Cannot get video info';
+        }
 
-    // fetch video info
-    response = await http.get(
-        Uri.parse('https://api.bilibili.com/x/web-interface/view?bvid=$bvid'));
-    logger.i('Bili video info: ${response.body}');
-    var responseData = jsonDecode(response.body);
-    if (responseData['code'] != 0) {
-      throw 'Cannot get video info';
-    }
+        aid = responseData['data']['aid'].toString();
+        pic = responseData['data']['pic'];
 
-    aid = responseData['data']['aid'].toString();
-    pic = responseData['data']['pic'];
-
-    final List pages = responseData['data']['pages'];
-    totalP = pages.length;
-    title = totalP > 1
-        ? '${responseData['data']['title']} [$p/$totalP]'
-        : responseData['data']['title'];
-    cid = pages[p - 1]['cid'].toString();
+        final List pages = responseData['data']['pages'];
+        totalP = pages.length;
+        title = totalP > 1
+            ? '${responseData['data']['title']} [$p/$totalP]'
+            : responseData['data']['title'];
+        cid = pages[p - 1]['cid'].toString();
+      }(),
+    ]);
 
     // fetch video url
-    response = await http.get(
+    final response = await http.get(
       Uri.parse(
           'https://api.bilibili.com/x/player/playurl?avid=$aid&cid=$cid&qn=112'),
       headers: sess == null ? null : {"Cookie": 'SESSDATA=$sess'},
     );
     logger.i('Bili video playurl: ${response.body}');
-    responseData = jsonDecode(response.body);
+    final responseData = jsonDecode(response.body);
     if (responseData['code'] != 0) {
       throw 'Cannot get video url';
     }
