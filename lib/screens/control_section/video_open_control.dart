@@ -193,6 +193,7 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
         biliVideo = BiliVideo(bvid: result.bvid, p: result.p);
       } else {
         widget.isBusyNotifier.value = false;
+        widget.hintTextNotifier.value = welcomeText;
         return;
       }
 
