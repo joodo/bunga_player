@@ -161,11 +161,11 @@ class IMController {
   }
 
   String? _askID;
-  Future<bool> askPosition() async {
-    if (_channelWatchers.watchers!.length < 2) return true;
+  Future<void> askPosition() async {
+    if (_channelWatchers.watchers!.length < 2) return;
 
     _askID = await sendMessage(Message(text: 'where'));
-    if (_askID == null) return false;
+    if (_askID == null) return;
 
     Future.delayed(const Duration(seconds: 6), () {
       if (_askID != null) {
@@ -174,7 +174,7 @@ class IMController {
       }
     });
 
-    return true;
+    return;
   }
 
   Future<bool> sendPlayerStatus({String? quoteMessageId}) async {

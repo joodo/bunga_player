@@ -61,7 +61,7 @@ class BiliVideo {
       }(),
     ]);
 
-    // fetch video url
+    // fetch video url with cookie and video info
     final response = await http.get(
       Uri.parse(
           'https://api.bilibili.com/x/player/playurl?avid=$aid&cid=$cid&qn=112'),

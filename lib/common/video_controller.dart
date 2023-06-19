@@ -140,9 +140,10 @@ class VideoController {
       // local file
       await _player.open(Media(source), play: false);
       await _controller.waitUntilFirstFrameRendered;
-      IMController().askPosition();
     } else if (source is List<String>) {
       // bilibili video urls
+      bool success = false;
+
       for (var url in source) {
         await _player.open(
           Media(
@@ -152,25 +153,22 @@ class VideoController {
           play: false,
         );
 
-        bool success = true;
         await Future.any([
+          // HACK: To found whether network media open success
+          Future.delayed(const Duration(seconds: 6)),
           () async {
-            // HACK: To found whether network media open success
-            await Future.delayed(const Duration(seconds: 6));
-            success = false;
+            await _controller.waitUntilFirstFrameRendered;
+            success = true;
           }(),
-          _controller.waitUntilFirstFrameRendered,
         ]);
-        if (success) return;
+        if (success) break;
         logger.w('Fail to open source $source, try next one');
       }
 
-      throw 'All source tested, no one success';
+      if (!success) throw 'All source tested, no one success';
     } else {
       throw 'Unknown media source';
     }
-
-    IMController().askPosition();
   }
 
   void togglePlay() {

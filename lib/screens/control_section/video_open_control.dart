@@ -156,6 +156,7 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
             'video_type': 'local',
           },
         );
+        await IMController().askPosition();
 
         windowManager.setTitle(file.name);
         widget.onLoadSuccessed?.call();
@@ -214,6 +215,7 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
           'p': biliVideo.p,
         },
       );
+      await IMController().askPosition();
 
       windowManager.setTitle(biliVideo.title);
 
