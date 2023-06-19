@@ -55,6 +55,13 @@ class VideoController {
   VideoController._internal() {
     MediaKit.ensureInitialized();
 
+    // set mpv auto reconnect
+    // from https://github.com/mpv-player/mpv/issues/5793#issuecomment-553877261
+    final mpvPlayer = _player.platform;
+    if (mpvPlayer is libmpvPlayer) {
+      mpvPlayer.setProperty('stream-lavf-o', 'reconnect_streamed=1');
+    }
+
     _player.streams.log.listen(
         (event) => logger.i('Player log: [${event.prefix}]${event.text}'));
 
