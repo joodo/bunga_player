@@ -14,8 +14,6 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:window_manager/window_manager.dart';
 
-final welcomeText = '${IMController().currentUserNotifier.value?.name}, 你好！';
-
 class BiliChannelInfo {
   final String id;
   final String name;
@@ -39,6 +37,9 @@ class VideoOpenControl extends StatefulWidget with IndexedStackItem {
   final VoidCallback? onLoggedOut;
   final ValueNotifier<bool> isBusyNotifier;
   final ValueNotifier<String?> hintTextNotifier;
+
+  String get welcomeText =>
+      '${IMController().currentUserNotifier.value?.name}, 你好！';
 
   const VideoOpenControl({
     super.key,
@@ -164,7 +165,7 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
       } catch (e) {
         logger.e(e);
         showSnackBar('加载失败');
-        widget.hintTextNotifier.value = welcomeText;
+        widget.hintTextNotifier.value = widget.welcomeText;
       } finally {
         widget.isBusyNotifier.value = false;
       }
@@ -193,7 +194,7 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
         biliVideo = BiliVideo(bvid: result.bvid, p: result.p);
       } else {
         widget.isBusyNotifier.value = false;
-        widget.hintTextNotifier.value = welcomeText;
+        widget.hintTextNotifier.value = widget.welcomeText;
         return;
       }
 
@@ -225,7 +226,7 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
     } catch (e) {
       logger.e(e);
       showSnackBar(failedString);
-      widget.hintTextNotifier.value = welcomeText;
+      widget.hintTextNotifier.value = widget.welcomeText;
     } finally {
       widget.isBusyNotifier.value = false;
     }
