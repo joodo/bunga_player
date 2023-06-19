@@ -3,6 +3,7 @@ import 'package:bunga_player/common/logger.dart';
 import 'package:bunga_player/common/snack_bar.dart';
 import 'package:bunga_player/screens/control_section/indexed_stack_item.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:multi_value_listenable_builder/multi_value_listenable_builder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -55,7 +56,7 @@ class _LoginControlState extends State<LoginControl> {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    final body = Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         SizedBox(
@@ -95,6 +96,21 @@ class _LoginControlState extends State<LoginControl> {
           },
         ),
       ],
+    );
+    return Shortcuts(
+      shortcuts: const <ShortcutActivator, Intent>{
+        SingleActivator(LogicalKeyboardKey.arrowUp):
+            DoNothingAndStopPropagationIntent(),
+        SingleActivator(LogicalKeyboardKey.arrowDown):
+            DoNothingAndStopPropagationIntent(),
+        SingleActivator(LogicalKeyboardKey.arrowLeft):
+            DoNothingAndStopPropagationIntent(),
+        SingleActivator(LogicalKeyboardKey.arrowRight):
+            DoNothingAndStopPropagationIntent(),
+        SingleActivator(LogicalKeyboardKey.space):
+            DoNothingAndStopPropagationIntent(),
+      },
+      child: body,
     );
   }
 

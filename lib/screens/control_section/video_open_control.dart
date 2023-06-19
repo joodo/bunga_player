@@ -10,6 +10,7 @@ import 'package:bunga_player/screens/control_section/indexed_stack_item.dart';
 import 'package:crclib/catalog.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -265,7 +266,7 @@ class _BiliDialogState extends State<BiliDialog> {
   @override
   Widget build(BuildContext context) {
     final themeData = Theme.of(context);
-    return AlertDialog(
+    final body = AlertDialog(
       insetPadding: const EdgeInsets.all(40),
       content: SizedBox(
         width: double.maxFinite,
@@ -341,6 +342,21 @@ class _BiliDialogState extends State<BiliDialog> {
           ),
         ),
       ],
+    );
+    return Shortcuts(
+      shortcuts: const <ShortcutActivator, Intent>{
+        SingleActivator(LogicalKeyboardKey.arrowUp):
+            DoNothingAndStopPropagationIntent(),
+        SingleActivator(LogicalKeyboardKey.arrowDown):
+            DoNothingAndStopPropagationIntent(),
+        SingleActivator(LogicalKeyboardKey.arrowLeft):
+            DoNothingAndStopPropagationIntent(),
+        SingleActivator(LogicalKeyboardKey.arrowRight):
+            DoNothingAndStopPropagationIntent(),
+        SingleActivator(LogicalKeyboardKey.space):
+            DoNothingAndStopPropagationIntent(),
+      },
+      child: body,
     );
   }
 
