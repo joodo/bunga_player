@@ -244,7 +244,7 @@ class IMController {
     }
 
     if (re.first == 'where') {
-      sendPlayerStatus(quoteMessageId: event.message!.id);
+      if (_askID == null) sendPlayerStatus(quoteMessageId: event.message!.id);
       return;
     }
 
