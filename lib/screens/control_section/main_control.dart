@@ -7,10 +7,12 @@ import 'package:multi_value_listenable_builder/multi_value_listenable_builder.da
 
 class MainControl extends StatelessWidget {
   final ValueSetter<String> onStateButtonPressed;
+  final ValueNotifier<bool> isBusyNotifier;
 
   const MainControl({
     super.key,
     required this.onStateButtonPressed,
+    required this.isBusyNotifier,
   });
 
   @override
@@ -76,17 +78,58 @@ class MainControl extends StatelessWidget {
             ),
             const SizedBox(width: 8),
 
-            // Subtitle Button
-            IconButton(
-              icon: const Icon(Icons.subtitles),
-              onPressed: () => onStateButtonPressed('subtitle'),
-            ),
-            const SizedBox(width: 8),
-
-            // Tune button
-            IconButton(
-              icon: const Icon(Icons.tune),
-              onPressed: () => onStateButtonPressed('tune'),
+            PopupMenuButton(
+              itemBuilder: (context) => [
+                // Tune button
+                PopupMenuItem(
+                  child: ListTile(
+                    leading: const Icon(Icons.tune),
+                    title: const Text('音视频调整'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      onStateButtonPressed('tune');
+                    },
+                  ),
+                ),
+                // Subtitle Button
+                PopupMenuItem(
+                  child: ListTile(
+                    leading: const Icon(Icons.subtitles),
+                    title: const Text('字幕调整'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      onStateButtonPressed('subtitle');
+                    },
+                  ),
+                ),
+                /*
+                // Change Video Button
+                PopupMenuItem(
+                  child: ListTile(
+                    leading: const Icon(Icons.movie_filter),
+                    title: const Text('换片'),
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
+                  ),
+                ),
+                */
+                // Leave Button
+                PopupMenuItem(
+                  child: ListTile(
+                    leading: const Icon(Icons.logout),
+                    title: const Text('离开房间'),
+                    onTap: () async {
+                      Navigator.pop(context);
+                      isBusyNotifier.value = true;
+                      await IMController().leaveRoom();
+                      await VideoController().stop();
+                      onStateButtonPressed('welcome');
+                      isBusyNotifier.value = false;
+                    },
+                  ),
+                ),
+              ],
             ),
             const SizedBox(width: 8),
 

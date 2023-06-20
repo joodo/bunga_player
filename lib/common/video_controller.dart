@@ -8,13 +8,15 @@ import 'package:media_kit_video/media_kit_video.dart' as media_kit_video;
 import 'package:wakelock/wakelock.dart';
 
 class VideoController {
+  static final emptyMedia = Media('asset:///assets/images/black.png');
+
   // Singleton
   static final _instance = VideoController._internal();
   factory VideoController() => _instance;
 
   late final _player = Player(
     configuration: const PlayerConfiguration(logLevel: MPVLogLevel.warn),
-  );
+  )..open(emptyMedia, play: false);
 
   late final _controller = media_kit_video.VideoController(_player);
   late final _video = media_kit_video.Video(controller: _controller);
@@ -33,6 +35,7 @@ class VideoController {
   final volume = ValueNotifier<double>(100.0);
   final isMute = ValueNotifier<bool>(false);
   final contrast = ValueNotifierWithReset<int>(0);
+  bool get isStoped => _player.state.playlist.medias[0] == emptyMedia;
 
   late final tracks = StreamNotifier<Tracks?>(
     initialValue: null,
@@ -75,6 +78,9 @@ class VideoController {
       // HACK: remove this listener will cause duration always 0. WHY?!!
     });
 
+    _player.streams.playing.listen((isPlaying) {
+      this.isPlaying.value = isPlaying;
+    });
     isPlaying.addListener(() {
       if (isPlaying.value) {
         _player.play();
@@ -172,15 +178,20 @@ class VideoController {
   }
 
   void togglePlay() {
-    if (_player.state.playlist.medias.isEmpty) return;
+    if (isStoped) return;
     isPlaying.value = !isPlaying.value;
   }
 
-  void jumpTo(Duration target) {
-    if (_player.state.playlist.medias.isEmpty) return;
+  void seekTo(Duration target) {
+    if (isStoped) return;
     position.value = target;
     _player.seek(target);
     IMController().sendPlayerStatus();
+  }
+
+  Future<void> stop() async {
+    await _player.open(emptyMedia, play: false);
+    await _controller.waitUntilFirstFrameRendered;
   }
 
   void onDraggingSliderStart(Duration positionValue) {

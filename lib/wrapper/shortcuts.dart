@@ -48,7 +48,7 @@ class ShortcutsWrapper extends StatelessWidget {
                   : position < Duration.zero
                       ? Duration.zero
                       : position;
-              VideoController().jumpTo(position);
+              VideoController().seekTo(position);
               return null;
             },
           ),

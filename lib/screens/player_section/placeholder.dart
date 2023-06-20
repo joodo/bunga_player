@@ -48,6 +48,8 @@ class _PlayerPlaceholderState extends State<PlayerPlaceholder> {
 
                     _isCatAwakeInput =
                         controller.findInput<bool>('isWaken') as SMIBool;
+                    _isCatAwakeInput.value =
+                        IMController().currentUserNotifier.value != null;
                   },
                 ),
               ),

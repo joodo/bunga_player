@@ -102,21 +102,16 @@ class IMController {
     logger.i('Current user: ${currentUserNotifier.value!.name}');
   }
 
-  Future<bool> logout() async {
-    try {
-      await _chatClient.disconnectUser();
-      currentUserNotifier.value = null;
-    } catch (e) {
-      logger.e(e);
-      return false;
-    }
-    return true;
+  Future<void> logout() async {
+    await _chatClient.disconnectUser();
+    currentUserNotifier.value = null;
   }
 
   Channel? _channel;
   final _channelWatchers = ChannelWatchers();
   ChannelWatchers get channelWatchers => _channelWatchers;
-  Future<void> createOrJoinGroup(
+
+  Future<void> createOrJoinRoom(
     String channelID, {
     Map<String, Object?>? extraData,
   }) async {
@@ -130,23 +125,15 @@ class IMController {
     await _channelWatchers.queryFromChannel(_channel!);
 
     _channel!.on('message.new').listen(_onNewMessage);
-    _channel!.on('user.watching.start').listen((event) {
-      if (event.user!.id == currentUserNotifier.value!.id) return;
-      if (_channelWatchers.addUser(event.user!)) {
-        showSnackBar('${event.user!.name} 已加入');
-        AudioPlayer().play(AssetSource('sounds/user_join.wav'));
-      }
-    });
-    _channel!.on('user.watching.stop').listen((event) {
-      _channelWatchers.removeUser(event.user!);
-      showSnackBar('${event.user!.name} 已离开');
-      AudioPlayer().play(AssetSource('sounds/user_leave.wav'));
+    _channel!.on('user.watching.start').listen(_onUserJoin);
+    _channel!.on('user.watching.stop').listen(_onUserLeave);
+  }
 
-      // Someone leave when I'm asking call, means he rejects me
-      if (callStatus.value == CallStatus.callOut) {
-        _myCallAskingIsRejectedBy(event.user!);
-      }
-    });
+  Future<void> leaveRoom() async {
+    await _channel!.stopWatching();
+    _channel = null;
+    _channelWatchers.clear();
+    hangUpCall();
   }
 
   /// return message id
@@ -177,19 +164,18 @@ class IMController {
     return;
   }
 
-  Future<bool> sendPlayerStatus({String? quoteMessageId}) async {
-    if (_applyingStatus) return true;
+  Future<void> sendPlayerStatus({String? quoteMessageId}) async {
+    if (_applyingStatus) return;
 
     final isPlay = VideoController().isPlaying.value;
     final position = VideoController().position.value;
 
     final messageText =
         '${isPlay ? "play" : "pause"} at ${position.inMilliseconds}';
-    final messageID = await sendMessage(Message(
+    await sendMessage(Message(
       text: messageText,
       quotedMessageId: quoteMessageId,
     ));
-    return messageID != null;
   }
 
   // If applying status from remote, then don't send self status to remote
@@ -233,7 +219,7 @@ class IMController {
       final position = VideoController().position.value;
       final remotePosition = Duration(milliseconds: int.parse(re.last));
       if ((position - remotePosition).inMilliseconds.abs() > 1000) {
-        VideoController().jumpTo(remotePosition);
+        VideoController().seekTo(remotePosition);
         if (canShowSnackBar) {
           showSnackBar('${event.user!.name} 调整了进度');
           canShowSnackBar = false;
@@ -325,6 +311,27 @@ class IMController {
     }
   }
 
+  void _onUserJoin(Event event) {
+    final user = event.user!;
+    if (user.id == currentUserNotifier.value!.id) return;
+    if (_channelWatchers.addUser(user)) {
+      showSnackBar('${user.name} 已加入');
+      AudioPlayer().play(AssetSource('sounds/user_join.wav'));
+    }
+  }
+
+  void _onUserLeave(Event event) {
+    final user = event.user!;
+    _channelWatchers.removeUser(user);
+    showSnackBar('${user.name} 已离开');
+    AudioPlayer().play(AssetSource('sounds/user_leave.wav'));
+
+    // Someone leave when I'm asking call, means he rejects me
+    if (callStatus.value == CallStatus.callOut) {
+      _myCallAskingIsRejectedBy(user);
+    }
+  }
+
   Future<List<Channel>> fetchChannels() async {
     final filter = Filter.equal('video_type', 'bilibili');
     final channels = await _chatClient
@@ -413,6 +420,7 @@ class IMController {
   }
 
   void hangUpCall() {
+    if (callStatus.value == CallStatus.none) return;
     callStatus.value = CallStatus.none;
     AudioPlayer().play(AssetSource('sounds/hang_up.wav'));
     _leaveCallChannel();
@@ -467,6 +475,11 @@ class ChannelWatchers extends ChangeNotifier {
       watchersPagination: const PaginationParams(limit: 100, offset: 0),
     );
     _watchers = result.watchers!;
+    notifyListeners();
+  }
+
+  void clear() {
+    _watchers = null;
     notifyListeners();
   }
 

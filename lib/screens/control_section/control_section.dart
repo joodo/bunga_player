@@ -8,14 +8,14 @@ import 'package:bunga_player/screens/control_section/main_control.dart';
 import 'package:bunga_player/screens/control_section/popmoji_control.dart';
 import 'package:bunga_player/screens/control_section/subtitle_control.dart';
 import 'package:bunga_player/screens/control_section/tune_control.dart';
-import 'package:bunga_player/screens/control_section/video_open_control.dart';
+import 'package:bunga_player/screens/control_section/welcome_control.dart';
 import 'package:bunga_player/screens/player_section/video_progress_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
 
 enum ControlUIState {
   login,
-  open,
+  welcome,
   main,
   call,
   popmoji,
@@ -43,10 +43,10 @@ class _ControlSectionState extends State<ControlSection> {
       isBusyNotifier: widget.isBusyNotifier,
       hintTextNotifier: widget.hintTextNotifier,
       onLoginSuccess: () => setState(() {
-        _uiState = ControlUIState.open;
+        _uiState = ControlUIState.welcome;
       }),
     ),
-    VideoOpenControl(
+    WelcomeControl(
       isBusyNotifier: widget.isBusyNotifier,
       hintTextNotifier: widget.hintTextNotifier,
       onLoadSuccessed: () => setState(() {
@@ -57,6 +57,7 @@ class _ControlSectionState extends State<ControlSection> {
       }),
     ),
     MainControl(
+      isBusyNotifier: widget.isBusyNotifier,
       onStateButtonPressed: (stateString) => setState(() {
         _uiState = ControlUIState.values
             .firstWhere((e) => e.toString().split('.').last == stateString);

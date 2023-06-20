@@ -45,27 +45,31 @@ class _VideoProgressWidgetState extends State<VideoProgressWidget> {
           valueListenables: [
             VideoController().position,
             VideoController().duration,
+            VideoController().buffer,
           ],
-          builder: (context, values, child) => Slider(
-            value: dToS(VideoController().position.value),
-            secondaryTrackValue: dToS(VideoController().buffer.value),
-            max: dToS(values[1]),
-            focusNode: FocusNode(canRequestFocus: false),
-            label: dToHHmmss(values[0]),
-            onChangeStart: (value) => setState(() {
-              _isChanging = true;
-              _slideThemeLerpT = 1.0;
-              VideoController().onDraggingSliderStart(sToD(value));
-            }),
-            onChanged: (double value) {
-              VideoController().onDraggingSlider(sToD(value));
-            },
-            onChangeEnd: (value) => setState(() {
-              _isChanging = false;
-              if (!_isHovered) _slideThemeLerpT = 0;
-              VideoController().onDraggingSliderFinished(sToD(value));
-            }),
-          ),
+          builder: (context, values, child) {
+            return Slider(
+              value: dToS(values[0]),
+              secondaryTrackValue:
+                  dToS(values[2] <= values[1] ? values[2] : values[1]),
+              max: dToS(values[1]),
+              focusNode: FocusNode(canRequestFocus: false),
+              label: dToHHmmss(values[0]),
+              onChangeStart: (value) => setState(() {
+                _isChanging = true;
+                _slideThemeLerpT = 1.0;
+                VideoController().onDraggingSliderStart(sToD(value));
+              }),
+              onChanged: (double value) {
+                VideoController().onDraggingSlider(sToD(value));
+              },
+              onChangeEnd: (value) => setState(() {
+                _isChanging = false;
+                if (!_isHovered) _slideThemeLerpT = 0;
+                VideoController().onDraggingSliderFinished(sToD(value));
+              }),
+            );
+          },
         ),
       ),
     );

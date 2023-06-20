@@ -32,7 +32,7 @@ class BiliChannelInfo {
   });
 }
 
-class VideoOpenControl extends StatefulWidget with IndexedStackItem {
+class WelcomeControl extends StatefulWidget with IndexedStackItem {
   final VoidCallback? onLoadSuccessed;
   final VoidCallback? onLoggedOut;
   final ValueNotifier<bool> isBusyNotifier;
@@ -41,7 +41,7 @@ class VideoOpenControl extends StatefulWidget with IndexedStackItem {
   String get welcomeText =>
       '${IMController().currentUserNotifier.value?.name}, 你好！';
 
-  const VideoOpenControl({
+  const WelcomeControl({
     super.key,
     required this.isBusyNotifier,
     this.onLoggedOut,
@@ -50,11 +50,12 @@ class VideoOpenControl extends StatefulWidget with IndexedStackItem {
   });
 
   @override
-  State<VideoOpenControl> createState() => _VideoOpenControlState();
+  State<WelcomeControl> createState() => _WelcomeControlState();
 
   @override
   void onEnter() {
     hintTextNotifier.value = welcomeText;
+    windowManager.setTitle('Bunga Player');
   }
 
   @override
@@ -63,7 +64,7 @@ class VideoOpenControl extends StatefulWidget with IndexedStackItem {
   }
 }
 
-class _VideoOpenControlState extends State<VideoOpenControl> {
+class _WelcomeControlState extends State<WelcomeControl> {
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
@@ -151,7 +152,7 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
         await VideoController().loadVideo(file.path);
 
         widget.hintTextNotifier.value = '正在发送请柬……';
-        await IMController().createOrJoinGroup(
+        await IMController().createOrJoinRoom(
           crcString,
           extraData: {
             'name': file.name,
@@ -208,7 +209,7 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
       await VideoController().loadVideo(biliVideo.videoUrls);
 
       widget.hintTextNotifier.value = '正在发送请柬……';
-      await IMController().createOrJoinGroup(
+      await IMController().createOrJoinRoom(
         'bili_${biliVideo.cid}',
         extraData: {
           'video_type': 'bilibili',
