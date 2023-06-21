@@ -59,6 +59,7 @@ class _RoomSectionState extends State<RoomSection> {
             final roomUpdateEvent = values[1] as Event?;
             if (roomUpdateEvent == null || // When init
                 IMController().currentChannel == null || // After leave room
+                UINotifiers().isBusy.value == true || // loading video
                 IMVideoConnector().isVideoSameWithRoom) {
               return const SizedBox.shrink();
             }
