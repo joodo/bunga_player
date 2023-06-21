@@ -200,6 +200,7 @@ class VideoController {
   }
 
   Future<void> stop() async {
+    isPlaying.value = false;
     await _player.open(emptyMedia, play: false);
     await _controller.waitUntilFirstFrameRendered;
     videoHashNotifier.value = null;

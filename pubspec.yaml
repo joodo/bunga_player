@@ -42,6 +42,7 @@ dependencies:
   rive: ^0.11.0
   animated_text_kit: ^4.2.2
   audioplayers: ^4.0.1
+  flutter_portal: ^1.1.4
 
   # Popmoji
   flutter_svg: ^2.0.6
@@ -60,7 +61,6 @@ dependencies:
   async: ^2.11.0
   multi_value_listenable_builder: ^0.0.2
   collection: ^1.17.1
-  flutter_portal: ^1.1.4
 
 
 dependency_overrides:
