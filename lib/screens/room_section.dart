@@ -53,7 +53,8 @@ class _RoomSectionState extends State<RoomSection> {
           ],
           builder: (context, values, child) {
             final roomUpdateEvent = values[1] as Event?;
-            if (roomUpdateEvent == null ||
+            if (roomUpdateEvent == null || // When init
+                IMController().currentChannel == null || // After leave room
                 IMVideoConnector().isVideoSameWithRoom) {
               return const SizedBox.shrink();
             }
