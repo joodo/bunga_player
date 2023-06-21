@@ -37,12 +37,13 @@ class _VideoSectionState extends State<VideoSection> {
           VideoController().video,
           ValueListenableBuilder<String?>(
             valueListenable: UINotifiers().hintText,
-            builder: (context, text, child) => text == null
-                ? const SizedBox.shrink()
-                : PlayerPlaceholder(
-                    isAwakeNotifier: _loggedInNotifier,
-                    textNotifier: UINotifiers().hintText,
-                  ),
+            builder: (context, text, child) => AnimatedOpacity(
+              opacity: text == null ? 0.0 : 1.0,
+              duration: const Duration(milliseconds: 250),
+              child: PlayerPlaceholder(
+                isAwakeNotifier: _loggedInNotifier,
+              ),
+            ),
           ),
           const PopmojiPlayer(),
         ],

@@ -74,8 +74,6 @@ class _ControlSectionState extends State<ControlSection> {
       }),
     ),
     VideoOpenControl(
-      isBusyNotifier: UINotifiers().isBusy,
-      hintTextNotifier: UINotifiers().hintText,
       onBackPressed: () => setState(() {
         _uiState = ControlUIState.main;
       }),
