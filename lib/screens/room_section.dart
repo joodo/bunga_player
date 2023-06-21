@@ -25,6 +25,8 @@ class _RoomSectionState extends State<RoomSection> {
     return Row(
       children: [
         const SizedBox(width: 16),
+
+        // Watcher list
         ListenableBuilder(
           listenable: IMController().channelWatchers,
           builder: (context, child) {
@@ -46,6 +48,8 @@ class _RoomSectionState extends State<RoomSection> {
           },
         ),
         const Spacer(),
+
+        // Unsync hint
         MultiValueListenableBuilder(
           valueListenables: [
             VideoController().videoHashNotifier,
@@ -85,7 +89,7 @@ class _RoomSectionState extends State<RoomSection> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                              '你和${roomUpdateEvent.user?.name ?? "对方"}正在播放不同的视频。'),
+                              '你和 ${roomUpdateEvent.user?.name ?? "对方"} 正在播放不同的视频。'),
                           const SizedBox(height: 8),
                           Text.rich(
                             TextSpan(
