@@ -14,16 +14,10 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  late final RestartableTimer _hideUITimer;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _hideUITimer = RestartableTimer(const Duration(seconds: 3), () {
-      UINotifiers().isUIHidden.value = true;
-    });
-  }
+  late final RestartableTimer _hideUITimer = RestartableTimer(
+    const Duration(seconds: 3),
+    () => UINotifiers().isUIHidden.value = true,
+  );
 
   final _controlSectionKey = GlobalKey<State<ControlSection>>();
   final _videoSectionKey = GlobalKey<State<VideoSection>>();
