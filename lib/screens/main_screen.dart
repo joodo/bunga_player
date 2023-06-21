@@ -33,12 +33,9 @@ class _MainScreenState extends State<MainScreen> {
     const roomSectionHeight = 36.0;
     const controlSectionHeight = 64.0;
 
-    final videoSection = VideoSection(
-      key: _videoSectionKey,
-    );
-    final controlSection = ControlSection(
-      key: _controlSectionKey,
-    );
+    final videoSection = VideoSection(key: _videoSectionKey);
+    final controlSection = ControlSection(key: _controlSectionKey);
+    final roomSection = RoomSection(key: _roomSectionKey);
     final progressSection = ValueListenableBuilder(
       valueListenable: UINotifiers().isBusy,
       builder: (context, isBusy, child) => isBusy
@@ -49,9 +46,6 @@ class _MainScreenState extends State<MainScreen> {
               ),
             )
           : const VideoProgressWidget(),
-    );
-    final roomSection = RoomSection(
-      key: _roomSectionKey,
     );
 
     return ValueListenableBuilder(

@@ -62,6 +62,9 @@ class _LoginControlState extends State<LoginControl> {
             valueListenable: UINotifiers().isBusy,
             builder: (context, isBusy, child) => TextField(
               style: const TextStyle(height: 1.0),
+              // FIXME: focus won't set when logout
+              // https://github.com/flutter/flutter/issues/114213
+              // Focus problem with IndexedStack
               autofocus: true,
               controller: _textController,
               decoration: const InputDecoration(
