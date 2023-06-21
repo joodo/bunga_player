@@ -125,7 +125,11 @@ Stream<String> openBiliVideo(BuildContext context, bool isUpdate) async* {
   final BiliVideo biliVideo;
   if (result is String && result.isNotEmpty) {
     // Parse bilibili url
-    biliVideo = await BiliVideo.fromUrl(Uri.parse(result));
+    final regex = RegExp(
+        r'(http|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])');
+    final url = regex.firstMatch(result)?.group(0);
+    if (url == null) throw const FormatException('Illegal url');
+    biliVideo = await BiliVideo.fromUrl(Uri.parse(url));
   } else if (result is BiliChannelInfo) {
     // Parse bvid and p
     biliVideo = BiliVideo(bvid: result.bvid, p: result.p);
