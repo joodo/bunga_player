@@ -8,9 +8,9 @@ import 'package:flutter/services.dart';
 import 'package:multi_value_listenable_builder/multi_value_listenable_builder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-const askNameText = '怎样称呼你？';
-
 class LoginControl extends StatefulWidget with IndexedStackItem {
+  static const askNameText = '怎样称呼你？';
+
   final VoidCallback? onLoginSuccess;
 
   const LoginControl({
@@ -46,7 +46,7 @@ class _LoginControlState extends State<LoginControl> {
         _registerUser(userName);
       } else {
         // onEnter not trigger on init
-        UINotifiers().hintText.value = askNameText;
+        UINotifiers().hintText.value = LoginControl.askNameText;
       }
     });
   }
@@ -128,7 +128,7 @@ class _LoginControlState extends State<LoginControl> {
     } catch (e) {
       logger.e(e);
       showSnackBar('连接母星失败');
-      UINotifiers().hintText.value = askNameText;
+      UINotifiers().hintText.value = LoginControl.askNameText;
     } finally {
       UINotifiers().isBusy.value = false;
     }
