@@ -1,18 +1,16 @@
-import 'package:bunga_player/common/fullscreen.dart';
-import 'package:bunga_player/common/im_controller.dart';
-import 'package:bunga_player/common/video_controller.dart';
-import 'package:bunga_player/utils.dart';
+import 'package:bunga_player/singletons/im_controller.dart';
+import 'package:bunga_player/singletons/ui_notifiers.dart';
+import 'package:bunga_player/singletons/video_controller.dart';
+import 'package:bunga_player/utils/duration.dart';
 import 'package:flutter/material.dart';
 import 'package:multi_value_listenable_builder/multi_value_listenable_builder.dart';
 
 class MainControl extends StatelessWidget {
   final ValueSetter<String> onStateButtonPressed;
-  final ValueNotifier<bool> isBusyNotifier;
 
   const MainControl({
     super.key,
     required this.onStateButtonPressed,
-    required this.isBusyNotifier,
   });
 
   @override
@@ -79,6 +77,7 @@ class MainControl extends StatelessWidget {
             const SizedBox(width: 8),
 
             PopupMenuButton(
+              tooltip: '',
               itemBuilder: (context) => [
                 // Tune button
                 PopupMenuItem(
@@ -102,7 +101,7 @@ class MainControl extends StatelessWidget {
                     },
                   ),
                 ),
-                /*
+
                 // Change Video Button
                 PopupMenuItem(
                   child: ListTile(
@@ -110,10 +109,11 @@ class MainControl extends StatelessWidget {
                     title: const Text('换片'),
                     onTap: () {
                       Navigator.pop(context);
+                      onStateButtonPressed('open');
                     },
                   ),
                 ),
-                */
+
                 // Leave Button
                 PopupMenuItem(
                   child: ListTile(
@@ -121,26 +121,27 @@ class MainControl extends StatelessWidget {
                     title: const Text('离开房间'),
                     onTap: () async {
                       Navigator.pop(context);
-                      isBusyNotifier.value = true;
+                      UINotifiers().isBusy.value = true;
                       await IMController().leaveRoom();
                       await VideoController().stop();
                       onStateButtonPressed('welcome');
-                      isBusyNotifier.value = false;
+                      UINotifiers().isBusy.value = false;
                     },
                   ),
                 ),
               ],
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 16),
 
             // Full screen button
             ValueListenableBuilder(
-              valueListenable: FullScreen().notifier,
+              valueListenable: UINotifiers().isFullScreen,
               builder: (context, isFullScreen, child) => IconButton(
                 icon: isFullScreen
                     ? const Icon(Icons.fullscreen_exit)
                     : const Icon(Icons.fullscreen),
-                onPressed: FullScreen().toggle,
+                onPressed: () => UINotifiers().isFullScreen.value =
+                    !UINotifiers().isFullScreen.value,
               ),
             ),
             const SizedBox(width: 8),

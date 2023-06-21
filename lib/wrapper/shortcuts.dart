@@ -1,5 +1,5 @@
-import 'package:bunga_player/common/fullscreen.dart';
-import 'package:bunga_player/common/video_controller.dart';
+import 'package:bunga_player/singletons/ui_notifiers.dart';
+import 'package:bunga_player/singletons/video_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -58,7 +58,7 @@ class ShortcutsWrapper extends StatelessWidget {
           ),
           FullScreenIntent: CallbackAction<FullScreenIntent>(
             onInvoke: (FullScreenIntent intent) =>
-                FullScreen().set(intent.isFullScreen),
+                UINotifiers().isFullScreen.value = intent.isFullScreen,
           ),
         },
         child: child,

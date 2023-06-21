@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:bunga_player/common/logger.dart';
+import 'package:bunga_player/singletons/logger.dart';
 import 'package:bunga_player/constants/secrets.dart';
 import 'package:http/http.dart' as http;
 
@@ -22,7 +22,10 @@ class BiliVideo {
     this.p = 1,
   });
 
+  bool _isFetched = false;
+  bool get isFetched => _isFetched;
   Future<void> fetch() async {
+    if (_isFetched) return;
     logger.i('Bili video: start fetch BV=$bvid, p=$p');
 
     late final String? sess;
@@ -43,7 +46,6 @@ class BiliVideo {
         // fetch video info
         final response = await http.get(Uri.parse(
             'https://api.bilibili.com/x/web-interface/view?bvid=$bvid'));
-        logger.i('Bili video info: ${response.body}');
         final responseData = jsonDecode(response.body);
         if (responseData['code'] != 0) {
           throw 'Cannot get video info';
@@ -78,6 +80,8 @@ class BiliVideo {
       durl['url'],
       ...durl['backup_url'] ?? [],
     ];
+
+    _isFetched = true;
     logger.i('Bili video: finish fetch.');
   }
 

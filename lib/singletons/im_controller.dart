@@ -1,10 +1,13 @@
+import 'dart:async';
+
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'package:bunga_player/common/logger.dart';
-import 'package:bunga_player/common/popmoji_controller.dart';
-import 'package:bunga_player/common/snack_bar.dart';
-import 'package:bunga_player/common/video_controller.dart';
+import 'package:bunga_player/singletons/im_video_connector.dart';
+import 'package:bunga_player/singletons/logger.dart';
+import 'package:bunga_player/singletons/popmoji_controller.dart';
+import 'package:bunga_player/singletons/snack_bar.dart';
 import 'package:bunga_player/constants/secrets.dart';
+import 'package:bunga_player/utils/value_listenable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:stream_chat_flutter_core/stream_chat_flutter_core.dart';
@@ -107,79 +110,96 @@ class IMController {
     currentUserNotifier.value = null;
   }
 
-  Channel? _channel;
+  // Channel
+  Channel? _currentChannel;
+  Channel? get currentChannel => _currentChannel;
+
   final _channelWatchers = ChannelWatchers();
   ChannelWatchers get channelWatchers => _channelWatchers;
 
+  final _channelUpdateEventNotifier = ProxyValueNotifier<Event?, Event>(
+    initialValue: null,
+    proxy: (event) => event,
+  );
+  ProxyValueNotifier<Event?, Event> get channelUpdateEventNotifier =>
+      _channelUpdateEventNotifier;
+
+  final _channelEventSubscribes = <StreamSubscription<Event>>[];
+
   Future<void> createOrJoinRoom(
-    String channelID, {
+    String hash, {
     Map<String, Object?>? extraData,
   }) async {
-    _channel = _chatClient.channel(
-      'livestream',
-      id: channelID,
-      extraData: extraData,
+    final filter = Filter.equal('hash', hash);
+    final channels = await _chatClient.queryChannels(
+      filter: filter,
+      channelStateSort: [
+        const SortOption('last_message_at', direction: SortOption.DESC)
+      ],
+    ).last;
+
+    if (channels.isNotEmpty) {
+      // join exist channel
+      _currentChannel = channels.first;
+    } else {
+      // create channel
+      _currentChannel = _chatClient.channel(
+        'livestream',
+        id: hash,
+        extraData: extraData,
+      );
+    }
+
+    await _currentChannel!.watch();
+    await _channelWatchers.queryFromChannel(_currentChannel!);
+
+    _channelEventSubscribes.addAll([
+      _currentChannel!.on('message.new').listen(_onNewMessage),
+      _currentChannel!.on('user.watching.start').listen(_onUserJoin),
+      _currentChannel!.on('user.watching.stop').listen(_onUserLeave),
+    ]);
+    _channelUpdateEventNotifier.from = StreamNotifier<Event>(
+      initialValue: Event(
+        user: currentUserNotifier.value,
+        channel: EventChannel(
+          cid: _currentChannel!.cid!,
+          config: _currentChannel!.config!,
+          createdAt: _currentChannel!.createdAt!,
+          updatedAt: _currentChannel!.updatedAt!,
+          extraData: _currentChannel!.extraData,
+        ),
+      ),
+      stream: _currentChannel!.on('channel.updated'),
     );
-
-    await _channel!.watch();
-    await _channelWatchers.queryFromChannel(_channel!);
-
-    _channel!.on('message.new').listen(_onNewMessage);
-    _channel!.on('user.watching.start').listen(_onUserJoin);
-    _channel!.on('user.watching.stop').listen(_onUserLeave);
   }
 
   Future<void> leaveRoom() async {
-    await _channel!.stopWatching();
-    _channel = null;
+    await _currentChannel!.stopWatching();
+
+    for (var subscribe in _channelEventSubscribes) {
+      subscribe.cancel();
+    }
+    _channelEventSubscribes.clear();
+
     _channelWatchers.clear();
+
+    _currentChannel = null;
+
+    _channelUpdateEventNotifier.from = null;
+
     hangUpCall();
   }
 
   /// return message id
   Future<String?> sendMessage(Message m) async {
     try {
-      final response = await _channel!.sendMessage(m);
+      final response = await _currentChannel!.sendMessage(m);
       return response.message.id;
     } catch (e) {
       logger.e(e);
       return null;
     }
   }
-
-  String? _askID;
-  Future<void> askPosition() async {
-    if (_channelWatchers.watchers!.length < 2) return;
-
-    _askID = await sendMessage(Message(text: 'where'));
-    if (_askID == null) return;
-
-    Future.delayed(const Duration(seconds: 6), () {
-      if (_askID != null) {
-        logger.w('Asked position but no one answered');
-        _askID = null;
-      }
-    });
-
-    return;
-  }
-
-  Future<void> sendPlayerStatus({String? quoteMessageId}) async {
-    if (_applyingStatus) return;
-
-    final isPlay = VideoController().isPlaying.value;
-    final position = VideoController().position.value;
-
-    final messageText =
-        '${isPlay ? "play" : "pause"} at ${position.inMilliseconds}';
-    await sendMessage(Message(
-      text: messageText,
-      quotedMessageId: quoteMessageId,
-    ));
-  }
-
-  // If applying status from remote, then don't send self status to remote
-  bool _applyingStatus = false;
 
   void _onNewMessage(Event event) {
     logger
@@ -193,58 +213,13 @@ class IMController {
     final userID = event.user!.id;
     if (userID == currentUserNotifier.value!.id) return;
 
-    void applyStatus() async {
-      _applyingStatus = true;
-
-      bool canShowSnackBar = true;
-      // If apply status is because asking where, then don't show snack bar
-      if (_askID != null) canShowSnackBar = false;
-
-      final isPlaying = VideoController().isPlaying.value;
-      if (re.first == 'pause' && isPlaying) {
-        VideoController().isPlaying.value = false;
-        if (canShowSnackBar) {
-          showSnackBar('${event.user!.name} 暂停了视频');
-          canShowSnackBar = false;
-        }
-      }
-      if (re.first == 'play' && !isPlaying) {
-        VideoController().isPlaying.value = true;
-        if (canShowSnackBar) {
-          showSnackBar('${event.user!.name} 播放了视频');
-          canShowSnackBar = false;
-        }
-      }
-
-      final position = VideoController().position.value;
-      final remotePosition = Duration(milliseconds: int.parse(re.last));
-      if ((position - remotePosition).inMilliseconds.abs() > 1000) {
-        VideoController().seekTo(remotePosition);
-        if (canShowSnackBar) {
-          showSnackBar('${event.user!.name} 调整了进度');
-          canShowSnackBar = false;
-        }
-      }
-
-      _applyingStatus = false;
-    }
-
     if (re.first == 'where') {
-      if (_askID == null) sendPlayerStatus(quoteMessageId: event.message!.id);
+      IMVideoConnector().answerPlayStatus(event);
       return;
     }
 
     if (re.first == 'play' || re.first == 'pause') {
-      final quoteID = event.message!.quotedMessageId;
-      if (quoteID != null) {
-        if (quoteID != _askID) return;
-
-        applyStatus();
-        _askID = null;
-      } else {
-        applyStatus();
-      }
-
+      IMVideoConnector().processPlayStatus(event);
       return;
     }
 
@@ -332,13 +307,13 @@ class IMController {
     }
   }
 
-  Future<List<Channel>> fetchChannels() async {
+  Future<List<Channel>> fetchBiliChannels() async {
     final filter = Filter.equal('video_type', 'bilibili');
     final channels = await _chatClient
         .queryChannels(
           filter: filter,
           channelStateSort: [
-            const SortOption("last_message_at", direction: SortOption.DESC)
+            const SortOption('last_message_at', direction: SortOption.DESC)
           ],
           watch: false,
           state: false,
@@ -434,10 +409,10 @@ class IMController {
 
   void _joinCallChannel() async {
     final callResponse = await _chatClient.createCall(
-      callId: _channel!.id!,
+      callId: _currentChannel!.id!,
       callType: 'audio',
-      channelType: _channel!.type,
-      channelId: _channel!.id!,
+      channelType: _currentChannel!.type,
+      channelId: _currentChannel!.id!,
     );
     final call = callResponse.call!;
 

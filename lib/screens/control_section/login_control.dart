@@ -1,7 +1,8 @@
-import 'package:bunga_player/common/im_controller.dart';
-import 'package:bunga_player/common/logger.dart';
-import 'package:bunga_player/common/snack_bar.dart';
+import 'package:bunga_player/singletons/im_controller.dart';
+import 'package:bunga_player/singletons/logger.dart';
+import 'package:bunga_player/singletons/snack_bar.dart';
 import 'package:bunga_player/screens/control_section/indexed_stack_item.dart';
+import 'package:bunga_player/singletons/ui_notifiers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:multi_value_listenable_builder/multi_value_listenable_builder.dart';
@@ -10,14 +11,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 const askNameText = '怎样称呼你？';
 
 class LoginControl extends StatefulWidget with IndexedStackItem {
-  final ValueNotifier<bool> isBusyNotifier;
-  final ValueNotifier<String?> hintTextNotifier;
   final VoidCallback? onLoginSuccess;
 
   const LoginControl({
     super.key,
-    required this.isBusyNotifier,
-    required this.hintTextNotifier,
     this.onLoginSuccess,
   });
 
@@ -26,12 +23,12 @@ class LoginControl extends StatefulWidget with IndexedStackItem {
 
   @override
   void onEnter() {
-    hintTextNotifier.value = askNameText;
+    UINotifiers().hintText.value = askNameText;
   }
 
   @override
   void onLeave() {
-    hintTextNotifier.value = null;
+    UINotifiers().hintText.value = null;
   }
 }
 
@@ -49,7 +46,7 @@ class _LoginControlState extends State<LoginControl> {
         _registerUser(userName);
       } else {
         // onEnter not trigger on init
-        widget.hintTextNotifier.value = askNameText;
+        UINotifiers().hintText.value = askNameText;
       }
     });
   }
@@ -62,7 +59,7 @@ class _LoginControlState extends State<LoginControl> {
         SizedBox(
           width: 300,
           child: ValueListenableBuilder(
-            valueListenable: widget.isBusyNotifier,
+            valueListenable: UINotifiers().isBusy,
             builder: (context, isBusy, child) => TextField(
               style: const TextStyle(height: 1.0),
               autofocus: true,
@@ -83,7 +80,7 @@ class _LoginControlState extends State<LoginControl> {
         MultiValueListenableBuilder(
           valueListenables: [
             _textController,
-            widget.isBusyNotifier,
+            UINotifiers().isBusy,
           ],
           builder: (context, values, child) {
             return FilledButton(
@@ -115,8 +112,8 @@ class _LoginControlState extends State<LoginControl> {
   }
 
   void _registerUser(String userName) async {
-    widget.isBusyNotifier.value = true;
-    widget.hintTextNotifier.value = '正在连接母星……';
+    UINotifiers().isBusy.value = true;
+    UINotifiers().hintText.value = '正在连接母星……';
 
     try {
       await IMController().login(userName);
@@ -128,9 +125,9 @@ class _LoginControlState extends State<LoginControl> {
     } catch (e) {
       logger.e(e);
       showSnackBar('连接母星失败');
-      widget.hintTextNotifier.value = askNameText;
+      UINotifiers().hintText.value = askNameText;
     } finally {
-      widget.isBusyNotifier.value = false;
+      UINotifiers().isBusy.value = false;
     }
   }
 }

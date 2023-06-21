@@ -60,6 +60,7 @@ dependencies:
   async: ^2.11.0
   multi_value_listenable_builder: ^0.0.2
   collection: ^1.17.1
+  flutter_portal: ^1.1.4
 
 
 dependency_overrides:

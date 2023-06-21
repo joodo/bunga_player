@@ -1,4 +1,4 @@
-import 'package:bunga_player/common/video_controller.dart';
+import 'package:bunga_player/singletons/video_controller.dart';
 import 'package:bunga_player/screens/control_section/dropdown.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';

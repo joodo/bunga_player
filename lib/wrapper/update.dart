@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:bunga_player/common/logger.dart';
-import 'package:bunga_player/common/snack_bar.dart';
+import 'package:bunga_player/singletons/logger.dart';
+import 'package:bunga_player/singletons/snack_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:updat/updat.dart';

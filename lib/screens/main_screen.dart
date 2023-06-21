@@ -1,8 +1,8 @@
-import 'package:bunga_player/common/fullscreen.dart';
-import 'package:bunga_player/common/im_controller.dart';
+import 'package:bunga_player/screens/room_section.dart';
 import 'package:bunga_player/screens/control_section/control_section.dart';
 import 'package:bunga_player/screens/player_section/player_section.dart';
 import 'package:bunga_player/screens/player_section/video_progress_widget.dart';
+import 'package:bunga_player/singletons/ui_notifiers.dart';
 import 'package:flutter/material.dart';
 import 'package:async/async.dart';
 
@@ -14,10 +14,6 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  final _isUIHiddenNotifier = ValueNotifier<bool>(false);
-  final _isBusyNotifier = ValueNotifier<bool>(false);
-  final _hintTextNotifier = ValueNotifier<String?>(null);
-
   late final RestartableTimer _hideUITimer;
 
   @override
@@ -25,12 +21,13 @@ class _MainScreenState extends State<MainScreen> {
     super.initState();
 
     _hideUITimer = RestartableTimer(const Duration(seconds: 3), () {
-      _isUIHiddenNotifier.value = true;
+      UINotifiers().isUIHidden.value = true;
     });
   }
 
   final _controlSectionKey = GlobalKey<State<ControlSection>>();
   final _videoSectionKey = GlobalKey<State<VideoSection>>();
+  final _roomSectionKey = GlobalKey<State<RoomSection>>();
   @override
   Widget build(Object context) {
     const roomSectionHeight = 36.0;
@@ -38,16 +35,12 @@ class _MainScreenState extends State<MainScreen> {
 
     final videoSection = VideoSection(
       key: _videoSectionKey,
-      hintTextNotifier: _hintTextNotifier,
     );
     final controlSection = ControlSection(
       key: _controlSectionKey,
-      isUIHiddenNotifier: _isUIHiddenNotifier,
-      isBusyNotifier: _isBusyNotifier,
-      hintTextNotifier: _hintTextNotifier,
     );
     final progressSection = ValueListenableBuilder(
-      valueListenable: _isBusyNotifier,
+      valueListenable: UINotifiers().isBusy,
       builder: (context, isBusy, child) => isBusy
           ? const Center(
               child: SizedBox(
@@ -57,15 +50,18 @@ class _MainScreenState extends State<MainScreen> {
             )
           : const VideoProgressWidget(),
     );
+    final roomSection = RoomSection(
+      key: _roomSectionKey,
+    );
 
     return ValueListenableBuilder(
-      valueListenable: FullScreen().notifier,
+      valueListenable: UINotifiers().isFullScreen,
       builder: (context, isFullScreen, child) {
         if (isFullScreen) {
           final hideableUI = Stack(
             fit: StackFit.loose,
             children: [
-              const RoomSection(),
+              roomSection,
               Positioned(
                 bottom: 0,
                 left: 0,
@@ -90,7 +86,7 @@ class _MainScreenState extends State<MainScreen> {
             children: [
               videoSection,
               ValueListenableBuilder(
-                valueListenable: _isUIHiddenNotifier,
+                valueListenable: UINotifiers().isUIHidden,
                 builder: (context, isUIHidden, child) => MouseRegion(
                   opaque: false,
                   cursor: isUIHidden
@@ -100,12 +96,12 @@ class _MainScreenState extends State<MainScreen> {
                   onExit: (event) => _hideUITimer.cancel(),
                   onHover: (event) {
                     _hideUITimer.reset();
-                    _isUIHiddenNotifier.value = false;
+                    UINotifiers().isUIHidden.value = false;
                   },
                 ),
               ),
               ValueListenableBuilder(
-                valueListenable: _isUIHiddenNotifier,
+                valueListenable: UINotifiers().isUIHidden,
                 builder: (context, isUIHidden, child) => AnimatedOpacity(
                   opacity: isUIHidden ? 0.0 : 1.0,
                   curve: Curves.easeInCubic,
@@ -120,12 +116,12 @@ class _MainScreenState extends State<MainScreen> {
           return Stack(
             fit: StackFit.expand,
             children: [
-              const Positioned(
+              Positioned(
                 top: 0,
                 height: roomSectionHeight,
                 left: 0,
                 right: 0,
-                child: RoomSection(),
+                child: roomSection,
               ),
               Positioned(
                 top: roomSectionHeight,
@@ -152,40 +148,6 @@ class _MainScreenState extends State<MainScreen> {
           );
         }
       },
-    );
-  }
-}
-
-class RoomSection extends StatelessWidget {
-  const RoomSection({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        vertical: 8,
-        horizontal: 16,
-      ),
-      child: ListenableBuilder(
-        listenable: IMController().channelWatchers,
-        builder: (context, child) {
-          if (IMController().currentUserNotifier.value == null) {
-            return const SizedBox.shrink();
-          }
-
-          String text = IMController()
-              .channelWatchers
-              .toStringExcept(IMController().currentUserNotifier.value!);
-          if (text.isEmpty) {
-            return const SizedBox.shrink();
-          }
-
-          return Text(
-            '$text 在和你一起看',
-            textAlign: TextAlign.left,
-          );
-        },
-      ),
     );
   }
 }

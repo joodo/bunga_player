@@ -1,6 +1,6 @@
 import 'package:audioplayers/audioplayers.dart';
-import 'package:bunga_player/common/fullscreen.dart';
-import 'package:bunga_player/common/im_controller.dart';
+import 'package:bunga_player/screens/control_section/video_open_control.dart';
+import 'package:bunga_player/singletons/im_controller.dart';
 import 'package:bunga_player/screens/control_section/call_control.dart';
 import 'package:bunga_player/screens/control_section/indexed_stack_item.dart';
 import 'package:bunga_player/screens/control_section/login_control.dart';
@@ -10,6 +10,8 @@ import 'package:bunga_player/screens/control_section/subtitle_control.dart';
 import 'package:bunga_player/screens/control_section/tune_control.dart';
 import 'package:bunga_player/screens/control_section/welcome_control.dart';
 import 'package:bunga_player/screens/player_section/video_progress_widget.dart';
+import 'package:bunga_player/singletons/ui_notifiers.dart';
+import 'package:bunga_player/singletons/video_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -21,18 +23,11 @@ enum ControlUIState {
   popmoji,
   subtitle,
   tune,
+  open,
 }
 
 class ControlSection extends StatefulWidget {
-  final ValueNotifier<bool> isUIHiddenNotifier;
-  final ValueNotifier<bool> isBusyNotifier;
-  final ValueNotifier<String?> hintTextNotifier;
-  const ControlSection({
-    super.key,
-    required this.isUIHiddenNotifier,
-    required this.isBusyNotifier,
-    required this.hintTextNotifier,
-  });
+  const ControlSection({super.key});
   @override
   State<ControlSection> createState() => _ControlSectionState();
 }
@@ -40,15 +35,11 @@ class ControlSection extends StatefulWidget {
 class _ControlSectionState extends State<ControlSection> {
   late final _controls = <Widget>[
     LoginControl(
-      isBusyNotifier: widget.isBusyNotifier,
-      hintTextNotifier: widget.hintTextNotifier,
       onLoginSuccess: () => setState(() {
         _uiState = ControlUIState.welcome;
       }),
     ),
     WelcomeControl(
-      isBusyNotifier: widget.isBusyNotifier,
-      hintTextNotifier: widget.hintTextNotifier,
       onLoadSuccessed: () => setState(() {
         _uiState = ControlUIState.main;
       }),
@@ -57,7 +48,6 @@ class _ControlSectionState extends State<ControlSection> {
       }),
     ),
     MainControl(
-      isBusyNotifier: widget.isBusyNotifier,
       onStateButtonPressed: (stateString) => setState(() {
         _uiState = ControlUIState.values
             .firstWhere((e) => e.toString().split('.').last == stateString);
@@ -80,6 +70,16 @@ class _ControlSectionState extends State<ControlSection> {
     ),
     TuneControl(
       onBackPressed: () => setState(() {
+        _uiState = ControlUIState.main;
+      }),
+    ),
+    VideoOpenControl(
+      isBusyNotifier: UINotifiers().isBusy,
+      hintTextNotifier: UINotifiers().hintText,
+      onBackPressed: () => setState(() {
+        _uiState = ControlUIState.main;
+      }),
+      onLoadSuccessed: () => setState(() {
         _uiState = ControlUIState.main;
       }),
     ),
@@ -106,16 +106,16 @@ class _ControlSectionState extends State<ControlSection> {
   void initState() {
     super.initState();
 
-    widget.isUIHiddenNotifier.addListener(_onUIHiddenChanged);
-    FullScreen().notifier.addListener(_onFullScreenChanged);
+    UINotifiers().isUIHidden.addListener(_onUIHiddenChanged);
+    UINotifiers().isFullScreen.addListener(_onFullScreenChanged);
     IMController().callStatus.addListener(_onCallStatusChanged);
   }
 
   @override
   void dispose() {
-    widget.isUIHiddenNotifier.removeListener(_onUIHiddenChanged);
+    UINotifiers().isUIHidden.removeListener(_onUIHiddenChanged);
     IMController().callStatus.removeListener(_onCallStatusChanged);
-    FullScreen().notifier.removeListener(_onFullScreenChanged);
+    UINotifiers().isFullScreen.removeListener(_onFullScreenChanged);
 
     super.dispose();
   }
@@ -174,8 +174,9 @@ class _ControlSectionState extends State<ControlSection> {
 
   void _onUIHiddenChanged() {
     // When show again
-    if (widget.isUIHiddenNotifier.value == false &&
-        widget.hintTextNotifier.value == null) {
+    if (UINotifiers().isUIHidden.value == false &&
+        // Avoid change login control to main control
+        !VideoController().isStoped) {
       setState(() {
         _uiState = ControlUIState.main;
       });
@@ -184,7 +185,7 @@ class _ControlSectionState extends State<ControlSection> {
 
   void _onFullScreenChanged() async {
     // HACK: exit full screen makes layout a mass in Windows
-    if (FullScreen().notifier.value == false) {
+    if (UINotifiers().isFullScreen.value == false) {
       var size = await windowManager.getSize();
       size += const Offset(1, 1);
       windowManager.setSize(size);

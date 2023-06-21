@@ -1,13 +1,12 @@
-import 'package:bunga_player/common/fullscreen.dart';
-import 'package:bunga_player/common/im_controller.dart';
-import 'package:bunga_player/common/video_controller.dart';
+import 'package:bunga_player/singletons/im_controller.dart';
+import 'package:bunga_player/singletons/ui_notifiers.dart';
+import 'package:bunga_player/singletons/video_controller.dart';
 import 'package:bunga_player/screens/player_section/placeholder.dart';
 import 'package:bunga_player/screens/player_section/popmoji_player.dart';
 import 'package:flutter/material.dart';
 
 class VideoSection extends StatefulWidget {
-  final ValueNotifier<String?> hintTextNotifier;
-  const VideoSection({super.key, required this.hintTextNotifier});
+  const VideoSection({super.key});
 
   @override
   State<VideoSection> createState() => _VideoSectionState();
@@ -29,19 +28,20 @@ class _VideoSectionState extends State<VideoSection> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onDoubleTap: FullScreen().toggle,
+      onDoubleTap: () =>
+          UINotifiers().isFullScreen.value = !UINotifiers().isFullScreen.value,
       onTap: VideoController().togglePlay,
       child: Stack(
         fit: StackFit.expand,
         children: [
           VideoController().video,
           ValueListenableBuilder<String?>(
-            valueListenable: widget.hintTextNotifier,
+            valueListenable: UINotifiers().hintText,
             builder: (context, text, child) => text == null
                 ? const SizedBox.shrink()
                 : PlayerPlaceholder(
                     isAwakeNotifier: _loggedInNotifier,
-                    textNotifier: widget.hintTextNotifier,
+                    textNotifier: UINotifiers().hintText,
                   ),
           ),
           const PopmojiPlayer(),

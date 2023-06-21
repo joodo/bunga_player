@@ -1,6 +1,11 @@
-import 'package:bunga_player/common/im_controller.dart';
-import 'package:bunga_player/common/logger.dart';
+import 'dart:io';
+
+import 'package:bunga_player/common/bili_video.dart';
+import 'package:bunga_player/singletons/im_video_connector.dart';
+import 'package:bunga_player/singletons/logger.dart';
+import 'package:bunga_player/utils/value_listenable.dart';
 import 'package:collection/collection.dart';
+import 'package:crclib/catalog.dart';
 import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
 import 'package:media_kit/media_kit.dart';
@@ -89,7 +94,6 @@ class VideoController {
         _player.pause();
         Wakelock.disable();
       }
-      if (!_isDraggingSlider) IMController().sendPlayerStatus();
     });
 
     volume.addListener(() {
@@ -141,57 +145,64 @@ class VideoController {
     });
   }
 
-  Future<void> loadVideo(source) async {
-    if (source is String) {
-      // local file
-      await _player.open(Media(source), play: false);
-      await _controller.waitUntilFirstFrameRendered;
-    } else if (source is List<String>) {
-      // bilibili video urls
-      bool success = false;
+  final videoHashNotifier = ValueNotifier<String?>(null);
 
-      for (var url in source) {
-        await _player.open(
-          Media(
-            url,
-            httpHeaders: {'Referer': 'https://www.bilibili.com/'},
-          ),
-          play: false,
-        );
+  Future<void> loadLocalVideo(String path) async {
+    await _player.open(Media(path), play: false);
+    await _controller.waitUntilFirstFrameRendered;
 
-        await Future.any([
-          // HACK: To found whether network media open success
-          Future.delayed(const Duration(seconds: 6)),
-          () async {
-            await _controller.waitUntilFirstFrameRendered;
-            success = true;
-          }(),
-        ]);
-        if (success) break;
-        logger.w('Fail to open source $source, try next one');
-      }
+    final crcValue =
+        await File(path).openRead().take(1000).transform(Crc32Xz()).single;
+    final crcString = crcValue.toString();
+    videoHashNotifier.value = 'local-$crcString';
+  }
 
-      if (!success) throw 'All source tested, no one success';
-    } else {
-      throw 'Unknown media source';
+  Future<void> loadBiliVideo(BiliVideo biliVideo) async {
+    bool success = false;
+
+    for (var url in biliVideo.videoUrls) {
+      await _player.open(
+        Media(
+          url,
+          httpHeaders: {'Referer': 'https://www.bilibili.com/'},
+        ),
+        play: false,
+      );
+
+      await Future.any([
+        // HACK: To found whether network media open success
+        Future.delayed(const Duration(seconds: 6)),
+        () async {
+          await _controller.waitUntilFirstFrameRendered;
+          success = true;
+        }(),
+      ]);
+      if (success) break;
+      logger.w('Fail to open url $url, try next one');
     }
+
+    if (!success) throw 'All source tested, no one success';
+
+    videoHashNotifier.value = 'bili-${biliVideo.bvid}-${biliVideo.p}';
   }
 
   void togglePlay() {
     if (isStoped) return;
     isPlaying.value = !isPlaying.value;
+    IMVideoConnector().sendPlayerStatus();
   }
 
   void seekTo(Duration target) {
     if (isStoped) return;
     position.value = target;
     _player.seek(target);
-    IMController().sendPlayerStatus();
+    IMVideoConnector().sendPlayerStatus();
   }
 
   Future<void> stop() async {
     await _player.open(emptyMedia, play: false);
     await _controller.waitUntilFirstFrameRendered;
+    videoHashNotifier.value = null;
   }
 
   void onDraggingSliderStart(Duration positionValue) {
@@ -211,7 +222,7 @@ class VideoController {
     isPlaying.value = _isPlayingBeforeDraggingSlider;
     _isDraggingSlider = false;
 
-    IMController().sendPlayerStatus();
+    IMVideoConnector().sendPlayerStatus();
   }
 
   void setAudioTrack(String? id) {
@@ -237,44 +248,5 @@ class VideoController {
       calloc.free(command);
       _isWaitingSubtitleLoaded = true;
     }
-  }
-}
-
-class StreamNotifier<T> extends ValueListenable<T> {
-  late final Stream<T> _stream;
-  final List<VoidCallback> _listeners = [];
-  late T _value;
-
-  StreamNotifier({required T initialValue, required Stream<T> stream}) {
-    _value = initialValue;
-    _stream = stream;
-
-    _stream.listen((value) {
-      _value = value;
-      for (var callback in _listeners) {
-        callback.call();
-      }
-    });
-  }
-
-  @override
-  void addListener(VoidCallback listener) => _listeners.add(listener);
-
-  @override
-  void removeListener(VoidCallback listener) => _listeners.remove(listener);
-
-  @override
-  T get value => _value;
-}
-
-class ValueNotifierWithReset<T> extends ValueNotifier<T> {
-  late T _initValue;
-
-  ValueNotifierWithReset(T value) : super(value) {
-    _initValue = value;
-  }
-
-  void reset() {
-    value = _initValue;
   }
 }

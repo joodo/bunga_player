@@ -1,4 +1,4 @@
-import 'package:bunga_player/common/popmoji_controller.dart';
+import 'package:bunga_player/singletons/popmoji_controller.dart';
 import 'package:fireworks/fireworks.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';

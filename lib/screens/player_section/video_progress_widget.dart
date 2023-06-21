@@ -1,5 +1,5 @@
-import 'package:bunga_player/utils.dart';
-import 'package:bunga_player/common/video_controller.dart';
+import 'package:bunga_player/utils/duration.dart';
+import 'package:bunga_player/singletons/video_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:multi_value_listenable_builder/multi_value_listenable_builder.dart';
 
@@ -50,8 +50,11 @@ class _VideoProgressWidgetState extends State<VideoProgressWidget> {
           builder: (context, values, child) {
             return Slider(
               value: dToS(values[0]),
-              secondaryTrackValue:
-                  dToS(values[2] <= values[1] ? values[2] : values[1]),
+              secondaryTrackValue: dToS(values[2] > values[1]
+                  ? values[1]
+                  : values[2] < Duration.zero
+                      ? Duration.zero
+                      : values[2]),
               max: dToS(values[1]),
               focusNode: FocusNode(canRequestFocus: false),
               label: dToHHmmss(values[0]),

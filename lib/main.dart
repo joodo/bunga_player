@@ -1,10 +1,11 @@
 import 'package:bot_toast/bot_toast.dart';
-import 'package:bunga_player/common/snack_bar.dart';
+import 'package:bunga_player/singletons/snack_bar.dart';
 import 'package:bunga_player/screens/main_screen.dart';
 import 'package:bunga_player/wrapper/log_view.dart';
 import 'package:bunga_player/wrapper/shortcuts.dart';
 import 'package:bunga_player/wrapper/update.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_portal/flutter_portal.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -28,6 +29,7 @@ void main() async {
         child = UpdateWrapper(packageInfo: packageInfo, child: child);
         child = botToastBuilder(context, child);
         child = ShortcutsWrapper(child: child);
+        child = Portal(child: child);
         return child;
       },
       navigatorObservers: [BotToastNavigatorObserver()],
