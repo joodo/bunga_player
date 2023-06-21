@@ -20,7 +20,8 @@ class IMVideoConnector {
     logger.i('remote change room data: ${event.channel?.extraData.toString()}');
 
     final user = event.user;
-    if (user == null || user == IMController().currentUserNotifier.value) {
+    if (user == null ||
+        user.id == IMController().currentUserNotifier.value?.id) {
       return;
     }
     showSnackBar('${user.name} 更换了影片');
