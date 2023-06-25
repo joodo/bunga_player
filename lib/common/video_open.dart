@@ -73,6 +73,8 @@ Stream<String> openLocalVideo(bool isUpdate) async* {
       'f4a',
       'f4b',
       'mod',
+      'rm',
+      'rmvb',
     ],
   );
   final file = await openFile(acceptedTypeGroups: <XTypeGroup>[typeGroup]);
