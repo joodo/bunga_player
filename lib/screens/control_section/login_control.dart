@@ -53,7 +53,7 @@ class _LoginControlState extends State<LoginControl> {
 
   @override
   Widget build(BuildContext context) {
-    final body = Row(
+    return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         SizedBox(
@@ -96,21 +96,6 @@ class _LoginControlState extends State<LoginControl> {
           },
         ),
       ],
-    );
-    return Shortcuts(
-      shortcuts: const <ShortcutActivator, Intent>{
-        SingleActivator(LogicalKeyboardKey.arrowUp):
-            DoNothingAndStopPropagationIntent(),
-        SingleActivator(LogicalKeyboardKey.arrowDown):
-            DoNothingAndStopPropagationIntent(),
-        SingleActivator(LogicalKeyboardKey.arrowLeft):
-            DoNothingAndStopPropagationIntent(),
-        SingleActivator(LogicalKeyboardKey.arrowRight):
-            DoNothingAndStopPropagationIntent(),
-        SingleActivator(LogicalKeyboardKey.space):
-            DoNothingAndStopPropagationIntent(),
-      },
-      child: body,
     );
   }
 

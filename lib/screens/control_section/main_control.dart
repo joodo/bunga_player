@@ -1,3 +1,4 @@
+import 'package:bunga_player/actions/play.dart';
 import 'package:bunga_player/singletons/im_controller.dart';
 import 'package:bunga_player/singletons/ui_notifiers.dart';
 import 'package:bunga_player/singletons/video_controller.dart';
@@ -28,7 +29,8 @@ class MainControl extends StatelessWidget {
                     ? const Icon(Icons.pause)
                     : const Icon(Icons.play_arrow),
                 iconSize: 36,
-                onPressed: VideoController().togglePlay,
+                onPressed: () =>
+                    Actions.maybeInvoke(context, const TogglePlayIntent()),
               ),
             ),
             const SizedBox(width: 8),

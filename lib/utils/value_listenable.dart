@@ -50,7 +50,7 @@ class ProxyValueNotifier<T1, T2> extends ValueListenable<T1> {
 
   ValueListenable<T2>? _from;
   ValueListenable<T2>? get from => _from;
-  final T1 Function(T2) proxy;
+  final T1 Function(T2 originValue) proxy;
   void Function()? _proxyFunc;
   set from(ValueListenable<T2>? newNotifier) {
     if (_proxyFunc != null) _from?.removeListener(_proxyFunc!);

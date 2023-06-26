@@ -60,6 +60,9 @@ class IMVideoConnector {
     // Not playing the same video, ignore
     if (!isVideoSameWithRoom) return;
 
+    // HACK: wait for https://github.com/alexmercerind/media_kit/issues/253
+    await Future.delayed(const Duration(milliseconds: 100));
+
     final isPlay = VideoController().isPlaying.value;
     final position = VideoController().position.value;
 
@@ -102,14 +105,14 @@ class IMVideoConnector {
 
     final isPlaying = VideoController().isPlaying.value;
     if (re.first == 'pause' && isPlaying) {
-      VideoController().isPlaying.value = false;
+      VideoController().pause();
       if (canShowSnackBar) {
         showSnackBar('${event.user!.name} 暂停了视频');
         canShowSnackBar = false;
       }
     }
     if (re.first == 'play' && !isPlaying) {
-      VideoController().isPlaying.value = true;
+      VideoController().play();
       if (canShowSnackBar) {
         showSnackBar('${event.user!.name} 播放了视频');
         canShowSnackBar = false;

@@ -117,12 +117,10 @@ class IMController {
   final _channelWatchers = ChannelWatchers();
   ChannelWatchers get channelWatchers => _channelWatchers;
 
-  final _channelUpdateEventNotifier = ProxyValueNotifier<Event?, Event>(
+  final channelUpdateEventNotifier = ProxyValueNotifier<Event?, Event>(
     initialValue: null,
     proxy: (event) => event,
   );
-  ProxyValueNotifier<Event?, Event> get channelUpdateEventNotifier =>
-      _channelUpdateEventNotifier;
 
   final _channelEventSubscribes = <StreamSubscription<Event>>[];
 
@@ -158,7 +156,7 @@ class IMController {
       _currentChannel!.on('user.watching.start').listen(_onUserJoin),
       _currentChannel!.on('user.watching.stop').listen(_onUserLeave),
     ]);
-    _channelUpdateEventNotifier.from = StreamNotifier<Event>(
+    channelUpdateEventNotifier.from = StreamNotifier<Event>(
       initialValue: Event(
         user: currentUserNotifier.value,
         channel: EventChannel(
@@ -185,7 +183,7 @@ class IMController {
 
     _currentChannel = null;
 
-    _channelUpdateEventNotifier.from = null;
+    channelUpdateEventNotifier.from = null;
 
     hangUpCall();
   }

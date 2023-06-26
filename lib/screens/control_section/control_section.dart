@@ -174,7 +174,7 @@ class _ControlSectionState extends State<ControlSection> {
     // When show again
     if (UINotifiers().isUIHidden.value == false &&
         // Avoid change login control to main control
-        !VideoController().isStoped) {
+        !VideoController().isStopped.value) {
       setState(() {
         _uiState = ControlUIState.main;
       });

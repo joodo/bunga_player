@@ -1,5 +1,4 @@
-import 'package:bunga_player/singletons/ui_notifiers.dart';
-import 'package:bunga_player/singletons/video_controller.dart';
+import 'package:bunga_player/actions/play.dart' as play;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -12,76 +11,22 @@ class ShortcutsWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     return Shortcuts(
       shortcuts: const <ShortcutActivator, Intent>{
-        SingleActivator(LogicalKeyboardKey.arrowUp): VolumeIncrementIntent(10),
+        SingleActivator(LogicalKeyboardKey.arrowUp):
+            play.SetVolumeIntent(10, isIncrease: true),
         SingleActivator(LogicalKeyboardKey.arrowDown):
-            VolumeIncrementIntent(-10),
+            play.SetVolumeIntent(-10, isIncrease: true),
         SingleActivator(LogicalKeyboardKey.arrowLeft):
-            PositionIncrementIntent(-5000),
+            play.SetPositionIntent(Duration(seconds: -5), isIncrease: true),
         SingleActivator(LogicalKeyboardKey.arrowRight):
-            PositionIncrementIntent(5000),
-        SingleActivator(LogicalKeyboardKey.space): TogglePlayIntent(),
-        SingleActivator(LogicalKeyboardKey.escape): FullScreenIntent(false),
+            play.SetPositionIntent(Duration(seconds: 5), isIncrease: true),
+        SingleActivator(LogicalKeyboardKey.space): play.TogglePlayIntent(),
+        SingleActivator(LogicalKeyboardKey.escape):
+            play.SetFullScreenIntent(false),
       },
       child: Actions(
-        actions: <Type, Action<Intent>>{
-          VolumeIncrementIntent: CallbackAction<VolumeIncrementIntent>(
-            onInvoke: (VolumeIncrementIntent intent) {
-              var volume = VideoController().volume.value + intent.amount;
-              volume = volume > 100.0
-                  ? 100
-                  : volume < 0
-                      ? 0
-                      : volume;
-
-              VideoController().volume.value = volume;
-              return null;
-            },
-          ),
-          PositionIncrementIntent: CallbackAction<PositionIncrementIntent>(
-            onInvoke: (PositionIncrementIntent intent) {
-              var position = Duration(
-                  milliseconds:
-                      VideoController().position.value.inMilliseconds +
-                          intent.milliseconds);
-              position = position > VideoController().duration.value
-                  ? VideoController().duration.value
-                  : position < Duration.zero
-                      ? Duration.zero
-                      : position;
-              VideoController().seekTo(position);
-              return null;
-            },
-          ),
-          TogglePlayIntent: CallbackAction<TogglePlayIntent>(
-            onInvoke: (TogglePlayIntent intent) =>
-                VideoController().togglePlay(),
-          ),
-          FullScreenIntent: CallbackAction<FullScreenIntent>(
-            onInvoke: (FullScreenIntent intent) =>
-                UINotifiers().isFullScreen.value = intent.isFullScreen,
-          ),
-        },
+        actions: {...play.bindings},
         child: child,
       ),
     );
   }
-}
-
-class VolumeIncrementIntent extends Intent {
-  const VolumeIncrementIntent(this.amount);
-  final double amount;
-}
-
-class PositionIncrementIntent extends Intent {
-  const PositionIncrementIntent(this.milliseconds);
-  final int milliseconds;
-}
-
-class TogglePlayIntent extends Intent {
-  const TogglePlayIntent();
-}
-
-class FullScreenIntent extends Intent {
-  const FullScreenIntent(this.isFullScreen);
-  final bool isFullScreen;
 }

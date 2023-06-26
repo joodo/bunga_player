@@ -1,3 +1,4 @@
+import 'package:bunga_player/actions/play.dart';
 import 'package:bunga_player/singletons/im_controller.dart';
 import 'package:bunga_player/singletons/ui_notifiers.dart';
 import 'package:bunga_player/singletons/video_controller.dart';
@@ -28,9 +29,9 @@ class _VideoSectionState extends State<VideoSection> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onDoubleTap: () =>
-          UINotifiers().isFullScreen.value = !UINotifiers().isFullScreen.value,
-      onTap: VideoController().togglePlay,
+      onDoubleTap: () => Actions.maybeInvoke(
+          context, SetFullScreenIntent(!UINotifiers().isFullScreen.value)),
+      onTap: () => Actions.maybeInvoke(context, const TogglePlayIntent()),
       child: Stack(
         fit: StackFit.expand,
         children: [

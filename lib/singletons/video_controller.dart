@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:bunga_player/common/bili_video.dart';
-import 'package:bunga_player/singletons/im_video_connector.dart';
 import 'package:bunga_player/singletons/logger.dart';
 import 'package:bunga_player/utils/value_listenable.dart';
 import 'package:collection/collection.dart';
@@ -35,12 +34,19 @@ class VideoController {
     initialValue: Duration.zero,
     stream: _player.streams.buffer,
   );
-  final isPlaying = ValueNotifier<bool>(false);
-  final position = ValueNotifier<Duration>(Duration.zero);
+  late final position = StreamNotifier<Duration>(
+    initialValue: Duration.zero,
+    stream: _player.streams.position,
+  );
+  late final isPlaying = StreamNotifier<bool>(
+    initialValue: false,
+    stream: _player.streams.playing,
+  );
+
+  // Don't use StreamNotifier for faster UI response
   final volume = ValueNotifier<double>(100.0);
   final isMute = ValueNotifier<bool>(false);
   final contrast = ValueNotifierWithReset<int>(0);
-  bool get isStoped => _player.state.playlist.medias[0] == emptyMedia;
 
   late final tracks = StreamNotifier<Tracks?>(
     initialValue: null,
@@ -54,9 +60,6 @@ class VideoController {
   final subDelay = ValueNotifierWithReset<double>(0.0); // sub-delay
   final subSize = ValueNotifierWithReset<double>(55.0); // sub-font-size
   final subPosition = ValueNotifierWithReset<double>(100.0); // sub-pos=<0-150>
-
-  bool _isDraggingSlider = false;
-  bool _isPlayingBeforeDraggingSlider = false;
 
   bool _isWaitingSubtitleLoaded = false;
 
@@ -73,25 +76,14 @@ class VideoController {
     _player.streams.log.listen(
         (event) => logger.i('Player log: [${event.prefix}]${event.text}'));
 
-    _player.streams.position.listen((positionValue) {
-      if (!_isDraggingSlider) {
-        position.value = positionValue;
-      }
-    });
-
     duration.addListener(() {
       // HACK: remove this listener will cause duration always 0. WHY?!!
     });
 
-    _player.streams.playing.listen((isPlaying) {
-      this.isPlaying.value = isPlaying;
-    });
     isPlaying.addListener(() {
       if (isPlaying.value) {
-        _player.play();
         Wakelock.enable();
       } else {
-        _player.pause();
         Wakelock.disable();
       }
     });
@@ -145,7 +137,17 @@ class VideoController {
     });
   }
 
-  final videoHashNotifier = ValueNotifier<String?>(null);
+  final _videoHashNotifier = ValueNotifier<String?>(null);
+  late final videoHashNotifier = ProxyValueNotifier<String?, String?>(
+    initialValue: null,
+    proxy: (p0) => p0,
+    from: _videoHashNotifier,
+  );
+  late final isStopped = ProxyValueNotifier<bool, String?>(
+    initialValue: true,
+    proxy: (originValue) => originValue == null,
+    from: _videoHashNotifier,
+  );
 
   Future<void> loadLocalVideo(String path) async {
     await _player.open(Media(path), play: false);
@@ -154,7 +156,7 @@ class VideoController {
     final crcValue =
         await File(path).openRead().take(1000).transform(Crc32Xz()).single;
     final crcString = crcValue.toString();
-    videoHashNotifier.value = 'local-$crcString';
+    _videoHashNotifier.value = 'local-$crcString';
   }
 
   Future<void> loadBiliVideo(BiliVideo biliVideo) async {
@@ -183,47 +185,19 @@ class VideoController {
 
     if (!success) throw 'All source tested, no one success';
 
-    videoHashNotifier.value = 'bili-${biliVideo.bvid}-${biliVideo.p}';
+    _videoHashNotifier.value = 'bili-${biliVideo.bvid}-${biliVideo.p}';
   }
 
-  void togglePlay() {
-    if (isStoped) return;
-    isPlaying.value = !isPlaying.value;
-    IMVideoConnector().sendPlayerStatus();
-  }
-
-  void seekTo(Duration target) {
-    if (isStoped) return;
-    position.value = target;
-    _player.seek(target);
-    IMVideoConnector().sendPlayerStatus();
-  }
+  Future<void> togglePlay() => _player.playOrPause();
+  Future<void> pause() => _player.pause();
+  Future<void> play() => _player.play();
+  Future<void> seekTo(Duration target) => _player.seek(target);
 
   Future<void> stop() async {
-    isPlaying.value = false;
+    _player.pause();
     await _player.open(emptyMedia, play: false);
     await _controller.waitUntilFirstFrameRendered;
-    videoHashNotifier.value = null;
-  }
-
-  void onDraggingSliderStart(Duration positionValue) {
-    _isDraggingSlider = true;
-    _isPlayingBeforeDraggingSlider = isPlaying.value;
-    isPlaying.value = false;
-    position.value = positionValue;
-  }
-
-  void onDraggingSlider(Duration positionValue) {
-    position.value = positionValue;
-    _player.seek(positionValue);
-  }
-
-  void onDraggingSliderFinished(Duration positionValue) {
-    position.value = positionValue;
-    isPlaying.value = _isPlayingBeforeDraggingSlider;
-    _isDraggingSlider = false;
-
-    IMVideoConnector().sendPlayerStatus();
+    _videoHashNotifier.value = null;
   }
 
   void setAudioTrack(String? id) {
