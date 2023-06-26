@@ -2,36 +2,39 @@ import 'dart:async';
 
 import 'package:bunga_player/common/bili_video.dart';
 import 'package:bunga_player/singletons/im_controller.dart';
-import 'package:bunga_player/singletons/im_video_connector.dart';
 import 'package:bunga_player/singletons/logger.dart';
 import 'package:bunga_player/singletons/snack_bar.dart';
+import 'package:bunga_player/singletons/ui_notifiers.dart';
 import 'package:bunga_player/singletons/video_controller.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:window_manager/window_manager.dart';
 
 class NoFileSelectedException implements Exception {}
 
-class BiliChannelInfo {
-  final String id;
+class BiliChannelData {
+  final String? id;
+  final String hash;
   final String name;
   final String pic;
-  final String creator;
-  final String bvid;
-  final int p;
+  final String? creator;
 
-  BiliChannelInfo({
-    required this.id,
+  BiliChannelData({
+    this.id,
+    required this.hash,
     required this.name,
     required this.pic,
-    required this.creator,
-    required this.bvid,
-    required this.p,
+    this.creator,
   });
 }
 
-Stream<String> openLocalVideo(bool isUpdate) async* {
+class LocalVideoChannelData {
+  final String name;
+  final String hash;
+  LocalVideoChannelData({required this.name, required this.hash});
+}
+
+Future<LocalVideoChannelData> openLocalVideo() async {
   const typeGroup = XTypeGroup(
     label: 'videos',
     extensions: <String>[
@@ -80,121 +83,68 @@ Stream<String> openLocalVideo(bool isUpdate) async* {
   final file = await openFile(acceptedTypeGroups: <XTypeGroup>[typeGroup]);
   if (file == null) throw NoFileSelectedException();
 
-  // Update room data only if playing correct video
-  final shouldUpdateRoomData = IMVideoConnector().isVideoSameWithRoom;
-
   VideoController().stop();
 
-  yield '正在收拾客厅……';
+  UINotifiers().hintText.value = '正在收拾客厅……';
   await VideoController().loadLocalVideo(file.path);
   final hash = VideoController().videoHashNotifier.value!;
 
-  if (!isUpdate) {
-    yield '正在发送请柬……';
-    await IMController().createOrJoinRoom(
-      hash,
-      extraData: {
-        'name': file.name,
-        'hash': hash,
-        'video_type': 'local',
-      },
-    );
-  } else if (shouldUpdateRoomData) {
-    await IMController().currentChannel!.updatePartial(set: {
-      'name': file.name,
-      'hash': hash,
-      'video_type': 'local',
-    });
-  }
-  IMVideoConnector().askPosition();
-
   windowManager.setTitle(file.name);
+
+  return LocalVideoChannelData(name: file.name, hash: hash);
 }
 
-Stream<String> openBiliVideo(BuildContext context, bool isUpdate) async* {
+Future<BiliChannelData> openBiliVideo(BuildContext context) async {
   final result = await showDialog(
     context: context,
     builder: (context) => const BiliDialog(),
   );
   if (result == null) throw NoFileSelectedException();
 
-  // Update room data only if playing correct video
-  final shouldUpdateRoomData = IMVideoConnector().isVideoSameWithRoom;
-
-  VideoController().stop();
-
-  yield '正在鬼鬼祟祟……';
-  final BiliVideo biliVideo;
+  UINotifiers().hintText.value = '正在鬼鬼祟祟……';
   if (result is String && result.isNotEmpty) {
-    // Parse bilibili url
+    // Open video by url
     final regex = RegExp(
         r'(http|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])');
     final url = regex.firstMatch(result)?.group(0);
     if (url == null) throw const FormatException('Illegal url');
-    biliVideo = await BiliVideo.fromUrl(Uri.parse(url));
-  } else if (result is BiliChannelInfo) {
-    // Parse bvid and p
-    biliVideo = BiliVideo(bvid: result.bvid, p: result.p);
+
+    final biliVideo = await BiliVideo.fromUrl(Uri.parse(url));
+
+    final hash = await loadBiliVideo(biliVideo);
+
+    return BiliChannelData(
+      hash: hash,
+      name: biliVideo.title,
+      pic: biliVideo.pic,
+    );
+  } else if (result is BiliChannelData) {
+    // Join others
+    final biliVideo = BiliVideo.fromHash(result.hash);
+
+    await loadBiliVideo(biliVideo);
+
+    return result;
   } else {
     throw 'Unknown dialog result';
   }
-
-  await biliVideo.fetch();
-  if (!biliVideo.isHD) {
-    showSnackBar('无法获取高清视频');
-    logger.w('Bilibili: Cookie of serverless funtion outdated');
-  }
-
-  yield '正在收拾客厅……';
-  await VideoController().loadBiliVideo(biliVideo);
-  final hash = VideoController().videoHashNotifier.value!;
-
-  if (!isUpdate) {
-    yield '正在发送请柬……';
-    await IMController().createOrJoinRoom(
-      hash,
-      extraData: {
-        'video_type': 'bilibili',
-        'hash': hash,
-        'name': biliVideo.title,
-        'pic': biliVideo.pic,
-      },
-    );
-    IMVideoConnector().askPosition();
-  } else if (shouldUpdateRoomData) {
-    await IMController().currentChannel!.updatePartial(set: {
-      'video_type': 'bilibili',
-      'hash': hash,
-      'name': biliVideo.title,
-      'pic': biliVideo.pic,
-    });
-  }
-
-  windowManager.setTitle(biliVideo.title);
 }
 
-Stream<String> loadBiliVideoByHash(String videoHash) async* {
+Future<String> loadBiliVideo(BiliVideo biliVideo) async {
   VideoController().stop();
 
-  final splitedHash = videoHash.split('-');
-  if (splitedHash[0] != 'bili') return;
-
-  final biliVideo = BiliVideo(
-    bvid: splitedHash[1],
-    p: int.parse(splitedHash[2]),
-  );
-
-  yield '正在鬼鬼祟祟……';
+  UINotifiers().hintText.value = '正在鬼鬼祟祟……';
   await biliVideo.fetch();
   if (!biliVideo.isHD) {
     showSnackBar('无法获取高清视频');
     logger.w('Bilibili: Cookie of serverless funtion outdated');
   }
 
-  yield '正在收拾客厅……';
-  await VideoController().loadBiliVideo(biliVideo);
+  UINotifiers().hintText.value = '正在收拾客厅……';
+  final hash = await VideoController().loadBiliVideo(biliVideo);
 
   windowManager.setTitle(biliVideo.title);
+  return hash;
 }
 
 class BiliDialog extends StatefulWidget {
@@ -205,7 +155,7 @@ class BiliDialog extends StatefulWidget {
 }
 
 class _BiliDialogState extends State<BiliDialog> {
-  List<BiliChannelInfo> _channels = [];
+  List<BiliChannelData> _channels = [];
   late final Timer _timer;
 
   final _textController = TextEditingController();
@@ -309,7 +259,7 @@ class _BiliDialogState extends State<BiliDialog> {
     Navigator.pop(context, _textController.text);
   }
 
-  Widget _createVideoCard(BiliChannelInfo channelInfo) {
+  Widget _createVideoCard(BiliChannelData channelInfo) {
     final themeData = Theme.of(context);
     final videoImage = Image.network(
       channelInfo.pic,
@@ -331,7 +281,7 @@ class _BiliDialogState extends State<BiliDialog> {
               children: [
                 Flexible(
                   child: Text(
-                    channelInfo.creator,
+                    channelInfo.creator!,
                     style: themeData.textTheme.labelSmall,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -405,17 +355,15 @@ class _BiliDialogState extends State<BiliDialog> {
 
       if (!mounted) return;
       setState(() {
-        _channels = channels.map((channel) {
-          final splitedHash = (channel.extraData['hash'] as String).split('-');
-          return BiliChannelInfo(
-            id: channel.id!,
-            name: channel.name!,
-            pic: channel.extraData['pic'] as String,
-            creator: channel.createdBy!.name,
-            bvid: splitedHash[1],
-            p: int.parse(splitedHash[2]),
-          );
-        }).toList();
+        _channels = channels
+            .map((channel) => BiliChannelData(
+                  id: channel.id!,
+                  hash: channel.extraData['hash'] as String,
+                  name: channel.name!,
+                  pic: channel.extraData['pic'] as String,
+                  creator: channel.createdBy!.name,
+                ))
+            .toList();
       });
     }
 

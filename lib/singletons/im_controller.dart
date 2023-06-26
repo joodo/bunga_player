@@ -124,7 +124,7 @@ class IMController {
 
   final _channelEventSubscribes = <StreamSubscription<Event>>[];
 
-  Future<void> createOrJoinRoom(
+  Future<void> createOrJoinRoomByHash(
     String hash, {
     Map<String, Object?>? extraData,
   }) async {
@@ -138,15 +138,26 @@ class IMController {
 
     if (channels.isNotEmpty) {
       // join exist channel
-      _currentChannel = channels.first;
+      await _setUpChannel(channels.first);
     } else {
       // create channel
-      _currentChannel = _chatClient.channel(
+      await _setUpChannel(_chatClient.channel(
         'livestream',
         id: hash,
         extraData: extraData,
-      );
+      ));
     }
+  }
+
+  Future<void> joinRoomById(String id) async {
+    await _setUpChannel(_chatClient.channel(
+      'livestream',
+      id: id,
+    ));
+  }
+
+  Future<void> _setUpChannel(Channel channel) async {
+    _currentChannel = channel;
 
     await _currentChannel!.watch();
     await _channelWatchers.queryFromChannel(_currentChannel!);

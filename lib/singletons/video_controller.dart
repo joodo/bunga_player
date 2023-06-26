@@ -159,7 +159,7 @@ class VideoController {
     _videoHashNotifier.value = 'local-$crcString';
   }
 
-  Future<void> loadBiliVideo(BiliVideo biliVideo) async {
+  Future<String> loadBiliVideo(BiliVideo biliVideo) async {
     bool success = false;
 
     for (var url in biliVideo.videoUrls) {
@@ -186,6 +186,7 @@ class VideoController {
     if (!success) throw 'All source tested, no one success';
 
     _videoHashNotifier.value = 'bili-${biliVideo.bvid}-${biliVideo.p}';
+    return _videoHashNotifier.value!;
   }
 
   Future<void> togglePlay() => _player.playOrPause();

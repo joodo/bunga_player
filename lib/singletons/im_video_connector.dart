@@ -1,3 +1,4 @@
+import 'package:bunga_player/common/bili_video.dart';
 import 'package:bunga_player/common/video_open.dart';
 import 'package:bunga_player/singletons/im_controller.dart';
 import 'package:bunga_player/singletons/logger.dart';
@@ -36,9 +37,7 @@ class IMVideoConnector {
   Future<void> followRemoteBiliVideoHash(String videoHash) async {
     UINotifiers().isBusy.value = true;
     try {
-      await for (String hint in loadBiliVideoByHash(videoHash)) {
-        UINotifiers().hintText.value = hint;
-      }
+      await loadBiliVideo(BiliVideo.fromHash(videoHash));
     } catch (e) {
       logger.e(e);
     } finally {

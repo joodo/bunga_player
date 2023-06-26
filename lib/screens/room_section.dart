@@ -156,9 +156,8 @@ class _RoomSectionState extends State<RoomSection> {
   void _openLocalVideo() async {
     UINotifiers().isBusy.value = true;
     try {
-      await for (String hint in openLocalVideo(true)) {
-        UINotifiers().hintText.value = hint;
-      }
+      await openLocalVideo();
+      IMVideoConnector().askPosition();
     } catch (e) {
       if (e is! NoFileSelectedException) {
         logger.e(e);

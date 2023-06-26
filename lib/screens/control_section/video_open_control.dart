@@ -1,4 +1,6 @@
 import 'package:bunga_player/common/video_open.dart';
+import 'package:bunga_player/singletons/im_controller.dart';
+import 'package:bunga_player/singletons/im_video_connector.dart';
 import 'package:bunga_player/singletons/logger.dart';
 import 'package:bunga_player/singletons/snack_bar.dart';
 import 'package:bunga_player/singletons/ui_notifiers.dart';
@@ -49,9 +51,21 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
   void _openLocalVideo() async {
     UINotifiers().isBusy.value = true;
     try {
-      await for (String hint in openLocalVideo(true)) {
-        UINotifiers().hintText.value = hint;
+      // Update room data only if playing correct video
+      final shouldUpdateRoomData = IMVideoConnector().isVideoSameWithRoom;
+
+      final data = await openLocalVideo();
+
+      if (shouldUpdateRoomData) {
+        UINotifiers().hintText.value = '正在发送请柬……';
+        await IMController().currentChannel!.updatePartial(set: {
+          'name': data.name,
+          'hash': data.hash,
+          'video_type': 'local',
+        });
       }
+      IMVideoConnector().askPosition();
+
       widget.onLoadSuccessed?.call();
     } catch (e) {
       if (e is! NoFileSelectedException) {
@@ -67,9 +81,22 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
   void _openBilibili() async {
     UINotifiers().isBusy.value = true;
     try {
-      await for (String hint in openBiliVideo(context, true)) {
-        UINotifiers().hintText.value = hint;
+      // Update room data only if playing correct video
+      final shouldUpdateRoomData = IMVideoConnector().isVideoSameWithRoom;
+
+      final biliChannel = await openBiliVideo(context);
+
+      if (shouldUpdateRoomData) {
+        UINotifiers().hintText.value = '正在发送请柬……';
+        await IMController().currentChannel!.updatePartial(set: {
+          'video_type': 'bilibili',
+          'hash': biliChannel.hash,
+          'name': biliChannel.name,
+          'pic': biliChannel.pic,
+        });
       }
+      IMVideoConnector().askPosition();
+
       widget.onLoadSuccessed?.call();
     } catch (e) {
       if (e is! NoFileSelectedException) {

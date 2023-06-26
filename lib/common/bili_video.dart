@@ -22,6 +22,18 @@ class BiliVideo {
     this.p = 1,
   });
 
+  factory BiliVideo.fromHash(String hash) {
+    final splitedHash = hash.split('-');
+    if (splitedHash[0] != 'bili') {
+      throw const FormatException('Bilibili hash should start with "bili-".');
+    }
+
+    return BiliVideo(
+      bvid: splitedHash[1],
+      p: int.parse(splitedHash[2]),
+    );
+  }
+
   bool _isFetched = false;
   bool get isFetched => _isFetched;
   Future<void> fetch() async {

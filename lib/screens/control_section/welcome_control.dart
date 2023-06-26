@@ -1,5 +1,6 @@
 import 'package:bunga_player/common/video_open.dart';
 import 'package:bunga_player/singletons/im_controller.dart';
+import 'package:bunga_player/singletons/im_video_connector.dart';
 import 'package:bunga_player/singletons/logger.dart';
 import 'package:bunga_player/singletons/snack_bar.dart';
 import 'package:bunga_player/screens/control_section/indexed_stack_item.dart';
@@ -66,9 +67,19 @@ class _WelcomeControlState extends State<WelcomeControl> {
   void _openLocalVideo() async {
     UINotifiers().isBusy.value = true;
     try {
-      await for (String hint in openLocalVideo(false)) {
-        UINotifiers().hintText.value = hint;
-      }
+      final data = await openLocalVideo();
+
+      UINotifiers().hintText.value = '正在发送请柬……';
+      await IMController().createOrJoinRoomByHash(
+        data.hash,
+        extraData: {
+          'name': data.name,
+          'hash': data.hash,
+          'video_type': 'local',
+        },
+      );
+      IMVideoConnector().askPosition();
+
       widget.onLoadSuccessed?.call();
     } catch (e) {
       if (e is! NoFileSelectedException) {
@@ -84,9 +95,24 @@ class _WelcomeControlState extends State<WelcomeControl> {
   void _openBilibili() async {
     UINotifiers().isBusy.value = true;
     try {
-      await for (String hint in openBiliVideo(context, false)) {
-        UINotifiers().hintText.value = hint;
+      final biliChannel = await openBiliVideo(context);
+
+      UINotifiers().hintText.value = '正在发送请柬……';
+      if (biliChannel.id == null) {
+        await IMController().createOrJoinRoomByHash(
+          biliChannel.hash,
+          extraData: {
+            'video_type': 'bilibili',
+            'hash': biliChannel.hash,
+            'name': biliChannel.name,
+            'pic': biliChannel.pic,
+          },
+        );
+      } else {
+        await IMController().joinRoomById(biliChannel.id!);
       }
+      IMVideoConnector().askPosition();
+
       widget.onLoadSuccessed?.call();
     } catch (e) {
       if (e is! NoFileSelectedException) {
