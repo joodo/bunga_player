@@ -1,8 +1,8 @@
 import 'package:audioplayers/audioplayers.dart';
+import 'package:bunga_player/screens/control_section/fade_page_route.dart';
 import 'package:bunga_player/screens/control_section/video_open_control.dart';
 import 'package:bunga_player/singletons/im_controller.dart';
 import 'package:bunga_player/screens/control_section/call_control.dart';
-import 'package:bunga_player/screens/control_section/indexed_stack_item.dart';
 import 'package:bunga_player/screens/control_section/login_control.dart';
 import 'package:bunga_player/screens/control_section/main_control.dart';
 import 'package:bunga_player/screens/control_section/popmoji_control.dart';
@@ -33,72 +33,8 @@ class ControlSection extends StatefulWidget {
 }
 
 class _ControlSectionState extends State<ControlSection> {
-  late final _controls = <Widget>[
-    LoginControl(
-      onLoginSuccess: () => setState(() {
-        _uiState = ControlUIState.welcome;
-      }),
-    ),
-    WelcomeControl(
-      onLoadSuccessed: () => setState(() {
-        _uiState = ControlUIState.main;
-      }),
-      onLoggedOut: () => setState(() {
-        _uiState = ControlUIState.login;
-      }),
-    ),
-    MainControl(
-      onStateButtonPressed: (stateString) => setState(() {
-        _uiState = ControlUIState.values
-            .firstWhere((e) => e.toString().split('.').last == stateString);
-      }),
-    ),
-    CallControl(
-      onBackPressed: () => setState(() {
-        _uiState = ControlUIState.main;
-      }),
-    ),
-    PopmojiControl(
-      onBackPressed: () => setState(() {
-        _uiState = ControlUIState.main;
-      }),
-    ),
-    SubtitleControl(
-      onBackPressed: () => setState(() {
-        _uiState = ControlUIState.main;
-      }),
-    ),
-    TuneControl(
-      onBackPressed: () => setState(() {
-        _uiState = ControlUIState.main;
-      }),
-    ),
-    VideoOpenControl(
-      onBackPressed: () => setState(() {
-        _uiState = ControlUIState.main;
-      }),
-      onLoadSuccessed: () => setState(() {
-        _uiState = ControlUIState.main;
-      }),
-    ),
-  ];
-
-  var __uiState = ControlUIState.login;
-  ControlUIState get _uiState => __uiState;
-  set _uiState(ControlUIState newState) {
-    final oldItem = _controls[__uiState.index];
-    if (oldItem is IndexedStackItem) {
-      (oldItem as IndexedStackItem).onLeave();
-    }
-
-    __uiState = newState;
-    final newItem = _controls[__uiState.index];
-    if (newItem is IndexedStackItem) {
-      (newItem as IndexedStackItem).onEnter();
-    }
-  }
-
   final _callRinger = AudioPlayer()..setSource(AssetSource('sounds/call.wav'));
+  late BuildContext _navigatorContext;
 
   @override
   void initState() {
@@ -120,43 +56,67 @@ class _ControlSectionState extends State<ControlSection> {
 
   @override
   Widget build(BuildContext context) {
-    Widget body = IndexedStack(
-      sizing: StackFit.expand,
-      index: _uiState.index,
-      children: _controls,
-    );
+    return Navigator(
+      initialRoute: 'control:login',
+      onGenerateRoute: (settings) {
+        final routes = {
+          'control:login': const LoginControl(),
+          'control:welcome': const WelcomeControl(),
+          'control:main': const MainControl(),
+          'control:call': const CallControl(),
+          'control:popmoji': const PopmojiControl(),
+          'control:subtitle': const SubtitleControl(),
+          'control:tune': const TuneControl(),
+          'control:open': const VideoOpenControl(),
+        };
 
-    body = SliderTheme(
-      data: SliderThemeData(
-        activeTrackColor: Theme.of(context).colorScheme.secondary,
-        thumbColor: Theme.of(context).colorScheme.secondary,
-        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
-        valueIndicatorColor: Theme.of(context).colorScheme.secondary,
-        trackShape: SliderCustomTrackShape(),
-        showValueIndicator: ShowValueIndicator.always,
-      ),
-      child: body,
-    );
+        Widget? body = routes[settings.name];
+        if (body == null) throw Exception('Invalid route: ${settings.name}');
 
-    return body;
+        body = Container(
+          color: Theme.of(context).colorScheme.surface,
+          child: body,
+        );
+        body = SliderTheme(
+          data: SliderThemeData(
+            activeTrackColor: Theme.of(context).colorScheme.secondary,
+            thumbColor: Theme.of(context).colorScheme.secondary,
+            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
+            valueIndicatorColor: Theme.of(context).colorScheme.secondary,
+            trackShape: SliderCustomTrackShape(),
+            showValueIndicator: ShowValueIndicator.always,
+          ),
+          child: body,
+        );
+
+        return FadePageRoute<void>(
+          builder: (BuildContext context) {
+            _navigatorContext = context;
+            return body!;
+          },
+          settings: settings,
+        );
+      },
+    );
   }
 
   void _onCallStatusChanged() {
     final callStatus = IMController().callStatus.value;
 
     // Control section UI
+    final currentControl = _navigatorContext.mounted
+        ? ModalRoute.of(_navigatorContext)?.settings.name
+        : null;
     switch (callStatus) {
       case CallStatus.none:
-        if (_uiState == ControlUIState.call) {
-          setState(() {
-            _uiState = ControlUIState.main;
-          });
+        if (currentControl == 'control:call') {
+          Navigator.of(_navigatorContext).pop();
         }
         break;
       case CallStatus.callIn:
-        setState(() {
-          _uiState = ControlUIState.call;
-        });
+        Navigator.of(_navigatorContext)
+            .popUntil((route) => route.settings.name == 'control:main');
+        Navigator.of(_navigatorContext).pushNamed('control:call');
         break;
       default:
         {}
@@ -175,9 +135,8 @@ class _ControlSectionState extends State<ControlSection> {
     if (UINotifiers().isUIHidden.value == false &&
         // Avoid change login control to main control
         !VideoController().isStopped.value) {
-      setState(() {
-        _uiState = ControlUIState.main;
-      });
+      Navigator.of(_navigatorContext)
+          .popUntil((route) => route.settings.name == 'control:main');
     }
   }
 

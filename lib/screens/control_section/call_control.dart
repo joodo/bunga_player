@@ -4,12 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:multi_value_listenable_builder/multi_value_listenable_builder.dart';
 
 class CallControl extends StatefulWidget {
-  final VoidCallback onBackPressed;
-
-  const CallControl({
-    super.key,
-    required this.onBackPressed,
-  });
+  const CallControl({super.key});
 
   @override
   State<CallControl> createState() => _CallControlState();
@@ -142,7 +137,7 @@ class _CallControlState extends State<CallControl> {
       },
       child: IconButton(
         icon: const Icon(Icons.arrow_back),
-        onPressed: widget.onBackPressed,
+        onPressed: Navigator.of(context).pop,
       ),
     );
   }

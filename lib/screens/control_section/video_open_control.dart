@@ -7,14 +7,7 @@ import 'package:bunga_player/singletons/ui_notifiers.dart';
 import 'package:flutter/material.dart';
 
 class VideoOpenControl extends StatefulWidget {
-  final VoidCallback? onLoadSuccessed;
-  final VoidCallback? onBackPressed;
-
-  const VideoOpenControl({
-    super.key,
-    this.onBackPressed,
-    this.onLoadSuccessed,
-  });
+  const VideoOpenControl({super.key});
 
   @override
   State<VideoOpenControl> createState() => _VideoOpenControlState();
@@ -31,7 +24,7 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
           // Back button
           IconButton(
             icon: const Icon(Icons.arrow_back),
-            onPressed: widget.onBackPressed,
+            onPressed: Navigator.of(context).pop,
           ),
           const SizedBox(width: 8),
           FilledButton(
@@ -66,7 +59,7 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
       }
       IMVideoConnector().askPosition();
 
-      widget.onLoadSuccessed?.call();
+      _onVideoLoaded();
     } catch (e) {
       if (e is! NoFileSelectedException) {
         logger.e(e);
@@ -97,7 +90,7 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
       }
       IMVideoConnector().askPosition();
 
-      widget.onLoadSuccessed?.call();
+      _onVideoLoaded();
     } catch (e) {
       if (e is! NoFileSelectedException) {
         logger.e(e);
@@ -107,5 +100,9 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
       UINotifiers().hintText.value = null;
       UINotifiers().isBusy.value = false;
     }
+  }
+
+  void _onVideoLoaded() {
+    Navigator.of(context).pop();
   }
 }

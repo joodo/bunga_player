@@ -4,12 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class PopmojiControl extends StatelessWidget {
-  final VoidCallback onBackPressed;
-
-  const PopmojiControl({
-    super.key,
-    required this.onBackPressed,
-  });
+  const PopmojiControl({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +41,7 @@ class PopmojiControl extends StatelessWidget {
         icon: svg,
         onPressed: () {
           PopmojiController().send(code);
-          onBackPressed();
+          Navigator.of(context).pop();
         },
       ));
     }
@@ -58,7 +53,7 @@ class PopmojiControl extends StatelessWidget {
         // Back button
         IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: onBackPressed,
+          onPressed: Navigator.of(context).pop,
         ),
         const SizedBox(width: 8),
 

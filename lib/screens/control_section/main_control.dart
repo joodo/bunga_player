@@ -7,12 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:multi_value_listenable_builder/multi_value_listenable_builder.dart';
 
 class MainControl extends StatelessWidget {
-  final ValueSetter<String> onStateButtonPressed;
-
-  const MainControl({
-    super.key,
-    required this.onStateButtonPressed,
-  });
+  const MainControl({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -67,71 +62,88 @@ class MainControl extends StatelessWidget {
 
             // Call Button
             CallButton(
-              onPressed: () => onStateButtonPressed('call'),
+              onPressed: () => Navigator.of(context).pushNamed('control:call'),
             ),
             const SizedBox(width: 8),
 
             // Popmoji Button
             IconButton(
               icon: const Icon(Icons.mood),
-              onPressed: () => onStateButtonPressed('popmoji'),
+              onPressed: () =>
+                  Navigator.of(context).pushNamed('control:popmoji'),
             ),
             const SizedBox(width: 8),
 
-            PopupMenuButton(
-              tooltip: '',
-              itemBuilder: (context) => [
-                // Tune button
-                PopupMenuItem(
-                  child: ListTile(
-                    leading: const Icon(Icons.tune),
-                    title: const Text('音视频调整'),
-                    onTap: () {
-                      Navigator.pop(context);
-                      onStateButtonPressed('tune');
-                    },
+            IconButton(
+              icon: const Icon(Icons.more_horiz),
+              onPressed: () {
+                showMenu(
+                  context: context,
+                  useRootNavigator: true,
+                  position: const RelativeRect.fromLTRB(
+                    double.infinity,
+                    double.infinity,
+                    0,
+                    0,
                   ),
-                ),
-                // Subtitle Button
-                PopupMenuItem(
-                  child: ListTile(
-                    leading: const Icon(Icons.subtitles),
-                    title: const Text('字幕调整'),
-                    onTap: () {
-                      Navigator.pop(context);
-                      onStateButtonPressed('subtitle');
-                    },
-                  ),
-                ),
+                  items: [
+                    // Tune button
+                    PopupMenuItem(
+                      child: ListTile(
+                        leading: const Icon(Icons.tune),
+                        title: const Text('音视频调整'),
+                        onTap: () {
+                          Navigator.of(context, rootNavigator: true).pop();
+                          Navigator.of(context).pushNamed('control:tune');
+                        },
+                      ),
+                    ),
+                    // Subtitle Button
+                    PopupMenuItem(
+                      child: ListTile(
+                        leading: const Icon(Icons.subtitles),
+                        title: const Text('字幕调整'),
+                        onTap: () {
+                          Navigator.of(context, rootNavigator: true).pop();
+                          Navigator.of(context).pushNamed('control:subtitle');
+                        },
+                      ),
+                    ),
 
-                // Change Video Button
-                PopupMenuItem(
-                  child: ListTile(
-                    leading: const Icon(Icons.movie_filter),
-                    title: const Text('换片'),
-                    onTap: () {
-                      Navigator.pop(context);
-                      onStateButtonPressed('open');
-                    },
-                  ),
-                ),
+                    // Change Video Button
+                    PopupMenuItem(
+                      child: ListTile(
+                        leading: const Icon(Icons.movie_filter),
+                        title: const Text('换片'),
+                        onTap: () {
+                          Navigator.of(context, rootNavigator: true).pop();
+                          Navigator.of(context).pushNamed('control:open');
+                        },
+                      ),
+                    ),
 
-                // Leave Button
-                PopupMenuItem(
-                  child: ListTile(
-                    leading: const Icon(Icons.logout),
-                    title: const Text('离开房间'),
-                    onTap: () async {
-                      Navigator.pop(context);
-                      UINotifiers().isBusy.value = true;
-                      await IMController().leaveRoom();
-                      await VideoController().stop();
-                      onStateButtonPressed('welcome');
-                      UINotifiers().isBusy.value = false;
-                    },
-                  ),
-                ),
-              ],
+                    // Leave Button
+                    PopupMenuItem(
+                      child: ListTile(
+                        leading: const Icon(Icons.logout),
+                        title: const Text('离开房间'),
+                        onTap: () async {
+                          Navigator.of(context, rootNavigator: true).pop();
+
+                          final navigator = Navigator.of(context);
+
+                          UINotifiers().isBusy.value = true;
+                          await IMController().leaveRoom();
+                          await VideoController().stop();
+
+                          navigator.popAndPushNamed('control:welcome');
+                          UINotifiers().isBusy.value = false;
+                        },
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
             const SizedBox(width: 16),
 
@@ -168,19 +180,26 @@ class CallButton extends StatefulWidget {
 }
 
 class _CallButtonState extends State<CallButton> with TickerProviderStateMixin {
-  late final AnimationController _controller = AnimationController(
-    duration: const Duration(seconds: 1),
-    upperBound: 0.2,
-    vsync: this,
-  )..repeat(reverse: true);
+  AnimationController? _controller;
   late final Animation<double> _animation = CurvedAnimation(
-    parent: _controller,
+    parent: _controller!,
     curve: Curves.bounceInOut,
   );
 
   @override
+  void initState() {
+    super.initState();
+
+    _controller = AnimationController(
+      duration: const Duration(seconds: 1),
+      upperBound: 0.2,
+      vsync: this,
+    )..repeat(reverse: true);
+  }
+
+  @override
   void dispose() {
-    _controller.dispose();
+    _controller?.dispose();
     super.dispose();
   }
 

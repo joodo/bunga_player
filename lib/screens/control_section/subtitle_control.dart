@@ -13,12 +13,7 @@ enum SubtitleControlUIState {
 }
 
 class SubtitleControl extends StatefulWidget {
-  final VoidCallback onBackPressed;
-
-  const SubtitleControl({
-    super.key,
-    required this.onBackPressed,
-  });
+  const SubtitleControl({super.key});
 
   @override
   State<SubtitleControl> createState() => _SubtitleControlState();
@@ -56,7 +51,7 @@ class _SubtitleControlState extends State<SubtitleControl> {
         // Back button
         IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: widget.onBackPressed,
+          onPressed: Navigator.of(context).pop,
         ),
         const SizedBox(width: 8),
 

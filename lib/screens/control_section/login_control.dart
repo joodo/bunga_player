@@ -1,37 +1,21 @@
 import 'package:bunga_player/singletons/im_controller.dart';
 import 'package:bunga_player/singletons/logger.dart';
 import 'package:bunga_player/singletons/snack_bar.dart';
-import 'package:bunga_player/screens/control_section/indexed_stack_item.dart';
 import 'package:bunga_player/singletons/ui_notifiers.dart';
 import 'package:flutter/material.dart';
 import 'package:multi_value_listenable_builder/multi_value_listenable_builder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class LoginControl extends StatefulWidget with IndexedStackItem {
-  static const askNameText = '怎样称呼你？';
-
-  final VoidCallback? onLoginSuccess;
-
-  const LoginControl({
-    super.key,
-    this.onLoginSuccess,
-  });
+class LoginControl extends StatefulWidget {
+  const LoginControl({super.key});
 
   @override
   State<LoginControl> createState() => _LoginControlState();
-
-  @override
-  void onEnter() {
-    UINotifiers().hintText.value = askNameText;
-  }
-
-  @override
-  void onLeave() {
-    UINotifiers().hintText.value = null;
-  }
 }
 
 class _LoginControlState extends State<LoginControl> {
+  static const _askNameText = '怎样称呼你？';
+
   final _textController = TextEditingController();
 
   @override
@@ -44,8 +28,7 @@ class _LoginControlState extends State<LoginControl> {
         // auto login
         _registerUser(userName);
       } else {
-        // onEnter not trigger on init
-        UINotifiers().hintText.value = LoginControl.askNameText;
+        UINotifiers().hintText.value = _askNameText;
       }
     });
   }
@@ -61,9 +44,6 @@ class _LoginControlState extends State<LoginControl> {
             valueListenable: UINotifiers().isBusy,
             builder: (context, isBusy, child) => TextField(
               style: const TextStyle(height: 1.0),
-              // FIXME: focus won't set when logout
-              // https://github.com/flutter/flutter/issues/114213
-              // Focus problem with IndexedStack
               autofocus: true,
               controller: _textController,
               decoration: const InputDecoration(
@@ -104,17 +84,19 @@ class _LoginControlState extends State<LoginControl> {
 
     try {
       await IMController().login(userName);
-
       SharedPreferences.getInstance()
           .then((pref) => pref.setString('user_name', userName));
-
-      widget.onLoginSuccess?.call();
+      _onLoginSuccess();
     } catch (e) {
       logger.e(e);
       showSnackBar('连接母星失败');
-      UINotifiers().hintText.value = LoginControl.askNameText;
+      UINotifiers().hintText.value = _askNameText;
     } finally {
       UINotifiers().isBusy.value = false;
     }
+  }
+
+  void _onLoginSuccess() {
+    Navigator.of(context).popAndPushNamed('control:welcome');
   }
 }

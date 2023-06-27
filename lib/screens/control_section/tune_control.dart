@@ -6,12 +6,7 @@ import 'package:media_kit/media_kit.dart';
 import 'package:multi_value_listenable_builder/multi_value_listenable_builder.dart';
 
 class TuneControl extends StatelessWidget {
-  final VoidCallback onBackPressed;
-
-  const TuneControl({
-    super.key,
-    required this.onBackPressed,
-  });
+  const TuneControl({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +16,7 @@ class TuneControl extends StatelessWidget {
         // Back button
         IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: onBackPressed,
+          onPressed: Navigator.of(context).pop,
         ),
         const SizedBox(width: 8),
 

@@ -1,3 +1,4 @@
+import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 
 class ControlDropdown extends StatelessWidget {
@@ -14,40 +15,39 @@ class ControlDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InputDecorator(
-      decoration: const InputDecoration(
-        contentPadding: EdgeInsets.symmetric(vertical: 4),
-        border: OutlineInputBorder(),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          items: items,
-          value: value,
-          onChanged: onChanged,
-          padding: const EdgeInsets.only(
-            left: 12,
-            right: 4,
-            top: 8,
-            bottom: 8,
+    return DropdownButtonHideUnderline(
+      child: DropdownButton2<String>(
+        items: items,
+        value: value,
+        onChanged: onChanged,
+        style: Theme.of(context).textTheme.bodyMedium,
+        isExpanded: true,
+        buttonStyleData: ButtonStyleData(
+          padding: const EdgeInsets.only(right: 4),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(
+              color: Theme.of(context).colorScheme.outline,
+            ),
           ),
-          borderRadius: BorderRadius.circular(4),
-          style: Theme.of(context).textTheme.bodyMedium,
-          isExpanded: true,
-          isDense: true,
-          itemHeight: null,
-          focusColor: Colors.transparent,
-          selectedItemBuilder: (context) => items
-              .map(
-                (e) => DropdownMenuItem<String>(
-                  value: e.value,
-                  child: Text(
-                    (e.child as Text).data!,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              )
-              .toList(),
         ),
+        dropdownStyleData: const DropdownStyleData(
+          useRootNavigator: true,
+          // HACK: https://github.com/AhmedLSayed9/dropdown_button2/issues/157
+          isFullScreen: null,
+          isOverButton: true,
+        ),
+        selectedItemBuilder: (context) => items
+            .map(
+              (e) => DropdownMenuItem<String>(
+                value: e.value,
+                child: Text(
+                  (e.child as Text).data!,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            )
+            .toList(),
       ),
     );
   }
