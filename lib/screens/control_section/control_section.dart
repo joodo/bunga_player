@@ -58,6 +58,8 @@ class _ControlSectionState extends State<ControlSection> {
   Widget build(BuildContext context) {
     return Navigator(
       initialRoute: 'control:login',
+      // FIXME: Slider label covered by progressBar
+      clipBehavior: Clip.none,
       onGenerateRoute: (settings) {
         final routes = {
           'control:login': const LoginControl(),
