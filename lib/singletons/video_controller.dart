@@ -76,10 +76,6 @@ class VideoController {
     _player.streams.log.listen(
         (event) => logger.i('Player log: [${event.prefix}]${event.text}'));
 
-    duration.addListener(() {
-      // HACK: remove this listener will cause duration always 0. WHY?!!
-    });
-
     isPlaying.addListener(() {
       if (isPlaying.value) {
         Wakelock.enable();
