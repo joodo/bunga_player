@@ -1,7 +1,7 @@
+import 'package:bunga_player/screens/progress_section.dart';
 import 'package:bunga_player/screens/room_section.dart';
 import 'package:bunga_player/screens/control_section/control_section.dart';
 import 'package:bunga_player/screens/player_section/player_section.dart';
-import 'package:bunga_player/screens/player_section/video_progress_widget.dart';
 import 'package:bunga_player/singletons/ui_notifiers.dart';
 import 'package:flutter/material.dart';
 import 'package:async/async.dart';
@@ -20,27 +20,17 @@ class _MainScreenState extends State<MainScreen> {
   );
 
   final _controlSectionKey = GlobalKey<State<ControlSection>>();
-  final _videoSectionKey = GlobalKey<State<VideoSection>>();
+  final _videoSectionKey = GlobalKey<State<PlayerSection>>();
   final _roomSectionKey = GlobalKey<State<RoomSection>>();
   @override
   Widget build(Object context) {
     const roomSectionHeight = 36.0;
     const controlSectionHeight = 64.0;
 
-    final videoSection = VideoSection(key: _videoSectionKey);
+    final playerSection = PlayerSection(key: _videoSectionKey);
     final controlSection = ControlSection(key: _controlSectionKey);
     final roomSection = RoomSection(key: _roomSectionKey);
-    final progressSection = ValueListenableBuilder(
-      valueListenable: UINotifiers().isBusy,
-      builder: (context, isBusy, child) => isBusy
-          ? const Center(
-              child: SizedBox(
-                height: 4,
-                child: LinearProgressIndicator(),
-              ),
-            )
-          : const VideoProgressWidget(),
-    );
+    const progressSection = ProgressSection();
 
     return ValueListenableBuilder(
       valueListenable: UINotifiers().isFullScreen,
@@ -60,7 +50,7 @@ class _MainScreenState extends State<MainScreen> {
                   child: controlSection,
                 ),
               ),
-              Positioned(
+              const Positioned(
                 bottom: controlSectionHeight - 8,
                 left: 0,
                 right: 0,
@@ -72,7 +62,7 @@ class _MainScreenState extends State<MainScreen> {
           return Stack(
             fit: StackFit.expand,
             children: [
-              videoSection,
+              playerSection,
               ValueListenableBuilder(
                 valueListenable: UINotifiers().isUIHidden,
                 builder: (context, isUIHidden, child) => MouseRegion(
@@ -116,7 +106,7 @@ class _MainScreenState extends State<MainScreen> {
                 bottom: controlSectionHeight,
                 left: 0,
                 right: 0,
-                child: videoSection,
+                child: playerSection,
               ),
               Positioned(
                 height: controlSectionHeight,
@@ -125,7 +115,7 @@ class _MainScreenState extends State<MainScreen> {
                 right: 0,
                 child: controlSection,
               ),
-              Positioned(
+              const Positioned(
                 bottom: controlSectionHeight - 8,
                 height: 16,
                 left: 0,
