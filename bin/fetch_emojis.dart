@@ -24,7 +24,7 @@ void main() async {
     }
 
     print('$animeCode:');
-    final svgFile = File('assets/images/emojis/u$svgCode.svg');
+    final svgFile = File('assets/images/emojis/u$animeCode.svg');
     if (await svgFile.exists()) {
       print('  Svg file exists.');
     } else {

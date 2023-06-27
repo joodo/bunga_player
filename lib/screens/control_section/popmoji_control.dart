@@ -15,22 +15,11 @@ class PopmojiControl extends StatelessWidget {
       if (code.length < 5) {
         if (previousCode == null) {
           previousCode = code;
+          continue;
         } else {
           code = '${previousCode}_$code';
-          final svg = SvgPicture.asset(
-            'assets/images/emojis/u$previousCode.svg',
-            height: 24,
-          );
           previousCode = null;
-
-          emojiButtons.add(IconButton(
-            icon: svg,
-            onPressed: () {
-              PopmojiController().send(code);
-            },
-          ));
         }
-        continue;
       }
 
       final svg = SvgPicture.asset(
