@@ -136,7 +136,7 @@ SPEC CHECKSUMS:
   AgoraRtcEngine_macOS: 428dd3bf05b1107bd201318e353604b4feb4f41f
   audioplayers_darwin: dcad41de4fbd0099cb3749f7ab3b0cb8f70b810c
   connectivity_plus: 18d3c32514c886e046de60e9c13895109866c747
-  file_selector_macos: 0f85c1108e2fd597b58246bc0b0c1cb483d7593b
+  file_selector_macos: 468fb6b81fac7c0e88d71317f3eec34c3b008ff9
   FlutterMacOS: 8f6f14fa908a6fb3fba0cd85dbd81ec4b251fb24
   iris_method_channel: fba932d668df5b2a085f19bcd0b1f23d667a83cd
   media_kit_libs_macos_video: 0a4a5bf21533cba968c0833f1b59e9af8b5847f1

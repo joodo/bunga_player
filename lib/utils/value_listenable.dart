@@ -58,9 +58,7 @@ class ProxyValueNotifier<T1, T2> extends ValueListenable<T1> {
     _from = newNotifier;
     if (_from == null) return;
 
-    _proxyFunc = () {
-      _setValue(proxy(_from!.value));
-    };
+    _proxyFunc = () => _setValue(proxy(_from!.value));
     _from!.addListener(_proxyFunc!);
     _setValue(proxy(_from!.value));
   }

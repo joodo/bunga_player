@@ -13,6 +13,7 @@ class PopmojiPlayer extends StatefulWidget {
 class _PopmojiPlayerState extends State<PopmojiPlayer>
     with TickerProviderStateMixin {
   late final _animationController = AnimationController(vsync: this);
+
   // popmojis
   static const maxSize = 200.0;
   late final _sizeAnime = TweenSequence<double>([

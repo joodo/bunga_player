@@ -8,7 +8,7 @@ import 'package:crclib/catalog.dart';
 import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
 import 'package:media_kit/media_kit.dart';
-import 'package:media_kit_video/media_kit_video.dart' as media_kit_video;
+import 'package:media_kit_video/media_kit_video.dart' as media_kit;
 import 'package:wakelock/wakelock.dart';
 
 class VideoController {
@@ -22,9 +22,8 @@ class VideoController {
     configuration: const PlayerConfiguration(logLevel: MPVLogLevel.warn),
   )..open(emptyMedia, play: false);
 
-  late final _controller = media_kit_video.VideoController(_player);
-  late final _video = media_kit_video.Video(controller: _controller);
-  media_kit_video.Video get video => _video;
+  late final _controller = media_kit.VideoController(_player);
+  media_kit.VideoController get controller => _controller;
 
   late final duration = StreamNotifier<Duration>(
     initialValue: Duration.zero,

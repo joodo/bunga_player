@@ -1,10 +1,10 @@
-import 'package:bunga_player/singletons/im_controller.dart';
 import 'package:bunga_player/singletons/ui_notifiers.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:rive/rive.dart';
 
 class PlayerPlaceholder extends StatefulWidget {
-  final ValueNotifier<bool> isAwakeNotifier;
+  final ValueListenable<bool> isAwakeNotifier;
 
   const PlayerPlaceholder({
     super.key,
@@ -21,8 +21,8 @@ class _PlayerPlaceholderState extends State<PlayerPlaceholder> {
   @override
   void initState() {
     super.initState();
-    IMController().currentUserNotifier.addListener(() {
-      _isCatAwakeInput.value = IMController().currentUserNotifier.value != null;
+    widget.isAwakeNotifier.addListener(() {
+      _isCatAwakeInput.value = widget.isAwakeNotifier.value;
     });
   }
 
@@ -49,8 +49,7 @@ class _PlayerPlaceholderState extends State<PlayerPlaceholder> {
 
                       _isCatAwakeInput =
                           controller.findInput<bool>('isWaken') as SMIBool;
-                      _isCatAwakeInput.value =
-                          IMController().currentUserNotifier.value != null;
+                      _isCatAwakeInput.value = widget.isAwakeNotifier.value;
                     },
                   ),
                 ),
