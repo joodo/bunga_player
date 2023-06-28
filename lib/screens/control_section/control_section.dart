@@ -1,5 +1,4 @@
 import 'package:audioplayers/audioplayers.dart';
-import 'package:bunga_player/screens/control_section/fade_page_route.dart';
 import 'package:bunga_player/screens/control_section/video_open_control.dart';
 import 'package:bunga_player/singletons/im_controller.dart';
 import 'package:bunga_player/screens/control_section/call_control.dart';
@@ -58,8 +57,6 @@ class _ControlSectionState extends State<ControlSection> {
   Widget build(BuildContext context) {
     return Navigator(
       initialRoute: 'control:login',
-      // FIXME: Slider label covered by progressBar
-      clipBehavior: Clip.none,
       onGenerateRoute: (settings) {
         final routes = {
           'control:login': const LoginControl(),
@@ -91,7 +88,7 @@ class _ControlSectionState extends State<ControlSection> {
           child: body,
         );
 
-        return FadePageRoute<void>(
+        return _ControlRoute<void>(
           builder: (BuildContext context) {
             _navigatorContext = context;
             return body!;
@@ -149,5 +146,26 @@ class _ControlSectionState extends State<ControlSection> {
       size += const Offset(1, 1);
       windowManager.setSize(size);
     }
+  }
+}
+
+class _ControlRoute<T> extends MaterialPageRoute<T> {
+  _ControlRoute({
+    required WidgetBuilder builder,
+    required RouteSettings settings,
+  }) : super(builder: builder, settings: settings);
+
+  @override
+  Duration get transitionDuration => const Duration(milliseconds: 150);
+
+  @override
+  Widget buildTransitions(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    final a = CurveTween(curve: Curves.easeInCubic).animate(animation);
+    return FadeTransition(opacity: a, child: child);
   }
 }

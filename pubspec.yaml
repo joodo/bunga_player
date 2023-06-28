@@ -43,7 +43,6 @@ dependencies:
   animated_text_kit: ^4.2.2
   audioplayers: ^4.0.1
   flutter_portal: ^1.1.4
-  dropdown_button2: ^2.1.4
 
   # Popmoji
   flutter_svg: ^2.0.6

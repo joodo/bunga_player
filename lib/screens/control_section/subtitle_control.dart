@@ -1,3 +1,5 @@
+import 'package:bunga_player/mocks/slider.dart';
+import 'package:bunga_player/mocks/dropdown.dart' as mock_dropdown;
 import 'package:bunga_player/singletons/video_controller.dart';
 import 'package:bunga_player/screens/control_section/dropdown.dart';
 import 'package:file_selector/file_selector.dart';
@@ -69,24 +71,25 @@ class _SubtitleControlState extends State<SubtitleControl> {
               height: 36,
               child: ControlDropdown(
                 items: [
-                  ...subtitleTracks?.map((e) => DropdownMenuItem<String>(
-                            value: e.id,
-                            child: Text(() {
-                              if (e.id == 'auto') return '默认';
-                              if (e.id == 'no') return '无字幕';
+                  ...subtitleTracks
+                          ?.map((e) => mock_dropdown.DropdownMenuItem<String>(
+                                value: e.id,
+                                child: Text(() {
+                                  if (e.id == 'auto') return '默认';
+                                  if (e.id == 'no') return '无字幕';
 
-                              String text = '[${e.id}]';
-                              if (e.title != null) {
-                                text += ' ${e.title}';
-                              }
-                              if (e.language != null) {
-                                text += ' (${e.language})';
-                              }
-                              return text;
-                            }()),
-                          )) ??
+                                  String text = '[${e.id}]';
+                                  if (e.title != null) {
+                                    text += ' ${e.title}';
+                                  }
+                                  if (e.language != null) {
+                                    text += ' (${e.language})';
+                                  }
+                                  return text;
+                                }()),
+                              )) ??
                       [],
-                  const DropdownMenuItem<String>(
+                  const mock_dropdown.DropdownMenuItem<String>(
                     value: 'OPEN',
                     child: Text('打开字幕……'),
                   ),
@@ -142,7 +145,7 @@ class _SubtitleControlState extends State<SubtitleControl> {
                 Flexible(
                   child: SizedBox(
                     width: 200,
-                    child: Slider(
+                    child: MySlider(
                       value: value < minValue
                           ? minValue
                           : value > maxValue
@@ -152,6 +155,7 @@ class _SubtitleControlState extends State<SubtitleControl> {
                       min: minValue,
                       onChanged: (value) => listenable.value = value,
                       focusNode: FocusNode(canRequestFocus: false),
+                      useRootOverlay: true,
                     ),
                   ),
                 ),

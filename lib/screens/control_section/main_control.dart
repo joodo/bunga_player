@@ -1,4 +1,6 @@
 import 'package:bunga_player/actions/play.dart';
+import 'package:bunga_player/mocks/popup_menu.dart' as mock_popup;
+import 'package:bunga_player/mocks/slider.dart';
 import 'package:bunga_player/singletons/im_controller.dart';
 import 'package:bunga_player/singletons/ui_notifiers.dart';
 import 'package:bunga_player/singletons/video_controller.dart';
@@ -48,12 +50,13 @@ class MainControl extends StatelessWidget {
               ],
               builder: (context, values, child) => SizedBox(
                 width: 100,
-                child: Slider(
+                child: MySlider(
                   value: values[1] ? 0.0 : values[0],
                   max: 100.0,
                   label: '${values[0].toInt()}%',
                   onChanged: (value) => VideoController().volume.value = value,
                   focusNode: FocusNode(canRequestFocus: false),
+                  useRootOverlay: true,
                 ),
               ),
             ),
@@ -74,76 +77,66 @@ class MainControl extends StatelessWidget {
             ),
             const SizedBox(width: 8),
 
-            IconButton(
+            mock_popup.MyPopupMenuButton(
               icon: const Icon(Icons.more_horiz),
-              onPressed: () {
-                showMenu(
-                  context: context,
-                  useRootNavigator: true,
-                  position: const RelativeRect.fromLTRB(
-                    double.infinity,
-                    double.infinity,
-                    0,
-                    0,
+              tooltip: '',
+              useRootOverlay: true,
+              itemBuilder: (context) => [
+                // Tune button
+                mock_popup.PopupMenuItem(
+                  child: ListTile(
+                    leading: const Icon(Icons.tune),
+                    title: const Text('音视频调整'),
+                    onTap: () {
+                      Navigator.of(context, rootNavigator: true).pop();
+                      Navigator.of(context).pushNamed('control:tune');
+                    },
                   ),
-                  items: [
-                    // Tune button
-                    PopupMenuItem(
-                      child: ListTile(
-                        leading: const Icon(Icons.tune),
-                        title: const Text('音视频调整'),
-                        onTap: () {
-                          Navigator.of(context, rootNavigator: true).pop();
-                          Navigator.of(context).pushNamed('control:tune');
-                        },
-                      ),
-                    ),
-                    // Subtitle Button
-                    PopupMenuItem(
-                      child: ListTile(
-                        leading: const Icon(Icons.subtitles),
-                        title: const Text('字幕调整'),
-                        onTap: () {
-                          Navigator.of(context, rootNavigator: true).pop();
-                          Navigator.of(context).pushNamed('control:subtitle');
-                        },
-                      ),
-                    ),
+                ),
+                // Subtitle Button
+                mock_popup.PopupMenuItem(
+                  child: ListTile(
+                    leading: const Icon(Icons.subtitles),
+                    title: const Text('字幕调整'),
+                    onTap: () {
+                      Navigator.of(context, rootNavigator: true).pop();
+                      Navigator.of(context).pushNamed('control:subtitle');
+                    },
+                  ),
+                ),
 
-                    // Change Video Button
-                    PopupMenuItem(
-                      child: ListTile(
-                        leading: const Icon(Icons.movie_filter),
-                        title: const Text('换片'),
-                        onTap: () {
-                          Navigator.of(context, rootNavigator: true).pop();
-                          Navigator.of(context).pushNamed('control:open');
-                        },
-                      ),
-                    ),
+                // Change Video Button
+                mock_popup.PopupMenuItem(
+                  child: ListTile(
+                    leading: const Icon(Icons.movie_filter),
+                    title: const Text('换片'),
+                    onTap: () {
+                      Navigator.of(context, rootNavigator: true).pop();
+                      Navigator.of(context).pushNamed('control:open');
+                    },
+                  ),
+                ),
 
-                    // Leave Button
-                    PopupMenuItem(
-                      child: ListTile(
-                        leading: const Icon(Icons.logout),
-                        title: const Text('离开房间'),
-                        onTap: () async {
-                          Navigator.of(context, rootNavigator: true).pop();
+                // Leave Button
+                mock_popup.PopupMenuItem(
+                  child: ListTile(
+                    leading: const Icon(Icons.logout),
+                    title: const Text('离开房间'),
+                    onTap: () async {
+                      Navigator.of(context, rootNavigator: true).pop();
 
-                          final navigator = Navigator.of(context);
+                      final navigator = Navigator.of(context);
 
-                          UINotifiers().isBusy.value = true;
-                          await IMController().leaveRoom();
-                          await VideoController().stop();
+                      UINotifiers().isBusy.value = true;
+                      await IMController().leaveRoom();
+                      await VideoController().stop();
 
-                          navigator.popAndPushNamed('control:welcome');
-                          UINotifiers().isBusy.value = false;
-                        },
-                      ),
-                    ),
-                  ],
-                );
-              },
+                      navigator.popAndPushNamed('control:welcome');
+                      UINotifiers().isBusy.value = false;
+                    },
+                  ),
+                ),
+              ],
             ),
             const SizedBox(width: 16),
 
