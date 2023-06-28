@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
 
 class UINotifiers {
@@ -7,8 +7,16 @@ class UINotifiers {
   factory UINotifiers() => _instance;
 
   UINotifiers._internal() {
-    isFullScreen
-        .addListener(() => windowManager.setFullScreen(isFullScreen.value));
+    isFullScreen.addListener(() async {
+      windowManager.setFullScreen(isFullScreen.value);
+
+      // HACK: exit full screen makes layout a mass in Windows
+      if (isFullScreen.value == false) {
+        var size = await windowManager.getSize();
+        size += const Offset(1, 1);
+        windowManager.setSize(size);
+      }
+    });
   }
 
   final isFullScreen = ValueNotifier<bool>(false);

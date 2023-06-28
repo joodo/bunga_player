@@ -12,7 +12,6 @@ import 'package:bunga_player/screens/player_section/video_progress_widget.dart';
 import 'package:bunga_player/singletons/ui_notifiers.dart';
 import 'package:bunga_player/singletons/video_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:window_manager/window_manager.dart';
 
 enum ControlUIState {
   login,
@@ -40,7 +39,6 @@ class _ControlSectionState extends State<ControlSection> {
     super.initState();
 
     UINotifiers().isUIHidden.addListener(_onUIHiddenChanged);
-    UINotifiers().isFullScreen.addListener(_onFullScreenChanged);
     IMController().callStatus.addListener(_onCallStatusChanged);
   }
 
@@ -48,7 +46,6 @@ class _ControlSectionState extends State<ControlSection> {
   void dispose() {
     UINotifiers().isUIHidden.removeListener(_onUIHiddenChanged);
     IMController().callStatus.removeListener(_onCallStatusChanged);
-    UINotifiers().isFullScreen.removeListener(_onFullScreenChanged);
 
     super.dispose();
   }
@@ -136,15 +133,6 @@ class _ControlSectionState extends State<ControlSection> {
         !VideoController().isStopped.value) {
       Navigator.of(_navigatorContext)
           .popUntil((route) => route.settings.name == 'control:main');
-    }
-  }
-
-  void _onFullScreenChanged() async {
-    // HACK: exit full screen makes layout a mass in Windows
-    if (UINotifiers().isFullScreen.value == false) {
-      var size = await windowManager.getSize();
-      size += const Offset(1, 1);
-      windowManager.setSize(size);
     }
   }
 }
