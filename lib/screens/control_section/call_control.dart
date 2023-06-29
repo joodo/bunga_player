@@ -1,4 +1,5 @@
 import 'package:animated_text_kit/animated_text_kit.dart';
+import 'package:bunga_player/mocks/slider.dart' as mock;
 import 'package:bunga_player/services/voice_call.dart';
 import 'package:flutter/material.dart';
 import 'package:multi_value_listenable_builder/multi_value_listenable_builder.dart';
@@ -109,7 +110,7 @@ class _CallControlState extends State<CallControl> {
                   ],
                   builder: (context, values, child) => SizedBox(
                     width: 100,
-                    child: Slider(
+                    child: mock.MySlider(
                       value: values[1] ? 0 : values[0].toDouble(),
                       max: 200,
                       divisions: 200,
