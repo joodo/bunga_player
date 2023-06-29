@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:bunga_player/common/bili_video.dart';
@@ -9,9 +11,11 @@ import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart' as media_kit;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wakelock/wakelock.dart';
+import 'package:window_manager/window_manager.dart';
 
-class VideoPlayer {
+class VideoPlayer with WindowListener {
   static final emptyMedia = Media('asset:///assets/images/black.png');
 
   // Singleton
@@ -64,6 +68,8 @@ class VideoPlayer {
 
   VideoPlayer._internal() {
     MediaKit.ensureInitialized();
+
+    _initWatchProgress();
 
     // set mpv auto reconnect
     // from https://github.com/mpv-player/mpv/issues/5793#issuecomment-553877261
@@ -130,6 +136,8 @@ class VideoPlayer {
         mpvPlayer.setProperty('sub-pos', subPosition.value.toInt().toString());
       }
     });
+
+    windowManager.addListener(this);
   }
 
   final _videoHashNotifier = ValueNotifier<String?>(null);
@@ -151,7 +159,13 @@ class VideoPlayer {
     final crcValue =
         await File(path).openRead().take(1000).transform(Crc32Xz()).single;
     final crcString = crcValue.toString();
-    _videoHashNotifier.value = 'local-$crcString';
+
+    final videoHash = 'local-$crcString';
+    if (_watchProgress.containsKey(videoHash)) {
+      await seekTo(Duration(milliseconds: _watchProgress[videoHash]!));
+    }
+
+    _videoHashNotifier.value = videoHash;
   }
 
   Future<String> loadBiliVideo(BiliVideo biliVideo) async {
@@ -195,8 +209,15 @@ class VideoPlayer {
 
     if (!success) throw 'All source tested, no one success';
 
-    _videoHashNotifier.value = 'bili-${biliVideo.bvid}-${biliVideo.p}';
-    return _videoHashNotifier.value!;
+    final videoHash = 'bili-${biliVideo.bvid}-${biliVideo.p}';
+    if (_watchProgress.containsKey(videoHash)) {
+      // HACK: wait for seek
+      await Future.delayed(const Duration(seconds: 1));
+      await seekTo(Duration(milliseconds: _watchProgress[videoHash]!));
+    }
+
+    _videoHashNotifier.value = videoHash;
+    return videoHash;
   }
 
   Future<void> togglePlay() => _player.playOrPause();
@@ -242,5 +263,30 @@ class VideoPlayer {
       mpv.mpv_command_string(mpvPlayer.ctx, cmd.cast());
       calloc.free(cmd);
     }
+  }
+
+  // Watch progress
+  late final Map<String, int> _watchProgress;
+
+  void _initWatchProgress() async {
+    final pref = await SharedPreferences.getInstance();
+    _watchProgress =
+        Map.castFrom(jsonDecode(pref.getString('watch_progress') ?? '{}'));
+
+    Timer.periodic(const Duration(seconds: 5), (timer) {
+      final hash = videoHashNotifier.value;
+      final progress = position.value;
+      if (hash != null) {
+        _watchProgress[hash] = progress.inMilliseconds;
+      }
+    });
+  }
+
+  @override
+  // TODO: Should change to AppLifecycleListener
+  // https://github.com/flutter/flutter/issues/30735
+  void onWindowClose() async {
+    final pref = await SharedPreferences.getInstance();
+    await pref.setString('watch_progress', jsonEncode(_watchProgress));
   }
 }
