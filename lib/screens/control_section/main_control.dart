@@ -1,9 +1,10 @@
 import 'package:bunga_player/actions/play.dart';
 import 'package:bunga_player/mocks/popup_menu.dart' as mock_popup;
 import 'package:bunga_player/mocks/slider.dart';
-import 'package:bunga_player/singletons/im_controller.dart';
+import 'package:bunga_player/singletons/chat.dart';
 import 'package:bunga_player/singletons/ui_notifiers.dart';
-import 'package:bunga_player/singletons/video_controller.dart';
+import 'package:bunga_player/singletons/video_player.dart';
+import 'package:bunga_player/singletons/voice_call.dart';
 import 'package:bunga_player/utils/duration.dart';
 import 'package:flutter/material.dart';
 import 'package:multi_value_listenable_builder/multi_value_listenable_builder.dart';
@@ -20,7 +21,7 @@ class MainControl extends StatelessWidget {
             const SizedBox(width: 8),
             // Play button
             ValueListenableBuilder(
-              valueListenable: VideoController().isPlaying,
+              valueListenable: VideoPlayer().isPlaying,
               builder: (context, isPlaying, child) => IconButton(
                 icon: isPlaying
                     ? const Icon(Icons.pause)
@@ -34,19 +35,19 @@ class MainControl extends StatelessWidget {
 
             // Volume section
             ValueListenableBuilder(
-              valueListenable: VideoController().isMute,
+              valueListenable: VideoPlayer().isMute,
               builder: (context, isMute, child) => IconButton(
                 icon: isMute
                     ? const Icon(Icons.volume_mute)
                     : const Icon(Icons.volume_up),
-                onPressed: () => VideoController().isMute.value = !isMute,
+                onPressed: () => VideoPlayer().isMute.value = !isMute,
               ),
             ),
             const SizedBox(width: 8),
             MultiValueListenableBuilder(
               valueListenables: [
-                VideoController().volume,
-                VideoController().isMute,
+                VideoPlayer().volume,
+                VideoPlayer().isMute,
               ],
               builder: (context, values, child) => SizedBox(
                 width: 100,
@@ -54,7 +55,7 @@ class MainControl extends StatelessWidget {
                   value: values[1] ? 0.0 : values[0],
                   max: 100.0,
                   label: '${values[0].toInt()}%',
-                  onChanged: (value) => VideoController().volume.value = value,
+                  onChanged: (value) => VideoPlayer().volume.value = value,
                   focusNode: FocusNode(canRequestFocus: false),
                   useRootOverlay: true,
                 ),
@@ -128,8 +129,8 @@ class MainControl extends StatelessWidget {
                       final navigator = Navigator.of(context);
 
                       UINotifiers().isBusy.value = true;
-                      await IMController().leaveRoom();
-                      await VideoController().stop();
+                      await Chat().leaveRoom();
+                      await VideoPlayer().stop();
 
                       navigator.popAndPushNamed('control:welcome');
                       UINotifiers().isBusy.value = false;
@@ -199,14 +200,14 @@ class _CallButtonState extends State<CallButton> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
-      valueListenable: IMController().callStatus,
+      valueListenable: VoiceCall().callStatus,
       builder: (context, callStatus, child) {
         switch (callStatus) {
           case CallStatus.none:
             return IconButton(
               icon: const Icon(Icons.call),
               onPressed: () {
-                IMController().startCallAsking();
+                VoiceCall().startAsking();
                 widget.onPressed?.call();
               },
             );
@@ -254,8 +255,8 @@ class _DurationButtonState extends State<DurationButton> {
     return TextButton(
       child: MultiValueListenableBuilder(
         valueListenables: [
-          VideoController().position,
-          VideoController().duration,
+          VideoPlayer().position,
+          VideoPlayer().duration,
         ],
         builder: (context, values, child) {
           final String positionString = dToHHmmss(values[0]);

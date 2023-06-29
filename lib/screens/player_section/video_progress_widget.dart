@@ -1,6 +1,6 @@
 import 'package:bunga_player/singletons/im_video_connector.dart';
 import 'package:bunga_player/utils/duration.dart';
-import 'package:bunga_player/singletons/video_controller.dart';
+import 'package:bunga_player/singletons/video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:multi_value_listenable_builder/multi_value_listenable_builder.dart';
 
@@ -46,9 +46,9 @@ class _VideoProgressWidgetState extends State<VideoProgressWidget> {
         },
         child: MultiValueListenableBuilder(
           valueListenables: [
-            VideoController().position,
-            VideoController().duration,
-            VideoController().buffer,
+            VideoPlayer().position,
+            VideoPlayer().duration,
+            VideoPlayer().buffer,
           ],
           builder: (context, values, child) {
             return Slider(
@@ -67,13 +67,12 @@ class _VideoProgressWidgetState extends State<VideoProgressWidget> {
                   _slideThemeLerpT = 1.0;
                 });
 
-                _isPlayingBeforeDraggingSlider =
-                    VideoController().isPlaying.value;
-                VideoController().pause();
-                VideoController().seekTo(sToD(value));
+                _isPlayingBeforeDraggingSlider = VideoPlayer().isPlaying.value;
+                VideoPlayer().pause();
+                VideoPlayer().seekTo(sToD(value));
               },
               onChanged: (double value) {
-                VideoController().seekTo(sToD(value));
+                VideoPlayer().seekTo(sToD(value));
               },
               onChangeEnd: (value) async {
                 setState(() {
@@ -81,8 +80,8 @@ class _VideoProgressWidgetState extends State<VideoProgressWidget> {
                   if (!_isHovered) _slideThemeLerpT = 0;
                 });
 
-                await VideoController().seekTo(sToD(value));
-                if (_isPlayingBeforeDraggingSlider) VideoController().play();
+                await VideoPlayer().seekTo(sToD(value));
+                if (_isPlayingBeforeDraggingSlider) VideoPlayer().play();
                 IMVideoConnector().sendPlayerStatus();
               },
             );

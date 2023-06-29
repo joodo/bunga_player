@@ -1,11 +1,11 @@
 import 'dart:async';
 
 import 'package:bunga_player/common/bili_video.dart';
-import 'package:bunga_player/singletons/im_controller.dart';
+import 'package:bunga_player/singletons/chat.dart';
 import 'package:bunga_player/singletons/logger.dart';
 import 'package:bunga_player/singletons/snack_bar.dart';
 import 'package:bunga_player/singletons/ui_notifiers.dart';
-import 'package:bunga_player/singletons/video_controller.dart';
+import 'package:bunga_player/singletons/video_player.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
@@ -83,11 +83,11 @@ Future<LocalVideoChannelData> openLocalVideo() async {
   final file = await openFile(acceptedTypeGroups: <XTypeGroup>[typeGroup]);
   if (file == null) throw NoFileSelectedException();
 
-  VideoController().stop();
+  VideoPlayer().stop();
 
   UINotifiers().hintText.value = '正在收拾客厅……';
-  await VideoController().loadLocalVideo(file.path);
-  final hash = VideoController().videoHashNotifier.value!;
+  await VideoPlayer().loadLocalVideo(file.path);
+  final hash = VideoPlayer().videoHashNotifier.value!;
 
   windowManager.setTitle(file.name);
 
@@ -131,7 +131,7 @@ Future<BiliChannelData> openBiliVideo(BuildContext context) async {
 }
 
 Future<String> loadBiliVideo(BiliVideo biliVideo) async {
-  VideoController().stop();
+  VideoPlayer().stop();
 
   UINotifiers().hintText.value = '正在鬼鬼祟祟……';
   await biliVideo.fetch();
@@ -141,7 +141,7 @@ Future<String> loadBiliVideo(BiliVideo biliVideo) async {
   }
 
   UINotifiers().hintText.value = '正在收拾客厅……';
-  final hash = await VideoController().loadBiliVideo(biliVideo);
+  final hash = await VideoPlayer().loadBiliVideo(biliVideo);
 
   windowManager.setTitle(biliVideo.title);
   return hash;
@@ -351,7 +351,7 @@ class _BiliDialogState extends State<BiliDialog> {
 
   Timer _createUpdateTimer() {
     void updateChannel(_) async {
-      final channels = await IMController().fetchBiliChannels();
+      final channels = await Chat().fetchBiliChannels();
 
       if (!mounted) return;
       setState(() {

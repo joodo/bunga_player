@@ -1,6 +1,6 @@
 import 'package:bunga_player/mocks/slider.dart';
 import 'package:bunga_player/mocks/dropdown.dart' as mock_dropdown;
-import 'package:bunga_player/singletons/video_controller.dart';
+import 'package:bunga_player/singletons/video_player.dart';
 import 'package:bunga_player/screens/control_section/dropdown.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
@@ -27,9 +27,9 @@ class _SubtitleControlState extends State<SubtitleControl> {
   @override
   Widget build(BuildContext context) {
     final listenable = {
-      SubtitleControlUIState.delay: VideoController().subDelay,
-      SubtitleControlUIState.size: VideoController().subSize,
-      SubtitleControlUIState.position: VideoController().subPosition,
+      SubtitleControlUIState.delay: VideoPlayer().subDelay,
+      SubtitleControlUIState.size: VideoPlayer().subSize,
+      SubtitleControlUIState.position: VideoPlayer().subPosition,
     }[_subtitleUIState]!;
     final minValue = {
       SubtitleControlUIState.delay: -10.0,
@@ -60,8 +60,8 @@ class _SubtitleControlState extends State<SubtitleControl> {
         // Subtitle dropbox
         MultiValueListenableBuilder(
           valueListenables: [
-            VideoController().track,
-            VideoController().tracks,
+            VideoPlayer().track,
+            VideoPlayer().tracks,
           ],
           builder: (context, values, child) {
             var subtitleTracks = (values[1] as Tracks?)?.subtitle;
@@ -97,12 +97,12 @@ class _SubtitleControlState extends State<SubtitleControl> {
                 value: values[0]?.subtitle.id,
                 onChanged: (subtitleID) async {
                   if (subtitleID != 'OPEN') {
-                    return VideoController().setSubtitleTrack(subtitleID);
+                    return VideoPlayer().setSubtitleTrack(subtitleID);
                   }
 
                   final file = await openFile();
                   if (file != null) {
-                    VideoController().addSubtitleTrack(file.path);
+                    VideoPlayer().addSubtitleTrack(file.path);
                   }
                 },
               ),

@@ -1,4 +1,4 @@
-import 'package:bunga_player/singletons/popmoji_controller.dart';
+import 'package:bunga_player/singletons/popmoji.dart';
 import 'package:fireworks/fireworks.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
@@ -67,7 +67,7 @@ class _PopmojiPlayerState extends State<PopmojiPlayer>
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
-      valueListenable: PopmojiController().playing,
+      valueListenable: Popmoji().playing,
       builder: (context, code, child) {
         if (code == null) return const SizedBox.shrink();
 
@@ -82,7 +82,7 @@ class _PopmojiPlayerState extends State<PopmojiPlayer>
           _animationController.duration = const Duration(seconds: 6);
           _animationController.reset();
           _animationController.forward().then((_) {
-            PopmojiController().playing.value = null;
+            Popmoji().playing.value = null;
           });
 
           return AnimatedBuilder(
@@ -110,7 +110,7 @@ class _PopmojiPlayerState extends State<PopmojiPlayer>
               _animationController.duration = composition.duration * 1.25;
               _animationController.reset();
               await _animationController.forward();
-              PopmojiController().playing.value = null;
+              Popmoji().playing.value = null;
             },
           ),
         );

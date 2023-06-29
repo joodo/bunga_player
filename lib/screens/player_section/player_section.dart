@@ -1,7 +1,7 @@
 import 'package:bunga_player/actions/play.dart';
-import 'package:bunga_player/singletons/im_controller.dart';
+import 'package:bunga_player/singletons/chat.dart';
 import 'package:bunga_player/singletons/ui_notifiers.dart';
-import 'package:bunga_player/singletons/video_controller.dart';
+import 'package:bunga_player/singletons/video_player.dart';
 import 'package:bunga_player/screens/player_section/placeholder.dart';
 import 'package:bunga_player/screens/player_section/popmoji_player.dart';
 import 'package:bunga_player/utils/value_listenable.dart';
@@ -20,7 +20,7 @@ class _PlayerSectionState extends State<PlayerSection> {
   final _isLoginedNotifier = ProxyValueNotifier<bool, User?>(
     initialValue: false,
     proxy: (user) => user != null,
-    from: IMController().currentUserNotifier,
+    from: Chat().currentUserNotifier,
   );
 
   @override
@@ -32,7 +32,7 @@ class _PlayerSectionState extends State<PlayerSection> {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          media_kit.Video(controller: VideoController().controller),
+          media_kit.Video(controller: VideoPlayer().controller),
           ValueListenableBuilder<String?>(
             valueListenable: UINotifiers().hintText,
             builder: (context, text, child) => AnimatedOpacity(

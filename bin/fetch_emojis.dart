@@ -7,7 +7,7 @@ import 'package:http/http.dart';
 
 void main() async {
   String? previousCode;
-  for (var rune in Popmoji.emojis.runes) {
+  for (var rune in emojis.runes) {
     var svgCode = rune.toRadixString(16);
     final String animeCode;
     if (svgCode.length < 5) {

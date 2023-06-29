@@ -1,6 +1,5 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:bunga_player/screens/control_section/video_open_control.dart';
-import 'package:bunga_player/singletons/im_controller.dart';
 import 'package:bunga_player/screens/control_section/call_control.dart';
 import 'package:bunga_player/screens/control_section/login_control.dart';
 import 'package:bunga_player/screens/control_section/main_control.dart';
@@ -10,7 +9,8 @@ import 'package:bunga_player/screens/control_section/tune_control.dart';
 import 'package:bunga_player/screens/control_section/welcome_control.dart';
 import 'package:bunga_player/screens/player_section/video_progress_widget.dart';
 import 'package:bunga_player/singletons/ui_notifiers.dart';
-import 'package:bunga_player/singletons/video_controller.dart';
+import 'package:bunga_player/singletons/video_player.dart';
+import 'package:bunga_player/singletons/voice_call.dart';
 import 'package:flutter/material.dart';
 
 enum ControlUIState {
@@ -39,13 +39,13 @@ class _ControlSectionState extends State<ControlSection> {
     super.initState();
 
     UINotifiers().isUIHidden.addListener(_onUIHiddenChanged);
-    IMController().callStatus.addListener(_onCallStatusChanged);
+    VoiceCall().callStatus.addListener(_onCallStatusChanged);
   }
 
   @override
   void dispose() {
     UINotifiers().isUIHidden.removeListener(_onUIHiddenChanged);
-    IMController().callStatus.removeListener(_onCallStatusChanged);
+    VoiceCall().callStatus.removeListener(_onCallStatusChanged);
 
     super.dispose();
   }
@@ -97,7 +97,7 @@ class _ControlSectionState extends State<ControlSection> {
   }
 
   void _onCallStatusChanged() {
-    final callStatus = IMController().callStatus.value;
+    final callStatus = VoiceCall().callStatus.value;
 
     // Control section UI
     final currentControl = _navigatorContext.mounted
@@ -130,7 +130,7 @@ class _ControlSectionState extends State<ControlSection> {
     // When show again
     if (UINotifiers().isUIHidden.value == false &&
         // Avoid change login control to main control
-        !VideoController().isStopped.value) {
+        !VideoPlayer().isStopped.value) {
       Navigator.of(_navigatorContext)
           .popUntil((route) => route.settings.name == 'control:main');
     }

@@ -1,5 +1,5 @@
 import 'package:bunga_player/common/video_open.dart';
-import 'package:bunga_player/singletons/im_controller.dart';
+import 'package:bunga_player/singletons/chat.dart';
 import 'package:bunga_player/singletons/im_video_connector.dart';
 import 'package:bunga_player/singletons/logger.dart';
 import 'package:bunga_player/singletons/snack_bar.dart';
@@ -16,8 +16,7 @@ class WelcomeControl extends StatefulWidget {
 }
 
 class _WelcomeControlState extends State<WelcomeControl> {
-  String get _welcomeText =>
-      '${IMController().currentUserNotifier.value?.name}, 你好！';
+  String get _welcomeText => '${Chat().currentUserNotifier.value?.name}, 你好！';
 
   @override
   void initState() {
@@ -60,7 +59,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
       final data = await openLocalVideo();
 
       UINotifiers().hintText.value = '正在发送请柬……';
-      await IMController().createOrJoinRoomByHash(
+      await Chat().createOrJoinRoomByHash(
         data.hash,
         extraData: {
           'name': data.name,
@@ -90,7 +89,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
 
       UINotifiers().hintText.value = '正在发送请柬……';
       if (biliChannel.id == null) {
-        await IMController().createOrJoinRoomByHash(
+        await Chat().createOrJoinRoomByHash(
           biliChannel.hash,
           extraData: {
             'video_type': 'bilibili',
@@ -100,7 +99,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
           },
         );
       } else {
-        await IMController().joinRoomById(biliChannel.id!);
+        await Chat().joinRoomById(biliChannel.id!);
       }
       IMVideoConnector().askPosition();
 
@@ -118,7 +117,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
   }
 
   void _logout() async {
-    await IMController().logout();
+    await Chat().logout();
     SharedPreferences.getInstance().then((pref) => pref.remove('user_name'));
     _onLoggedOut();
   }

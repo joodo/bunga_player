@@ -1,4 +1,4 @@
-import 'package:bunga_player/singletons/popmoji_controller.dart';
+import 'package:bunga_player/singletons/popmoji.dart';
 import 'package:bunga_player/constants/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -10,7 +10,7 @@ class PopmojiControl extends StatelessWidget {
   Widget build(BuildContext context) {
     final List<Widget> emojiButtons = [];
     String? previousCode;
-    for (var rune in Popmoji.emojis.runes) {
+    for (var rune in emojis.runes) {
       var code = rune.toRadixString(16);
       if (code.length < 5) {
         if (previousCode == null) {
@@ -29,7 +29,7 @@ class PopmojiControl extends StatelessWidget {
       emojiButtons.add(IconButton(
         icon: svg,
         onPressed: () {
-          PopmojiController().send(code);
+          Popmoji().send(code);
           Navigator.of(context).pop();
         },
       ));

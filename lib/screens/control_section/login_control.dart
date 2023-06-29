@@ -1,4 +1,4 @@
-import 'package:bunga_player/singletons/im_controller.dart';
+import 'package:bunga_player/singletons/chat.dart';
 import 'package:bunga_player/singletons/logger.dart';
 import 'package:bunga_player/singletons/snack_bar.dart';
 import 'package:bunga_player/singletons/ui_notifiers.dart';
@@ -83,7 +83,7 @@ class _LoginControlState extends State<LoginControl> {
     UINotifiers().hintText.value = '正在连接母星……';
 
     try {
-      await IMController().login(userName);
+      await Chat().login(userName);
       SharedPreferences.getInstance()
           .then((pref) => pref.setString('user_name', userName));
       _onLoginSuccess();

@@ -1,6 +1,6 @@
 import 'package:bunga_player/mocks/slider.dart';
 import 'package:bunga_player/mocks/dropdown.dart' as mock_dropdown;
-import 'package:bunga_player/singletons/video_controller.dart';
+import 'package:bunga_player/singletons/video_player.dart';
 import 'package:bunga_player/screens/control_section/card.dart';
 import 'package:bunga_player/screens/control_section/dropdown.dart';
 import 'package:flutter/material.dart';
@@ -30,7 +30,7 @@ class TuneControl extends StatelessWidget {
               const Text('视频亮度'),
               const SizedBox(width: 12),
               ValueListenableBuilder(
-                valueListenable: VideoController().contrast,
+                valueListenable: VideoPlayer().contrast,
                 builder: (context, contrast, child) => SizedBox(
                   width: 100,
                   child: MySlider(
@@ -39,7 +39,7 @@ class TuneControl extends StatelessWidget {
                     min: -30,
                     label: '$contrast%',
                     onChanged: (value) =>
-                        VideoController().contrast.value = value.toInt(),
+                        VideoPlayer().contrast.value = value.toInt(),
                     focusNode: FocusNode(canRequestFocus: false),
                     useRootOverlay: true,
                   ),
@@ -49,7 +49,7 @@ class TuneControl extends StatelessWidget {
               IconButton(
                 icon: const Icon(Icons.restart_alt),
                 iconSize: 16.0,
-                onPressed: VideoController().contrast.reset,
+                onPressed: VideoPlayer().contrast.reset,
               ),
               const SizedBox(width: 8),
             ],
@@ -61,8 +61,8 @@ class TuneControl extends StatelessWidget {
         ControlCard(
           child: MultiValueListenableBuilder(
             valueListenables: [
-              VideoController().track,
-              VideoController().tracks,
+              VideoPlayer().track,
+              VideoPlayer().tracks,
             ],
             builder: (context, values, child) {
               var audioTracks = values[1]?.audio as List<AudioTrack>?;
@@ -97,7 +97,7 @@ class TuneControl extends StatelessWidget {
                               .toList() ??
                           [],
                       value: values[0]?.audio.id,
-                      onChanged: VideoController().setAudioTrack,
+                      onChanged: VideoPlayer().setAudioTrack,
                     ),
                   ),
                   const SizedBox(width: 16),

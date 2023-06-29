@@ -11,12 +11,12 @@ import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart' as media_kit;
 import 'package:wakelock/wakelock.dart';
 
-class VideoController {
+class VideoPlayer {
   static final emptyMedia = Media('asset:///assets/images/black.png');
 
   // Singleton
-  static final _instance = VideoController._internal();
-  factory VideoController() => _instance;
+  static final _instance = VideoPlayer._internal();
+  factory VideoPlayer() => _instance;
 
   late final _player = Player(
     configuration: const PlayerConfiguration(logLevel: MPVLogLevel.warn),
@@ -62,7 +62,7 @@ class VideoController {
 
   bool _isWaitingSubtitleLoaded = false;
 
-  VideoController._internal() {
+  VideoPlayer._internal() {
     MediaKit.ensureInitialized();
 
     // set mpv auto reconnect

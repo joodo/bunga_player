@@ -1,5 +1,5 @@
 import 'package:bunga_player/common/video_open.dart';
-import 'package:bunga_player/singletons/im_controller.dart';
+import 'package:bunga_player/singletons/chat.dart';
 import 'package:bunga_player/singletons/im_video_connector.dart';
 import 'package:bunga_player/singletons/logger.dart';
 import 'package:bunga_player/singletons/snack_bar.dart';
@@ -51,7 +51,7 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
 
       if (shouldUpdateRoomData) {
         UINotifiers().hintText.value = '正在发送请柬……';
-        await IMController().currentChannel!.updatePartial(set: {
+        await Chat().updateChannelData({
           'name': data.name,
           'hash': data.hash,
           'video_type': 'local',
@@ -81,7 +81,7 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
 
       if (shouldUpdateRoomData) {
         UINotifiers().hintText.value = '正在发送请柬……';
-        await IMController().currentChannel!.updatePartial(set: {
+        await Chat().updateChannelData({
           'video_type': 'bilibili',
           'hash': biliChannel.hash,
           'name': biliChannel.name,

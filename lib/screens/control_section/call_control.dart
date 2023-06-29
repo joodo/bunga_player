@@ -1,5 +1,5 @@
 import 'package:animated_text_kit/animated_text_kit.dart';
-import 'package:bunga_player/singletons/im_controller.dart';
+import 'package:bunga_player/singletons/voice_call.dart';
 import 'package:flutter/material.dart';
 import 'package:multi_value_listenable_builder/multi_value_listenable_builder.dart';
 
@@ -19,19 +19,19 @@ class _CallControlState extends State<CallControl> {
     super.initState();
 
     _voiceVolume.addListener(() {
-      IMController().setVoiceVolume(_voiceVolume.value);
+      VoiceCall().setVolume(_voiceVolume.value);
     });
     _voiceMute.addListener(() {
-      IMController().setVoiceVolume(_voiceMute.value ? 0 : _voiceVolume.value);
+      VoiceCall().setVolume(_voiceMute.value ? 0 : _voiceVolume.value);
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
-      valueListenable: IMController().callStatus,
+      valueListenable: VoiceCall().callStatus,
       builder: (context, callStatus, child) {
-        switch (IMController().callStatus.value) {
+        switch (VoiceCall().callStatus.value) {
           case CallStatus.callIn:
             return Row(
               children: [
@@ -47,13 +47,13 @@ class _CallControlState extends State<CallControl> {
                 _createCallOperateButton(
                   color: Colors.green,
                   icon: Icons.call,
-                  onPressed: IMController().acceptCallAsking,
+                  onPressed: VoiceCall().acceptAsking,
                 ),
                 const SizedBox(width: 16),
                 _createCallOperateButton(
                   color: Colors.red,
                   icon: Icons.call_end,
-                  onPressed: IMController().rejectCallAsking,
+                  onPressed: VoiceCall().rejectAsking,
                 ),
                 const SizedBox(width: 16),
               ],
@@ -79,7 +79,7 @@ class _CallControlState extends State<CallControl> {
                 _createCallOperateButton(
                   color: Colors.red,
                   icon: Icons.call_end,
-                  onPressed: IMController().cancelCallAsking,
+                  onPressed: VoiceCall().cancelAsking,
                 ),
                 const SizedBox(width: 16),
               ],
@@ -126,7 +126,7 @@ class _CallControlState extends State<CallControl> {
                 _createCallOperateButton(
                   color: Colors.red,
                   icon: Icons.call_end,
-                  onPressed: IMController().hangUpCall,
+                  onPressed: VoiceCall().hangUp,
                 ),
                 const SizedBox(width: 16),
               ],
