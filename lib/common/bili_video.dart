@@ -78,20 +78,36 @@ class BiliVideo {
     // fetch video url with cookie and video info
     final response = await http.get(
       Uri.parse(
-          'https://api.bilibili.com/x/player/playurl?avid=$aid&cid=$cid&qn=112'),
+          'https://api.bilibili.com/x/player/playurl?bvid=$bvid&cid=$cid&qn=112'),
       headers: sess == null ? null : {"Cookie": 'SESSDATA=$sess'},
     );
     logger.i('Bili video playurl: ${response.body}');
     final responseData = jsonDecode(response.body);
-    if (responseData['code'] != 0) {
-      throw 'Cannot get video url';
-    }
+    if (responseData['code'] == 0) {
+      final durl = responseData['data']['durl'][0];
+      videoUrls = [
+        durl['url'],
+        ...durl['backup_url'] ?? [],
+      ];
+    } else {
+      // can't get url from api.bilibili.com
+      logger.w('Cannot fetch by api');
+      final response = await http.get(
+        Uri.parse('https://www.bilibili.com/video/BV$bvid/?p=$p'),
+        headers: sess == null ? null : {"Cookie": 'SESSDATA=$sess'},
+      );
 
-    final durl = responseData['data']['durl'][0];
-    videoUrls = [
-      durl['url'],
-      ...durl['backup_url'] ?? [],
-    ];
+      final regex =
+          RegExp(r'<script>window.__playinfo__=(?<json>\{.*?\})</script>');
+      final match = regex.firstMatch(response.body);
+      if (match == null) throw 'Cannot fetch video';
+
+      final playinfo = jsonDecode(match.namedGroup('json')!);
+      // TODO: elegant format
+      videoUrls = [
+        'dash;${playinfo['data']['dash']['video'][0]['baseUrl']};${playinfo['data']['dash']['audio'][0]['baseUrl']}'
+      ];
+    }
 
     _isFetched = true;
     logger.i('Bili video: finish fetch.');

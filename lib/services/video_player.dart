@@ -158,13 +158,28 @@ class VideoPlayer {
     bool success = false;
 
     for (var url in biliVideo.videoUrls) {
-      await _player.open(
-        Media(
-          url,
-          httpHeaders: {'Referer': 'https://www.bilibili.com/'},
-        ),
-        play: false,
-      );
+      if (url.startsWith('dash')) {
+        final urls = url.split(';');
+        await _player.open(
+          Media(
+            urls[1],
+            httpHeaders: {'Referer': 'https://www.bilibili.com/'},
+          ),
+          play: false,
+        );
+        Future.delayed(
+          const Duration(seconds: 1),
+          () => addAudioTrack(urls[2]),
+        );
+      } else {
+        await _player.open(
+          Media(
+            url,
+            httpHeaders: {'Referer': 'https://www.bilibili.com/'},
+          ),
+          play: false,
+        );
+      }
 
       await Future.any([
         // HACK: To found whether network media open success
@@ -210,14 +225,22 @@ class VideoPlayer {
   }
 
   void addSubtitleTrack(String source) {
+    _mpvCommand('sub-add "$source" auto');
+    _isWaitingSubtitleLoaded = true;
+  }
+
+  void addAudioTrack(String source) {
+    _mpvCommand('audio-add $source select audio');
+  }
+
+  void _mpvCommand(String command) {
     final mpvPlayer = _player.platform;
     if (mpvPlayer is libmpvPlayer) {
-      source = source.replaceAll('\\', '\\\\');
+      command = command.replaceAll('\\', '\\\\');
       final mpv = mpvPlayer.mpv;
-      final command = 'sub-add "$source" auto'.toNativeUtf8();
-      mpv.mpv_command_string(mpvPlayer.ctx, command.cast());
-      calloc.free(command);
-      _isWaitingSubtitleLoaded = true;
+      final cmd = command.toNativeUtf8();
+      mpv.mpv_command_string(mpvPlayer.ctx, cmd.cast());
+      calloc.free(cmd);
     }
   }
 }
