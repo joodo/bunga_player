@@ -1,4 +1,4 @@
-import 'package:bunga_player/singletons/chat.dart';
+import 'package:bunga_player/services/chat.dart';
 import 'package:flutter/material.dart';
 import 'package:stream_chat_flutter_core/stream_chat_flutter_core.dart';
 

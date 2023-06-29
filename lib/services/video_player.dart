@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:bunga_player/common/bili_video.dart';
-import 'package:bunga_player/singletons/logger.dart';
+import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/utils/value_listenable.dart';
 import 'package:collection/collection.dart';
 import 'package:crclib/catalog.dart';

@@ -1,10 +1,10 @@
 import 'package:bunga_player/actions/play.dart';
-import 'package:bunga_player/mocks/popup_menu.dart' as mock_popup;
-import 'package:bunga_player/mocks/slider.dart';
-import 'package:bunga_player/singletons/chat.dart';
-import 'package:bunga_player/singletons/ui_notifiers.dart';
-import 'package:bunga_player/singletons/video_player.dart';
-import 'package:bunga_player/singletons/voice_call.dart';
+import 'package:bunga_player/mocks/popup_menu.dart' as mock;
+import 'package:bunga_player/mocks/slider.dart' as mock;
+import 'package:bunga_player/services/chat.dart';
+import 'package:bunga_player/controllers/ui_notifiers.dart';
+import 'package:bunga_player/services/video_player.dart';
+import 'package:bunga_player/services/voice_call.dart';
 import 'package:bunga_player/utils/duration.dart';
 import 'package:flutter/material.dart';
 import 'package:multi_value_listenable_builder/multi_value_listenable_builder.dart';
@@ -51,7 +51,7 @@ class MainControl extends StatelessWidget {
               ],
               builder: (context, values, child) => SizedBox(
                 width: 100,
-                child: MySlider(
+                child: mock.MySlider(
                   value: values[1] ? 0.0 : values[0],
                   max: 100.0,
                   label: '${values[0].toInt()}%',
@@ -78,13 +78,13 @@ class MainControl extends StatelessWidget {
             ),
             const SizedBox(width: 8),
 
-            mock_popup.MyPopupMenuButton(
+            mock.MyPopupMenuButton(
               icon: const Icon(Icons.more_horiz),
               tooltip: '',
               useRootOverlay: true,
               itemBuilder: (context) => [
                 // Tune button
-                mock_popup.PopupMenuItem(
+                mock.PopupMenuItem(
                   child: ListTile(
                     leading: const Icon(Icons.tune),
                     title: const Text('音视频调整'),
@@ -95,7 +95,7 @@ class MainControl extends StatelessWidget {
                   ),
                 ),
                 // Subtitle Button
-                mock_popup.PopupMenuItem(
+                mock.PopupMenuItem(
                   child: ListTile(
                     leading: const Icon(Icons.subtitles),
                     title: const Text('字幕调整'),
@@ -107,7 +107,7 @@ class MainControl extends StatelessWidget {
                 ),
 
                 // Change Video Button
-                mock_popup.PopupMenuItem(
+                mock.PopupMenuItem(
                   child: ListTile(
                     leading: const Icon(Icons.movie_filter),
                     title: const Text('换片'),
@@ -119,7 +119,7 @@ class MainControl extends StatelessWidget {
                 ),
 
                 // Leave Button
-                mock_popup.PopupMenuItem(
+                mock.PopupMenuItem(
                   child: ListTile(
                     leading: const Icon(Icons.logout),
                     title: const Text('离开房间'),

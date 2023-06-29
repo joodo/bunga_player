@@ -1,7 +1,7 @@
-import 'package:bunga_player/singletons/chat.dart';
-import 'package:bunga_player/singletons/logger.dart';
-import 'package:bunga_player/singletons/snack_bar.dart';
-import 'package:bunga_player/singletons/ui_notifiers.dart';
+import 'package:bunga_player/services/chat.dart';
+import 'package:bunga_player/services/logger.dart';
+import 'package:bunga_player/services/snack_bar.dart';
+import 'package:bunga_player/controllers/ui_notifiers.dart';
 import 'package:flutter/material.dart';
 import 'package:multi_value_listenable_builder/multi_value_listenable_builder.dart';
 import 'package:shared_preferences/shared_preferences.dart';

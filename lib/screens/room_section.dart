@@ -1,10 +1,10 @@
 import 'package:bunga_player/common/video_open.dart';
-import 'package:bunga_player/singletons/chat.dart';
-import 'package:bunga_player/singletons/im_video_connector.dart';
-import 'package:bunga_player/singletons/logger.dart';
-import 'package:bunga_player/singletons/snack_bar.dart';
-import 'package:bunga_player/singletons/ui_notifiers.dart';
-import 'package:bunga_player/singletons/video_player.dart';
+import 'package:bunga_player/services/chat.dart';
+import 'package:bunga_player/controllers/player_controller.dart';
+import 'package:bunga_player/services/logger.dart';
+import 'package:bunga_player/services/snack_bar.dart';
+import 'package:bunga_player/controllers/ui_notifiers.dart';
+import 'package:bunga_player/services/video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_portal/flutter_portal.dart';
 import 'package:stream_chat_flutter_core/stream_chat_flutter_core.dart';
@@ -78,14 +78,14 @@ class _RoomSectionState extends State<RoomSection> {
   void _onOpenVideoPressed(String videoHash) {
     return videoHash.split('-').first == 'local'
         ? _openLocalVideo()
-        : IMVideoConnector().followRemoteBiliVideoHash(videoHash);
+        : PlayerController().followRemoteBiliVideoHash(videoHash);
   }
 
   void _openLocalVideo() async {
     UINotifiers().isBusy.value = true;
     try {
       await openLocalVideo();
-      IMVideoConnector().askPosition();
+      PlayerController().askPosition();
     } catch (e) {
       if (e is! NoFileSelectedException) {
         logger.e(e);

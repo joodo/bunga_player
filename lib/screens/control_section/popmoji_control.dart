@@ -1,4 +1,4 @@
-import 'package:bunga_player/singletons/popmoji.dart';
+import 'package:bunga_player/services/popmoji.dart';
 import 'package:bunga_player/constants/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';

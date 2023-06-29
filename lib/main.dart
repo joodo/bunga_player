@@ -1,5 +1,5 @@
 import 'package:bot_toast/bot_toast.dart';
-import 'package:bunga_player/singletons/snack_bar.dart';
+import 'package:bunga_player/services/snack_bar.dart';
 import 'package:bunga_player/screens/main_screen.dart';
 import 'package:bunga_player/wrapper/log_view.dart';
 import 'package:bunga_player/wrapper/shortcuts.dart';

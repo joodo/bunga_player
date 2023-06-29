@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:bunga_player/singletons/logger.dart';
+import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/constants/secrets.dart';
 import 'package:http/http.dart' as http;
 

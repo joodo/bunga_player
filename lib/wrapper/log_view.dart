@@ -1,4 +1,4 @@
-import 'package:bunga_player/singletons/logger.dart';
+import 'package:bunga_player/services/logger.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 

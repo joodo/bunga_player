@@ -1,9 +1,9 @@
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:bunga_player/constants/secrets.dart';
-import 'package:bunga_player/singletons/chat.dart';
-import 'package:bunga_player/singletons/logger.dart';
-import 'package:bunga_player/singletons/snack_bar.dart';
+import 'package:bunga_player/services/chat.dart';
+import 'package:bunga_player/services/logger.dart';
+import 'package:bunga_player/services/snack_bar.dart';
 import 'package:flutter/foundation.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:stream_chat_flutter_core/stream_chat_flutter_core.dart';

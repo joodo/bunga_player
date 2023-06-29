@@ -1,6 +1,6 @@
-import 'package:bunga_player/mocks/slider.dart';
-import 'package:bunga_player/mocks/dropdown.dart' as mock_dropdown;
-import 'package:bunga_player/singletons/video_player.dart';
+import 'package:bunga_player/mocks/slider.dart' as mock;
+import 'package:bunga_player/mocks/dropdown.dart' as mock;
+import 'package:bunga_player/services/video_player.dart';
 import 'package:bunga_player/screens/control_section/card.dart';
 import 'package:bunga_player/screens/control_section/dropdown.dart';
 import 'package:flutter/material.dart';
@@ -33,7 +33,7 @@ class TuneControl extends StatelessWidget {
                 valueListenable: VideoPlayer().contrast,
                 builder: (context, contrast, child) => SizedBox(
                   width: 100,
-                  child: MySlider(
+                  child: mock.MySlider(
                     value: contrast.toDouble(),
                     max: 100,
                     min: -30,
@@ -77,23 +77,22 @@ class TuneControl extends StatelessWidget {
                     height: 36,
                     child: ControlDropdown(
                       items: audioTracks
-                              ?.map(
-                                  (e) => mock_dropdown.DropdownMenuItem<String>(
-                                        value: e.id,
-                                        child: Text(() {
-                                          if (e.id == 'auto') return '默认';
-                                          if (e.id == 'no') return '无声音';
+                              ?.map((e) => mock.DropdownMenuItem<String>(
+                                    value: e.id,
+                                    child: Text(() {
+                                      if (e.id == 'auto') return '默认';
+                                      if (e.id == 'no') return '无声音';
 
-                                          String text = '[${e.id}]';
-                                          if (e.title != null) {
-                                            text += ' ${e.title}';
-                                          }
-                                          if (e.language != null) {
-                                            text += ' (${e.language})';
-                                          }
-                                          return text;
-                                        }()),
-                                      ))
+                                      String text = '[${e.id}]';
+                                      if (e.title != null) {
+                                        text += ' ${e.title}';
+                                      }
+                                      if (e.language != null) {
+                                        text += ' (${e.language})';
+                                      }
+                                      return text;
+                                    }()),
+                                  ))
                               .toList() ??
                           [],
                       value: values[0]?.audio.id,

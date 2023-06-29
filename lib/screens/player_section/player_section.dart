@@ -1,7 +1,7 @@
 import 'package:bunga_player/actions/play.dart';
-import 'package:bunga_player/singletons/chat.dart';
-import 'package:bunga_player/singletons/ui_notifiers.dart';
-import 'package:bunga_player/singletons/video_player.dart';
+import 'package:bunga_player/services/chat.dart';
+import 'package:bunga_player/controllers/ui_notifiers.dart';
+import 'package:bunga_player/services/video_player.dart';
 import 'package:bunga_player/screens/player_section/placeholder.dart';
 import 'package:bunga_player/screens/player_section/popmoji_player.dart';
 import 'package:bunga_player/utils/value_listenable.dart';

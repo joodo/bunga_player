@@ -1,6 +1,6 @@
-import 'package:bunga_player/singletons/im_video_connector.dart';
-import 'package:bunga_player/singletons/ui_notifiers.dart';
-import 'package:bunga_player/singletons/video_player.dart';
+import 'package:bunga_player/controllers/player_controller.dart';
+import 'package:bunga_player/controllers/ui_notifiers.dart';
+import 'package:bunga_player/services/video_player.dart';
 import 'package:flutter/material.dart';
 
 class SetVolumeIntent extends Intent {
@@ -46,7 +46,7 @@ class SetPositionAction extends Action<SetPositionIntent> {
     } else {
       await VideoPlayer().seekTo(intent.duration);
     }
-    IMVideoConnector().sendPlayerStatus();
+    PlayerController().sendPlayerStatus();
   }
 
   @override
@@ -61,7 +61,7 @@ class TogglePlayAction extends Action<TogglePlayIntent> {
   @override
   Future<void> invoke(TogglePlayIntent intent) async {
     await VideoPlayer().togglePlay();
-    IMVideoConnector().sendPlayerStatus();
+    PlayerController().sendPlayerStatus();
   }
 
   @override

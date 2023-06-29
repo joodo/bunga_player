@@ -1,18 +1,18 @@
 import 'package:bunga_player/common/bili_video.dart';
 import 'package:bunga_player/common/video_open.dart';
-import 'package:bunga_player/singletons/chat.dart';
-import 'package:bunga_player/singletons/logger.dart';
-import 'package:bunga_player/singletons/snack_bar.dart';
-import 'package:bunga_player/singletons/ui_notifiers.dart';
-import 'package:bunga_player/singletons/video_player.dart';
+import 'package:bunga_player/services/chat.dart';
+import 'package:bunga_player/services/logger.dart';
+import 'package:bunga_player/services/snack_bar.dart';
+import 'package:bunga_player/controllers/ui_notifiers.dart';
+import 'package:bunga_player/services/video_player.dart';
 import 'package:stream_chat_flutter_core/stream_chat_flutter_core.dart';
 
-class IMVideoConnector {
+class PlayerController {
   // Singleton
-  static final _instance = IMVideoConnector._internal();
-  factory IMVideoConnector() => _instance;
+  static final _instance = PlayerController._internal();
+  factory PlayerController() => _instance;
 
-  IMVideoConnector._internal() {
+  PlayerController._internal() {
     Chat().channelExtraDataNotifier.addListener(_onRoomDataChanged);
     Chat().messageStream.where((message) {
       final prefix = message?.text?.split(' ').first;

@@ -1,11 +1,11 @@
 import 'dart:async';
 
 import 'package:bunga_player/common/bili_video.dart';
-import 'package:bunga_player/singletons/chat.dart';
-import 'package:bunga_player/singletons/logger.dart';
-import 'package:bunga_player/singletons/snack_bar.dart';
-import 'package:bunga_player/singletons/ui_notifiers.dart';
-import 'package:bunga_player/singletons/video_player.dart';
+import 'package:bunga_player/services/chat.dart';
+import 'package:bunga_player/services/logger.dart';
+import 'package:bunga_player/services/snack_bar.dart';
+import 'package:bunga_player/controllers/ui_notifiers.dart';
+import 'package:bunga_player/services/video_player.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';

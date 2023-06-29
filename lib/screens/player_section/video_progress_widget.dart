@@ -1,6 +1,6 @@
-import 'package:bunga_player/singletons/im_video_connector.dart';
+import 'package:bunga_player/controllers/player_controller.dart';
 import 'package:bunga_player/utils/duration.dart';
-import 'package:bunga_player/singletons/video_player.dart';
+import 'package:bunga_player/services/video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:multi_value_listenable_builder/multi_value_listenable_builder.dart';
 
@@ -82,7 +82,7 @@ class _VideoProgressWidgetState extends State<VideoProgressWidget> {
 
                 await VideoPlayer().seekTo(sToD(value));
                 if (_isPlayingBeforeDraggingSlider) VideoPlayer().play();
-                IMVideoConnector().sendPlayerStatus();
+                PlayerController().sendPlayerStatus();
               },
             );
           },

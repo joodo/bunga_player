@@ -114,7 +114,7 @@ enum _SliderType { material, adaptive }
 ///  * <https://material.io/design/components/sliders.html>
 ///  * [MediaQuery], from which the text scale factor is obtained.
 class MySlider extends StatefulWidget {
-  /// mocks
+  // MOCK
   final bool useRootOverlay;
 
   /// Creates a Material Design slider.

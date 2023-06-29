@@ -1,9 +1,9 @@
 import 'package:bunga_player/common/video_open.dart';
-import 'package:bunga_player/singletons/chat.dart';
-import 'package:bunga_player/singletons/im_video_connector.dart';
-import 'package:bunga_player/singletons/logger.dart';
-import 'package:bunga_player/singletons/snack_bar.dart';
-import 'package:bunga_player/singletons/ui_notifiers.dart';
+import 'package:bunga_player/services/chat.dart';
+import 'package:bunga_player/controllers/player_controller.dart';
+import 'package:bunga_player/services/logger.dart';
+import 'package:bunga_player/services/snack_bar.dart';
+import 'package:bunga_player/controllers/ui_notifiers.dart';
 import 'package:flutter/material.dart';
 
 class VideoOpenControl extends StatefulWidget {
@@ -45,7 +45,7 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
     UINotifiers().isBusy.value = true;
     try {
       // Update room data only if playing correct video
-      final shouldUpdateRoomData = IMVideoConnector().isVideoSameWithRoom;
+      final shouldUpdateRoomData = PlayerController().isVideoSameWithRoom;
 
       final data = await openLocalVideo();
 
@@ -57,7 +57,7 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
           'video_type': 'local',
         });
       }
-      IMVideoConnector().askPosition();
+      PlayerController().askPosition();
 
       _onVideoLoaded();
     } catch (e) {
@@ -75,7 +75,7 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
     UINotifiers().isBusy.value = true;
     try {
       // Update room data only if playing correct video
-      final shouldUpdateRoomData = IMVideoConnector().isVideoSameWithRoom;
+      final shouldUpdateRoomData = PlayerController().isVideoSameWithRoom;
 
       final biliChannel = await openBiliVideo(context);
 
@@ -88,7 +88,7 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
           'pic': biliChannel.pic,
         });
       }
-      IMVideoConnector().askPosition();
+      PlayerController().askPosition();
 
       _onVideoLoaded();
     } catch (e) {

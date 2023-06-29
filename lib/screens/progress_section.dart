@@ -1,5 +1,5 @@
 import 'package:bunga_player/screens/player_section/video_progress_widget.dart';
-import 'package:bunga_player/singletons/ui_notifiers.dart';
+import 'package:bunga_player/controllers/ui_notifiers.dart';
 import 'package:flutter/material.dart';
 
 class ProgressSection extends StatelessWidget {

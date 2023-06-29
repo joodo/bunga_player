@@ -2,7 +2,7 @@ import 'package:bunga_player/screens/progress_section.dart';
 import 'package:bunga_player/screens/room_section.dart';
 import 'package:bunga_player/screens/control_section/control_section.dart';
 import 'package:bunga_player/screens/player_section/player_section.dart';
-import 'package:bunga_player/singletons/ui_notifiers.dart';
+import 'package:bunga_player/controllers/ui_notifiers.dart';
 import 'package:flutter/material.dart';
 import 'package:async/async.dart';
 

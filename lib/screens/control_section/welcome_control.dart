@@ -1,9 +1,9 @@
 import 'package:bunga_player/common/video_open.dart';
-import 'package:bunga_player/singletons/chat.dart';
-import 'package:bunga_player/singletons/im_video_connector.dart';
-import 'package:bunga_player/singletons/logger.dart';
-import 'package:bunga_player/singletons/snack_bar.dart';
-import 'package:bunga_player/singletons/ui_notifiers.dart';
+import 'package:bunga_player/services/chat.dart';
+import 'package:bunga_player/controllers/player_controller.dart';
+import 'package:bunga_player/services/logger.dart';
+import 'package:bunga_player/services/snack_bar.dart';
+import 'package:bunga_player/controllers/ui_notifiers.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:window_manager/window_manager.dart';
@@ -67,7 +67,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
           'video_type': 'local',
         },
       );
-      IMVideoConnector().askPosition();
+      PlayerController().askPosition();
 
       UINotifiers().hintText.value = null;
       _onVideoLoaded();
@@ -101,7 +101,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
       } else {
         await Chat().joinRoomById(biliChannel.id!);
       }
-      IMVideoConnector().askPosition();
+      PlayerController().askPosition();
 
       UINotifiers().hintText.value = null;
       _onVideoLoaded();

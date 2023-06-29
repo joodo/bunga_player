@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:audioplayers/audioplayers.dart';
-import 'package:bunga_player/singletons/logger.dart';
-import 'package:bunga_player/singletons/snack_bar.dart';
+import 'package:bunga_player/services/logger.dart';
+import 'package:bunga_player/services/snack_bar.dart';
 import 'package:bunga_player/constants/secrets.dart';
 import 'package:bunga_player/utils/stream_proxy.dart';
 import 'package:bunga_player/utils/value_listenable.dart';
@@ -161,7 +161,6 @@ class Chat {
   /// Return message id
   Future<String?> sendMessage(Message m) async {
     try {
-      print('Send message: ${m.text}');
       logger.i('Send message: ${m.text}');
       final response = await currentChannelNotifier.value!.sendMessage(m);
       return response.message.id;

@@ -8,9 +8,9 @@ import 'package:bunga_player/screens/control_section/subtitle_control.dart';
 import 'package:bunga_player/screens/control_section/tune_control.dart';
 import 'package:bunga_player/screens/control_section/welcome_control.dart';
 import 'package:bunga_player/screens/player_section/video_progress_widget.dart';
-import 'package:bunga_player/singletons/ui_notifiers.dart';
-import 'package:bunga_player/singletons/video_player.dart';
-import 'package:bunga_player/singletons/voice_call.dart';
+import 'package:bunga_player/controllers/ui_notifiers.dart';
+import 'package:bunga_player/services/video_player.dart';
+import 'package:bunga_player/services/voice_call.dart';
 import 'package:flutter/material.dart';
 
 enum ControlUIState {
