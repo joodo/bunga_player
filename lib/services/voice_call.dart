@@ -5,6 +5,7 @@ import 'package:bunga_player/services/chat.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/snack_bar.dart';
 import 'package:bunga_player/utils/value_listenable.dart';
+import 'package:flutter/foundation.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:stream_chat_flutter_core/stream_chat_flutter_core.dart';
 
@@ -22,6 +23,15 @@ class VoiceCall {
 
   VoiceCall._internal() {
     _setupVoiceSDKEngine();
+
+    volume.addListener(() {
+      _setVolume(volume.value);
+    });
+    mute.addListener(
+      () {
+        mute.value ? _setVolume(0) : _setVolume(volume.value);
+      },
+    );
 
     Chat().currentChannelNotifier.addListener(() {
       if (Chat().currentChannelNotifier.value == null) {
@@ -190,7 +200,9 @@ class VoiceCall {
   }
 
   // range 0 ~ 400
-  void setVolume(int volume) async {
+  final volume = ValueNotifier<int>(100);
+  final mute = ValueNotifier<bool>(false);
+  void _setVolume(int volume) async {
     assert(volume >= 0 && volume <= 400);
     await _agoraEngine.adjustPlaybackSignalVolume(volume);
   }

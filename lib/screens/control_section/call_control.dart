@@ -12,21 +12,6 @@ class CallControl extends StatefulWidget {
 }
 
 class _CallControlState extends State<CallControl> {
-  final _voiceVolume = ValueNotifier<int>(100);
-  final _voiceMute = ValueNotifier<bool>(false);
-
-  @override
-  void initState() {
-    super.initState();
-
-    _voiceVolume.addListener(() {
-      VoiceCall().setVolume(_voiceVolume.value);
-    });
-    _voiceMute.addListener(() {
-      VoiceCall().setVolume(_voiceMute.value ? 0 : _voiceVolume.value);
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
@@ -94,30 +79,31 @@ class _CallControlState extends State<CallControl> {
                 const Text('语音通话中'),
                 const Spacer(),
                 ValueListenableBuilder(
-                  valueListenable: _voiceMute,
+                  valueListenable: VoiceCall().mute,
                   builder: (context, isMute, child) => IconButton(
                     icon: isMute
                         ? const Icon(Icons.volume_mute)
                         : const Icon(Icons.volume_up),
-                    onPressed: () => _voiceMute.value = !isMute,
+                    onPressed: () => VoiceCall().mute.value = !isMute,
                   ),
                 ),
                 const SizedBox(width: 8),
                 MultiValueListenableBuilder(
                   valueListenables: [
-                    _voiceVolume,
-                    _voiceMute,
+                    VoiceCall().volume,
+                    VoiceCall().mute,
                   ],
                   builder: (context, values, child) => SizedBox(
                     width: 100,
                     child: mock.MySlider(
+                      useRootOverlay: true,
                       value: values[1] ? 0 : values[0].toDouble(),
                       max: 200,
                       divisions: 200,
                       label: '${values[0]}%',
                       onChanged: (value) {
-                        _voiceMute.value = false;
-                        _voiceVolume.value = value.toInt();
+                        VoiceCall().mute.value = false;
+                        VoiceCall().volume.value = value.toInt();
                       },
                       focusNode: FocusNode(canRequestFocus: false),
                     ),
