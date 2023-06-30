@@ -27,13 +27,29 @@ class StreamNotifier<T> extends ValueListenable<T> {
   T get value => _value;
 }
 
+class ValueNotifierWithReset<T> extends ValueNotifier<T> {
+  late T _initValue;
+
+  ValueNotifierWithReset(T value) : super(value) {
+    _initValue = value;
+  }
+
+  void reset() {
+    value = _initValue;
+  }
+}
+
 class ProxyValueNotifier<T1, T2> extends ValueListenable<T1> {
+  T1 _defaultProxyFunc(originValue) => originValue as T1;
+
   ProxyValueNotifier({
-    required T1 initialValue,
-    required this.proxy,
-    ValueListenable<T2>? from,
-  }) : _value = initialValue {
-    this.from = from;
+    T1 Function(T2 originValue)? proxy,
+    required ValueListenable<T2> from,
+  }) {
+    final proxyFunc = proxy ?? _defaultProxyFunc;
+    _value = proxyFunc(from.value);
+
+    from.addListener(() => _setValue(proxyFunc(from.value)));
   }
 
   late T1 _value;
@@ -48,21 +64,6 @@ class ProxyValueNotifier<T1, T2> extends ValueListenable<T1> {
     }
   }
 
-  ValueListenable<T2>? _from;
-  ValueListenable<T2>? get from => _from;
-  final T1 Function(T2 originValue) proxy;
-  void Function()? _proxyFunc;
-  set from(ValueListenable<T2>? newNotifier) {
-    if (_proxyFunc != null) _from?.removeListener(_proxyFunc!);
-
-    _from = newNotifier;
-    if (_from == null) return;
-
-    _proxyFunc = () => _setValue(proxy(_from!.value));
-    _from!.addListener(_proxyFunc!);
-    _setValue(proxy(_from!.value));
-  }
-
   final List<VoidCallback> _listeners = [];
   @override
   void addListener(VoidCallback listener) => _listeners.add(listener);
@@ -70,14 +71,9 @@ class ProxyValueNotifier<T1, T2> extends ValueListenable<T1> {
   void removeListener(VoidCallback listener) => _listeners.remove(listener);
 }
 
-class ValueNotifierWithReset<T> extends ValueNotifier<T> {
-  late T _initValue;
+class PrivateValueNotifier<T> extends ValueNotifier<T> {
+  PrivateValueNotifier(super.value);
 
-  ValueNotifierWithReset(T value) : super(value) {
-    _initValue = value;
-  }
-
-  void reset() {
-    value = _initValue;
-  }
+  late final _readonly = ProxyValueNotifier<T, T>(from: this);
+  ValueListenable<T> get readonly => _readonly;
 }

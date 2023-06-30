@@ -18,7 +18,6 @@ class PlayerSection extends StatefulWidget {
 
 class _PlayerSectionState extends State<PlayerSection> {
   final _isLoginedNotifier = ProxyValueNotifier<bool, User?>(
-    initialValue: false,
     proxy: (user) => user != null,
     from: Chat().currentUserNotifier,
   );

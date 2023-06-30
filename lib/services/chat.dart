@@ -6,6 +6,7 @@ import 'package:bunga_player/services/snack_bar.dart';
 import 'package:bunga_player/constants/secrets.dart';
 import 'package:bunga_player/utils/stream_proxy.dart';
 import 'package:bunga_player/utils/value_listenable.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:stream_chat_flutter_core/stream_chat_flutter_core.dart';
 
@@ -14,7 +15,10 @@ class Chat {
   static final _instance = Chat._internal();
   factory Chat() => _instance;
 
-  Chat._internal();
+  Chat._internal() {
+    // HACK: for late lazy load
+    watcherJoinEventStream;
+  }
 
   final _chatClient = StreamChatClient(
     StreamKey.appKey,
@@ -51,26 +55,29 @@ class Chat {
       logger.i('Receive message from ${message!.user!.name}: ${message.text}');
     });
 
-  final _watcherLeaveEventStream = StreamProxy<Event?>.broadcast();
-  late final watcherLeaveEventStream =
-      _watcherLeaveEventStream.stream.map((event) => event!.user!)
-        ..listen((user) {
-          showSnackBar('${user.name} 已离开');
-          AudioPlayer().play(AssetSource('sounds/user_leave.wav'));
-        });
-  final _watcherJoinEventStream = StreamProxy<Event?>.broadcast();
-  late final watcherJoinEventStream =
-      _watcherJoinEventStream.stream.map((event) => event!.user!)
-        ..listen((user) {
-          showSnackBar('${user.name} 已加入');
-          AudioPlayer().play(AssetSource('sounds/user_join.wav'));
-        });
+  final _watcherLeaveEventStream = StreamProxy<User>.broadcast();
+  late final watcherLeaveEventStream = _watcherLeaveEventStream.stream
+    ..listen((user) {
+      _watchersNotifier.value = List.from(_watchersNotifier.value)
+        ..removeWhere((u) => u.id == user.id);
+      showSnackBar('${user.name} 已离开');
+      AudioPlayer().play(AssetSource('sounds/user_leave.wav'));
+    });
+  final _watcherJoinEventStream = StreamProxy<User>.broadcast();
+  late final watcherJoinEventStream = _watcherJoinEventStream.stream
+    ..listen((user) {
+      if (_watchersNotifier.value.firstWhereOrNull((u) => u.id == user.id) !=
+          null) {
+        return;
+      }
 
-  final _watchersStream = StreamProxy<List<User>>();
-  late final watchersNotifier = StreamNotifier<List<User>>(
-    initialValue: [],
-    stream: _watchersStream.stream,
-  );
+      _watchersNotifier.value = List.from(_watchersNotifier.value)..add(user);
+      showSnackBar('${user.name} 已加入');
+      AudioPlayer().play(AssetSource('sounds/user_join.wav'));
+    });
+
+  final _watchersNotifier = PrivateValueNotifier<List<User>>([]);
+  late final watchersNotifier = _watchersNotifier.readonly;
 
   final _channelUpdateEventStream = StreamProxy<Event?>.broadcast();
   late final channelUpdateEventStream = _channelUpdateEventStream.stream
@@ -134,12 +141,15 @@ class Chat {
 
     _messageStream.setSourceStream(
         channel.on('message.new').map((event) => event.message));
-    _watcherJoinEventStream.setSourceStream(channel.on('user.watching.start'));
-    _watcherLeaveEventStream.setSourceStream(channel.on('user.watching.stop'));
+    _watcherJoinEventStream.setSourceStream(
+        channel.on('user.watching.start').map((event) => event.user!));
+    _watcherLeaveEventStream.setSourceStream(
+        channel.on('user.watching.stop').map((event) => event.user!));
     _channelUpdateEventStream.setSourceStream(channel.on('channel.updated'));
-    _watchersStream.setSourceStream(channel.state!.watchersStream);
-    _channelExtraData.setSourceStream(channel.extraDataStream);
 
+    _watchersNotifier.value = channel.state!.watchers;
+
+    _channelExtraData.setSourceStream(channel.extraDataStream);
     // wait notifier update
     // HACK: remove this will cause channelExtraDataNotifier keep null, why?!
     channelExtraDataNotifier.value;
@@ -154,8 +164,9 @@ class Chat {
     _watcherJoinEventStream.setEmpty();
     _watcherLeaveEventStream.setEmpty();
     _channelUpdateEventStream.setEmpty();
-    _watchersStream.setSourceStream(Stream.value([]));
     _channelExtraData.setSourceStream(Stream.value({}));
+
+    _watchersNotifier.value = [];
   }
 
   /// Return message id
