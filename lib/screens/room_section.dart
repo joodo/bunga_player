@@ -54,19 +54,19 @@ class _RoomSectionState extends State<RoomSection> {
           builder: (context, eventSnapshot) => ValueListenableBuilder(
             valueListenable: VideoPlayer().videoHashNotifier,
             builder: (context, value, child) {
-              final channelData = eventSnapshot.data?.channel?.extraData;
+              final channelData = Chat().channelExtraDataNotifier.value;
               if (UINotifiers().isBusy.value == true || // loading video
                   VideoPlayer().isStopped.value || // stopped
-                  channelData?['hash'] ==
+                  channelData['hash'] ==
                       VideoPlayer().videoHashNotifier.value) {
                 return const SizedBox.shrink();
               }
 
               return _VideoUnsyncNotification(
                 onAction: () =>
-                    _onOpenVideoPressed(channelData?['hash'] as String),
+                    _onOpenVideoPressed(channelData['hash'] as String),
                 otherUserName: eventSnapshot.data?.user?.name ?? "对方",
-                otherVideoTitle: channelData?['name'] as String? ?? '',
+                otherVideoTitle: channelData['name'] as String? ?? '',
               );
             },
           ),
