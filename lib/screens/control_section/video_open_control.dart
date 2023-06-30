@@ -18,23 +18,32 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
       valueListenable: UINotifiers().isBusy,
-      builder: (context, isBusy, child) => Row(
+      builder: (context, isBusy, child) => Stack(
+        alignment: Alignment.centerLeft,
         children: [
-          const SizedBox(width: 8),
-          // Back button
-          IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: Navigator.of(context).pop,
+          Row(
+            children: [
+              const SizedBox(width: 8),
+              // Back button
+              IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: Navigator.of(context).pop,
+              ),
+            ],
           ),
-          const SizedBox(width: 8),
-          FilledButton(
-            onPressed: isBusy ? null : _openLocalVideo,
-            child: const Text('视频文件'),
-          ),
-          const SizedBox(width: 16),
-          FilledButton(
-            onPressed: isBusy ? null : _openBilibili,
-            child: const Text('Bilibili 视频'),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              FilledButton(
+                onPressed: isBusy ? null : _openLocalVideo,
+                child: const Text('视频文件'),
+              ),
+              const SizedBox(width: 16),
+              FilledButton(
+                onPressed: isBusy ? null : _openBilibili,
+                child: const Text('Bilibili 视频'),
+              ),
+            ],
           ),
         ],
       ),
