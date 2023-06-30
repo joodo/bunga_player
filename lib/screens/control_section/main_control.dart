@@ -200,7 +200,7 @@ class _CallButtonState extends State<CallButton> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
-      valueListenable: VoiceCall().callStatus,
+      valueListenable: VoiceCall().callStatusNotifier,
       builder: (context, callStatus, child) {
         switch (callStatus) {
           case CallStatus.none:

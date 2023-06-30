@@ -4,7 +4,7 @@ import 'package:bunga_player/constants/secrets.dart';
 import 'package:bunga_player/services/chat.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/snack_bar.dart';
-import 'package:flutter/foundation.dart';
+import 'package:bunga_player/utils/value_listenable.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:stream_chat_flutter_core/stream_chat_flutter_core.dart';
 
@@ -32,7 +32,7 @@ class VoiceCall {
 
     Chat().watcherLeaveEventStream.listen((user) {
       // Someone left when I'm asking call, means he rejected me
-      if (callStatus.value == CallStatus.callOut) {
+      if (callStatusNotifier.value == CallStatus.callOut) {
         _myCallAskingIsRejectedBy(user);
       }
     });
@@ -49,10 +49,10 @@ class VoiceCall {
       switch (content) {
         // someone ask for call
         case 'ask':
-          switch (callStatus.value) {
+          switch (callStatusNotifier.value) {
             // Has call in
             case CallStatus.none:
-              callStatus.value = CallStatus.callIn;
+              _callStatus.value = CallStatus.callIn;
               _callAskingMessageId = message.id;
               break;
 
@@ -84,22 +84,22 @@ class VoiceCall {
 
         // caller canceled asking
         case 'cancel':
-          if (callStatus.value == CallStatus.callIn &&
+          if (callStatusNotifier.value == CallStatus.callIn &&
               message.quotedMessageId == _callAskingMessageId) {
-            callStatus.value = CallStatus.none;
+            _callStatus.value = CallStatus.none;
             _callAskingMessageId = null;
           }
           break;
 
         case 'yes':
-          if (callStatus.value == CallStatus.callOut &&
+          if (callStatusNotifier.value == CallStatus.callOut &&
               message.quotedMessageId == _callAskingMessageId) {
             _myCallAskingHasBeenAccepted();
           }
           break;
 
         case 'no':
-          if (callStatus.value == CallStatus.callOut &&
+          if (callStatusNotifier.value == CallStatus.callOut &&
               message.quotedMessageId == _callAskingMessageId) {
             _myCallAskingIsRejectedBy(message.user!);
           }
@@ -111,10 +111,20 @@ class VoiceCall {
     });
   }
 
-  final callStatus = ValueNotifier<CallStatus>(CallStatus.none);
+  final _callStatus = PrivateValueNotifier<CallStatus>(CallStatus.none);
+  late final callStatusNotifier = _callStatus.readonly
+    ..addListener(() {
+      // Play sound when call in or out
+      if (_callStatus.value == CallStatus.callIn ||
+          _callStatus.value == CallStatus.callOut) {
+        _callRinger.resume();
+      } else {
+        _callRinger.stop();
+      }
+    });
 
   void startAsking() async {
-    callStatus.value = CallStatus.callOut;
+    _callStatus.value = CallStatus.callOut;
     var message = Message(text: 'call ask');
     _callAskingMessageId = await Chat().sendMessage(message);
 
@@ -131,7 +141,7 @@ class VoiceCall {
 
       _callAskingTimeOutTimer.reset();
     } else {
-      callStatus.value = CallStatus.none;
+      _callStatus.value = CallStatus.none;
     }
   }
 
@@ -142,7 +152,7 @@ class VoiceCall {
     ));
     _myCallAskingHopeList = null;
     _callAskingMessageId = null;
-    callStatus.value = CallStatus.none;
+    _callStatus.value = CallStatus.none;
     _callAskingTimeOutTimer.cancel();
   }
 
@@ -152,7 +162,7 @@ class VoiceCall {
       quotedMessageId: _callAskingMessageId,
     ));
     _callAskingMessageId = null;
-    callStatus.value = CallStatus.none;
+    _callStatus.value = CallStatus.none;
   }
 
   void acceptAsking() {
@@ -161,19 +171,19 @@ class VoiceCall {
       quotedMessageId: _callAskingMessageId,
     ));
     _callAskingMessageId = null;
-    callStatus.value = CallStatus.calling;
+    _callStatus.value = CallStatus.calling;
 
     try {
       _joinCallChannel();
     } catch (e) {
       logger.e(e);
-      callStatus.value = CallStatus.none;
+      _callStatus.value = CallStatus.none;
     }
   }
 
   void hangUp() {
-    if (callStatus.value == CallStatus.none) return;
-    callStatus.value = CallStatus.none;
+    if (callStatusNotifier.value == CallStatus.none) return;
+    _callStatus.value = CallStatus.none;
     AudioPlayer().play(AssetSource('sounds/hang_up.wav'));
 
     _agoraEngine.leaveChannel();
@@ -250,7 +260,7 @@ class VoiceCall {
   )..cancel();
 
   void _myCallAskingHasBeenAccepted() {
-    callStatus.value = CallStatus.calling;
+    _callStatus.value = CallStatus.calling;
     _callAskingMessageId = null;
     _myCallAskingHopeList = null;
     _callAskingTimeOutTimer.cancel();
@@ -267,4 +277,6 @@ class VoiceCall {
       cancelAsking();
     }
   }
+
+  final _callRinger = AudioPlayer()..setSource(AssetSource('sounds/call.wav'));
 }

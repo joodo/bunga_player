@@ -30,9 +30,9 @@ class _CallControlState extends State<CallControl> {
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
-      valueListenable: VoiceCall().callStatus,
+      valueListenable: VoiceCall().callStatusNotifier,
       builder: (context, callStatus, child) {
-        switch (VoiceCall().callStatus.value) {
+        switch (VoiceCall().callStatusNotifier.value) {
           case CallStatus.callIn:
             return Row(
               children: [
@@ -131,6 +131,13 @@ class _CallControlState extends State<CallControl> {
                 ),
                 const SizedBox(width: 16),
               ],
+            );
+          case CallStatus.none:
+            return Builder(
+              builder: (context) {
+                Future.delayed(Duration.zero, Navigator.of(context).pop);
+                return const SizedBox.shrink();
+              },
             );
           default:
             return const SizedBox.shrink();

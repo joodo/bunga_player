@@ -1,4 +1,3 @@
-import 'package:audioplayers/audioplayers.dart';
 import 'package:bunga_player/screens/control_section/video_open_control.dart';
 import 'package:bunga_player/screens/control_section/call_control.dart';
 import 'package:bunga_player/screens/control_section/login_control.dart';
@@ -31,21 +30,20 @@ class ControlSection extends StatefulWidget {
 }
 
 class _ControlSectionState extends State<ControlSection> {
-  final _callRinger = AudioPlayer()..setSource(AssetSource('sounds/call.wav'));
-  late BuildContext _navigatorContext;
+  final _navigatorStateKey = GlobalKey<NavigatorState>();
 
   @override
   void initState() {
     super.initState();
 
     UINotifiers().isUIHidden.addListener(_onUIHiddenChanged);
-    VoiceCall().callStatus.addListener(_onCallStatusChanged);
+    VoiceCall().callStatusNotifier.addListener(_onCallStatusChanged);
   }
 
   @override
   void dispose() {
     UINotifiers().isUIHidden.removeListener(_onUIHiddenChanged);
-    VoiceCall().callStatus.removeListener(_onCallStatusChanged);
+    VoiceCall().callStatusNotifier.removeListener(_onCallStatusChanged);
 
     super.dispose();
   }
@@ -54,6 +52,7 @@ class _ControlSectionState extends State<ControlSection> {
   Widget build(BuildContext context) {
     return Navigator(
       initialRoute: 'control:login',
+      key: _navigatorStateKey,
       onGenerateRoute: (settings) {
         final routes = {
           'control:login': const LoginControl(),
@@ -86,10 +85,7 @@ class _ControlSectionState extends State<ControlSection> {
         );
 
         return _ControlRoute<void>(
-          builder: (BuildContext context) {
-            _navigatorContext = context;
-            return body!;
-          },
+          builder: (BuildContext context) => body!,
           settings: settings,
         );
       },
@@ -97,42 +93,21 @@ class _ControlSectionState extends State<ControlSection> {
   }
 
   void _onCallStatusChanged() {
-    final callStatus = VoiceCall().callStatus.value;
-
-    // Control section UI
-    final currentControl = _navigatorContext.mounted
-        ? ModalRoute.of(_navigatorContext)?.settings.name
-        : null;
-    switch (callStatus) {
-      case CallStatus.none:
-        if (currentControl == 'control:call') {
-          Navigator.of(_navigatorContext).pop();
-        }
-        break;
-      case CallStatus.callIn:
-        Navigator.of(_navigatorContext)
-            .popUntil((route) => route.settings.name == 'control:main');
-        Navigator.of(_navigatorContext).pushNamed('control:call');
-        break;
-      default:
-        {}
-    }
-
-    // Play sound when call in or out
-    if (callStatus == CallStatus.callIn || callStatus == CallStatus.callOut) {
-      _callRinger.resume();
-    } else {
-      _callRinger.stop();
+    // Route to call control when call in
+    if (VoiceCall().callStatusNotifier.value == CallStatus.callIn) {
+      final navigator = _navigatorStateKey.currentState!;
+      navigator.popUntil((route) => route.settings.name == 'control:main');
+      navigator.pushNamed('control:call');
     }
   }
 
   void _onUIHiddenChanged() {
-    // When show again
+    // When show again during fullscreen, route to main control
     if (UINotifiers().isUIHidden.value == false &&
         // Avoid change login control to main control
         !VideoPlayer().isStopped.value) {
-      Navigator.of(_navigatorContext)
-          .popUntil((route) => route.settings.name == 'control:main');
+      final navigator = _navigatorStateKey.currentState!;
+      navigator.popUntil((route) => route.settings.name == 'control:main');
     }
   }
 }
