@@ -165,7 +165,7 @@ class VideoPlayer with WindowListener {
     _videoHashNotifier.value = videoHash;
   }
 
-  Future<String> loadBiliVideo(BiliEntry biliEntry) async {
+  Future<void> loadBiliVideo(BiliEntry biliEntry) async {
     bool success = false;
 
     for (var url in biliEntry.videoUrls) {
@@ -214,7 +214,6 @@ class VideoPlayer with WindowListener {
     }
 
     _videoHashNotifier.value = videoHash;
-    return videoHash;
   }
 
   Future<void> togglePlay() => _player.playOrPause();

@@ -1,10 +1,11 @@
-import 'package:bunga_player/common/video_open.dart';
+import 'package:bunga_player/utils/video_open.dart';
 import 'package:bunga_player/services/chat.dart';
 import 'package:bunga_player/controllers/player_controller.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/snack_bar.dart';
 import 'package:bunga_player/controllers/ui_notifiers.dart';
 import 'package:bunga_player/services/video_player.dart';
+import 'package:bunga_player/utils/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_portal/flutter_portal.dart';
 import 'package:stream_chat_flutter_core/stream_chat_flutter_core.dart';
