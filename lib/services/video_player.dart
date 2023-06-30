@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:bunga_player/common/bili_video.dart';
+import 'package:bunga_player/common/bili_entry.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/utils/value_listenable.dart';
 import 'package:collection/collection.dart';
@@ -165,10 +165,10 @@ class VideoPlayer with WindowListener {
     _videoHashNotifier.value = videoHash;
   }
 
-  Future<String> loadBiliVideo(BiliVideo biliVideo) async {
+  Future<String> loadBiliVideo(BiliEntry biliEntry) async {
     bool success = false;
 
-    for (var url in biliVideo.videoUrls) {
+    for (var url in biliEntry.videoUrls) {
       if (url.startsWith('dash')) {
         final urls = url.split(';');
         await _player.open(
@@ -206,7 +206,7 @@ class VideoPlayer with WindowListener {
 
     if (!success) throw 'All source tested, no one success';
 
-    final videoHash = 'bili-${biliVideo.bvid}-${biliVideo.p}';
+    final videoHash = biliEntry.hash;
     if (_watchProgress.containsKey(videoHash)) {
       // HACK: wait for seek
       await Future.delayed(const Duration(seconds: 1));

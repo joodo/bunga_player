@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:bunga_player/common/bili_video.dart';
+import 'package:bunga_player/common/bili_entry.dart';
 import 'package:bunga_player/services/chat.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/snack_bar.dart';
@@ -97,7 +97,7 @@ Future<LocalVideoChannelData> openLocalVideo() async {
 Future<BiliChannelData> openBiliVideo(BuildContext context) async {
   final result = await showDialog(
     context: context,
-    builder: (context) => const BiliDialog(),
+    builder: (context) => const _BiliDialog(),
   );
   if (result == null) throw NoFileSelectedException();
 
@@ -109,7 +109,7 @@ Future<BiliChannelData> openBiliVideo(BuildContext context) async {
     final url = regex.firstMatch(result)?.group(0);
     if (url == null) throw const FormatException('Illegal url');
 
-    final biliVideo = await BiliVideo.fromUrl(Uri.parse(url));
+    final biliVideo = await BiliEntry.fromUrl(Uri.parse(url));
 
     final hash = await loadBiliVideo(biliVideo);
 
@@ -120,7 +120,7 @@ Future<BiliChannelData> openBiliVideo(BuildContext context) async {
     );
   } else if (result is BiliChannelData) {
     // Join others
-    final biliVideo = BiliVideo.fromHash(result.hash);
+    final biliVideo = BiliEntry.fromHash(result.hash);
 
     await loadBiliVideo(biliVideo);
 
@@ -130,7 +130,7 @@ Future<BiliChannelData> openBiliVideo(BuildContext context) async {
   }
 }
 
-Future<String> loadBiliVideo(BiliVideo biliVideo) async {
+Future<String> loadBiliVideo(BiliEntry biliVideo) async {
   VideoPlayer().stop();
 
   UINotifiers().hintText.value = '正在鬼鬼祟祟……';
@@ -147,14 +147,13 @@ Future<String> loadBiliVideo(BiliVideo biliVideo) async {
   return hash;
 }
 
-class BiliDialog extends StatefulWidget {
-  const BiliDialog({super.key});
-
+class _BiliDialog extends StatefulWidget {
+  const _BiliDialog();
   @override
-  State<BiliDialog> createState() => _BiliDialogState();
+  State<_BiliDialog> createState() => _BiliDialogState();
 }
 
-class _BiliDialogState extends State<BiliDialog> {
+class _BiliDialogState extends State<_BiliDialog> {
   List<BiliChannelData> _channels = [];
   late final Timer _timer;
 

@@ -1,4 +1,4 @@
-import 'package:bunga_player/common/bili_video.dart';
+import 'package:bunga_player/common/bili_entry.dart';
 import 'package:bunga_player/common/video_open.dart';
 import 'package:bunga_player/services/chat.dart';
 import 'package:bunga_player/services/logger.dart';
@@ -35,7 +35,7 @@ class PlayerController {
   Future<void> followRemoteBiliVideoHash(String videoHash) async {
     UINotifiers().isBusy.value = true;
     try {
-      await loadBiliVideo(BiliVideo.fromHash(videoHash));
+      await loadBiliVideo(BiliEntry.fromHash(videoHash));
     } catch (e) {
       logger.e(e);
     } finally {
