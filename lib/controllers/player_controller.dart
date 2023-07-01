@@ -39,25 +39,28 @@ class PlayerController {
     } catch (e) {
       logger.e(e);
     } finally {
-      UINotifiers().hintText.value = null;
       UINotifiers().isBusy.value = false;
     }
   }
 
   Future<void> loadBiliEntry(BiliEntry biliEntry) async {
-    VideoPlayer().stop();
+    try {
+      VideoPlayer().stop();
 
-    UINotifiers().hintText.value = '正在鬼鬼祟祟……';
-    await biliEntry.fetch();
-    if (!biliEntry.isHD) {
-      showSnackBar('无法获取高清视频');
-      logger.w('Bilibili: Cookie of serverless funtion outdated');
+      UINotifiers().hintText.value = '正在鬼鬼祟祟……';
+      await biliEntry.fetch();
+      if (!biliEntry.isHD) {
+        showSnackBar('无法获取高清视频');
+        logger.w('Bilibili: Cookie of serverless funtion outdated');
+      }
+
+      UINotifiers().hintText.value = '正在收拾客厅……';
+      await VideoPlayer().loadBiliVideo(biliEntry);
+
+      windowManager.setTitle(biliEntry.title);
+    } finally {
+      UINotifiers().hintText.value = null;
     }
-
-    UINotifiers().hintText.value = '正在收拾客厅……';
-    await VideoPlayer().loadBiliVideo(biliEntry);
-
-    windowManager.setTitle(biliEntry.title);
   }
 
   bool get isVideoSameWithRoom =>

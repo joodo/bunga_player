@@ -1,8 +1,11 @@
 import 'package:bunga_player/actions/play.dart';
+import 'package:bunga_player/common/bili_entry.dart';
+import 'package:bunga_player/controllers/player_controller.dart';
 import 'package:bunga_player/mocks/popup_menu.dart' as mock;
 import 'package:bunga_player/mocks/slider.dart' as mock;
 import 'package:bunga_player/services/chat.dart';
 import 'package:bunga_player/controllers/ui_notifiers.dart';
+import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/video_player.dart';
 import 'package:bunga_player/services/voice_call.dart';
 import 'package:bunga_player/utils/duration.dart';
@@ -83,6 +86,23 @@ class MainControl extends StatelessWidget {
               tooltip: '',
               useRootOverlay: true,
               itemBuilder: (context) => [
+                // Tune button
+                mock.PopupMenuItem(
+                  child: ListTile(
+                    leading: const Icon(Icons.refresh),
+                    title: const Text('重新载入'),
+                    onTap: () {
+                      Navigator.of(context, rootNavigator: true).pop();
+                      try {
+                        PlayerController().loadBiliEntry(BiliEntry.fromHash(
+                            VideoPlayer().videoHashNotifier.value!));
+                      } catch (e) {
+                        logger.w(e);
+                      }
+                    },
+                  ),
+                ),
+
                 // Tune button
                 mock.PopupMenuItem(
                   child: ListTile(
