@@ -16,8 +16,6 @@ void main() async {
   await windowManager.ensureInitialized();
   windowManager.setMinimumSize(const Size(800, 600));
 
-  packageInfo = await PackageInfo.fromPlatform();
-
   final botToastBuilder = BotToastInit();
 
   runApp(
@@ -26,7 +24,7 @@ void main() async {
       scaffoldMessengerKey: globalMessengerKey,
       builder: (context, child) {
         child = LogView(child: child!);
-        child = UpdateWrapper(packageInfo: packageInfo, child: child);
+        child = UpdateWrapper(child: child);
         child = botToastBuilder(context, child);
         child = ShortcutsWrapper(child: child);
         child = Portal(child: child);
