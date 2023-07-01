@@ -116,7 +116,8 @@ class Chat {
       // create channel
       await _setUpChannel(_chatClient.channel(
         'livestream',
-        id: hash,
+        // Unique id
+        id: DateTime.now().microsecondsSinceEpoch.toString(),
         extraData: extraData,
       ));
     }
