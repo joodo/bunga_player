@@ -1,4 +1,4 @@
-import 'package:bunga_player/common/bili_entry.dart';
+import 'package:bunga_player/models/bili_entry.dart';
 import 'package:bunga_player/services/chat.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/snack_bar.dart';

@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:bunga_player/common/bili_entry.dart';
+import 'package:bunga_player/models/bili_entry.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/utils/value_listenable.dart';
 import 'package:collection/collection.dart';

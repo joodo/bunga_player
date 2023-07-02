@@ -1,5 +1,5 @@
 import 'package:bunga_player/actions/play.dart';
-import 'package:bunga_player/common/bili_entry.dart';
+import 'package:bunga_player/models/bili_entry.dart';
 import 'package:bunga_player/controllers/player_controller.dart';
 import 'package:bunga_player/mocks/popup_menu.dart' as mock;
 import 'package:bunga_player/mocks/slider.dart' as mock;
