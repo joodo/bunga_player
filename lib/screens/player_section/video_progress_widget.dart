@@ -4,14 +4,14 @@ import 'package:bunga_player/services/video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:multi_value_listenable_builder/multi_value_listenable_builder.dart';
 
-class VideoProgressWidget extends StatefulWidget {
-  const VideoProgressWidget({super.key});
+class VideoProgressIndicator extends StatefulWidget {
+  const VideoProgressIndicator({super.key});
 
   @override
-  State<VideoProgressWidget> createState() => _VideoProgressWidgetState();
+  State<VideoProgressIndicator> createState() => _VideoProgressIndicatorState();
 }
 
-class _VideoProgressWidgetState extends State<VideoProgressWidget> {
+class _VideoProgressIndicatorState extends State<VideoProgressIndicator> {
   bool _isHovered = false;
   bool _isChanging = false;
   double _slideThemeLerpT = 0;
@@ -78,6 +78,7 @@ class _VideoProgressWidgetState extends State<VideoProgressWidget> {
                 });
 
                 VideoPlayer().position.value = sToD(value);
+                VideoPlayer().position.follow = true;
                 if (_isPlayingBeforeDraggingSlider) {
                   VideoPlayer().isPlaying.value = true;
                 }

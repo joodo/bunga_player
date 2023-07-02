@@ -16,7 +16,7 @@ class ProgressSection extends StatelessWidget {
                 child: LinearProgressIndicator(),
               ),
             )
-          : const VideoProgressWidget(),
+          : const VideoProgressIndicator(),
     );
   }
 }
