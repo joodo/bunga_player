@@ -212,7 +212,7 @@ class _BiliDialogState extends State<_BiliDialog> {
               style: themeData.textTheme.headlineSmall,
             ),
             const SizedBox(height: 16),
-            // HACK: cannot use listview because bug
+            // HACK: cannot use listview because bug, same as popmoji
             // https://github.com/flutter/flutter/issues/26527
             _channels.isEmpty
                 ? const SizedBox(
