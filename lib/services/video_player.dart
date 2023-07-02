@@ -52,10 +52,7 @@ class VideoPlayer with WindowListener {
 
     // set mpv auto reconnect
     // from https://github.com/mpv-player/mpv/issues/5793#issuecomment-553877261
-    final mpvPlayer = _player.platform;
-    if (mpvPlayer is libmpvPlayer) {
-      mpvPlayer.setProperty('stream-lavf-o', 'reconnect_streamed=1');
-    }
+    _mpvProperty('stream-lavf-o', 'reconnect_streamed=1');
 
     duration.bind(_player.streams.duration);
     buffer.bind(_player.streams.buffer);
@@ -88,12 +85,14 @@ class VideoPlayer with WindowListener {
       }
     });
 
-    contrast.addListener(() {
-      final mpvPlayer = _player.platform;
-      if (mpvPlayer is libmpvPlayer) {
-        mpvPlayer.setProperty('contrast', contrast.value.toString());
-      }
-    });
+    contrast
+        .addListener(() => _mpvProperty('contrast', contrast.value.toString()));
+    subDelay.addListener(
+        () => _mpvProperty('sub-delay', subDelay.value.toStringAsFixed(2)));
+    subSize.addListener(
+        () => _mpvProperty('sub-font-size', subSize.value.toInt().toString()));
+    subPosition.addListener(
+        () => _mpvProperty('sub-pos', subPosition.value.toInt().toString()));
 
     // auto load new opened subtitle
     tracks.addListener(() {
@@ -101,26 +100,6 @@ class VideoPlayer with WindowListener {
         final subtitleTrack = tracks.value!.subtitle.last;
         _player.setSubtitleTrack(subtitleTrack);
         _isWaitingSubtitleLoaded = false;
-      }
-    });
-
-    subDelay.addListener(() {
-      final mpvPlayer = _player.platform;
-      if (mpvPlayer is libmpvPlayer) {
-        mpvPlayer.setProperty('sub-delay', subDelay.value.toStringAsFixed(2));
-      }
-    });
-    subSize.addListener(() {
-      final mpvPlayer = _player.platform;
-      if (mpvPlayer is libmpvPlayer) {
-        mpvPlayer.setProperty(
-            'sub-font-size', subSize.value.toInt().toString());
-      }
-    });
-    subPosition.addListener(() {
-      final mpvPlayer = _player.platform;
-      if (mpvPlayer is libmpvPlayer) {
-        mpvPlayer.setProperty('sub-pos', subPosition.value.toInt().toString());
       }
     });
 
@@ -238,6 +217,13 @@ class VideoPlayer with WindowListener {
       final cmd = command.toNativeUtf8();
       mpv.mpv_command_string(mpvPlayer.ctx, cmd.cast());
       calloc.free(cmd);
+    }
+  }
+
+  void _mpvProperty(String key, String value) {
+    final mpvPlayer = _player.platform;
+    if (mpvPlayer is libmpvPlayer) {
+      mpvPlayer.setProperty(key, value);
     }
   }
 
