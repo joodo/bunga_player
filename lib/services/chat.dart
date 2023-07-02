@@ -16,8 +16,37 @@ class Chat {
   factory Chat() => _instance;
 
   Chat._internal() {
-    // HACK: for late lazy load
-    watcherJoinEventStream;
+    messageStream.listen((message) {
+      logger.i('Receive message from ${message!.user!.name}: ${message.text}');
+    });
+    watcherLeaveEventStream.listen((user) {
+      _watchersNotifier.value = List.from(_watchersNotifier.value)
+        ..removeWhere((u) => u.id == user.id);
+      showSnackBar('${user.name} 已离开');
+      AudioPlayer().play(AssetSource('sounds/user_leave.wav'));
+    });
+    watcherJoinEventStream.listen((user) {
+      if (_watchersNotifier.value.firstWhereOrNull((u) => u.id == user.id) !=
+          null) {
+        return;
+      }
+
+      _watchersNotifier.value = List.from(_watchersNotifier.value)..add(user);
+      showSnackBar('${user.name} 已加入');
+      AudioPlayer().play(AssetSource('sounds/user_join.wav'));
+    });
+    channelUpdateEventStream.listen((event) {
+      logger.i(
+          'remote change room data: ${event?.channel?.extraData.toString()}');
+
+      final user = event!.user;
+      if (user == null || user.id == Chat().currentUserNotifier.value?.id) {
+        return;
+      }
+      showSnackBar('${user.name} 更换了影片');
+    });
+
+    channelExtraDataNotifier.bind(_channelExtraData.stream);
   }
 
   final _chatClient = StreamChatClient(
@@ -50,53 +79,21 @@ class Chat {
   final currentChannelNotifier = ValueNotifier<Channel?>(null);
 
   final _messageStream = StreamProxy<Message?>.broadcast();
-  late final messageStream = _messageStream.stream
-    ..listen((message) {
-      logger.i('Receive message from ${message!.user!.name}: ${message.text}');
-    });
+  late final messageStream = _messageStream.stream;
 
   final _watcherLeaveEventStream = StreamProxy<User>.broadcast();
-  late final watcherLeaveEventStream = _watcherLeaveEventStream.stream
-    ..listen((user) {
-      _watchersNotifier.value = List.from(_watchersNotifier.value)
-        ..removeWhere((u) => u.id == user.id);
-      showSnackBar('${user.name} 已离开');
-      AudioPlayer().play(AssetSource('sounds/user_leave.wav'));
-    });
+  late final watcherLeaveEventStream = _watcherLeaveEventStream.stream;
   final _watcherJoinEventStream = StreamProxy<User>.broadcast();
-  late final watcherJoinEventStream = _watcherJoinEventStream.stream
-    ..listen((user) {
-      if (_watchersNotifier.value.firstWhereOrNull((u) => u.id == user.id) !=
-          null) {
-        return;
-      }
-
-      _watchersNotifier.value = List.from(_watchersNotifier.value)..add(user);
-      showSnackBar('${user.name} 已加入');
-      AudioPlayer().play(AssetSource('sounds/user_join.wav'));
-    });
+  late final watcherJoinEventStream = _watcherJoinEventStream.stream;
 
   final _watchersNotifier = PrivateValueNotifier<List<User>>([]);
   late final watchersNotifier = _watchersNotifier.readonly;
 
   final _channelUpdateEventStream = StreamProxy<Event?>.broadcast();
-  late final channelUpdateEventStream = _channelUpdateEventStream.stream
-    ..listen((event) {
-      logger.i(
-          'remote change room data: ${event?.channel?.extraData.toString()}');
-
-      final user = event!.user;
-      if (user == null || user.id == Chat().currentUserNotifier.value?.id) {
-        return;
-      }
-      showSnackBar('${user.name} 更换了影片');
-    });
+  late final channelUpdateEventStream = _channelUpdateEventStream.stream;
   final _channelExtraData = StreamProxy<Map<String, Object?>>();
-  late final channelExtraDataNotifier =
-      ReadonlyStreamNotifier<Map<String, Object?>>(
-    initialValue: {},
-    stream: _channelExtraData.stream,
-  );
+  final channelExtraDataNotifier =
+      ReadonlyStreamNotifier<Map<String, Object?>>({});
 
   Future<void> createOrJoinRoomByHash(
     String hash, {
@@ -154,8 +151,8 @@ class Chat {
     _channelExtraData.setSourceStream(channel.extraDataStream);
     // wait notifier update
     // HACK: remove this will cause channelExtraDataNotifier keep null, why?!
-    channelExtraDataNotifier.value;
-    await Future.delayed(Duration.zero);
+    //channelExtraDataNotifier.value;
+    //await Future.delayed(Duration.zero);
   }
 
   Future<void> leaveRoom() async {

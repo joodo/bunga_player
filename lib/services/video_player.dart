@@ -29,37 +29,15 @@ class VideoPlayer with WindowListener {
   late final _controller = media_kit.VideoController(_player);
   media_kit.VideoController get controller => _controller;
 
-  late final duration = ReadonlyStreamNotifier<Duration>(
-    initialValue: Duration.zero,
-    stream: _player.streams.duration,
-  );
-  late final buffer = ReadonlyStreamNotifier<Duration>(
-    initialValue: Duration.zero,
-    stream: _player.streams.buffer,
-  );
-  late final position = StreamNotifier<Duration>(
-    initialValue: Duration.zero,
-    stream: _player.streams.position,
-    streamSetter: (position) => _player.seek(position),
-  );
-  late final isPlaying = StreamNotifier<bool>(
-      initialValue: false,
-      stream: _player.streams.playing,
-      streamSetter: (play) {
-        play ? _player.play() : _player.pause();
-      });
+  final duration = ReadonlyStreamNotifier<Duration>(Duration.zero);
+  final buffer = ReadonlyStreamNotifier<Duration>(Duration.zero);
+  final position = StreamNotifier<Duration>(Duration.zero);
+  final isPlaying = StreamNotifier<bool>(false);
   final volume = ValueNotifier<double>(100.0);
   final isMute = ValueNotifier<bool>(false);
   final contrast = ValueNotifierWithReset<int>(0);
-
-  late final tracks = ReadonlyStreamNotifier<Tracks?>(
-    initialValue: null,
-    stream: _player.streams.tracks,
-  );
-  late final track = ReadonlyStreamNotifier<Track?>(
-    initialValue: null,
-    stream: _player.streams.track,
-  );
+  final tracks = ReadonlyStreamNotifier<Tracks?>(null);
+  final track = ReadonlyStreamNotifier<Track?>(null);
 
   final subDelay = ValueNotifierWithReset<double>(0.0); // sub-delay
   final subSize = ValueNotifierWithReset<double>(55.0); // sub-font-size
@@ -79,6 +57,15 @@ class VideoPlayer with WindowListener {
       mpvPlayer.setProperty('stream-lavf-o', 'reconnect_streamed=1');
     }
 
+    duration.bind(_player.streams.duration);
+    buffer.bind(_player.streams.buffer);
+    position.bind(_player.streams.position, _player.seek);
+    isPlaying.bind(_player.streams.playing, (play) {
+      play ? _player.play() : _player.pause();
+    });
+    tracks.bind(_player.streams.tracks);
+    track.bind(_player.streams.track);
+
     _player.streams.log.listen(
         (event) => logger.i('Player log: [${event.prefix}]${event.text}'));
 
@@ -89,7 +76,6 @@ class VideoPlayer with WindowListener {
         Wakelock.disable();
       }
     });
-
     volume.addListener(() {
       isMute.value = false;
       _player.setVolume(volume.value);

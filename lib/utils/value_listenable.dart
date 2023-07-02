@@ -2,11 +2,11 @@ import 'package:flutter/foundation.dart';
 
 class ReadonlyStreamNotifier<T> extends ChangeNotifier
     implements ValueListenable<T> {
-  late final Stream<T> _stream;
-  late T _value;
+  T _value;
+  ReadonlyStreamNotifier(this._value);
 
-  ReadonlyStreamNotifier({required T initialValue, required Stream<T> stream}) {
-    _value = initialValue;
+  late final Stream<T> _stream;
+  void bind(Stream<T> stream) {
     _stream = stream;
 
     _stream.listen((value) {
@@ -21,17 +21,12 @@ class ReadonlyStreamNotifier<T> extends ChangeNotifier
 }
 
 class StreamNotifier<T> extends ChangeNotifier implements ValueListenable<T> {
-  final Stream<T> _stream;
-  final ValueSetter<T> _streamSetter;
+  late final ValueSetter<T> _streamSetter;
 
-  StreamNotifier({
-    required T initialValue,
-    required Stream<T> stream,
-    required ValueSetter<T> streamSetter,
-  })  : _value = initialValue,
-        _stream = stream,
-        _streamSetter = streamSetter {
-    _stream.listen((value) {
+  StreamNotifier(this._value);
+  void bind(Stream<T> stream, ValueSetter<T> streamSetter) {
+    _streamSetter = streamSetter;
+    stream.listen((value) {
       if (!follow || _value == value) {
         return;
       }
