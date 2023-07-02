@@ -168,7 +168,6 @@ class Chat {
   /// Return message id
   Future<String?> sendMessage(Message m) async {
     try {
-      logger.i('Send message: ${m.text}');
       final response = await currentChannelNotifier.value!.sendMessage(m);
       return response.message.id;
     } catch (e) {
