@@ -34,7 +34,7 @@ class SetPositionIntent extends Intent {
 
 class SetPositionAction extends Action<SetPositionIntent> {
   @override
-  Future<void> invoke(SetPositionIntent intent) async {
+  void invoke(SetPositionIntent intent) {
     if (intent.isIncrease) {
       var position = VideoPlayer().position.value + intent.duration;
       position = position > VideoPlayer().duration.value
@@ -59,7 +59,7 @@ class TogglePlayIntent extends Intent {
 
 class TogglePlayAction extends Action<TogglePlayIntent> {
   @override
-  Future<void> invoke(TogglePlayIntent intent) async {
+  void invoke(TogglePlayIntent intent) {
     VideoPlayer().isPlaying.value = !VideoPlayer().isPlaying.value;
     PlayerController().sendPlayerStatus();
   }

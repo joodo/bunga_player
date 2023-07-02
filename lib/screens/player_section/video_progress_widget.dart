@@ -71,7 +71,7 @@ class _VideoProgressWidgetState extends State<VideoProgressWidget> {
               onChanged: (double value) {
                 VideoPlayer().position.value = sToD(value);
               },
-              onChangeEnd: (value) async {
+              onChangeEnd: (value) {
                 setState(() {
                   _isChanging = false;
                   if (!_isHovered) _slideThemeLerpT = 0;

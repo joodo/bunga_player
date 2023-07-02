@@ -68,7 +68,7 @@ class PlayerController {
       VideoPlayer().videoHashNotifier.value;
 
   // About play status
-  Future<void> sendPlayerStatus({String? quoteMessageId}) async {
+  void sendPlayerStatus({String? quoteMessageId}) {
     // Not playing the same video, ignore
     if (!isVideoSameWithRoom) return;
 
@@ -77,7 +77,7 @@ class PlayerController {
 
     final messageText =
         '${isPlay ? "play" : "pause"} at ${position.inMilliseconds}';
-    await Chat().sendMessage(
+    Chat().sendMessage(
       Message(
         text: messageText,
         quotedMessageId: quoteMessageId,
@@ -100,7 +100,7 @@ class PlayerController {
     });
   }
 
-  void _applyStatus(Message message) async {
+  void _applyStatus(Message message) {
     // Not playing the same video, ignore
     if (!isVideoSameWithRoom) return;
 
@@ -137,13 +137,13 @@ class PlayerController {
     }
   }
 
-  Future<void> _answerPlayStatus(Message message) async {
+  void _answerPlayStatus(Message message) {
     if (message.user?.id == Chat().currentUserNotifier.value!.id) {
       return;
     }
 
     if (_askID == null) {
-      await sendPlayerStatus(quoteMessageId: message.id);
+      sendPlayerStatus(quoteMessageId: message.id);
     }
   }
 
