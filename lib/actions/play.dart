@@ -50,7 +50,8 @@ class SetPositionAction extends Action<SetPositionIntent> {
   }
 
   @override
-  bool isEnabled(SetPositionIntent intent) => !VideoPlayer().isStopped.value;
+  bool isEnabled(SetPositionIntent intent) =>
+      !VideoPlayer().isStoppedNotifier.value;
 }
 
 class TogglePlayIntent extends Intent {
@@ -65,7 +66,8 @@ class TogglePlayAction extends Action<TogglePlayIntent> {
   }
 
   @override
-  bool isEnabled(TogglePlayIntent intent) => !VideoPlayer().isStopped.value;
+  bool isEnabled(TogglePlayIntent intent) =>
+      !VideoPlayer().isStoppedNotifier.value;
 }
 
 class SetFullScreenIntent extends Intent {

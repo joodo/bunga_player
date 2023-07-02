@@ -57,7 +57,7 @@ class _RoomSectionState extends State<RoomSection> {
             builder: (context, value, child) {
               final channelData = Chat().channelExtraDataNotifier.value;
               if (UINotifiers().isBusy.value == true || // loading video
-                  VideoPlayer().isStopped.value || // stopped
+                  VideoPlayer().isStoppedNotifier.value || // stopped
                   channelData['hash'] ==
                       VideoPlayer().videoHashNotifier.value) {
                 return const SizedBox.shrink();

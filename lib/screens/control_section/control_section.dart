@@ -105,7 +105,7 @@ class _ControlSectionState extends State<ControlSection> {
     // When show again during fullscreen, route to main control
     if (UINotifiers().isUIHidden.value == false &&
         // Avoid change login control to main control
-        !VideoPlayer().isStopped.value) {
+        !VideoPlayer().isStoppedNotifier.value) {
       final navigator = _navigatorStateKey.currentState!;
       navigator.popUntil((route) => route.settings.name == 'control:main');
     }

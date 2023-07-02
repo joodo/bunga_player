@@ -7,6 +7,7 @@ class Popmoji {
   static final _instance = Popmoji._internal();
   factory Popmoji() => _instance;
 
+  // TODO: fix strange logic
   final playing = ValueNotifier<String?>(null);
 
   Popmoji._internal() {

@@ -7,7 +7,6 @@ import 'package:bunga_player/constants/secrets.dart';
 import 'package:bunga_player/utils/stream_proxy.dart';
 import 'package:bunga_player/utils/value_listenable.dart';
 import 'package:collection/collection.dart';
-import 'package:flutter/foundation.dart';
 import 'package:stream_chat_flutter_core/stream_chat_flutter_core.dart';
 
 class Chat {
@@ -55,11 +54,12 @@ class Chat {
   );
 
   // User
-  final currentUserNotifier = ValueNotifier<User?>(null);
+  final _currentUserNotifier = PrivateValueNotifier<User?>(null);
+  late final currentUserNotifier = _currentUserNotifier.readonly;
 
   Future<void> login(String userName) async {
     final userID = userName.hashCode.toString();
-    currentUserNotifier.value = await _chatClient.connectUser(
+    _currentUserNotifier.value = await _chatClient.connectUser(
       User(
         id: userID,
         name: userName,
@@ -72,11 +72,12 @@ class Chat {
 
   Future<void> logout() async {
     await _chatClient.disconnectUser();
-    currentUserNotifier.value = null;
+    _currentUserNotifier.value = null;
   }
 
   // Channel
-  final currentChannelNotifier = ValueNotifier<Channel?>(null);
+  final _currentChannelNotifier = PrivateValueNotifier<Channel?>(null);
+  late final currentChannelNotifier = _currentChannelNotifier.readonly;
 
   final _messageStream = StreamProxy<Message?>.broadcast();
   late final messageStream = _messageStream.stream;
@@ -129,7 +130,7 @@ class Chat {
   }
 
   Future<void> _setUpChannel(Channel channel) async {
-    currentChannelNotifier.value = channel;
+    _currentChannelNotifier.value = channel;
     await channel.watch();
     // watchers won't auto query
     await channel.query(
@@ -149,15 +150,11 @@ class Chat {
     _watchersNotifier.value = channel.state!.watchers;
 
     _channelExtraData.setSourceStream(channel.extraDataStream);
-    // wait notifier update
-    // HACK: remove this will cause channelExtraDataNotifier keep null, why?!
-    //channelExtraDataNotifier.value;
-    //await Future.delayed(Duration.zero);
   }
 
   Future<void> leaveRoom() async {
     await currentChannelNotifier.value!.stopWatching();
-    currentChannelNotifier.value = null;
+    _currentChannelNotifier.value = null;
 
     _messageStream.setEmpty();
     _watcherJoinEventStream.setEmpty();

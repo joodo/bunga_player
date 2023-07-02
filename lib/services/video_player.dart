@@ -127,11 +127,9 @@ class VideoPlayer with WindowListener {
     windowManager.addListener(this);
   }
 
-  final _videoHashNotifier = ValueNotifier<String?>(null);
-  late final videoHashNotifier = ProxyValueNotifier<String?, String?>(
-    from: _videoHashNotifier,
-  );
-  late final isStopped = ProxyValueNotifier<bool, String?>(
+  final _videoHashNotifier = PrivateValueNotifier<String?>(null);
+  late final videoHashNotifier = _videoHashNotifier.readonly;
+  late final isStoppedNotifier = ProxyValueNotifier<bool, String?>(
     proxy: (originValue) => originValue == null,
     from: _videoHashNotifier,
   );
