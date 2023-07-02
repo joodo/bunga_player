@@ -86,22 +86,27 @@ class MainControl extends StatelessWidget {
               tooltip: '',
               useRootOverlay: true,
               itemBuilder: (context) => [
-                // Tune button
-                mock.PopupMenuItem(
-                  child: ListTile(
-                    leading: const Icon(Icons.refresh),
-                    title: const Text('重新载入'),
-                    onTap: () {
-                      Navigator.of(context, rootNavigator: true).pop();
-                      try {
-                        PlayerController().loadBiliEntry(BiliEntry.fromHash(
-                            VideoPlayer().videoHashNotifier.value!));
-                      } catch (e) {
-                        logger.w(e);
-                      }
-                    },
+                // Reload button
+                if (!(VideoPlayer()
+                        .videoHashNotifier
+                        .value
+                        ?.startsWith('local') ??
+                    true))
+                  mock.PopupMenuItem(
+                    child: ListTile(
+                      leading: const Icon(Icons.refresh),
+                      title: const Text('重新载入'),
+                      onTap: () {
+                        Navigator.of(context, rootNavigator: true).pop();
+                        try {
+                          PlayerController().loadBiliEntry(BiliEntry.fromHash(
+                              VideoPlayer().videoHashNotifier.value!));
+                        } catch (e) {
+                          logger.w(e);
+                        }
+                      },
+                    ),
                   ),
-                ),
 
                 // Tune button
                 mock.PopupMenuItem(
