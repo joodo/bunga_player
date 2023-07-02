@@ -72,9 +72,6 @@ class PlayerController {
     // Not playing the same video, ignore
     if (!isVideoSameWithRoom) return;
 
-    // HACK: wait for https://github.com/alexmercerind/media_kit/issues/253
-    await Future.delayed(const Duration(milliseconds: 100));
-
     final isPlay = VideoPlayer().isPlaying.value;
     final position = VideoPlayer().position.value;
 
@@ -115,14 +112,14 @@ class PlayerController {
 
     final isPlaying = VideoPlayer().isPlaying.value;
     if (re.first == 'pause' && isPlaying) {
-      VideoPlayer().pause();
+      VideoPlayer().isPlaying.value = false;
       if (canShowSnackBar) {
         showSnackBar('${message.user!.name} 暂停了视频');
         canShowSnackBar = false;
       }
     }
     if (re.first == 'play' && !isPlaying) {
-      VideoPlayer().play();
+      VideoPlayer().isPlaying.value = true;
       if (canShowSnackBar) {
         showSnackBar('${message.user!.name} 播放了视频');
         canShowSnackBar = false;
@@ -132,7 +129,7 @@ class PlayerController {
     final position = VideoPlayer().position.value;
     final remotePosition = Duration(milliseconds: int.parse(re.last));
     if ((position - remotePosition).inMilliseconds.abs() > 1000) {
-      VideoPlayer().seekTo(remotePosition);
+      VideoPlayer().position.value = remotePosition;
       if (canShowSnackBar) {
         showSnackBar('${message.user!.name} 调整了进度');
         canShowSnackBar = false;

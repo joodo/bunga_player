@@ -29,33 +29,34 @@ class VideoPlayer with WindowListener {
   late final _controller = media_kit.VideoController(_player);
   media_kit.VideoController get controller => _controller;
 
-  late final duration = StreamNotifier<Duration>(
+  late final duration = ReadonlyStreamNotifier<Duration>(
     initialValue: Duration.zero,
     stream: _player.streams.duration,
   );
-  late final buffer = StreamNotifier<Duration>(
+  late final buffer = ReadonlyStreamNotifier<Duration>(
     initialValue: Duration.zero,
     stream: _player.streams.buffer,
   );
   late final position = StreamNotifier<Duration>(
     initialValue: Duration.zero,
     stream: _player.streams.position,
+    streamSetter: (position) => _player.seek(position),
   );
   late final isPlaying = StreamNotifier<bool>(
-    initialValue: false,
-    stream: _player.streams.playing,
-  );
-
-  // Don't use StreamNotifier for faster UI response
+      initialValue: false,
+      stream: _player.streams.playing,
+      streamSetter: (play) {
+        play ? _player.play() : _player.pause();
+      });
   final volume = ValueNotifier<double>(100.0);
   final isMute = ValueNotifier<bool>(false);
   final contrast = ValueNotifierWithReset<int>(0);
 
-  late final tracks = StreamNotifier<Tracks?>(
+  late final tracks = ReadonlyStreamNotifier<Tracks?>(
     initialValue: null,
     stream: _player.streams.tracks,
   );
-  late final track = StreamNotifier<Track?>(
+  late final track = ReadonlyStreamNotifier<Track?>(
     initialValue: null,
     stream: _player.streams.track,
   );
@@ -159,7 +160,7 @@ class VideoPlayer with WindowListener {
 
     final videoHash = 'local-$crcString';
     if (_watchProgress.containsKey(videoHash)) {
-      await seekTo(Duration(milliseconds: _watchProgress[videoHash]!));
+      position.value = Duration(milliseconds: _watchProgress[videoHash]!);
     }
 
     _videoHashNotifier.value = videoHash;
@@ -210,16 +211,11 @@ class VideoPlayer with WindowListener {
     if (_watchProgress.containsKey(videoHash)) {
       // HACK: wait for seek
       await Future.delayed(const Duration(seconds: 1));
-      await seekTo(Duration(milliseconds: _watchProgress[videoHash]!));
+      position.value = Duration(milliseconds: _watchProgress[videoHash]!);
     }
 
     _videoHashNotifier.value = videoHash;
   }
-
-  Future<void> togglePlay() => _player.playOrPause();
-  Future<void> pause() => _player.pause();
-  Future<void> play() => _player.play();
-  Future<void> seekTo(Duration target) => _player.seek(target);
 
   Future<void> stop() async {
     _player.pause();

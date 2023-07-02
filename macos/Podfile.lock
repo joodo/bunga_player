@@ -140,14 +140,14 @@ SPEC CHECKSUMS:
   FlutterMacOS: 8f6f14fa908a6fb3fba0cd85dbd81ec4b251fb24
   iris_method_channel: fba932d668df5b2a085f19bcd0b1f23d667a83cd
   media_kit_libs_macos_video: 0a4a5bf21533cba968c0833f1b59e9af8b5847f1
-  media_kit_native_event_loop: 6cf347b98de9735713a86c188467a008af5f860e
+  media_kit_native_event_loop: 2d8c329aa5815d77a6f40623adeede4584307723
   media_kit_video: 1e311a3dfe41f276935f95518b51a0c3ff72114f
   package_info_plus: 02d7a575e80f194102bef286361c6c326e4c29ce
   path_provider_foundation: eaf5b3e458fc0e5fbb9940fb09980e853fe058b8
   ReachabilitySwift: 985039c6f7b23a1da463388634119492ff86c825
   rive_common: acedcab7802c0ece4b0d838b71d7deb637e1309a
   screen_retriever: 59634572a57080243dd1bf715e55b6c54f241a38
-  shared_preferences_foundation: e2dae3258e06f44cc55f49d42024fd8dd03c590c
+  shared_preferences_foundation: 5b919d13b803cadd15ed2dc053125c68730e5126
   url_launcher_macos: 5335912b679c073563f29d89d33d10d459f95451
   wakelock_macos: bc3f2a9bd8d2e6c89fee1e1822e7ddac3bd004a9
   window_manager: 3a1844359a6295ab1e47659b1a777e36773cd6e8

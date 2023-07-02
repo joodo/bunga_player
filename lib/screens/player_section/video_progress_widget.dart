@@ -64,11 +64,12 @@ class _VideoProgressWidgetState extends State<VideoProgressWidget> {
                 });
 
                 _isPlayingBeforeDraggingSlider = VideoPlayer().isPlaying.value;
-                VideoPlayer().pause();
-                VideoPlayer().seekTo(sToD(value));
+                VideoPlayer().isPlaying.value = false;
+                VideoPlayer().position.follow = false;
+                VideoPlayer().position.value = sToD(value);
               },
               onChanged: (double value) {
-                VideoPlayer().seekTo(sToD(value));
+                VideoPlayer().position.value = sToD(value);
               },
               onChangeEnd: (value) async {
                 setState(() {
@@ -76,8 +77,10 @@ class _VideoProgressWidgetState extends State<VideoProgressWidget> {
                   if (!_isHovered) _slideThemeLerpT = 0;
                 });
 
-                await VideoPlayer().seekTo(sToD(value));
-                if (_isPlayingBeforeDraggingSlider) VideoPlayer().play();
+                VideoPlayer().position.value = sToD(value);
+                if (_isPlayingBeforeDraggingSlider) {
+                  VideoPlayer().isPlaying.value = true;
+                }
                 PlayerController().sendPlayerStatus();
               },
             );

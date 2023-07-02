@@ -42,9 +42,9 @@ class SetPositionAction extends Action<SetPositionIntent> {
           : position < Duration.zero
               ? Duration.zero
               : position;
-      await VideoPlayer().seekTo(position);
+      VideoPlayer().position.value = position;
     } else {
-      await VideoPlayer().seekTo(intent.duration);
+      VideoPlayer().position.value = intent.duration;
     }
     PlayerController().sendPlayerStatus();
   }
@@ -60,7 +60,7 @@ class TogglePlayIntent extends Intent {
 class TogglePlayAction extends Action<TogglePlayIntent> {
   @override
   Future<void> invoke(TogglePlayIntent intent) async {
-    await VideoPlayer().togglePlay();
+    VideoPlayer().isPlaying.value = !VideoPlayer().isPlaying.value;
     PlayerController().sendPlayerStatus();
   }
 

@@ -92,7 +92,8 @@ class Chat {
       showSnackBar('${user.name} 更换了影片');
     });
   final _channelExtraData = StreamProxy<Map<String, Object?>>();
-  late final channelExtraDataNotifier = StreamNotifier<Map<String, Object?>>(
+  late final channelExtraDataNotifier =
+      ReadonlyStreamNotifier<Map<String, Object?>>(
     initialValue: {},
     stream: _channelExtraData.stream,
   );
