@@ -9,13 +9,6 @@ class UINotifiers {
   UINotifiers._internal() {
     isFullScreen.addListener(() async {
       windowManager.setFullScreen(isFullScreen.value);
-
-      // HACK: exit full screen makes layout a mass in Windows
-      if (isFullScreen.value == false) {
-        var size = await windowManager.getSize();
-        size += const Offset(1, 1);
-        windowManager.setSize(size);
-      }
     });
   }
 
