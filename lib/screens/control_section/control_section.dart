@@ -50,7 +50,7 @@ class _ControlSectionState extends State<ControlSection> {
 
   @override
   Widget build(BuildContext context) {
-    return Navigator(
+    final body = Navigator(
       initialRoute: 'control:login',
       key: _navigatorStateKey,
       onGenerateRoute: (settings) {
@@ -65,30 +65,29 @@ class _ControlSectionState extends State<ControlSection> {
           'control:open': const VideoOpenControl(),
         };
 
-        Widget? body = routes[settings.name];
-        if (body == null) throw Exception('Invalid route: ${settings.name}');
-
-        body = Container(
-          color: Theme.of(context).colorScheme.surface,
-          child: body,
-        );
-        body = SliderTheme(
-          data: SliderThemeData(
-            activeTrackColor: Theme.of(context).colorScheme.secondary,
-            thumbColor: Theme.of(context).colorScheme.secondary,
-            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
-            valueIndicatorColor: Theme.of(context).colorScheme.secondary,
-            trackShape: SliderCustomTrackShape(),
-            showValueIndicator: ShowValueIndicator.always,
-          ),
-          child: body,
-        );
+        Widget? control = routes[settings.name];
+        if (control == null) throw Exception('Invalid route: ${settings.name}');
 
         return _ControlRoute<void>(
-          builder: (BuildContext context) => body!,
+          builder: (BuildContext context) => Container(
+            color: Theme.of(context).colorScheme.surface,
+            child: control,
+          ),
           settings: settings,
         );
       },
+    );
+
+    return SliderTheme(
+      data: SliderThemeData(
+        activeTrackColor: Theme.of(context).colorScheme.secondary,
+        thumbColor: Theme.of(context).colorScheme.secondary,
+        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
+        valueIndicatorColor: Theme.of(context).colorScheme.secondary,
+        trackShape: SliderCustomTrackShape(),
+        showValueIndicator: ShowValueIndicator.always,
+      ),
+      child: body,
     );
   }
 

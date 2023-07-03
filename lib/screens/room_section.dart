@@ -22,8 +22,6 @@ class _RoomSectionState extends State<RoomSection> {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        const SizedBox(width: 16),
-
         // Watcher list
         ValueListenableBuilder(
           valueListenable: Chat().watchersNotifier,
@@ -40,9 +38,12 @@ class _RoomSectionState extends State<RoomSection> {
               return const SizedBox.shrink();
             }
 
-            return Text(
-              '$text 在和你一起看',
-              textAlign: TextAlign.left,
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Text(
+                '$text 在和你一起看',
+                textAlign: TextAlign.left,
+              ),
             );
           },
         ),

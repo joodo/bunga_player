@@ -39,16 +39,16 @@ class MainScreenState extends State<MainScreen> {
           final hideableUI = Stack(
             fit: StackFit.loose,
             children: [
-              roomSection,
+              Container(
+                color: const Color(0xA0000000),
+                child: roomSection,
+              ),
               Positioned(
                 bottom: 0,
                 left: 0,
                 right: 0,
                 height: controlSectionHeight,
-                child: Container(
-                  decoration: const BoxDecoration(color: Color(0xC0000000)),
-                  child: controlSection,
-                ),
+                child: controlSection,
               ),
               const Positioned(
                 bottom: controlSectionHeight - 8,
