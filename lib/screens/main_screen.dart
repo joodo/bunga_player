@@ -20,14 +20,14 @@ class MainScreenState extends State<MainScreen> {
   );
 
   final _controlSectionKey = GlobalKey<State<ControlSection>>();
-  final _videoSectionKey = GlobalKey<State<PlayerSection>>();
+  final _playerSectionKey = GlobalKey<State<PlayerSection>>();
   final _roomSectionKey = GlobalKey<State<RoomSection>>();
   @override
   Widget build(Object context) {
     const roomSectionHeight = 36.0;
     const controlSectionHeight = 64.0;
 
-    final playerSection = PlayerSection(key: _videoSectionKey);
+    final playerSection = PlayerSection(key: _playerSectionKey);
     final controlSection = ControlSection(key: _controlSectionKey);
     final roomSection = RoomSection(key: _roomSectionKey);
     const progressSection = ProgressSection();
