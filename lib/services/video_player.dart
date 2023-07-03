@@ -155,7 +155,7 @@ class VideoPlayer with WindowListener {
       }
 
       await Future.any([
-        // HACK: To found whether network media open success
+        // Network timeout
         Future.delayed(const Duration(seconds: 6)),
         () async {
           await _controller.waitUntilFirstFrameRendered;
@@ -170,8 +170,10 @@ class VideoPlayer with WindowListener {
 
     final videoHash = biliEntry.hash;
     if (_watchProgress.containsKey(videoHash)) {
-      // HACK: wait for seek
-      await Future.delayed(const Duration(seconds: 1));
+      // wait for seek
+      await for (var buffering in _player.streams.buffering) {
+        if (!buffering) break;
+      }
       position.value = Duration(milliseconds: _watchProgress[videoHash]!);
     }
 
