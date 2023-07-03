@@ -1,4 +1,4 @@
-import 'package:bunga_player/screens/progress_section.dart';
+import 'package:bunga_player/screens/progress_section/progress_section.dart';
 import 'package:bunga_player/screens/room_section.dart';
 import 'package:bunga_player/screens/control_section/control_section.dart';
 import 'package:bunga_player/screens/player_section/player_section.dart';

@@ -6,7 +6,7 @@ import 'package:bunga_player/screens/control_section/popmoji_control.dart';
 import 'package:bunga_player/screens/control_section/subtitle_control.dart';
 import 'package:bunga_player/screens/control_section/tune_control.dart';
 import 'package:bunga_player/screens/control_section/welcome_control.dart';
-import 'package:bunga_player/screens/player_section/video_progress_widget.dart';
+import 'package:bunga_player/screens/progress_section/video_progress_indicator.dart';
 import 'package:bunga_player/controllers/ui_notifiers.dart';
 import 'package:bunga_player/services/video_player.dart';
 import 'package:bunga_player/services/voice_call.dart';
