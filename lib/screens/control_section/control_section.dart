@@ -54,8 +54,11 @@ class _ControlSectionState extends State<ControlSection> {
       initialRoute: 'control:login',
       key: _navigatorStateKey,
       onGenerateRoute: (settings) {
+        final arguments = settings.arguments as Map<String, dynamic>?;
         final routes = {
-          'control:login': const LoginControl(),
+          'control:login': LoginControl(
+            previousName: arguments?['previousName'] as String?,
+          ),
           'control:welcome': const WelcomeControl(),
           'control:main': const MainControl(),
           'control:call': const CallControl(),

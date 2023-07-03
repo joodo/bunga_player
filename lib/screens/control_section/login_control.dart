@@ -7,7 +7,8 @@ import 'package:multi_value_listenable_builder/multi_value_listenable_builder.da
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginControl extends StatefulWidget {
-  const LoginControl({super.key});
+  final String? previousName;
+  const LoginControl({super.key, this.previousName});
 
   @override
   State<LoginControl> createState() => _LoginControlState();
@@ -31,6 +32,14 @@ class _LoginControlState extends State<LoginControl> {
         UINotifiers().hintText.value = _askNameText;
       }
     });
+
+    if (widget.previousName != null) {
+      _textController.text = widget.previousName!;
+      _textController.selection = TextSelection(
+        baseOffset: 0,
+        extentOffset: _textController.text.length,
+      );
+    }
   }
 
   @override

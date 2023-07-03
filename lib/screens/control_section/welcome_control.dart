@@ -140,13 +140,15 @@ class _WelcomeControlState extends State<WelcomeControl> {
   }
 
   void _logout() async {
+    final previousName = Chat().currentUserNotifier.value!.name;
     await Chat().logout();
     SharedPreferences.getInstance().then((pref) => pref.remove('user_name'));
-    _onLoggedOut();
+    _onChangeName(previousName);
   }
 
-  void _onLoggedOut() {
-    Navigator.of(context).popAndPushNamed('control:login');
+  void _onChangeName(String previousName) {
+    Navigator.of(context).popAndPushNamed('control:login',
+        arguments: {'previousName': previousName});
   }
 
   void _onVideoLoaded() {
