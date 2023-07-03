@@ -1,4 +1,4 @@
-import 'package:bunga_player/services/popmoji.dart';
+import 'package:bunga_player/actions/popmoji.dart';
 import 'package:bunga_player/constants/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -29,7 +29,7 @@ class PopmojiControl extends StatelessWidget {
       emojiButtons.add(IconButton(
         icon: svg,
         onPressed: () {
-          Popmoji().send(code);
+          sendPopmoji(code);
           Navigator.of(context).pop();
         },
       ));

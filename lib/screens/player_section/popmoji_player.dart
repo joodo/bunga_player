@@ -1,4 +1,4 @@
-import 'package:bunga_player/services/popmoji.dart';
+import 'package:bunga_player/services/chat.dart';
 import 'package:fireworks/fireworks.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
@@ -37,7 +37,7 @@ class _PopmojiPlayerState extends State<PopmojiPlayer>
     withSky: false,
     rocketSpawnTimeout: Duration.zero,
     autoLaunchDuration: Duration.zero,
-  )..start();
+  );
   late final _skyAnime = TweenSequence<double>(
     [
       TweenSequenceItem(
@@ -58,6 +58,12 @@ class _PopmojiPlayerState extends State<PopmojiPlayer>
   ).animate(_animationController);
 
   @override
+  void initState() {
+    super.initState();
+    _fireworkController.start();
+  }
+
+  @override
   dispose() {
     _animationController.dispose();
     _fireworkController.dispose();
@@ -66,9 +72,14 @@ class _PopmojiPlayerState extends State<PopmojiPlayer>
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: Popmoji().playing,
-      builder: (context, code, child) {
+    return StreamBuilder<String?>(
+      stream: Chat()
+          .messageStream
+          .where((message) => message?.text?.split(' ')[0] == 'popmoji')
+          .map<String?>((message) => message?.text?.split(' ')[1]),
+      builder: (context, snapshot) {
+        final code = snapshot.data;
+
         if (code == null) return const SizedBox.shrink();
 
         // Fireworks
@@ -81,9 +92,7 @@ class _PopmojiPlayerState extends State<PopmojiPlayer>
 
           _animationController.duration = const Duration(seconds: 6);
           _animationController.reset();
-          _animationController.forward().then((_) {
-            Popmoji().playing.value = null;
-          });
+          _animationController.forward();
 
           return AnimatedBuilder(
             animation: _animationController,
@@ -106,11 +115,10 @@ class _PopmojiPlayerState extends State<PopmojiPlayer>
           child: Lottie.asset(
             'assets/images/emojis/u$code.json',
             repeat: false,
-            onLoaded: (composition) async {
+            onLoaded: (composition) {
               _animationController.duration = composition.duration * 1.25;
               _animationController.reset();
-              await _animationController.forward();
-              Popmoji().playing.value = null;
+              _animationController.forward();
             },
           ),
         );
