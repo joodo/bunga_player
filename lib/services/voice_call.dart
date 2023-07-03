@@ -121,7 +121,7 @@ class VoiceCall {
     });
   }
 
-  final _callStatus = PrivateValueNotifier<CallStatus>(CallStatus.none);
+  final _callStatus = ValueNotifier<CallStatus>(CallStatus.none);
   late final callStatusNotifier = _callStatus.readonly
     ..addListener(() {
       // Play sound when call in or out

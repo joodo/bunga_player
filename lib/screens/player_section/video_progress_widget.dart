@@ -51,12 +51,19 @@ class _VideoProgressIndicatorState extends State<VideoProgressIndicator> {
             VideoPlayer().buffer,
           ],
           builder: (context, values, child) {
+            final position = values[0] as Duration;
+            final duration = values[1] as Duration;
+            final buffer = values[2] as Duration;
             return Slider(
-              value: dToS(values[0]).clamp(0, dToS(values[1])),
-              secondaryTrackValue: dToS(values[2]).clamp(0, dToS(values[1])),
-              max: dToS(values[1]),
+              value: position.inMilliseconds
+                  .clamp(0, duration.inMilliseconds)
+                  .toDouble(),
+              secondaryTrackValue: buffer.inMilliseconds
+                  .clamp(0, duration.inMilliseconds)
+                  .toDouble(),
+              max: duration.inMilliseconds.toDouble(),
               focusNode: FocusNode(canRequestFocus: false),
-              label: dToHHmmss(values[0]),
+              label: position.hhmmss,
               onChangeStart: (value) {
                 setState(() {
                   _isChanging = true;
@@ -66,10 +73,10 @@ class _VideoProgressIndicatorState extends State<VideoProgressIndicator> {
                 _isPlayingBeforeDraggingSlider = VideoPlayer().isPlaying.value;
                 VideoPlayer().isPlaying.value = false;
                 VideoPlayer().position.follow = false;
-                VideoPlayer().position.value = sToD(value);
+                VideoPlayer().position.value = value.asMilliseconds;
               },
               onChanged: (double value) {
-                VideoPlayer().position.value = sToD(value);
+                VideoPlayer().position.value = value.asMilliseconds;
               },
               onChangeEnd: (value) {
                 setState(() {
@@ -77,7 +84,7 @@ class _VideoProgressIndicatorState extends State<VideoProgressIndicator> {
                   if (!_isHovered) _slideThemeLerpT = 0;
                 });
 
-                VideoPlayer().position.value = sToD(value);
+                VideoPlayer().position.value = value.asMilliseconds;
                 VideoPlayer().position.follow = true;
                 if (_isPlayingBeforeDraggingSlider) {
                   VideoPlayer().isPlaying.value = true;

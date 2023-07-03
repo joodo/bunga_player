@@ -284,14 +284,16 @@ class _DurationButtonState extends State<DurationButton> {
           VideoPlayer().duration,
         ],
         builder: (context, values, child) {
-          final String positionString = dToHHmmss(values[0]);
+          final position = values[0] as Duration;
+          final duration = values[1] as Duration;
+          final String positionString = position.hhmmss;
 
           final String displayString;
           if (_showTotalTime) {
-            final durationString = dToHHmmss(values[1]);
+            final durationString = duration.hhmmss;
             displayString = '$positionString / $durationString';
           } else {
-            final remainString = dToHHmmss(values[1] - values[0]);
+            final remainString = (duration - position).hhmmss;
             displayString = '$positionString - $remainString';
           }
           return Text(

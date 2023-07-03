@@ -106,12 +106,10 @@ class VideoPlayer with WindowListener {
     windowManager.addListener(this);
   }
 
-  final _videoHashNotifier = PrivateValueNotifier<String?>(null);
+  final _videoHashNotifier = ValueNotifier<String?>(null);
   late final videoHashNotifier = _videoHashNotifier.readonly;
-  late final isStoppedNotifier = ProxyValueNotifier<bool, String?>(
-    proxy: (originValue) => originValue == null,
-    from: _videoHashNotifier,
-  );
+  late final isStoppedNotifier =
+      _videoHashNotifier.map<bool>((originValue) => originValue == null);
 
   Future<void> loadLocalVideo(String path) async {
     await _player.open(Media(path), play: false);

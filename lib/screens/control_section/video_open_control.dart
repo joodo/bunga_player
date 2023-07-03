@@ -1,5 +1,5 @@
 import 'package:bunga_player/models/bili_entry.dart';
-import 'package:bunga_player/utils/video_open.dart';
+import 'package:bunga_player/screens/control_section/open_local_video.dart';
 import 'package:bunga_player/services/chat.dart';
 import 'package:bunga_player/controllers/player_controller.dart';
 import 'package:bunga_player/services/logger.dart';
@@ -95,7 +95,7 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
       );
       if (result == null) throw NoFileSelectedException();
 
-      final biliEntry = await BiliEntry.fromUrl(parseUrlFrom(result));
+      final biliEntry = await BiliEntry.fromUrl((result as String).parseUri());
       await PlayerController().loadBiliEntry(biliEntry);
 
       if (shouldUpdateRoomData) {

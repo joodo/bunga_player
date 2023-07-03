@@ -1,11 +1,7 @@
-double dToS(Duration duration) {
-  return duration.inMilliseconds / 1000.0;
+extension FormatString on Duration {
+  String get hhmmss => toString().split('.').first.padLeft(8, "0");
 }
 
-Duration sToD(double seconds) {
-  return Duration(milliseconds: (seconds * 1000).toInt());
-}
-
-String dToHHmmss(Duration d) {
-  return d.toString().split('.').first.padLeft(8, "0");
+extension ToDuration on double {
+  Duration get asMilliseconds => Duration(milliseconds: toInt());
 }

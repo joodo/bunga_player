@@ -6,7 +6,6 @@ import 'package:bunga_player/screens/player_section/placeholder.dart';
 import 'package:bunga_player/screens/player_section/popmoji_player.dart';
 import 'package:bunga_player/utils/value_listenable.dart';
 import 'package:flutter/material.dart';
-import 'package:stream_chat_flutter_core/stream_chat_flutter_core.dart';
 import 'package:media_kit_video/media_kit_video.dart' as media_kit;
 
 class PlayerSection extends StatefulWidget {
@@ -17,10 +16,8 @@ class PlayerSection extends StatefulWidget {
 }
 
 class _PlayerSectionState extends State<PlayerSection> {
-  final _isLoginedNotifier = ProxyValueNotifier<bool, User?>(
-    proxy: (user) => user != null,
-    from: Chat().currentUserNotifier,
-  );
+  final _isLoginedNotifier =
+      Chat().currentUserNotifier.map<bool>((user) => user != null);
 
   @override
   Widget build(BuildContext context) {

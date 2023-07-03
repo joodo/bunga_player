@@ -7,6 +7,7 @@ import 'package:bunga_player/constants/secrets.dart';
 import 'package:bunga_player/utils/stream_proxy.dart';
 import 'package:bunga_player/utils/value_listenable.dart';
 import 'package:collection/collection.dart';
+import 'package:flutter/foundation.dart';
 import 'package:stream_chat_flutter_core/stream_chat_flutter_core.dart';
 
 class Chat {
@@ -54,7 +55,7 @@ class Chat {
   );
 
   // User
-  final _currentUserNotifier = PrivateValueNotifier<User?>(null);
+  final _currentUserNotifier = ValueNotifier<User?>(null);
   late final currentUserNotifier = _currentUserNotifier.readonly;
 
   Future<void> login(String userName) async {
@@ -76,7 +77,7 @@ class Chat {
   }
 
   // Channel
-  final _currentChannelNotifier = PrivateValueNotifier<Channel?>(null);
+  final _currentChannelNotifier = ValueNotifier<Channel?>(null);
   late final currentChannelNotifier = _currentChannelNotifier.readonly;
 
   final _messageStream = StreamProxy<Message?>.broadcast();
@@ -87,7 +88,7 @@ class Chat {
   final _watcherJoinEventStream = StreamProxy<User>.broadcast();
   late final watcherJoinEventStream = _watcherJoinEventStream.stream;
 
-  final _watchersNotifier = PrivateValueNotifier<List<User>>([]);
+  final _watchersNotifier = ValueNotifier<List<User>>([]);
   late final watchersNotifier = _watchersNotifier.readonly;
 
   final _channelUpdateEventStream = StreamProxy<Event?>.broadcast();
@@ -139,28 +140,27 @@ class Chat {
       watchersPagination: const PaginationParams(limit: 1000),
     );
 
-    _messageStream.setSourceStream(
-        channel.on('message.new').map((event) => event.message));
-    _watcherJoinEventStream.setSourceStream(
-        channel.on('user.watching.start').map((event) => event.user!));
-    _watcherLeaveEventStream.setSourceStream(
-        channel.on('user.watching.stop').map((event) => event.user!));
-    _channelUpdateEventStream.setSourceStream(channel.on('channel.updated'));
+    _messageStream.source =
+        channel.on('message.new').map((event) => event.message);
+    _watcherJoinEventStream.source =
+        channel.on('user.watching.start').map((event) => event.user!);
+    _watcherLeaveEventStream.source =
+        channel.on('user.watching.stop').map((event) => event.user!);
+    _channelUpdateEventStream.source = channel.on('channel.updated');
 
     _watchersNotifier.value = channel.state!.watchers;
-
-    _channelExtraData.setSourceStream(channel.extraDataStream);
+    _channelExtraData.source = channel.extraDataStream;
   }
 
   Future<void> leaveRoom() async {
     await currentChannelNotifier.value!.stopWatching();
     _currentChannelNotifier.value = null;
 
-    _messageStream.setEmpty();
-    _watcherJoinEventStream.setEmpty();
-    _watcherLeaveEventStream.setEmpty();
-    _channelUpdateEventStream.setEmpty();
-    _channelExtraData.setSourceStream(Stream.value({}));
+    _messageStream.source = null;
+    _watcherJoinEventStream.source = null;
+    _watcherLeaveEventStream.source = null;
+    _channelUpdateEventStream.source = null;
+    _channelExtraData.source = Stream.value({});
 
     _watchersNotifier.value = [];
   }

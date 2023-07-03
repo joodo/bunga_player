@@ -1,4 +1,4 @@
-import 'package:bunga_player/utils/video_open.dart';
+import 'package:bunga_player/screens/control_section/open_local_video.dart';
 import 'package:bunga_player/services/chat.dart';
 import 'package:bunga_player/controllers/player_controller.dart';
 import 'package:bunga_player/services/logger.dart';

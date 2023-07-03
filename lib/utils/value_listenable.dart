@@ -5,11 +5,12 @@ class ReadonlyStreamNotifier<T> extends ChangeNotifier
   T _value;
   ReadonlyStreamNotifier(this._value);
 
-  late final Stream<T> _stream;
+  bool _isBinded = false;
   void bind(Stream<T> stream) {
-    _stream = stream;
+    if (_isBinded) throw Exception('Notifier already binded');
+    _isBinded = true;
 
-    _stream.listen((value) {
+    stream.listen((value) {
       if (_value == value) return;
       _value = value;
       notifyListeners();
@@ -21,10 +22,15 @@ class ReadonlyStreamNotifier<T> extends ChangeNotifier
 }
 
 class StreamNotifier<T> extends ChangeNotifier implements ValueListenable<T> {
-  late final ValueSetter<T> _streamSetter;
-
   StreamNotifier(this._value);
+
+  bool _isBinded = false;
+  bool follow = true;
+  late final ValueSetter<T> _streamSetter;
   void bind(Stream<T> stream, ValueSetter<T> streamSetter) {
+    if (_isBinded) throw Exception('Notifier already binded');
+    _isBinded = true;
+
     _streamSetter = streamSetter;
     stream.listen((value) {
       if (!follow || _value == value) {
@@ -34,8 +40,6 @@ class StreamNotifier<T> extends ChangeNotifier implements ValueListenable<T> {
       notifyListeners();
     });
   }
-
-  bool follow = true;
 
   T _value;
   @override
@@ -64,31 +68,29 @@ class ValueNotifierWithReset<T> extends ValueNotifier<T> {
 
 class ProxyValueNotifier<T1, T2> extends ChangeNotifier
     implements ValueListenable<T1> {
-  T1 _defaultProxyFunc(originValue) => originValue as T1;
-
   ProxyValueNotifier({
     required ValueListenable<T2> from,
     T1 Function(T2 originValue)? proxy,
   }) {
-    final proxyFunc = proxy ?? _defaultProxyFunc;
+    final proxyFunc = proxy ?? (originValue) => originValue as T1;
     _value = proxyFunc(from.value);
 
-    from.addListener(() => _setValue(proxyFunc(from.value)));
+    from.addListener(() {
+      final newValue = proxyFunc(from.value);
+      if (newValue == _value) return;
+
+      _value = newValue;
+      notifyListeners();
+    });
   }
 
   late T1 _value;
   @override
   T1 get value => _value;
-  void _setValue(newValue) {
-    if (newValue == _value) return;
-
-    _value = newValue;
-    notifyListeners();
-  }
 }
 
-class PrivateValueNotifier<T> extends ValueNotifier<T> {
-  PrivateValueNotifier(super.value);
-
-  late final readonly = ProxyValueNotifier<T, T>(from: this);
+extension Mapping<T> on ValueListenable<T> {
+  ProxyValueNotifier<U, T> map<U>(U Function(T originValue) proxy) =>
+      ProxyValueNotifier(from: this, proxy: proxy);
+  ProxyValueNotifier<T, T> get readonly => ProxyValueNotifier(from: this);
 }
