@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:bunga_player/models/bili_entry.dart';
-import 'package:bunga_player/screens/control_section/open_local_video.dart';
+import 'package:bunga_player/actions/open_local_video.dart';
 import 'package:bunga_player/services/chat.dart';
 import 'package:bunga_player/controllers/player_controller.dart';
 import 'package:bunga_player/services/logger.dart';
