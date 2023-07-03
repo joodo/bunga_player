@@ -4,11 +4,20 @@ import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/constants/secrets.dart';
 import 'package:http/http.dart' as http;
 
+typedef DURL = List<String>;
+
+class VideoSources {
+  final List<String> video;
+  final List<String>? audio;
+
+  VideoSources({required this.video, this.audio});
+}
+
 abstract class BiliEntry {
   late final String title;
   late final String pic;
 
-  late final List<String> videoUrls;
+  late final VideoSources sources; // DURL | Dash
   late final bool isHD;
 
   BiliEntry();
@@ -139,10 +148,10 @@ class BiliVideo extends BiliEntry {
     final responseData = jsonDecode(response.body);
     if (responseData['code'] == 0) {
       final durl = responseData['data']['durl'][0];
-      videoUrls = [
+      sources = VideoSources(video: [
         durl['url'],
         ...durl['backup_url'] ?? [],
-      ];
+      ]);
     } else {
       // can't get url from api.bilibili.com
       logger.w('Cannot fetch by api');
@@ -157,10 +166,12 @@ class BiliVideo extends BiliEntry {
       if (match == null) throw 'Cannot fetch video';
 
       final playinfo = jsonDecode(match.namedGroup('json')!);
-      // TODO: elegant format
-      videoUrls = [
-        'dash;${playinfo['data']['dash']['video'][0]['baseUrl']};${playinfo['data']['dash']['audio'][0]['baseUrl']}'
-      ];
+      final videoinfo = playinfo['data']['dash']['video'] as List;
+      final autioinfo = playinfo['data']['dash']['audio'] as List;
+      sources = VideoSources(
+        video: videoinfo.map((e) => e['baseUrl'] as String).toList(),
+        audio: autioinfo.map((e) => e['baseUrl'] as String).toList(),
+      );
     }
 
     _isFetched = true;
@@ -223,9 +234,9 @@ class BiliBungumi extends BiliEntry {
     if (responseData['code'] != 0) throw 'Failed to fetch durls';
 
     final durl = responseData['result']['durl'][0];
-    videoUrls = [
+    sources = VideoSources(video: [
       durl['url'],
       ...durl['backup_url'] ?? [],
-    ];
+    ]);
   }
 }

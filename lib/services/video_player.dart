@@ -128,31 +128,16 @@ class VideoPlayer with WindowListener {
   }
 
   Future<void> loadBiliVideo(BiliEntry biliEntry) async {
+    // try every url
     bool success = false;
-
-    for (var url in biliEntry.videoUrls) {
-      if (url.startsWith('dash')) {
-        final urls = url.split(';');
-        await _player.open(
-          Media(
-            urls[1],
-            httpHeaders: {'Referer': 'https://www.bilibili.com/'},
-          ),
-          play: false,
-        );
-        Future.delayed(
-          const Duration(seconds: 1),
-          () => addAudioTrack(urls[2]),
-        );
-      } else {
-        await _player.open(
-          Media(
-            url,
-            httpHeaders: {'Referer': 'https://www.bilibili.com/'},
-          ),
-          play: false,
-        );
-      }
+    for (var url in biliEntry.sources.video) {
+      await _player.open(
+        Media(
+          url,
+          httpHeaders: {'Referer': 'https://www.bilibili.com/'},
+        ),
+        play: false,
+      );
 
       await Future.any([
         // Network timeout
@@ -165,15 +150,21 @@ class VideoPlayer with WindowListener {
       if (success) break;
       logger.w('Fail to open url $url, try next one');
     }
-
     if (!success) throw 'All source tested, no one success';
 
+    // wait for video loaded
+    await for (var buffering in _player.streams.buffering) {
+      if (!buffering) break;
+    }
+
+    // load audio if exist
+    if (biliEntry.sources.audio != null) {
+      addAudioTrack(biliEntry.sources.audio![0]);
+    }
+
+    // load history watching progress
     final videoHash = biliEntry.hash;
     if (_watchProgress.containsKey(videoHash)) {
-      // wait for seek
-      await for (var buffering in _player.streams.buffering) {
-        if (!buffering) break;
-      }
       position.value = Duration(milliseconds: _watchProgress[videoHash]!);
     }
 
