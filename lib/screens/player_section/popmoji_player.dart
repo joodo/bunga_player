@@ -105,6 +105,7 @@ class _PopmojiPlayerState extends State<PopmojiPlayer>
         }
 
         return AnimatedBuilder(
+          key: UniqueKey(),
           animation: _animationController,
           builder: (context, child) => Center(
             child: SizedBox(
