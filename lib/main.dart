@@ -37,6 +37,7 @@ void main() async {
         colorSchemeSeed: const Color(0xFFF5C253),
       ),
       home: const Scaffold(
+        backgroundColor: Colors.black,
         body: MainScreen(),
       ),
     ),

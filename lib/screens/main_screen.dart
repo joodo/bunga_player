@@ -10,10 +10,10 @@ class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
   @override
-  State<MainScreen> createState() => _MainScreenState();
+  State<MainScreen> createState() => MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
+class MainScreenState extends State<MainScreen> {
   late final RestartableTimer _hideUITimer = RestartableTimer(
     const Duration(seconds: 3),
     () => UINotifiers().isUIHidden.value = true,
