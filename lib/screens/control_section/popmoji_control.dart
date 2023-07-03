@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:bunga_player/actions/popmoji.dart';
 import 'package:bunga_player/constants/constants.dart';
 import 'package:flutter/material.dart';
@@ -22,17 +24,7 @@ class PopmojiControl extends StatelessWidget {
         }
       }
 
-      final svg = SvgPicture.asset(
-        'assets/images/emojis/u$code.svg',
-        height: 24,
-      );
-      emojiButtons.add(IconButton(
-        icon: svg,
-        onPressed: () {
-          sendPopmoji(code);
-          Navigator.of(context).pop();
-        },
-      ));
+      emojiButtons.add(_EmojiButton(code: code));
     }
 
     return Row(
@@ -55,5 +47,150 @@ class PopmojiControl extends StatelessWidget {
         const SizedBox(width: 8),
       ],
     );
+  }
+}
+
+class _EmojiButton extends StatelessWidget {
+  final String code;
+
+  const _EmojiButton({required this.code});
+
+  static final Map<UniqueKey, OverlayEntry> _overlays = {};
+
+  @override
+  Widget build(BuildContext context) {
+    final svg = SvgPicture.asset(
+      'assets/images/emojis/u$code.svg',
+      height: 24,
+    );
+
+    return IconButton(
+      icon: svg,
+      onPressed: () {
+        sendPopmoji(code);
+        _showThrowEmojiAnimation(context);
+        Navigator.of(context).pop();
+      },
+    );
+  }
+
+  void _showThrowEmojiAnimation(BuildContext context) {
+    final RenderBox button = context.findRenderObject()! as RenderBox;
+    final RenderBox overlay = Navigator.of(
+      context,
+      rootNavigator: true,
+    ).overlay!.context.findRenderObject()! as RenderBox;
+    final position = Rect.fromPoints(
+      button.localToGlobal(Offset.zero, ancestor: overlay),
+      button.localToGlobal(button.size.bottomRight(Offset.zero),
+          ancestor: overlay),
+    );
+
+    final uniqueKey = UniqueKey();
+    final overlayEntry = OverlayEntry(
+      builder: (context) {
+        return _ThrowAnimation(
+          startRect: position,
+          endRect: Rect.fromLTWH(
+            overlay.size.width / 2,
+            overlay.size.height / 2,
+            0,
+            0,
+          ),
+          onFinished: () {
+            _overlays[uniqueKey]!.remove();
+            _overlays.remove(uniqueKey);
+          },
+          child: SvgPicture.asset(
+            'assets/images/emojis/u$code.svg',
+            height: 24,
+          ),
+        );
+      },
+    );
+    _overlays[uniqueKey] = overlayEntry;
+    Overlay.of(context, rootOverlay: true).insert(overlayEntry);
+  }
+}
+
+class _ThrowAnimation extends StatefulWidget {
+  final Rect startRect, endRect;
+  final VoidCallback? onFinished;
+  final Widget child;
+  const _ThrowAnimation({
+    required this.startRect,
+    required this.endRect,
+    required this.child,
+    this.onFinished,
+  });
+  @override
+  State<_ThrowAnimation> createState() => _ThrowAnimationState();
+}
+
+class _ThrowAnimationState extends State<_ThrowAnimation>
+    with SingleTickerProviderStateMixin {
+  late final _path = Path()
+    ..moveTo(widget.startRect.left, widget.startRect.top)
+    ..quadraticBezierTo(
+      widget.startRect.left,
+      widget.endRect.top,
+      widget.endRect.left,
+      widget.endRect.top,
+    );
+  late var _position = Offset(
+    widget.startRect.left,
+    widget.startRect.top,
+  );
+  late final _controller = AnimationController(
+      vsync: this, duration: const Duration(milliseconds: 1500));
+  late final _positionTween = Tween(begin: 0.0, end: 1.0)
+      .chain(CurveTween(curve: Curves.easeOutCubic))
+      .animate(_controller);
+  late final _sizeTween = TweenSequence<double>(
+    [
+      TweenSequenceItem(
+        weight: 1.0,
+        tween: Tween(begin: 0, end: -1),
+      ),
+      TweenSequenceItem(
+        weight: 1.6,
+        tween: Tween(begin: -1, end: 1),
+      ),
+    ],
+  ).chain(CurveTween(curve: Curves.easeOutCubic)).animate(_controller);
+
+  @override
+  void initState() {
+    super.initState();
+
+    _positionTween.addListener(() {
+      setState(() {
+        _calcPosition(_positionTween.value);
+      });
+    });
+    _controller.forward().then((_) => widget.onFinished?.call());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final rect = Rect.lerp(widget.startRect, widget.endRect, _sizeTween.value)!;
+    return Stack(
+      children: [
+        Positioned(
+          left: _position.dx,
+          top: _position.dy,
+          width: rect.width,
+          height: rect.height,
+          child: widget.child,
+        ),
+      ],
+    );
+  }
+
+  void _calcPosition(double tween) {
+    PathMetrics pathMetrics = _path.computeMetrics();
+    PathMetric pathMetric = pathMetrics.elementAt(0);
+    tween = pathMetric.length * tween;
+    _position = pathMetric.getTangentForOffset(tween)!.position;
   }
 }
