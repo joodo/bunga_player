@@ -101,38 +101,40 @@ class Chat {
     String hash, {
     Map<String, Object?>? extraData,
   }) async {
-    final filter = Filter.equal('hash', hash);
-    final channels = await _chatClient.queryChannels(
-      filter: filter,
-      channelStateSort: [
-        const SortOption('last_message_at', direction: SortOption.DESC)
-      ],
-    ).last;
+    Channel channel;
 
-    if (channels.isNotEmpty) {
-      // join exist channel
-      await _setUpChannel(channels.first);
-    } else {
-      // create channel
-      await _setUpChannel(_chatClient.channel(
+    for (int suffix = 0; true; suffix++) {
+      final id = suffix == 0 ? hash : '$hash-$suffix';
+      channel = _chatClient.channel(
         'livestream',
         // Unique id
-        id: DateTime.now().microsecondsSinceEpoch.toString(),
+        id: id,
         extraData: extraData,
-      ));
+      );
+
+      final state = await channel.query();
+      if (state.channel?.extraData['hash'] == hash) break;
+
+      logger.i(
+          'Channel id $id was changed hash to ${state.channel?.extraData['hash']}, try next one.');
     }
+
+    await channel.watch();
+    await _setUpChannel(channel);
   }
 
   Future<void> joinRoomById(String id) async {
-    await _setUpChannel(_chatClient.channel(
+    final channel = _chatClient.channel(
       'livestream',
       id: id,
-    ));
+    );
+    await channel.watch();
+    await _setUpChannel(channel);
   }
 
   Future<void> _setUpChannel(Channel channel) async {
     _currentChannelNotifier.value = channel;
-    await channel.watch();
+
     // watchers won't auto query
     await channel.query(
       watch: true,
