@@ -29,7 +29,7 @@ class Console extends StatefulWidget {
 }
 
 class _ConsoleState extends State<Console> {
-  bool _showLog = false;
+  bool _show = false;
   final _logTextController = TextEditingController();
 
   @override
@@ -109,10 +109,22 @@ class _ConsoleState extends State<Console> {
       child: Scaffold(
         backgroundColor: const Color(0xA0000000),
         appBar: AppBar(
-          title: const TabBar(
-            tabs: [
-              Tab(text: 'Logs'),
-              Tab(text: 'Variables'),
+          title: Row(
+            children: [
+              const Expanded(
+                child: TabBar(
+                  tabs: [
+                    Tab(text: 'Logs'),
+                    Tab(text: 'Variables'),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () => setState(() {
+                  _show = false;
+                }),
+              )
             ],
           ),
         ),
@@ -137,7 +149,7 @@ class _ConsoleState extends State<Console> {
         if (event is RawKeyDownEvent &&
             event.logicalKey == LogicalKeyboardKey.f12) {
           setState(() {
-            _showLog = !_showLog;
+            _show = !_show;
           });
           return KeyEventResult.handled;
         }
@@ -149,8 +161,7 @@ class _ConsoleState extends State<Console> {
         children: [
           widget.child,
           Visibility(
-            maintainState: true,
-            visible: _showLog,
+            visible: _show,
             child: consoleView,
           ),
         ],
