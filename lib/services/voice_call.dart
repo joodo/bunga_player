@@ -33,6 +33,16 @@ class VoiceCall {
       },
     );
 
+    callStatusNotifier.addListener(() {
+      // Play sound when call in or out
+      if (_callStatus.value == CallStatus.callIn ||
+          _callStatus.value == CallStatus.callOut) {
+        _callRinger.resume();
+      } else {
+        _callRinger.stop();
+      }
+    });
+
     Chat().currentChannelNotifier.addListener(() {
       if (Chat().currentChannelNotifier.value == null) {
         // Hang up if leave room
@@ -122,16 +132,7 @@ class VoiceCall {
   }
 
   final _callStatus = ValueNotifier<CallStatus>(CallStatus.none);
-  late final callStatusNotifier = _callStatus.readonly
-    ..addListener(() {
-      // Play sound when call in or out
-      if (_callStatus.value == CallStatus.callIn ||
-          _callStatus.value == CallStatus.callOut) {
-        _callRinger.resume();
-      } else {
-        _callRinger.stop();
-      }
-    });
+  late final callStatusNotifier = _callStatus.readonly;
 
   void startAsking() async {
     _callStatus.value = CallStatus.callOut;

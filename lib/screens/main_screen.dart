@@ -32,7 +32,7 @@ class MainScreenState extends State<MainScreen> {
     final roomSection = RoomSection(key: _roomSectionKey);
     const progressSection = ProgressSection();
 
-    return ValueListenableBuilder(
+    final body = ValueListenableBuilder(
       valueListenable: UINotifiers().isFullScreen,
       builder: (context, isFullScreen, child) {
         if (isFullScreen) {
@@ -126,6 +126,11 @@ class MainScreenState extends State<MainScreen> {
           );
         }
       },
+    );
+
+    return Material(
+      color: Colors.black,
+      child: body,
     );
   }
 }

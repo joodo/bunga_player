@@ -4,7 +4,7 @@ final loggerStream = StreamOutput();
 
 final logger = Logger(
   output: loggerStream,
-  printer: SimplePrinter(),
+  printer: SimplePrinter(colors: false),
   filter: ProductionFilter(),
   level: Level.info,
 );
