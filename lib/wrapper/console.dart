@@ -2,13 +2,13 @@ import 'dart:convert';
 
 import 'package:bunga_player/services/chat.dart';
 import 'package:bunga_player/services/logger.dart';
+import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/snack_bar.dart';
 import 'package:bunga_player/services/video_player.dart';
 import 'package:bunga_player/services/voice_call.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 Widget _padding(Widget child) => Padding(
       padding: const EdgeInsets.symmetric(
@@ -176,26 +176,14 @@ class _PrefView extends StatefulWidget {
 }
 
 class _PrefViewState extends State<_PrefView> {
-  SharedPreferences? _pref;
-  @override
-  void initState() {
-    super.initState();
-    SharedPreferences.getInstance()
-        .then((value) => setState(() => _pref = value));
-  }
-
   @override
   Widget build(BuildContext context) {
-    if (_pref == null) return const SizedBox.shrink();
-
-    final map = <String, dynamic>{};
-    _pref!.getKeys().forEach((key) {
+    final map = Preferences().getAll().map<String, Object?>((key, value) {
       switch (key) {
         case 'watch_progress':
-          map[key] = jsonDecode(_pref!.getString(key) ?? '');
-          break;
+          return MapEntry(key, jsonDecode(value as String? ?? ''));
         default:
-          map[key] = _pref!.get(key);
+          return MapEntry(key, value);
       }
     });
 
@@ -210,7 +198,7 @@ class _PrefViewState extends State<_PrefView> {
               IconButton(
                 icon: const Icon(Icons.refresh),
                 onPressed: () =>
-                    _pref!.reload().then((value) => setState(() => {})),
+                    Preferences().reload().then((value) => setState(() => {})),
               ),
               IconButton(
                 icon: const Icon(Icons.copy),

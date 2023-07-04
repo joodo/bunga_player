@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:bunga_player/models/bili_entry.dart';
 import 'package:bunga_player/services/logger.dart';
+import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/utils/value_listenable.dart';
 import 'package:collection/collection.dart';
 import 'package:crclib/catalog.dart';
@@ -11,7 +12,6 @@ import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart' as media_kit;
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wakelock/wakelock.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -76,10 +76,7 @@ class VideoPlayer with WindowListener {
     volume.addListener(() {
       isMute.value = false;
       _player.setVolume(volume.value);
-
-      SharedPreferences.getInstance().then((pref) {
-        pref.setDouble('video_volume', volume.value);
-      });
+      Preferences().set('video_volume', volume.value);
     });
     isMute.addListener(() {
       if (isMute.value) {
@@ -89,10 +86,8 @@ class VideoPlayer with WindowListener {
       }
     });
     // Pref volume
-    SharedPreferences.getInstance().then((pref) {
-      final savedVolume = pref.getDouble('video_volume');
-      if (savedVolume != null) volume.value = savedVolume;
-    });
+    final savedVolume = Preferences().get<double>('video_volume');
+    if (savedVolume != null) volume.value = savedVolume;
 
     contrast
         .addListener(() => _mpvProperty('contrast', contrast.value.toString()));
@@ -230,10 +225,9 @@ class VideoPlayer with WindowListener {
   // Watch progress
   late final Map<String, int> _watchProgress;
 
-  void _initWatchProgress() async {
-    final pref = await SharedPreferences.getInstance();
-    _watchProgress =
-        Map.castFrom(jsonDecode(pref.getString('watch_progress') ?? '{}'));
+  void _initWatchProgress() {
+    _watchProgress = Map.castFrom(
+        jsonDecode(Preferences().get<String>('watch_progress') ?? '{}'));
 
     Timer.periodic(const Duration(seconds: 5), (timer) {
       final hash = videoHashNotifier.value;
@@ -248,7 +242,6 @@ class VideoPlayer with WindowListener {
   // TODO: Should change to AppLifecycleListener
   // https://github.com/flutter/flutter/issues/30735
   void onWindowClose() async {
-    final pref = await SharedPreferences.getInstance();
-    await pref.setString('watch_progress', jsonEncode(_watchProgress));
+    await Preferences().set('watch_progress', jsonEncode(_watchProgress));
   }
 }

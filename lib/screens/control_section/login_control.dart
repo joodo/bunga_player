@@ -1,10 +1,10 @@
 import 'package:bunga_player/services/chat.dart';
 import 'package:bunga_player/services/logger.dart';
+import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/snack_bar.dart';
 import 'package:bunga_player/controllers/ui_notifiers.dart';
 import 'package:flutter/material.dart';
 import 'package:multi_value_listenable_builder/multi_value_listenable_builder.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginControl extends StatefulWidget {
   final String? previousName;
@@ -23,11 +23,11 @@ class _LoginControlState extends State<LoginControl> {
   void initState() {
     super.initState();
 
-    SharedPreferences.getInstance().then((pref) {
-      final userName = pref.get('user_name') as String?;
-      if (userName != null) {
-        // auto login
-        _registerUser(userName);
+    // Auto login
+    Future.delayed(Duration.zero, () {
+      final savedUserName = Preferences().get<String>('user_name');
+      if (savedUserName != null) {
+        _registerUser(savedUserName);
       } else {
         UINotifiers().hintText.value = _askNameText;
       }
@@ -93,8 +93,7 @@ class _LoginControlState extends State<LoginControl> {
 
     try {
       await Chat().login(userName);
-      SharedPreferences.getInstance()
-          .then((pref) => pref.setString('user_name', userName));
+      Preferences().set('user_name', userName);
       _onLoginSuccess();
     } catch (e) {
       logger.e(e);

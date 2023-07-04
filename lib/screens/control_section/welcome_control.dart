@@ -5,12 +5,12 @@ import 'package:bunga_player/actions/open_local_video.dart';
 import 'package:bunga_player/services/chat.dart';
 import 'package:bunga_player/controllers/player_controller.dart';
 import 'package:bunga_player/services/logger.dart';
+import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/snack_bar.dart';
 import 'package:bunga_player/controllers/ui_notifiers.dart';
 import 'package:bunga_player/utils/exceptions.dart';
 import 'package:bunga_player/utils/string.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:window_manager/window_manager.dart';
 
 class WelcomeControl extends StatefulWidget {
@@ -142,7 +142,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
   void _logout() async {
     final previousName = Chat().currentUserNotifier.value!.name;
     await Chat().logout();
-    SharedPreferences.getInstance().then((pref) => pref.remove('user_name'));
+    Preferences().remove('user_name');
     _onChangeName(previousName);
   }
 
