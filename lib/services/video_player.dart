@@ -76,6 +76,10 @@ class VideoPlayer with WindowListener {
     volume.addListener(() {
       isMute.value = false;
       _player.setVolume(volume.value);
+
+      SharedPreferences.getInstance().then((pref) {
+        pref.setDouble('video_volume', volume.value);
+      });
     });
     isMute.addListener(() {
       if (isMute.value) {
@@ -83,6 +87,11 @@ class VideoPlayer with WindowListener {
       } else {
         _player.setVolume(volume.value);
       }
+    });
+    // Pref volume
+    SharedPreferences.getInstance().then((pref) {
+      final savedVolume = pref.getDouble('video_volume');
+      if (savedVolume != null) volume.value = savedVolume;
     });
 
     contrast

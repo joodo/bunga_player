@@ -7,6 +7,7 @@ import 'package:bunga_player/services/snack_bar.dart';
 import 'package:bunga_player/utils/value_listenable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:stream_chat_flutter_core/stream_chat_flutter_core.dart';
 
 enum CallStatus {
@@ -25,13 +26,23 @@ class VoiceCall {
     _setupVoiceSDKEngine();
 
     volume.addListener(() {
+      mute.value = false;
       _setVolume(volume.value);
+
+      SharedPreferences.getInstance().then((pref) {
+        pref.setInt('call_volume', volume.value);
+      });
     });
     mute.addListener(
       () {
         mute.value ? _setVolume(0) : _setVolume(volume.value);
       },
     );
+    // Pref volume
+    SharedPreferences.getInstance().then((pref) {
+      final savedVolume = pref.getInt('call_volume');
+      if (savedVolume != null) volume.value = savedVolume;
+    });
 
     callStatusNotifier.addListener(() {
       // Play sound when call in or out
