@@ -1,18 +1,8 @@
 import 'dart:async';
 
-import 'package:bunga_player/controllers/ui_notifiers.dart';
-import 'package:bunga_player/services/video_player.dart';
-import 'package:bunga_player/utils/exceptions.dart';
 import 'package:file_selector/file_selector.dart';
-import 'package:window_manager/window_manager.dart';
 
-class LocalVideoChannelData {
-  final String name;
-  final String hash;
-  LocalVideoChannelData({required this.name, required this.hash});
-}
-
-Future<LocalVideoChannelData> openLocalVideo() async {
+Future<XFile?> openLocalVideoDialog() async {
   const typeGroup = XTypeGroup(
     label: 'videos',
     extensions: <String>[
@@ -58,16 +48,6 @@ Future<LocalVideoChannelData> openLocalVideo() async {
       'rmvb',
     ],
   );
-  final file = await openFile(acceptedTypeGroups: <XTypeGroup>[typeGroup]);
-  if (file == null) throw NoFileSelectedException();
 
-  VideoPlayer().stop();
-
-  UINotifiers().hintText.value = '正在收拾客厅……';
-  await VideoPlayer().loadLocalVideo(file.path);
-  final hash = VideoPlayer().videoHashNotifier.value!;
-
-  windowManager.setTitle(file.name);
-
-  return LocalVideoChannelData(name: file.name, hash: hash);
+  return openFile(acceptedTypeGroups: <XTypeGroup>[typeGroup]);
 }

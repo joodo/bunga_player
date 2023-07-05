@@ -7,6 +7,7 @@ import 'package:bunga_player/controllers/player_controller.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/snack_bar.dart';
 import 'package:bunga_player/controllers/ui_notifiers.dart';
+import 'package:bunga_player/services/video_player.dart';
 import 'package:bunga_player/utils/exceptions.dart';
 import 'package:bunga_player/utils/string.dart';
 import 'package:flutter/material.dart';
@@ -59,15 +60,20 @@ class _WelcomeControlState extends State<WelcomeControl> {
 
   void _openLocalVideo() async {
     try {
-      final data = await openLocalVideo();
+      final file = await openLocalVideoDialog();
+      if (file == null) throw NoFileSelectedException();
 
       UINotifiers().isBusy.value = true;
+      UINotifiers().hintText.value = '正在收拾客厅……';
+      await VideoPlayer().loadLocalVideo(file);
+
       UINotifiers().hintText.value = '正在发送请柬……';
+      final hash = VideoPlayer().videoHashNotifier.value!;
       await Chat().createOrJoinRoomByHash(
-        data.hash,
+        hash,
         extraData: {
-          'name': data.name,
-          'hash': data.hash,
+          'name': file.name,
+          'hash': hash,
           'video_type': 'local',
         },
       );
@@ -107,7 +113,9 @@ class _WelcomeControlState extends State<WelcomeControl> {
       } else {
         throw 'Unknown dialog result';
       }
-      await PlayerController().loadBiliEntry(biliEntry);
+      await for (var hintText in PlayerController().loadBiliEntry(biliEntry)) {
+        UINotifiers().hintText.value = hintText;
+      }
 
       UINotifiers().hintText.value = '正在发送请柬……';
       if (channelId == null) {

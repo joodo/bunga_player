@@ -96,13 +96,18 @@ class MainControl extends StatelessWidget {
                     child: ListTile(
                       leading: const Icon(Icons.refresh),
                       title: const Text('重新载入'),
-                      onTap: () {
+                      onTap: () async {
                         Navigator.of(context, rootNavigator: true).pop();
                         try {
-                          PlayerController().loadBiliEntry(BiliEntry.fromHash(
-                              VideoPlayer().videoHashNotifier.value!));
+                          UINotifiers().isBusy.value = true;
+                          await PlayerController()
+                              .loadBiliEntry(BiliEntry.fromHash(
+                                  VideoPlayer().videoHashNotifier.value!))
+                              .last;
                         } catch (e) {
                           logger.w(e);
+                        } finally {
+                          UINotifiers().isBusy.value = false;
                         }
                       },
                     ),

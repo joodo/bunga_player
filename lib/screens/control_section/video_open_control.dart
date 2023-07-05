@@ -5,6 +5,7 @@ import 'package:bunga_player/controllers/player_controller.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/snack_bar.dart';
 import 'package:bunga_player/controllers/ui_notifiers.dart';
+import 'package:bunga_player/services/video_player.dart';
 import 'package:bunga_player/utils/exceptions.dart';
 import 'package:bunga_player/utils/string.dart';
 import 'package:flutter/material.dart';
@@ -54,18 +55,22 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
   }
 
   void _openLocalVideo() async {
-    UINotifiers().isBusy.value = true;
     try {
       // Update room data only if playing correct video
       final shouldUpdateRoomData = PlayerController().isVideoSameWithRoom;
 
-      final data = await openLocalVideo();
+      final file = await openLocalVideoDialog();
+      if (file == null) throw NoFileSelectedException();
+
+      UINotifiers().isBusy.value = true;
+      UINotifiers().hintText.value = '正在收拾客厅……';
+      await VideoPlayer().loadLocalVideo(file);
 
       if (shouldUpdateRoomData) {
         UINotifiers().hintText.value = '正在发送请柬……';
         await Chat().updateChannelData({
-          'name': data.name,
-          'hash': data.hash,
+          'name': file.name,
+          'hash': VideoPlayer().videoHashNotifier.value,
           'video_type': 'local',
         });
       }
@@ -96,7 +101,9 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
 
       UINotifiers().isBusy.value = true;
       final biliEntry = await BiliEntry.fromUrl((result as String).parseUri());
-      await PlayerController().loadBiliEntry(biliEntry);
+      await for (var hintText in PlayerController().loadBiliEntry(biliEntry)) {
+        UINotifiers().hintText.value = hintText;
+      }
 
       if (shouldUpdateRoomData) {
         UINotifiers().hintText.value = '正在发送请柬……';

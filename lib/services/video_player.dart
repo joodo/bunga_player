@@ -9,6 +9,7 @@ import 'package:bunga_player/utils/value_listenable.dart';
 import 'package:collection/collection.dart';
 import 'package:crclib/catalog.dart';
 import 'package:ffi/ffi.dart';
+import 'package:file_selector/file_selector.dart';
 import 'package:flutter/foundation.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart' as media_kit;
@@ -115,12 +116,12 @@ class VideoPlayer with WindowListener {
   late final isStoppedNotifier =
       _videoHashNotifier.map<bool>((originValue) => originValue == null);
 
-  Future<void> loadLocalVideo(String path) async {
-    await _player.open(Media(path), play: false);
+  Future<void> loadLocalVideo(XFile file) async {
+    await _player.open(Media(file.path), play: false);
     await _controller.waitUntilFirstFrameRendered;
 
     final crcValue =
-        await File(path).openRead().take(1000).transform(Crc32Xz()).single;
+        await File(file.path).openRead().take(1000).transform(Crc32Xz()).single;
     final crcString = crcValue.toString();
 
     final videoHash = 'local-$crcString';
@@ -128,6 +129,7 @@ class VideoPlayer with WindowListener {
       position.value = Duration(milliseconds: _watchProgress[videoHash]!);
     }
 
+    windowManager.setTitle(file.name);
     _videoHashNotifier.value = videoHash;
   }
 
@@ -172,6 +174,7 @@ class VideoPlayer with WindowListener {
       position.value = Duration(milliseconds: _watchProgress[videoHash]!);
     }
 
+    windowManager.setTitle(biliEntry.title);
     _videoHashNotifier.value = videoHash;
   }
 

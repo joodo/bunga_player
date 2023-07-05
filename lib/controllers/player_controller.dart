@@ -6,7 +6,6 @@ import 'package:bunga_player/controllers/ui_notifiers.dart';
 import 'package:bunga_player/services/tokens.dart';
 import 'package:bunga_player/services/video_player.dart';
 import 'package:stream_chat_flutter_core/stream_chat_flutter_core.dart';
-import 'package:window_manager/window_manager.dart';
 
 class PlayerController {
   // Singleton
@@ -34,34 +33,31 @@ class PlayerController {
   }
 
   Future<void> followRemoteBiliVideoHash(String videoHash) async {
-    UINotifiers().isBusy.value = true;
     try {
-      await loadBiliEntry(BiliEntry.fromHash(videoHash));
+      UINotifiers().isBusy.value = true;
+      await for (var hintText in loadBiliEntry(BiliEntry.fromHash(videoHash))) {
+        UINotifiers().hintText.value = hintText;
+      }
     } catch (e) {
       logger.e(e);
     } finally {
+      UINotifiers().hintText.value = null;
       UINotifiers().isBusy.value = false;
     }
   }
 
-  Future<void> loadBiliEntry(BiliEntry biliEntry) async {
-    try {
-      VideoPlayer().stop();
+  Stream<String> loadBiliEntry(BiliEntry biliEntry) async* {
+    VideoPlayer().stop();
 
-      UINotifiers().hintText.value = '正在鬼鬼祟祟……';
-      await biliEntry.fetch();
-      if (!biliEntry.isHD) {
-        showSnackBar('无法获取高清视频');
-        logger.w('Bilibili: Cookie of serverless funtion outdated');
-      }
-
-      UINotifiers().hintText.value = '正在收拾客厅……';
-      await VideoPlayer().loadBiliVideo(biliEntry);
-
-      windowManager.setTitle(biliEntry.title);
-    } finally {
-      UINotifiers().hintText.value = null;
+    yield '正在鬼鬼祟祟……';
+    await biliEntry.fetch();
+    if (!biliEntry.isHD) {
+      showSnackBar('无法获取高清视频');
+      logger.w('Bilibili: Cookie of serverless funtion outdated');
     }
+
+    yield '正在收拾客厅……';
+    await VideoPlayer().loadBiliVideo(biliEntry);
   }
 
   bool get isVideoSameWithRoom =>

@@ -79,9 +79,14 @@ class _RoomSectionState extends State<RoomSection> {
   }
 
   void _openLocalVideo() async {
-    UINotifiers().isBusy.value = true;
     try {
-      await openLocalVideo();
+      final file = await openLocalVideoDialog();
+      if (file == null) throw NoFileSelectedException();
+
+      UINotifiers().isBusy.value = true;
+      UINotifiers().hintText.value = '正在收拾客厅……';
+      await VideoPlayer().loadLocalVideo(file);
+
       PlayerController().askPosition();
     } catch (e) {
       if (e is! NoFileSelectedException) {
