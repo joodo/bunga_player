@@ -45,7 +45,11 @@ class Preferences {
     return result;
   }
 
-  Future<bool> remove(String key) => _pref.remove(key);
+  Future<bool> remove(String key) {
+    logger.i('Preference: remove $key');
+    return _pref.remove(key);
+  }
+
   Future<void> reload() => _pref.reload();
 
   Map<String, Object?> getAll() {

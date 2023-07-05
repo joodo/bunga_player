@@ -17,7 +17,7 @@ class PlayerSection extends StatefulWidget {
 
 class _PlayerSectionState extends State<PlayerSection> {
   final _isLoginedNotifier =
-      Chat().currentUserNotifier.map<bool>((user) => user != null);
+      Chat().currentUserNameNotifier.map<bool>((name) => name != null);
 
   @override
   Widget build(BuildContext context) {

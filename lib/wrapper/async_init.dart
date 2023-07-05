@@ -27,7 +27,7 @@ class AsyncInit extends StatelessWidget {
   Future<void> _initFunc() async {
     await Preferences().init();
     await Tokens().init();
-    Chat().init();
+    await Chat().init();
     await VoiceCall().init();
   }
 }

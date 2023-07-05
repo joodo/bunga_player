@@ -65,7 +65,7 @@ class VoiceCall {
         .messageStream
         .where((message) => message?.text?.split(' ').first == 'call')
         .listen((message) {
-      if (message!.user?.id == Chat().currentUserNotifier.value!.id) {
+      if (message!.user?.id == Tokens().bunga.clientID) {
         return;
       }
 
@@ -174,7 +174,7 @@ class VoiceCall {
   }
 
   final _callStatus = ValueNotifier<CallStatus>(CallStatus.none);
-  late final callStatusNotifier = _callStatus.readonly;
+  late final callStatusNotifier = _callStatus.createReadonly();
 
   void startAsking() async {
     _callStatus.value = CallStatus.callOut;
@@ -189,7 +189,7 @@ class VoiceCall {
           .watchers
           .map((e) => e.id)
           .toList();
-      _myCallAskingHopeList!.remove(Chat().currentUserNotifier.value!.id);
+      _myCallAskingHopeList!.remove(Tokens().bunga.clientID);
       logger.i('start call asking, hope list: $_myCallAskingHopeList');
 
       _callAskingTimeOutTimer.reset();

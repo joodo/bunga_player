@@ -92,5 +92,5 @@ class ProxyValueNotifier<T1, T2> extends ChangeNotifier
 extension Mapping<T> on ValueListenable<T> {
   ProxyValueNotifier<U, T> map<U>(U Function(T originValue) proxy) =>
       ProxyValueNotifier(from: this, proxy: proxy);
-  ProxyValueNotifier<T, T> get readonly => ProxyValueNotifier(from: this);
+  ProxyValueNotifier<T, T> createReadonly() => ProxyValueNotifier(from: this);
 }

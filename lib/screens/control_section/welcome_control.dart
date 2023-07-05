@@ -21,7 +21,7 @@ class WelcomeControl extends StatefulWidget {
 }
 
 class _WelcomeControlState extends State<WelcomeControl> {
-  String get _welcomeText => '${Chat().currentUserNotifier.value?.name}, 你好！';
+  String get _welcomeText => '${Chat().currentUserNameNotifier.value}, 你好！';
 
   @override
   void initState() {
@@ -40,7 +40,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           OutlinedButton(
-            onPressed: isBusy ? null : _logout,
+            onPressed: isBusy ? null : _onChangeName,
             child: const Text('换个名字'),
           ),
           const SizedBox(width: 16),
@@ -139,16 +139,9 @@ class _WelcomeControlState extends State<WelcomeControl> {
     }
   }
 
-  void _logout() async {
-    final previousName = Chat().currentUserNotifier.value!.name;
-    await Chat().logout();
+  void _onChangeName() {
     Preferences().remove('user_name');
-    _onChangeName(previousName);
-  }
-
-  void _onChangeName(String previousName) {
-    Navigator.of(context).popAndPushNamed('control:login',
-        arguments: {'previousName': previousName});
+    Navigator.of(context).popAndPushNamed('control:rename');
   }
 
   void _onVideoLoaded() {

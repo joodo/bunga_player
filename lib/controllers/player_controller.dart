@@ -3,6 +3,7 @@ import 'package:bunga_player/services/chat.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/snack_bar.dart';
 import 'package:bunga_player/controllers/ui_notifiers.dart';
+import 'package:bunga_player/services/tokens.dart';
 import 'package:bunga_player/services/video_player.dart';
 import 'package:stream_chat_flutter_core/stream_chat_flutter_core.dart';
 import 'package:window_manager/window_manager.dart';
@@ -138,7 +139,7 @@ class PlayerController {
   }
 
   void _answerPlayStatus(Message message) {
-    if (message.user?.id == Chat().currentUserNotifier.value!.id) {
+    if (message.user?.id == Tokens().bunga.clientID) {
       return;
     }
 
@@ -148,7 +149,7 @@ class PlayerController {
   }
 
   Future<void> _processPlayStatus(Message message) async {
-    if (message.user?.id == Chat().currentUserNotifier.value!.id) {
+    if (message.user?.id == Tokens().bunga.clientID) {
       return;
     }
 

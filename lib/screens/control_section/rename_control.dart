@@ -6,15 +6,14 @@ import 'package:bunga_player/controllers/ui_notifiers.dart';
 import 'package:flutter/material.dart';
 import 'package:multi_value_listenable_builder/multi_value_listenable_builder.dart';
 
-class LoginControl extends StatefulWidget {
-  final String? previousName;
-  const LoginControl({super.key, this.previousName});
+class RenameControl extends StatefulWidget {
+  const RenameControl({super.key});
 
   @override
-  State<LoginControl> createState() => _LoginControlState();
+  State<RenameControl> createState() => _RenameControlState();
 }
 
-class _LoginControlState extends State<LoginControl> {
+class _RenameControlState extends State<RenameControl> {
   static const _askNameText = '怎样称呼你？';
 
   final _textController = TextEditingController();
@@ -27,14 +26,15 @@ class _LoginControlState extends State<LoginControl> {
     Future.delayed(Duration.zero, () {
       final savedUserName = Preferences().get<String>('user_name');
       if (savedUserName != null) {
-        _registerUser(savedUserName);
+        _onSubmit(savedUserName);
       } else {
         UINotifiers().hintText.value = _askNameText;
       }
     });
 
-    if (widget.previousName != null) {
-      _textController.text = widget.previousName!;
+    final previousName = Chat().currentUserNameNotifier.value;
+    if (previousName != null) {
+      _textController.text = previousName;
       _textController.selection = TextSelection(
         baseOffset: 0,
         extentOffset: _textController.text.length,
@@ -61,7 +61,7 @@ class _LoginControlState extends State<LoginControl> {
               enabled: !isBusy,
               onSubmitted: (value) {
                 if (value.isNotEmpty) {
-                  _registerUser(value);
+                  _onSubmit(value);
                 }
               },
             ),
@@ -77,7 +77,7 @@ class _LoginControlState extends State<LoginControl> {
             return FilledButton(
               style: FilledButton.styleFrom(minimumSize: const Size(120, 48)),
               onPressed: !values[1] && values[0].text.isNotEmpty
-                  ? () => _registerUser(values[0].text)
+                  ? () => _onSubmit(values[0].text)
                   : null,
               child: const Text('就这么定'),
             );
@@ -87,14 +87,15 @@ class _LoginControlState extends State<LoginControl> {
     );
   }
 
-  void _registerUser(String userName) async {
+  void _onSubmit(String userName) async {
     UINotifiers().isBusy.value = true;
     UINotifiers().hintText.value = '正在连接母星……';
 
     try {
-      await Chat().login(userName);
+      final navigator = Navigator.of(context);
+      await Chat().userRename(userName);
       Preferences().set('user_name', userName);
-      _onLoginSuccess();
+      navigator.popAndPushNamed('control:welcome');
     } catch (e) {
       logger.e(e);
       showSnackBar('连接母星失败');
@@ -102,9 +103,5 @@ class _LoginControlState extends State<LoginControl> {
     } finally {
       UINotifiers().isBusy.value = false;
     }
-  }
-
-  void _onLoginSuccess() {
-    Navigator.of(context).popAndPushNamed('control:welcome');
   }
 }

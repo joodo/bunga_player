@@ -1,6 +1,6 @@
 import 'package:bunga_player/screens/control_section/video_open_control.dart';
 import 'package:bunga_player/screens/control_section/call_control.dart';
-import 'package:bunga_player/screens/control_section/login_control.dart';
+import 'package:bunga_player/screens/control_section/rename_control.dart';
 import 'package:bunga_player/screens/control_section/main_control.dart';
 import 'package:bunga_player/screens/control_section/popmoji_control.dart';
 import 'package:bunga_player/screens/control_section/subtitle_control.dart';
@@ -8,6 +8,7 @@ import 'package:bunga_player/screens/control_section/tune_control.dart';
 import 'package:bunga_player/screens/control_section/welcome_control.dart';
 import 'package:bunga_player/screens/progress_section/video_progress_indicator.dart';
 import 'package:bunga_player/controllers/ui_notifiers.dart';
+import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/video_player.dart';
 import 'package:bunga_player/services/voice_call.dart';
 import 'package:flutter/material.dart';
@@ -50,15 +51,13 @@ class _ControlSectionState extends State<ControlSection> {
 
   @override
   Widget build(BuildContext context) {
+    bool hasUserName = Preferences().get<String>('user_name') != null;
     final body = Navigator(
-      initialRoute: 'control:login',
+      initialRoute: 'control:${hasUserName ? 'welcome' : 'rename'}',
       key: _navigatorStateKey,
       onGenerateRoute: (settings) {
-        final arguments = settings.arguments as Map<String, dynamic>?;
         final routes = {
-          'control:login': LoginControl(
-            previousName: arguments?['previousName'] as String?,
-          ),
+          'control:rename': const RenameControl(),
           'control:welcome': const WelcomeControl(),
           'control:main': const MainControl(),
           'control:call': const CallControl(),

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:bunga_player/services/logger.dart';
+import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/snack_bar.dart';
 import 'package:bunga_player/services/tokens.dart';
 import 'package:bunga_player/utils/stream_proxy.dart';
@@ -40,7 +41,7 @@ class Chat {
           'remote change room data: ${event?.channel?.extraData.toString()}');
 
       final user = event!.user;
-      if (user == null || user.id == Chat().currentUserNotifier.value?.id) {
+      if (user == null || user.id == Tokens().bunga.clientID) {
         return;
       }
       showSnackBar('${user.name} 更换了影片');
@@ -50,37 +51,36 @@ class Chat {
   }
 
   late final StreamChatClient _chatClient;
-  void init() {
+  final _currentUserNameNotifier =
+      ValueNotifier<String?>(Preferences().get<String>('user_name'));
+  late final currentUserNameNotifier =
+      _currentUserNameNotifier.createReadonly();
+
+  Future<void> init() async {
     _chatClient = StreamChatClient(
       Tokens().streamIO.appKey,
       logLevel: Level.WARNING,
     );
-  }
-
-  // User
-  final _currentUserNotifier = ValueNotifier<User?>(null);
-  late final currentUserNotifier = _currentUserNotifier.readonly;
-
-  Future<void> login(String userName) async {
-    _currentUserNotifier.value = await _chatClient.connectUser(
+    await _chatClient.connectUser(
       User(
         id: Tokens().bunga.clientID,
-        name: userName,
+        name: _currentUserNameNotifier.value,
       ),
       Tokens().streamIO.userToken,
     );
-
-    logger.i('Current user: ${currentUserNotifier.value!.name}');
   }
 
-  Future<void> logout() async {
-    await _chatClient.disconnectUser();
-    _currentUserNotifier.value = null;
+  Future<void> userRename(String newName) async {
+    await _chatClient.updateUser(User(
+      id: Tokens().bunga.clientID,
+      name: newName,
+    ));
+    _currentUserNameNotifier.value = newName;
   }
 
   // Channel
   final _currentChannelNotifier = ValueNotifier<Channel?>(null);
-  late final currentChannelNotifier = _currentChannelNotifier.readonly;
+  late final currentChannelNotifier = _currentChannelNotifier.createReadonly();
 
   final _messageStream = StreamProxy<Message?>.broadcast();
   late final messageStream = _messageStream.stream;
@@ -91,7 +91,7 @@ class Chat {
   late final watcherJoinEventStream = _watcherJoinEventStream.stream;
 
   final _watchersNotifier = ValueNotifier<List<User>>([]);
-  late final watchersNotifier = _watchersNotifier.readonly;
+  late final watchersNotifier = _watchersNotifier.createReadonly();
 
   final _channelUpdateEventStream = StreamProxy<Event?>.broadcast();
   late final channelUpdateEventStream = _channelUpdateEventStream.stream;

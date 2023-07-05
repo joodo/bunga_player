@@ -66,9 +66,9 @@ class _ConsoleState extends State<Console> {
         'stream': Tokens().streamIO.toJson(),
         'agora': Tokens().agora.toJson(),
       }),
-      'Chat User': ValueListenableBuilder(
-        valueListenable: Chat().currentUserNotifier,
-        builder: (context, value, child) => _jsonText(value?.toJson()),
+      'Chat User Name': ValueListenableBuilder(
+        valueListenable: Chat().currentUserNameNotifier,
+        builder: (context, value, child) => Text(value ?? 'null'),
       ),
       'Chat Channel': ValueListenableBuilder(
         valueListenable: Chat().currentChannelNotifier,

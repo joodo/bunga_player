@@ -111,7 +111,7 @@ class VideoPlayer with WindowListener {
   }
 
   final _videoHashNotifier = ValueNotifier<String?>(null);
-  late final videoHashNotifier = _videoHashNotifier.readonly;
+  late final videoHashNotifier = _videoHashNotifier.createReadonly();
   late final isStoppedNotifier =
       _videoHashNotifier.map<bool>((originValue) => originValue == null);
 

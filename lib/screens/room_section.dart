@@ -4,6 +4,7 @@ import 'package:bunga_player/controllers/player_controller.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/snack_bar.dart';
 import 'package:bunga_player/controllers/ui_notifiers.dart';
+import 'package:bunga_player/services/tokens.dart';
 import 'package:bunga_player/services/video_player.dart';
 import 'package:bunga_player/utils/exceptions.dart';
 import 'package:flutter/material.dart';
@@ -26,14 +27,8 @@ class _RoomSectionState extends State<RoomSection> {
         ValueListenableBuilder(
           valueListenable: Chat().watchersNotifier,
           builder: (context, value, child) {
-            if (Chat().currentUserNotifier.value == null) {
-              return const SizedBox.shrink();
-            }
-
-            String text = _getUsersString(
-              userList: Chat().watchersNotifier.value,
-              except: Chat().currentUserNotifier.value,
-            );
+            String text =
+                _getUsersStringExceptMe(Chat().watchersNotifier.value);
             if (text.isEmpty) {
               return const SizedBox.shrink();
             }
@@ -99,13 +94,12 @@ class _RoomSectionState extends State<RoomSection> {
     }
   }
 
-  String _getUsersString(
-      {required List<User>? userList, required User? except}) {
-    if (userList == null || except == null) return '';
+  String _getUsersStringExceptMe(List<User>? userList) {
+    if (userList == null) return '';
 
     String result = '';
     for (var user in userList) {
-      if (user.id == except.id) continue;
+      if (user.id == Tokens().bunga.clientID) continue;
       result += '${user.name}, ';
     }
 
