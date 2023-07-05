@@ -4,6 +4,7 @@ import 'package:bunga_player/services/chat.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/snack_bar.dart';
+import 'package:bunga_player/services/tokens.dart';
 import 'package:bunga_player/services/video_player.dart';
 import 'package:bunga_player/services/voice_call.dart';
 import 'package:flutter/material.dart';
@@ -60,6 +61,11 @@ class _ConsoleState extends State<Console> {
         future: PackageInfo.fromPlatform(),
         builder: (context, snapshot) => Text(snapshot.data?.version ?? ''),
       ),
+      'Tokens': _jsonText({
+        'bunga': Tokens().bunga.toJson(),
+        'stream': Tokens().streamIO.toJson(),
+        'agora': Tokens().agora.toJson(),
+      }),
       'Chat User': ValueListenableBuilder(
         valueListenable: Chat().currentUserNotifier,
         builder: (context, value, child) => _jsonText(value?.toJson()),
@@ -181,7 +187,7 @@ class _PrefViewState extends State<_PrefView> {
     final map = Preferences().getAll().map<String, Object?>((key, value) {
       switch (key) {
         case 'watch_progress':
-          return MapEntry(key, jsonDecode(value as String? ?? ''));
+          return MapEntry(key, '...');
         default:
           return MapEntry(key, value);
       }

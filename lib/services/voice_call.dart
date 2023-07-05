@@ -1,10 +1,10 @@
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'package:bunga_player/constants/secrets.dart';
 import 'package:bunga_player/services/chat.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/snack_bar.dart';
+import 'package:bunga_player/services/tokens.dart';
 import 'package:bunga_player/utils/value_listenable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -23,8 +23,6 @@ class VoiceCall {
   factory VoiceCall() => _instance;
 
   VoiceCall._internal() {
-    _setupVoiceSDKEngine();
-
     volume.addListener(() {
       mute.value = false;
       _setVolume(volume.value);
@@ -137,6 +135,44 @@ class VoiceCall {
     });
   }
 
+  final _agoraEngine = createAgoraRtcEngine();
+  final _callChannelUsers = <int>{};
+  Future<void> init() async {
+    try {
+      await [Permission.microphone].request();
+    } catch (e) {
+      logger.e(e);
+    }
+
+    await _agoraEngine.initialize(RtcEngineContext(
+      appId: Tokens().agora.appKey,
+      logConfig: const LogConfig(level: LogLevel.logLevelWarn),
+    ));
+    _agoraEngine.registerEventHandler(
+      RtcEngineEventHandler(
+        onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
+          logger.i("Voice call: Local user uid:${connection.localUid} joined.");
+        },
+        onUserJoined: (RtcConnection connection, int remoteUid, int elapsed) {
+          logger.i("Voice call: Remote user uid:$remoteUid joined.");
+          if (connection.localUid != remoteUid) {
+            _callChannelUsers.add(remoteUid);
+          }
+        },
+        onUserOffline: (RtcConnection connection, int remoteUid,
+            UserOfflineReasonType reason) {
+          _callChannelUsers.remove(remoteUid);
+          logger.i(
+              "Voice call: Remote user uid:$remoteUid left.\nUser remain: $_callChannelUsers");
+          if (_callChannelUsers.isEmpty) {
+            showSnackBar('对方已挂断');
+            hangUp();
+          }
+        },
+      ),
+    );
+  }
+
   final _callStatus = ValueNotifier<CallStatus>(CallStatus.none);
   late final callStatusNotifier = _callStatus.readonly;
 
@@ -227,44 +263,6 @@ class VoiceCall {
       channelId: channelData['channelId'],
       uid: channelData['uid'],
       options: options,
-    );
-  }
-
-  final _agoraEngine = createAgoraRtcEngine();
-  final _callChannelUsers = <int>{};
-  void _setupVoiceSDKEngine() async {
-    try {
-      await [Permission.microphone].request();
-    } catch (e) {
-      logger.e(e);
-    }
-
-    await _agoraEngine.initialize(const RtcEngineContext(
-      appId: AgoraKey.appID,
-      logConfig: LogConfig(level: LogLevel.logLevelWarn),
-    ));
-    _agoraEngine.registerEventHandler(
-      RtcEngineEventHandler(
-        onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
-          logger.i("Voice call: Local user uid:${connection.localUid} joined.");
-        },
-        onUserJoined: (RtcConnection connection, int remoteUid, int elapsed) {
-          logger.i("Voice call: Remote user uid:$remoteUid joined.");
-          if (connection.localUid != remoteUid) {
-            _callChannelUsers.add(remoteUid);
-          }
-        },
-        onUserOffline: (RtcConnection connection, int remoteUid,
-            UserOfflineReasonType reason) {
-          _callChannelUsers.remove(remoteUid);
-          logger.i(
-              "Voice call: Remote user uid:$remoteUid left.\nUser remain: $_callChannelUsers");
-          if (_callChannelUsers.isEmpty) {
-            showSnackBar('对方已挂断');
-            hangUp();
-          }
-        },
-      ),
     );
   }
 

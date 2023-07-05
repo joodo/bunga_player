@@ -1,17 +1,33 @@
+import 'package:bunga_player/services/voice_call.dart';
 import 'package:flutter/material.dart';
+import 'package:bunga_player/services/chat.dart';
+import 'package:bunga_player/services/preferences.dart';
+import 'package:bunga_player/services/tokens.dart';
 
 class AsyncInit extends StatelessWidget {
-  final Future<void> Function() asyncFunc;
   final Widget child;
 
-  const AsyncInit({super.key, required this.asyncFunc, required this.child});
+  const AsyncInit({super.key, required this.child});
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: asyncFunc(),
+      future: _initFunc(),
       builder: (context, snapshot) =>
-          snapshot.hasData ? const SizedBox.shrink() : child,
+          snapshot.connectionState == ConnectionState.done
+              ? child
+              : const Material(
+                  child: Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                ),
     );
+  }
+
+  Future<void> _initFunc() async {
+    await Preferences().init();
+    await Tokens().init();
+    Chat().init();
+    await VoiceCall().init();
   }
 }

@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/constants/secrets.dart';
+import 'package:bunga_player/services/tokens.dart';
 import 'package:http/http.dart' as http;
 
 typedef DURL = List<String>;
@@ -87,8 +87,10 @@ abstract class BiliEntry {
   }
 
   Future<String?> _getSess() async {
-    final response = await http.get(Uri.parse(
-        'https://www.joodo.club/api/bilibili-sessdata?key=${BungaKey.key}'));
+    final response = await http.get(
+      Uri.parse('https://www.joodo.club/api/bilibili/sess'),
+      headers: {'Authorization': Tokens().bunga.token},
+    );
     if (response.statusCode == 200) {
       isHD = true;
       return response.body;

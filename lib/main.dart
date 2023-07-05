@@ -1,5 +1,5 @@
 import 'package:bot_toast/bot_toast.dart';
-import 'package:bunga_player/services/preferences.dart';
+import 'package:bunga_player/constants/global_keys.dart';
 import 'package:bunga_player/services/snack_bar.dart';
 import 'package:bunga_player/screens/main_screen.dart';
 import 'package:bunga_player/wrapper/async_init.dart';
@@ -23,14 +23,10 @@ void main() async {
   home = UpdateWrapper(child: home);
   home = ShortcutsWrapper(child: home);
   home = Portal(child: home);
-  home = AsyncInit(
-    asyncFunc: () async {
-      await Preferences().init();
-    },
-    child: home,
-  );
+  home = AsyncInit(child: home);
   runApp(
     MaterialApp(
+      navigatorKey: rootNavigatorKey,
       title: 'Bunga Player',
       scaffoldMessengerKey: globalMessengerKey,
       builder: BotToastInit(),

@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/snack_bar.dart';
-import 'package:bunga_player/constants/secrets.dart';
+import 'package:bunga_player/services/tokens.dart';
 import 'package:bunga_player/utils/stream_proxy.dart';
 import 'package:bunga_player/utils/value_listenable.dart';
 import 'package:collection/collection.dart';
@@ -49,23 +49,25 @@ class Chat {
     channelExtraDataNotifier.bind(_channelExtraData.stream);
   }
 
-  final _chatClient = StreamChatClient(
-    StreamKey.appKey,
-    logLevel: Level.WARNING,
-  );
+  late final StreamChatClient _chatClient;
+  void init() {
+    _chatClient = StreamChatClient(
+      Tokens().streamIO.appKey,
+      logLevel: Level.WARNING,
+    );
+  }
 
   // User
   final _currentUserNotifier = ValueNotifier<User?>(null);
   late final currentUserNotifier = _currentUserNotifier.readonly;
 
   Future<void> login(String userName) async {
-    final userID = userName.hashCode.toString();
     _currentUserNotifier.value = await _chatClient.connectUser(
       User(
-        id: userID,
+        id: Tokens().bunga.clientID,
         name: userName,
       ),
-      _chatClient.devToken(userID).rawValue,
+      Tokens().streamIO.userToken,
     );
 
     logger.i('Current user: ${currentUserNotifier.value!.name}');
