@@ -70,7 +70,12 @@ class Chat {
     );
   }
 
-  Future<void> userRename(String newName) async {
+  Future<void> clearUserName() async {
+    await Preferences().remove('user_name');
+    _currentUserNameNotifier.value = null;
+  }
+
+  Future<void> renameUser(String newName) async {
     await _chatClient.updateUser(User(
       id: Tokens().bunga.clientID,
       name: newName,

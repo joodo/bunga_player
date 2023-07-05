@@ -5,7 +5,6 @@ import 'package:bunga_player/actions/open_local_video.dart';
 import 'package:bunga_player/services/chat.dart';
 import 'package:bunga_player/controllers/player_controller.dart';
 import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/snack_bar.dart';
 import 'package:bunga_player/controllers/ui_notifiers.dart';
 import 'package:bunga_player/utils/exceptions.dart';
@@ -139,9 +138,13 @@ class _WelcomeControlState extends State<WelcomeControl> {
     }
   }
 
-  void _onChangeName() {
-    Preferences().remove('user_name');
-    Navigator.of(context).popAndPushNamed('control:rename');
+  void _onChangeName() async {
+    final previousName = Chat().currentUserNameNotifier.value;
+    Chat().clearUserName();
+    Navigator.of(context).popAndPushNamed(
+      'control:rename',
+      arguments: {'previousName': previousName},
+    );
   }
 
   void _onVideoLoaded() {

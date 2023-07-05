@@ -56,8 +56,10 @@ class _ControlSectionState extends State<ControlSection> {
       initialRoute: 'control:${hasUserName ? 'welcome' : 'rename'}',
       key: _navigatorStateKey,
       onGenerateRoute: (settings) {
+        final arguments = settings.arguments as Map<String, Object?>?;
         final routes = {
-          'control:rename': const RenameControl(),
+          'control:rename': RenameControl(
+              previousName: arguments?['previousName'] as String?),
           'control:welcome': const WelcomeControl(),
           'control:main': const MainControl(),
           'control:call': const CallControl(),

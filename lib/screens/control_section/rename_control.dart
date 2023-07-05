@@ -7,7 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:multi_value_listenable_builder/multi_value_listenable_builder.dart';
 
 class RenameControl extends StatefulWidget {
-  const RenameControl({super.key});
+  final String? previousName;
+  const RenameControl({super.key, required this.previousName});
 
   @override
   State<RenameControl> createState() => _RenameControlState();
@@ -32,9 +33,8 @@ class _RenameControlState extends State<RenameControl> {
       }
     });
 
-    final previousName = Chat().currentUserNameNotifier.value;
-    if (previousName != null) {
-      _textController.text = previousName;
+    if (widget.previousName != null) {
+      _textController.text = widget.previousName!;
       _textController.selection = TextSelection(
         baseOffset: 0,
         extentOffset: _textController.text.length,
@@ -93,7 +93,7 @@ class _RenameControlState extends State<RenameControl> {
 
     try {
       final navigator = Navigator.of(context);
-      await Chat().userRename(userName);
+      await Chat().renameUser(userName);
       Preferences().set('user_name', userName);
       navigator.popAndPushNamed('control:welcome');
     } catch (e) {
