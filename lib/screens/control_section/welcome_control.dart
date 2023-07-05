@@ -58,10 +58,10 @@ class _WelcomeControlState extends State<WelcomeControl> {
   }
 
   void _openLocalVideo() async {
-    UINotifiers().isBusy.value = true;
     try {
       final data = await openLocalVideo();
 
+      UINotifiers().isBusy.value = true;
       UINotifiers().hintText.value = '正在发送请柬……';
       await Chat().createOrJoinRoomByHash(
         data.hash,
@@ -87,7 +87,6 @@ class _WelcomeControlState extends State<WelcomeControl> {
   }
 
   void _openBilibili() async {
-    UINotifiers().isBusy.value = true;
     try {
       final result = await showDialog(
         context: context,
@@ -95,6 +94,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
       );
       if (result == null) throw NoFileSelectedException();
 
+      UINotifiers().isBusy.value = true;
       final BiliEntry biliEntry;
       String? channelId;
       if (result is String && result.isNotEmpty) {
@@ -175,8 +175,9 @@ class _BiliDialog extends StatefulWidget {
 }
 
 class _BiliDialogState extends State<_BiliDialog> {
-  List<_BiliChannelData> _channels = [];
+  List<_BiliChannelData>? _channels;
   late final Timer _timer;
+  bool _isPulling = false;
 
   final _textController = TextEditingController();
   final _scrollController = ScrollController();
@@ -196,10 +197,53 @@ class _BiliDialogState extends State<_BiliDialog> {
   @override
   Widget build(BuildContext context) {
     final themeData = Theme.of(context);
+
+    final channelsScroll = SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      controller: _scrollController,
+      child: Row(
+        children: [
+          const SizedBox(width: 8),
+          if (_channels != null)
+            ..._channels!.map((info) => _createVideoCard(info)),
+          const SizedBox(width: 8),
+        ],
+      ),
+    );
+    // HACK: cannot use listview because bug, same as popmoji
+    // https://github.com/flutter/flutter/issues/26527
+    final channelsView = Container(
+      clipBehavior: Clip.hardEdge,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        color: themeData.colorScheme.surface,
+      ),
+      child: Stack(
+        children: [
+          Scrollbar(
+            controller: _scrollController,
+            child: Center(child: channelsScroll),
+          ),
+          if (_channels?.isEmpty ?? false)
+            Center(
+              child: Text(
+                '暂时没有其他人分享视频',
+                style: themeData.textTheme.labelMedium,
+              ),
+            ),
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeOutCubic,
+            height: _isPulling ? 4 : 0,
+            child: const LinearProgressIndicator(),
+          ),
+        ],
+      ),
+    );
+
     return AlertDialog(
-      insetPadding: const EdgeInsets.all(40),
       content: SizedBox(
-        width: double.maxFinite,
+        width: 500,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
@@ -210,30 +254,12 @@ class _BiliDialogState extends State<_BiliDialog> {
               style: themeData.textTheme.headlineSmall,
             ),
             const SizedBox(height: 16),
-            // HACK: cannot use listview because bug, same as popmoji
-            // https://github.com/flutter/flutter/issues/26527
-            _channels.isEmpty
-                ? const SizedBox(
-                    height: 200,
-                    child: Center(
-                      child: CircularProgressIndicator(),
-                    ),
-                  )
-                : Scrollbar(
-                    controller: _scrollController,
-                    child: Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        controller: _scrollController,
-                        child: Row(
-                          children: _channels
-                              .map((info) => _createVideoCard(info))
-                              .toList(),
-                        ),
-                      ),
-                    ),
-                  ),
+            SizedBox(
+              height: 220,
+              child: _channels == null
+                  ? const Center(child: CircularProgressIndicator())
+                  : channelsView,
+            ),
             const SizedBox(height: 24),
             Text(
               '或打开新视频',
@@ -371,6 +397,9 @@ class _BiliDialogState extends State<_BiliDialog> {
 
   Timer _createUpdateTimer() {
     void updateChannel(_) async {
+      setState(() {
+        _isPulling = true;
+      });
       final channels = await Chat().fetchBiliChannels();
 
       if (!mounted) return;
@@ -384,6 +413,7 @@ class _BiliDialogState extends State<_BiliDialog> {
                   creator: channel.createdBy!.name,
                 ))
             .toList();
+        _isPulling = false;
       });
     }
 

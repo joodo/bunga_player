@@ -84,7 +84,6 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
   }
 
   void _openBilibili() async {
-    UINotifiers().isBusy.value = true;
     try {
       // Update room data only if playing correct video
       final shouldUpdateRoomData = PlayerController().isVideoSameWithRoom;
@@ -95,6 +94,7 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
       );
       if (result == null) throw NoFileSelectedException();
 
+      UINotifiers().isBusy.value = true;
       final biliEntry = await BiliEntry.fromUrl((result as String).parseUri());
       await PlayerController().loadBiliEntry(biliEntry);
 

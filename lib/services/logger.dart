@@ -1,9 +1,11 @@
 import 'package:logger/logger.dart';
 
-final loggerStream = StreamOutput();
+final _logOutput = StreamOutput();
+
+final loggerStream = _logOutput.stream.asBroadcastStream();
 
 final logger = Logger(
-  output: loggerStream,
+  output: _logOutput,
   printer: SimplePrinter(colors: false),
   filter: ProductionFilter(),
   level: Level.info,

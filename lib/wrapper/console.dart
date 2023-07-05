@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:bunga_player/services/chat.dart';
@@ -32,13 +33,20 @@ class Console extends StatefulWidget {
 class _ConsoleState extends State<Console> {
   bool _show = false;
   final _logTextController = TextEditingController();
+  late final StreamSubscription _subscribe;
 
   @override
   void initState() {
     super.initState();
-    loggerStream.stream.listen((logs) {
+    _subscribe = loggerStream.listen((logs) {
       _logTextController.text += '${logs.join('\n')}\n';
     });
+  }
+
+  @override
+  void dispose() {
+    _subscribe.cancel();
+    super.dispose();
   }
 
   @override
