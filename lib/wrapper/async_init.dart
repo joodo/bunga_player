@@ -1,4 +1,5 @@
 import 'package:bunga_player/screens/main_screen.dart';
+import 'package:bunga_player/services/video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:bunga_player/services/voice_call.dart';
 import 'package:bunga_player/services/chat.dart';
@@ -47,6 +48,7 @@ class AsyncInit extends StatelessWidget {
     await Preferences().init();
 
     // [2]
+    VideoPlayer().init();
     await Tokens().init();
 
     // [3]

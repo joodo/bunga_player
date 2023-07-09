@@ -33,9 +33,6 @@ class VoiceCall {
         mute.value ? _setVolume(0) : _setVolume(volume.value);
       },
     );
-    // Pref volume
-    final savedVolume = Preferences().get<int>('call_volume');
-    if (savedVolume != null) volume.value = savedVolume;
 
     callStatusNotifier.addListener(() {
       // Play sound when call in or out
@@ -138,12 +135,14 @@ class VoiceCall {
   final _agoraEngine = createAgoraRtcEngine();
   final _callChannelUsers = <int>{};
   Future<void> init() async {
+    // Mic permission
     try {
       await [Permission.microphone].request();
     } catch (e) {
       logger.e(e);
     }
 
+    // Engine
     await _agoraEngine.initialize(RtcEngineContext(
       appId: Tokens().agora.appKey,
       logConfig: const LogConfig(level: LogLevel.logLevelWarn),
@@ -171,6 +170,9 @@ class VoiceCall {
         },
       ),
     );
+
+    // Volume
+    _loadSavedVolume();
   }
 
   final _callStatus = ValueNotifier<CallStatus>(CallStatus.none);
@@ -245,6 +247,11 @@ class VoiceCall {
   // range 0 ~ 400
   final volume = ValueNotifier<int>(100);
   final mute = ValueNotifier<bool>(false);
+  void _loadSavedVolume() {
+    final savedVolume = Preferences().get<int>('call_volume');
+    if (savedVolume != null) volume.value = savedVolume;
+  }
+
   void _setVolume(int volume) async {
     assert(volume >= 0 && volume <= 400);
     await _agoraEngine.adjustPlaybackSignalVolume(volume);

@@ -34,8 +34,14 @@ class VideoPlayer with WindowListener {
   final buffer = ReadonlyStreamNotifier<Duration>(Duration.zero);
   final position = StreamNotifier<Duration>(Duration.zero);
   final isPlaying = StreamNotifier<bool>(false);
+
   final volume = ValueNotifier<double>(100.0);
   final isMute = ValueNotifier<bool>(false);
+  void _loadSavedVolume() {
+    final savedVolume = Preferences().get<double>('video_volume');
+    if (savedVolume != null) volume.value = savedVolume;
+  }
+
   final contrast = ValueNotifierWithReset<int>(0);
   final tracks = ReadonlyStreamNotifier<Tracks?>(null);
   final track = ReadonlyStreamNotifier<Track?>(null);
@@ -48,8 +54,6 @@ class VideoPlayer with WindowListener {
 
   VideoPlayer._internal() {
     MediaKit.ensureInitialized();
-
-    _initWatchProgress();
 
     // set mpv auto reconnect
     // from https://github.com/mpv-player/mpv/issues/5793#issuecomment-553877261
@@ -86,9 +90,6 @@ class VideoPlayer with WindowListener {
         _player.setVolume(volume.value);
       }
     });
-    // Pref volume
-    final savedVolume = Preferences().get<double>('video_volume');
-    if (savedVolume != null) volume.value = savedVolume;
 
     contrast
         .addListener(() => _mpvProperty('contrast', contrast.value.toString()));
@@ -109,6 +110,11 @@ class VideoPlayer with WindowListener {
     });
 
     windowManager.addListener(this);
+  }
+
+  void init() {
+    _loadSavedProgress();
+    _loadSavedVolume();
   }
 
   final _videoHashNotifier = ValueNotifier<String?>(null);
@@ -228,7 +234,7 @@ class VideoPlayer with WindowListener {
   // Watch progress
   late final Map<String, int> _watchProgress;
 
-  void _initWatchProgress() {
+  void _loadSavedProgress() {
     _watchProgress = Map.castFrom(
         jsonDecode(Preferences().get<String>('watch_progress') ?? '{}'));
 
