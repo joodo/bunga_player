@@ -20,22 +20,27 @@ class Chat {
     messageStream.listen((message) {
       logger.i('Receive message from ${message!.user!.name}: ${message.text}');
     });
-    watcherLeaveEventStream.listen((user) {
+
+    watcherLeaveEventStream.listen((user) async {
+      user = (await fetchUsers([user])).first;
       _watchersNotifier.value = List.from(_watchersNotifier.value)
         ..removeWhere((u) => u.id == user.id);
       showSnackBar('${user.name} 已离开');
       AudioPlayer().play(AssetSource('sounds/user_leave.wav'));
     });
-    watcherJoinEventStream.listen((user) {
+    watcherJoinEventStream.listen((user) async {
       if (_watchersNotifier.value.firstWhereOrNull((u) => u.id == user.id) !=
           null) {
         return;
       }
+      if (user.id == Tokens().bunga.clientID) return;
 
+      user = (await fetchUsers([user])).first;
       _watchersNotifier.value = List.from(_watchersNotifier.value)..add(user);
       showSnackBar('${user.name} 已加入');
       AudioPlayer().play(AssetSource('sounds/user_join.wav'));
     });
+
     channelUpdateEventStream.listen((event) {
       logger.i(
           'remote change room data: ${event?.channel?.extraData.toString()}');
@@ -162,7 +167,8 @@ class Chat {
         channel.on('user.watching.stop').map((event) => event.user!);
     _channelUpdateEventStream.source = channel.on('channel.updated');
 
-    _watchersNotifier.value = channel.state!.watchers;
+    _watchersNotifier.value = await fetchUsers(channel.state!.watchers);
+    ;
     _channelExtraData.source = channel.extraDataStream;
   }
 
@@ -207,6 +213,15 @@ class Chat {
         )
         .last;
     return channels;
+  }
+
+  Future<List<User>> fetchUsers(List<User> users) async {
+    final response = await _chatClient.queryUsers(
+        filter: Filter.in_(
+      'id',
+      users.map((user) => user.id).toList(),
+    ));
+    return response.users;
   }
 
   Future<Map<String, dynamic>> createVoiceCall() async {

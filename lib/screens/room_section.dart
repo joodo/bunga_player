@@ -35,10 +35,7 @@ class _RoomSectionState extends State<RoomSection> {
 
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Text(
-                '$text 在和你一起看',
-                textAlign: TextAlign.left,
-              ),
+              child: Text('$text 在和你一起看'),
             );
           },
         ),
@@ -99,9 +96,7 @@ class _RoomSectionState extends State<RoomSection> {
     }
   }
 
-  String _getUsersStringExceptMe(List<User>? userList) {
-    if (userList == null) return '';
-
+  String _getUsersStringExceptMe(List<User> userList) {
     String result = '';
     for (var user in userList) {
       if (user.id == Tokens().bunga.clientID) continue;
