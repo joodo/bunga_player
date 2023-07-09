@@ -6,6 +6,9 @@ import 'package:bunga_player/controllers/ui_notifiers.dart';
 import 'package:flutter/material.dart';
 import 'package:async/async.dart';
 
+const kRoomSectionHeight = 36.0;
+const kControlSectionHeight = 64.0;
+
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
@@ -24,9 +27,6 @@ class MainScreenState extends State<MainScreen> {
   final _roomSectionKey = GlobalKey<State<RoomSection>>();
   @override
   Widget build(Object context) {
-    const roomSectionHeight = 36.0;
-    const controlSectionHeight = 64.0;
-
     final playerSection = PlayerSection(key: _playerSectionKey);
     final controlSection = ControlSection(key: _controlSectionKey);
     final roomSection = RoomSection(key: _roomSectionKey);
@@ -47,11 +47,11 @@ class MainScreenState extends State<MainScreen> {
                 bottom: 0,
                 left: 0,
                 right: 0,
-                height: controlSectionHeight,
+                height: kControlSectionHeight,
                 child: controlSection,
               ),
               const Positioned(
-                bottom: controlSectionHeight - 8,
+                bottom: kControlSectionHeight - 8,
                 left: 0,
                 right: 0,
                 height: 16,
@@ -96,27 +96,27 @@ class MainScreenState extends State<MainScreen> {
             children: [
               Positioned(
                 top: 0,
-                height: roomSectionHeight,
+                height: kRoomSectionHeight,
                 left: 0,
                 right: 0,
                 child: roomSection,
               ),
               Positioned(
-                top: roomSectionHeight,
-                bottom: controlSectionHeight,
+                top: kRoomSectionHeight,
+                bottom: kControlSectionHeight,
                 left: 0,
                 right: 0,
                 child: playerSection,
               ),
               Positioned(
-                height: controlSectionHeight,
+                height: kControlSectionHeight,
                 bottom: 0,
                 left: 0,
                 right: 0,
                 child: controlSection,
               ),
               const Positioned(
-                bottom: controlSectionHeight - 8,
+                bottom: kControlSectionHeight - 8,
                 height: 16,
                 left: 0,
                 right: 0,
