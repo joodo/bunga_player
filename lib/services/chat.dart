@@ -86,11 +86,11 @@ class Chat {
   }
 
   Future<void> renameUser(String newName) async {
+    _currentUserNameNotifier.value = newName;
     await _chatClient.updateUser(User(
       id: Tokens().bunga.clientID,
       name: newName,
     ));
-    _currentUserNameNotifier.value = newName;
   }
 
   // Channel

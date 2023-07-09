@@ -15,8 +15,6 @@ class RenameControl extends StatefulWidget {
 }
 
 class _RenameControlState extends State<RenameControl> {
-  static const _askNameText = '怎样称呼你？';
-
   final _textController = TextEditingController();
 
   @override
@@ -29,7 +27,7 @@ class _RenameControlState extends State<RenameControl> {
       if (savedUserName != null) {
         _onSubmit(savedUserName);
       } else {
-        UINotifiers().hintText.value = _askNameText;
+        UINotifiers().hintText.value = '怎样称呼你？';
       }
     });
 
@@ -49,36 +47,28 @@ class _RenameControlState extends State<RenameControl> {
       children: [
         SizedBox(
           width: 300,
-          child: ValueListenableBuilder(
-            valueListenable: UINotifiers().isBusy,
-            builder: (context, isBusy, child) => TextField(
-              style: const TextStyle(height: 1.0),
-              autofocus: true,
-              controller: _textController,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-              ),
-              enabled: !isBusy,
-              onSubmitted: (value) {
-                if (value.isNotEmpty) {
-                  _onSubmit(value);
-                }
-              },
+          child: TextField(
+            style: const TextStyle(height: 1.0),
+            autofocus: true,
+            controller: _textController,
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
             ),
+            onSubmitted: (value) {
+              if (value.isNotEmpty) {
+                _onSubmit(value);
+              }
+            },
           ),
         ),
         const SizedBox(width: 16),
-        MultiValueListenableBuilder(
-          valueListenables: [
-            _textController,
-            UINotifiers().isBusy,
-          ],
-          builder: (context, values, child) {
+        ValueListenableBuilder(
+          valueListenable: _textController,
+          builder: (context, value, child) {
             return FilledButton(
               style: FilledButton.styleFrom(minimumSize: const Size(120, 48)),
-              onPressed: !values[1] && values[0].text.isNotEmpty
-                  ? () => _onSubmit(values[0].text)
-                  : null,
+              onPressed:
+                  value.text.isNotEmpty ? () => _onSubmit(value.text) : null,
               child: const Text('就这么定'),
             );
           },
@@ -88,20 +78,12 @@ class _RenameControlState extends State<RenameControl> {
   }
 
   void _onSubmit(String userName) async {
-    UINotifiers().isBusy.value = true;
-    UINotifiers().hintText.value = '正在连接母星……';
+    Chat().renameUser(userName).onError((error, stackTrace) {
+      logger.e(error);
+      showSnackBar('改名失败');
+    });
 
-    try {
-      final navigator = Navigator.of(context);
-      await Chat().renameUser(userName);
-      Preferences().set('user_name', userName);
-      navigator.popAndPushNamed('control:welcome');
-    } catch (e) {
-      logger.e(e);
-      showSnackBar('连接母星失败');
-      UINotifiers().hintText.value = _askNameText;
-    } finally {
-      UINotifiers().isBusy.value = false;
-    }
+    Preferences().set('user_name', userName);
+    Navigator.of(context).popAndPushNamed('control:welcome');
   }
 }
