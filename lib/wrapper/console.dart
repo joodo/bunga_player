@@ -12,16 +12,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
-Widget _padding(Widget child) => Padding(
-      padding: const EdgeInsets.symmetric(
-        vertical: 8,
-        horizontal: 16,
-      ),
-      child: child,
-    );
-Widget _jsonText(Map<String, dynamic>? json) =>
-    Text(const JsonEncoder.withIndent('  ').convert(json));
-
 class Console extends StatefulWidget {
   final Widget child;
   const Console({super.key, required this.child});
@@ -64,62 +54,32 @@ class _ConsoleState extends State<Console> {
       readOnly: true,
     );
 
-    final variableWidgets = <String, Widget>{
-      'Current verion': FutureBuilder(
-        future: PackageInfo.fromPlatform(),
-        builder: (context, snapshot) => Text(snapshot.data?.version ?? ''),
-      ),
-      'Tokens': _jsonText({
-        'bunga': Tokens().bunga.toJson(),
-        'stream': Tokens().streamIO.toJson(),
-        'agora': Tokens().agora.toJson(),
-      }),
-      'Chat User Name': ValueListenableBuilder(
-        valueListenable: Chat().currentUserNameNotifier,
-        builder: (context, value, child) => Text(value ?? 'null'),
-      ),
-      'Chat Channel': ValueListenableBuilder(
-        valueListenable: Chat().currentChannelNotifier,
-        builder: (context, value, child) => _jsonText(value == null
-            ? null
-            : {
-                'id': value.id,
-                ...value.extraData,
-              }),
-      ),
-      'Video Hash': ValueListenableBuilder(
-        valueListenable: VideoPlayer().videoHashNotifier,
-        builder: (context, value, child) => Text(value ?? 'null'),
-      ),
-      'Call Status': ValueListenableBuilder(
-        valueListenable: VoiceCall().callStatusNotifier,
-        builder: (context, value, child) => Text(value.name),
-      ),
-      'Preferences': _PrefView(),
-    };
-    final tableView = Table(
-      border: TableBorder.all(color: Theme.of(context).colorScheme.onSurface),
-      columnWidths: const <int, TableColumnWidth>{
-        0: IntrinsicColumnWidth(),
-        1: FlexColumnWidth(),
-      },
-      children: variableWidgets.entries
-          .map(
-            (row) => TableRow(
-              children: [
-                _padding(Text(row.key)),
-                _padding(row.value),
-              ],
-            ),
-          )
-          .toList(),
-    );
-    final variableView = SingleChildScrollView(
-      child: tableView,
+    final actionView = Column(
+      children: [
+        FilledButton(
+          onPressed: () async {
+            final currentID = Tokens().bunga.clientID;
+            final split = currentID.split('__');
+
+            late final String newID;
+            if (split.length == 1) {
+              newID = '${currentID}__1';
+            } else {
+              newID = '${split.first}__${int.parse(split.last) + 1}';
+            }
+
+            await Tokens().setClientID(newID);
+            await Chat().updateLoginInfo();
+
+            showSnackBar('Update to $newID');
+          },
+          child: const Text('Change user id'),
+        ),
+      ],
     );
 
     final consoleView = DefaultTabController(
-      length: 2,
+      length: 3,
       child: Scaffold(
         backgroundColor: const Color(0xA0000000),
         appBar: AppBar(
@@ -130,6 +90,7 @@ class _ConsoleState extends State<Console> {
                   tabs: [
                     Tab(text: 'Logs'),
                     Tab(text: 'Variables'),
+                    Tab(text: 'Actions'),
                   ],
                 ),
               ),
@@ -150,7 +111,11 @@ class _ConsoleState extends State<Console> {
             ),
             Padding(
               padding: const EdgeInsets.all(8),
-              child: variableView,
+              child: _VariablesView(),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: actionView,
             ),
           ],
         ),
@@ -184,48 +149,164 @@ class _ConsoleState extends State<Console> {
   }
 }
 
-class _PrefView extends StatefulWidget {
-  @override
-  State<_PrefView> createState() => _PrefViewState();
-}
+Widget _padding(Widget child) => Padding(
+      padding: const EdgeInsets.symmetric(
+        vertical: 8,
+        horizontal: 16,
+      ),
+      child: child,
+    );
 
-class _PrefViewState extends State<_PrefView> {
+class _VariablesView extends StatelessWidget {
+  final _jsonEncoder = const JsonEncoder.withIndent('  ');
+
+  late final _variables = <String, Future<String?> Function()>{
+    'Current verion': () async {
+      final info = await PackageInfo.fromPlatform();
+      return info.version;
+    },
+    'Tokens': () => Future.value(_jsonEncoder.convert({
+          'bunga': Tokens().bunga.toJson(),
+          'stream': Tokens().streamIO.toJson(),
+          'agora': Tokens().agora.toJson(),
+        })),
+    'Chat User Name': () => Future.value(Chat().currentUserNameNotifier.value),
+    'Chat Channel': () => Future.value(_jsonEncoder.convert({
+          'id': Chat().currentChannelNotifier.value?.id,
+          if (Chat().currentChannelNotifier.value != null)
+            ...Chat().currentChannelNotifier.value!.extraData,
+        })),
+    'Video Hash': () => Future.value(VideoPlayer().videoHashNotifier.value),
+    'Call Status': () =>
+        Future.value(VoiceCall().callStatusNotifier.value.name),
+  };
+
   @override
   Widget build(BuildContext context) {
-    final map = Preferences().getAll().map<String, Object?>((key, value) {
-      switch (key) {
-        case 'watch_progress':
-          return MapEntry(key, '...');
-        default:
-          return MapEntry(key, value);
-      }
-    });
+    final variables = Table(
+      border: TableBorder.all(color: Theme.of(context).colorScheme.onSurface),
+      columnWidths: const <int, TableColumnWidth>{
+        0: IntrinsicColumnWidth(),
+        1: FlexColumnWidth(),
+      },
+      children: _variables.entries
+          .map(
+            (row) => TableRow(
+              children: [
+                _padding(Text(row.key)),
+                _TableValue(func: row.value),
+              ],
+            ),
+          )
+          .toList(),
+    );
 
-    final s = const JsonEncoder.withIndent('  ').convert(map);
-
-    return Stack(
-      children: [
-        Positioned(
-          right: 0,
-          child: Row(
+    final prefs = Table(
+      border: TableBorder.all(color: Theme.of(context).colorScheme.onSurface),
+      columnWidths: const <int, TableColumnWidth>{
+        0: IntrinsicColumnWidth(),
+        1: FlexColumnWidth(),
+      },
+      children: Preferences().keys.map((key) {
+        if (key == 'watch_progress') {
+          return TableRow(
             children: [
-              IconButton(
-                icon: const Icon(Icons.refresh),
-                onPressed: () =>
-                    Preferences().reload().then((value) => setState(() => {})),
-              ),
-              IconButton(
-                icon: const Icon(Icons.copy),
-                onPressed: () async {
-                  await Clipboard.setData(ClipboardData(text: s));
-                  showSnackBar('已复制');
-                },
-              ),
+              _padding(Text(key)),
+              _padding(const Text('...')),
             ],
+          );
+        }
+        return TableRow(
+          children: [
+            _padding(Text(key)),
+            _padding(Text(Preferences().get(key).toString())),
+          ],
+        );
+      }).toList(),
+    );
+
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          variables,
+          const SizedBox(height: 16),
+          Text(
+            'Preferences',
+            style: Theme.of(context).textTheme.titleMedium,
           ),
-        ),
-        Text(s),
-      ],
+          const SizedBox(height: 8),
+          prefs,
+        ],
+      ),
+    );
+  }
+}
+
+class _TableValue extends StatefulWidget {
+  final Future<String?> Function() func;
+
+  const _TableValue({required this.func});
+
+  @override
+  State<_TableValue> createState() => _TableValueState();
+}
+
+class _TableValueState extends State<_TableValue> {
+  bool _isHovered = false;
+  String? _text;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.func().then((value) => setState(() {
+          _text = value;
+        }));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (event) => setState(() {
+        _isHovered = true;
+      }),
+      onExit: (event) => setState(() {
+        _isHovered = false;
+      }),
+      child: Stack(
+        children: [
+          _padding(SizedBox(
+            width: double.maxFinite,
+            child: Text(_text ?? ''),
+          )),
+          Visibility(
+            visible: _isHovered,
+            child: Positioned(
+              right: 0,
+              child: Row(
+                children: [
+                  Visibility(
+                    visible: _text != null,
+                    child: IconButton(
+                      icon: const Icon(Icons.copy),
+                      onPressed: () async {
+                        await Clipboard.setData(ClipboardData(text: _text!));
+                        showSnackBar('已复制');
+                      },
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.refresh),
+                    onPressed: () => widget.func().then((value) => setState(() {
+                          _text = value;
+                        })),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

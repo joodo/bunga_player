@@ -52,11 +52,7 @@ class Preferences {
 
   Future<void> reload() => _pref.reload();
 
-  Map<String, Object?> getAll() {
-    final result = <String, Object?>{};
-    _pref.getKeys().forEach((key) => result[key] = _pref.get(key));
-    return result;
-  }
+  Set<String> get keys => _pref.getKeys();
 
   T? get<T>(String key) {
     switch (T) {

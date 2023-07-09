@@ -17,9 +17,9 @@ class Tokens {
   factory Tokens() => _instance;
   Tokens._internal();
 
-  late final BungaToken bunga;
-  late final StreamIOToken streamIO;
-  late final AgoraToken agora;
+  late BungaToken bunga;
+  late StreamIOToken streamIO;
+  late AgoraToken agora;
 
   Future<void> init() async {
     String? clientID = Preferences().get<String>('client_id');
@@ -67,6 +67,20 @@ class Tokens {
     bunga = BungaToken(clientID: clientID, token: data['api_token']);
     streamIO = StreamIOToken.fromJson(data['stream_io']);
     agora = AgoraToken.fromJson(data['agora_key']);
+  }
+
+  Future<void> setClientID(String id) async {
+    try {
+      final response = await http.post(
+        Uri.parse('https://www.joodo.club/api/auth/login'),
+        body: {'user_id': id},
+      );
+      final data = jsonDecode(response.body);
+      bunga = BungaToken(clientID: id, token: data['api_token']);
+      streamIO = StreamIOToken.fromJson(data['stream_io']);
+    } catch (e) {
+      e.toString();
+    }
   }
 }
 

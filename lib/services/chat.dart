@@ -61,6 +61,11 @@ class Chat {
       Tokens().streamIO.appKey,
       logLevel: Level.WARNING,
     );
+    updateLoginInfo();
+  }
+
+  Future<void> updateLoginInfo() async {
+    await _chatClient.disconnectUser();
     await _chatClient.connectUser(
       User(
         id: Tokens().bunga.clientID,
