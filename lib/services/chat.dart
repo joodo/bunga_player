@@ -168,7 +168,7 @@ class Chat {
     _channelUpdateEventStream.source = channel.on('channel.updated');
 
     _watchersNotifier.value = await fetchUsers(channel.state!.watchers);
-    ;
+
     _channelExtraData.source = channel.extraDataStream;
   }
 
