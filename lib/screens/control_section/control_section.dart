@@ -99,7 +99,6 @@ class _ControlSectionState extends State<ControlSection> {
     // Route to call control when call in
     if (VoiceCall().callStatusNotifier.value == CallStatus.callIn) {
       final navigator = _navigatorStateKey.currentState!;
-      navigator.popUntil((route) => route.settings.name == 'control:main');
       navigator.pushNamed('control:call');
     }
   }
@@ -110,7 +109,9 @@ class _ControlSectionState extends State<ControlSection> {
         // Avoid change login control to main control
         !VideoPlayer().isStoppedNotifier.value) {
       final navigator = _navigatorStateKey.currentState!;
-      navigator.popUntil((route) => route.settings.name == 'control:main');
+      navigator.popUntil((route) =>
+          route.settings.name == 'control:main' ||
+          route.settings.name == 'control:welcome');
     }
   }
 }
