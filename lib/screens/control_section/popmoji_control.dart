@@ -55,8 +55,6 @@ class _EmojiButton extends StatelessWidget {
 
   const _EmojiButton({required this.code});
 
-  static final Map<UniqueKey, OverlayEntry> _overlays = {};
-
   @override
   Widget build(BuildContext context) {
     final svg = SvgPicture.asset(
@@ -86,8 +84,8 @@ class _EmojiButton extends StatelessWidget {
           ancestor: overlay),
     );
 
-    final uniqueKey = UniqueKey();
-    final overlayEntry = OverlayEntry(
+    late final OverlayEntry overlayEntry;
+    overlayEntry = OverlayEntry(
       builder: (context) {
         return _ThrowAnimation(
           startRect: position,
@@ -97,31 +95,24 @@ class _EmojiButton extends StatelessWidget {
             0,
             0,
           ),
-          onFinished: () {
-            _overlays[uniqueKey]!.remove();
-            _overlays.remove(uniqueKey);
-          },
-          child: SvgPicture.asset(
-            'assets/images/emojis/u$code.svg',
-            height: 24,
-          ),
+          overlay: overlayEntry,
+          child: SvgPicture.asset('assets/images/emojis/u$code.svg'),
         );
       },
     );
-    _overlays[uniqueKey] = overlayEntry;
     Overlay.of(context, rootOverlay: true).insert(overlayEntry);
   }
 }
 
 class _ThrowAnimation extends StatefulWidget {
   final Rect startRect, endRect;
-  final VoidCallback? onFinished;
+  final OverlayEntry overlay;
   final Widget child;
   const _ThrowAnimation({
     required this.startRect,
     required this.endRect,
     required this.child,
-    this.onFinished,
+    required this.overlay,
   });
   @override
   State<_ThrowAnimation> createState() => _ThrowAnimationState();
@@ -142,7 +133,7 @@ class _ThrowAnimationState extends State<_ThrowAnimation>
     widget.startRect.top,
   );
   late final _controller = AnimationController(
-      vsync: this, duration: const Duration(milliseconds: 1500));
+      vsync: this, duration: const Duration(milliseconds: 1000));
   late final _positionTween = Tween(begin: 0.0, end: 1.0)
       .chain(CurveTween(curve: Curves.easeOutCubic))
       .animate(_controller);
@@ -168,7 +159,7 @@ class _ThrowAnimationState extends State<_ThrowAnimation>
         _calcPosition(_positionTween.value);
       });
     });
-    _controller.forward().then((_) => widget.onFinished?.call());
+    _controller.forward().then((_) => widget.overlay.remove());
   }
 
   @override
