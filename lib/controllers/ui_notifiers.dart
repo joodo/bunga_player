@@ -15,5 +15,5 @@ class UINotifiers {
   final isFullScreen = ValueNotifier<bool>(false);
   final isUIHidden = ValueNotifier<bool>(false);
   final isBusy = ValueNotifier<bool>(true);
-  final hintText = ValueNotifier<String?>('...');
+  final hintText = ValueNotifier<String?>('正在连接到母星……');
 }
