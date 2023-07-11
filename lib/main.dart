@@ -14,8 +14,7 @@ void main() async {
 
   await Preferences().init();
 
-  Widget home = const MainScreen();
-  home = wrap(home);
+  final home = wrap(const MainScreen());
   runApp(
     MaterialApp(
       navigatorKey: rootNavigatorKey,
