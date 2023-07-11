@@ -11,7 +11,6 @@ import 'package:bunga_player/services/video_player.dart';
 import 'package:bunga_player/utils/exceptions.dart';
 import 'package:bunga_player/utils/string.dart';
 import 'package:flutter/material.dart';
-import 'package:window_manager/window_manager.dart';
 
 class WelcomeControl extends StatefulWidget {
   const WelcomeControl({super.key});
@@ -26,10 +25,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(Duration.zero, () {
-      UINotifiers().hintText.value = _welcomeText;
-      windowManager.setTitle('Bunga Player');
-    });
+    Future.microtask(() => UINotifiers().hintText.value = _welcomeText);
   }
 
   @override

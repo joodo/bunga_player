@@ -13,6 +13,7 @@ import 'package:file_selector/file_selector.dart';
 import 'package:flutter/foundation.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart' as media_kit;
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:wakelock/wakelock.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -190,6 +191,9 @@ class VideoPlayer with WindowListener {
     await _player.open(emptyMedia, play: false);
     await _controller.waitUntilFirstFrameRendered;
     _videoHashNotifier.value = null;
+
+    final info = await PackageInfo.fromPlatform();
+    windowManager.setTitle(info.appName);
   }
 
   void setAudioTrack(String? id) {

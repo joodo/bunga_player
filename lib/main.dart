@@ -19,7 +19,6 @@ void main() async {
   runApp(
     MaterialApp(
       navigatorKey: rootNavigatorKey,
-      title: 'Bunga Player',
       scaffoldMessengerKey: globalMessengerKey,
       builder: BotToastInit(),
       navigatorObservers: [BotToastNavigatorObserver()],
