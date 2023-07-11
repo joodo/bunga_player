@@ -1,7 +1,6 @@
 import 'package:bot_toast/bot_toast.dart';
+import 'package:bunga_player/constants/global_keys.dart';
 import 'package:flutter/material.dart';
-
-final globalMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
 void showSnackBar(String text) {
   final theme = Theme.of(globalMessengerKey.currentContext!);

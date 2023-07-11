@@ -9,7 +9,6 @@ import 'package:bunga_player/screens/control_section/tune_control.dart';
 import 'package:bunga_player/screens/control_section/welcome_control.dart';
 import 'package:bunga_player/screens/progress_section/video_progress_indicator.dart';
 import 'package:bunga_player/controllers/ui_notifiers.dart';
-import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/video_player.dart';
 import 'package:bunga_player/services/voice_call.dart';
 import 'package:flutter/material.dart';

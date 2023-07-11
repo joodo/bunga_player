@@ -12,15 +12,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
-class Console extends StatefulWidget {
+class ConsoleWrapper extends StatefulWidget {
   final Widget child;
-  const Console({super.key, required this.child});
+  const ConsoleWrapper({super.key, required this.child});
 
   @override
-  State<Console> createState() => _ConsoleState();
+  State<ConsoleWrapper> createState() => _ConsoleWrapperState();
 }
 
-class _ConsoleState extends State<Console> {
+class _ConsoleWrapperState extends State<ConsoleWrapper> {
   bool _show = false;
   final _logTextController = TextEditingController();
   late final StreamSubscription _subscribe;
