@@ -17,11 +17,6 @@ class MainScreen extends StatefulWidget {
 }
 
 class MainScreenState extends State<MainScreen> {
-  late final RestartableTimer _hideUITimer = RestartableTimer(
-    const Duration(seconds: 3),
-    () => UINotifiers().isUIHidden.value = true,
-  );
-
   final _controlSectionKey = GlobalKey<State<ControlSection>>();
   final _playerSectionKey = GlobalKey<State<PlayerSection>>();
   final _roomSectionKey = GlobalKey<State<RoomSection>>();
@@ -63,31 +58,7 @@ class MainScreenState extends State<MainScreen> {
             fit: StackFit.expand,
             children: [
               playerSection,
-              ValueListenableBuilder(
-                valueListenable: UINotifiers().isUIHidden,
-                builder: (context, isUIHidden, child) => MouseRegion(
-                  opaque: false,
-                  cursor: isUIHidden
-                      ? SystemMouseCursors.none
-                      : SystemMouseCursors.basic,
-                  onEnter: (event) => _hideUITimer.reset(),
-                  onExit: (event) => _hideUITimer.cancel(),
-                  onHover: (event) {
-                    _hideUITimer.reset();
-                    UINotifiers().isUIHidden.value = false;
-                  },
-                ),
-              ),
-              ValueListenableBuilder(
-                valueListenable: UINotifiers().isUIHidden,
-                builder: (context, isUIHidden, child) => AnimatedOpacity(
-                  opacity: isUIHidden ? 0.0 : 1.0,
-                  curve: Curves.easeInCubic,
-                  duration: const Duration(milliseconds: 200),
-                  child: child,
-                ),
-                child: hideableUI,
-              ),
+              HideWrapper(child: hideableUI),
             ],
           );
         } else {
@@ -131,6 +102,56 @@ class MainScreenState extends State<MainScreen> {
     return Material(
       color: Colors.black,
       child: body,
+    );
+  }
+}
+
+class HideWrapper extends StatefulWidget {
+  final Widget child;
+
+  const HideWrapper({super.key, required this.child});
+
+  @override
+  State<HideWrapper> createState() => _HideWrapperState();
+}
+
+class _HideWrapperState extends State<HideWrapper> {
+  late final RestartableTimer _hideUITimer = RestartableTimer(
+    const Duration(seconds: 3),
+    () => UINotifiers().isUIHidden.value = true,
+  );
+
+  @override
+  void dispose() {
+    // for anime
+    Future.microtask(() {
+      UINotifiers().isUIHidden.value = false;
+      _hideUITimer.cancel();
+    });
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder(
+      valueListenable: UINotifiers().isUIHidden,
+      builder: (context, isUIHidden, child) => MouseRegion(
+        opaque: false,
+        cursor: isUIHidden ? SystemMouseCursors.none : SystemMouseCursors.basic,
+        onEnter: (event) => _hideUITimer.reset(),
+        onExit: (event) => _hideUITimer.cancel(),
+        onHover: (event) {
+          _hideUITimer.reset();
+          UINotifiers().isUIHidden.value = false;
+        },
+        child: AnimatedOpacity(
+          opacity: isUIHidden ? 0.0 : 1.0,
+          curve: Curves.easeInCubic,
+          duration: const Duration(milliseconds: 200),
+          child: child,
+        ),
+      ),
+      child: widget.child,
     );
   }
 }
