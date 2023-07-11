@@ -97,6 +97,33 @@ class PlayerController {
     });
   }
 
+  // Prevent remote and local toggle video together
+  bool _justToggledByRemote = false;
+  bool get justToggledByRemote => _justToggledByRemote;
+  late final _resetToggledByRemoteTimer = RestartableTimer(
+    const Duration(seconds: 1),
+    () => _justToggledByRemote = false,
+  );
+  void _markRemoteToggle() {
+    _justToggledByRemote = true;
+    _resetToggledByRemoteTimer.reset();
+  }
+
+  Future<void> _processPlayStatus(Message message) async {
+    if (message.user?.id == Tokens().bunga.clientID) {
+      return;
+    }
+
+    final quoteID = message.quotedMessageId;
+
+    if (quoteID != null) {
+      // Not answering me
+      if (quoteID != _askID) return;
+      _askID = null;
+    }
+    _applyStatus(message);
+  }
+
   void _applyStatus(Message message) {
     // Not playing the same video, ignore
     if (!isVideoSameWithRoom) return;
@@ -113,6 +140,7 @@ class PlayerController {
       if (canShowSnackBar) {
         showSnackBar('${message.user!.name} 暂停了视频');
         canShowSnackBar = false;
+        _markRemoteToggle();
       }
     }
     if (re.first == 'play' && !isPlaying) {
@@ -120,6 +148,7 @@ class PlayerController {
       if (canShowSnackBar) {
         showSnackBar('${message.user!.name} 播放了视频');
         canShowSnackBar = false;
+        _markRemoteToggle();
       }
     }
 
@@ -141,24 +170,6 @@ class PlayerController {
 
     if (_askID == null) {
       sendPlayerStatus(quoteMessageId: message.id);
-    }
-  }
-
-  Future<void> _processPlayStatus(Message message) async {
-    if (message.user?.id == Tokens().bunga.clientID) {
-      return;
-    }
-
-    final quoteID = message.quotedMessageId;
-
-    if (quoteID != null) {
-      // Not answering me
-      if (quoteID != _askID) return;
-
-      _applyStatus(message);
-      _askID = null;
-    } else {
-      _applyStatus(message);
     }
   }
 }

@@ -67,7 +67,8 @@ class TogglePlayAction extends Action<TogglePlayIntent> {
 
   @override
   bool isEnabled(TogglePlayIntent intent) =>
-      !VideoPlayer().isStoppedNotifier.value;
+      !VideoPlayer().isStoppedNotifier.value &&
+      !PlayerController().justToggledByRemote;
 }
 
 class SetFullScreenIntent extends Intent {
