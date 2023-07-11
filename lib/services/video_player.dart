@@ -23,6 +23,20 @@ class VideoPlayer with WindowListener {
   static final _instance = VideoPlayer._internal();
   factory VideoPlayer() => _instance;
 
+  VideoPlayer._internal() {
+    MediaKit.ensureInitialized();
+
+    // set mpv auto reconnect
+    // from https://github.com/mpv-player/mpv/issues/5793#issuecomment-553877261
+    _mpvProperty('stream-lavf-o', 'reconnect_streamed=1');
+
+    _setUpBindings();
+
+    _loadSavedProgress();
+
+    _loadSavedVolume();
+  }
+
   late final _player = Player(
     configuration: const PlayerConfiguration(logLevel: MPVLogLevel.warn),
   )..open(emptyMedia, play: false);
@@ -50,15 +64,7 @@ class VideoPlayer with WindowListener {
   final subSize = ValueNotifierWithReset<double>(55.0); // sub-font-size
   final subPosition = ValueNotifierWithReset<double>(100.0); // sub-pos=<0-150>
 
-  bool _isWaitingSubtitleLoaded = false;
-
-  VideoPlayer._internal() {
-    MediaKit.ensureInitialized();
-
-    // set mpv auto reconnect
-    // from https://github.com/mpv-player/mpv/issues/5793#issuecomment-553877261
-    _mpvProperty('stream-lavf-o', 'reconnect_streamed=1');
-
+  void _setUpBindings() {
     duration.bind(_player.streams.duration);
     buffer.bind(_player.streams.buffer);
     position.bind(_player.streams.position, _player.seek);
@@ -108,14 +114,9 @@ class VideoPlayer with WindowListener {
         _isWaitingSubtitleLoaded = false;
       }
     });
-
-    windowManager.addListener(this);
   }
 
-  void init() {
-    _loadSavedProgress();
-    _loadSavedVolume();
-  }
+  bool _isWaitingSubtitleLoaded = false;
 
   final _videoHashNotifier = ValueNotifier<String?>(null);
   late final videoHashNotifier = _videoHashNotifier.createReadonly();
@@ -245,6 +246,8 @@ class VideoPlayer with WindowListener {
         _watchProgress[hash] = progress.inMilliseconds;
       }
     });
+
+    windowManager.addListener(this);
   }
 
   @override

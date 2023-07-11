@@ -14,6 +14,6 @@ class UINotifiers {
 
   final isFullScreen = ValueNotifier<bool>(false);
   final isUIHidden = ValueNotifier<bool>(false);
-  final isBusy = ValueNotifier<bool>(false);
-  final hintText = ValueNotifier<String?>(null);
+  final isBusy = ValueNotifier<bool>(true);
+  final hintText = ValueNotifier<String?>('...');
 }

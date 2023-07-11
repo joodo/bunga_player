@@ -1,3 +1,4 @@
+import 'package:bunga_player/screens/control_section/init_control.dart';
 import 'package:bunga_player/screens/control_section/video_open_control.dart';
 import 'package:bunga_player/screens/control_section/call_control.dart';
 import 'package:bunga_player/screens/control_section/rename_control.dart';
@@ -51,13 +52,13 @@ class _ControlSectionState extends State<ControlSection> {
 
   @override
   Widget build(BuildContext context) {
-    bool hasUserName = Preferences().get<String>('user_name') != null;
     final body = Navigator(
-      initialRoute: 'control:${hasUserName ? 'welcome' : 'rename'}',
+      initialRoute: 'control:init',
       key: _navigatorStateKey,
       onGenerateRoute: (settings) {
         final arguments = settings.arguments as Map<String, Object?>?;
         final routes = {
+          'control:init': const InitControl(),
           'control:rename': RenameControl(
               previousName: arguments?['previousName'] as String?),
           'control:welcome': const WelcomeControl(),

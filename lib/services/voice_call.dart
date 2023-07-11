@@ -23,6 +23,12 @@ class VoiceCall {
   factory VoiceCall() => _instance;
 
   VoiceCall._internal() {
+    _setUpBindings();
+
+    _loadSavedVolume();
+  }
+
+  void _setUpBindings() {
     volume.addListener(() {
       mute.value = false;
       _setVolume(volume.value);
@@ -170,9 +176,6 @@ class VoiceCall {
         },
       ),
     );
-
-    // Volume
-    _loadSavedVolume();
   }
 
   final _callStatus = ValueNotifier<CallStatus>(CallStatus.none);

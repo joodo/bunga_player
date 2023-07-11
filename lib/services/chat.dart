@@ -56,8 +56,7 @@ class Chat {
   }
 
   late final StreamChatClient _chatClient;
-  final _currentUserNameNotifier =
-      ValueNotifier<String?>(Preferences().get<String>('user_name'));
+  final _currentUserNameNotifier = ValueNotifier<String?>(null);
   late final currentUserNameNotifier =
       _currentUserNameNotifier.createReadonly();
 
@@ -66,6 +65,7 @@ class Chat {
       Tokens().streamIO.appKey,
       logLevel: Level.WARNING,
     );
+    _currentUserNameNotifier.value = Preferences().get<String>('user_name');
     updateLoginInfo();
   }
 
