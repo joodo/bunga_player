@@ -121,7 +121,7 @@ class _CallControlState extends State<CallControl> {
           case CallStatus.none:
             return Builder(
               builder: (context) {
-                Future.delayed(Duration.zero, Navigator.of(context).pop);
+                Future.microtask(Navigator.of(context).pop);
                 return const SizedBox.shrink();
               },
             );

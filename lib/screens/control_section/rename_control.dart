@@ -20,14 +20,8 @@ class _RenameControlState extends State<RenameControl> {
   void initState() {
     super.initState();
 
-    // Auto login
-    Future.delayed(Duration.zero, () {
-      final savedUserName = Preferences().get<String>('user_name');
-      if (savedUserName != null) {
-        _onSubmit(savedUserName);
-      } else {
-        UINotifiers().hintText.value = '怎样称呼你？';
-      }
+    Future.microtask(() {
+      UINotifiers().hintText.value = '怎样称呼你？';
     });
 
     if (widget.previousName != null) {
