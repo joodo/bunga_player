@@ -14,7 +14,6 @@ import 'package:flutter/foundation.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart' as media_kit;
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:wakelock/wakelock.dart';
 import 'package:window_manager/window_manager.dart';
 
 class VideoPlayer with WindowListener {
@@ -66,25 +65,18 @@ class VideoPlayer with WindowListener {
   final subPosition = ValueNotifierWithReset<double>(100.0); // sub-pos=<0-150>
 
   void _setUpBindings() {
-    duration.bind(_player.streams.duration);
-    buffer.bind(_player.streams.buffer);
-    position.bind(_player.streams.position, _player.seek);
-    isPlaying.bind(_player.streams.playing, (play) {
+    duration.bind(_player.stream.duration);
+    buffer.bind(_player.stream.buffer);
+    position.bind(_player.stream.position, _player.seek);
+    isPlaying.bind(_player.stream.playing, (play) {
       play ? _player.play() : _player.pause();
     });
-    tracks.bind(_player.streams.tracks);
-    track.bind(_player.streams.track);
+    tracks.bind(_player.stream.tracks);
+    track.bind(_player.stream.track);
 
-    _player.streams.log.listen(
+    _player.stream.log.listen(
         (event) => logger.i('Player log: [${event.prefix}]${event.text}'));
 
-    isPlaying.addListener(() {
-      if (isPlaying.value) {
-        Wakelock.enable();
-      } else {
-        Wakelock.disable();
-      }
-    });
     volume.addListener(() {
       isMute.value = false;
       _player.setVolume(volume.value);
@@ -167,7 +159,7 @@ class VideoPlayer with WindowListener {
     if (!success) throw 'All source tested, no one success';
 
     // wait for video loaded
-    await for (var buffering in _player.streams.buffering) {
+    await for (var buffering in _player.stream.buffering) {
       if (!buffering) break;
     }
 

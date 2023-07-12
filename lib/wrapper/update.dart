@@ -59,7 +59,6 @@ class UpdateWrapper extends StatelessWidget {
             logger.i('Update status: $status');
             if (status == UpdatStatus.available ||
                 status == UpdatStatus.availableWithChangelog) {
-              // TODO: Why delay?
               Future.microtask(() => showSnackBar('检查到更新，正在下载…'));
             }
           },

@@ -28,7 +28,10 @@ class _PlayerSectionState extends State<PlayerSection> {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          media_kit.Video(controller: VideoPlayer().controller),
+          media_kit.Video(
+            controller: VideoPlayer().controller,
+            wakelock: true,
+          ),
           ValueListenableBuilder<String?>(
             valueListenable: UINotifiers().hintText,
             builder: (context, text, child) => AnimatedOpacity(
