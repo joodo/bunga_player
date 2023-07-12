@@ -104,6 +104,7 @@ class MainControl extends StatelessWidget {
                               .loadBiliEntry(BiliEntry.fromHash(
                                   VideoPlayer().videoHashNotifier.value!))
                               .last;
+                          await PlayerController().askPosition();
                         } catch (e) {
                           logger.w(e);
                         } finally {

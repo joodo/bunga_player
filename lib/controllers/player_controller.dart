@@ -38,6 +38,7 @@ class PlayerController {
       await for (var hintText in loadBiliEntry(BiliEntry.fromHash(videoHash))) {
         UINotifiers().hintText.value = hintText;
       }
+      await PlayerController().askPosition();
     } catch (e) {
       logger.e(e);
     } finally {

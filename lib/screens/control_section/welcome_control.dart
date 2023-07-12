@@ -75,7 +75,6 @@ class _WelcomeControlState extends State<WelcomeControl> {
       );
       PlayerController().askPosition();
 
-      UINotifiers().hintText.value = null;
       _onVideoLoaded();
     } catch (e) {
       if (e is! NoFileSelectedException) {
@@ -152,6 +151,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
   }
 
   void _onVideoLoaded() {
+    UINotifiers().hintText.value = null;
     Navigator.of(context).popAndPushNamed('control:main');
   }
 }
