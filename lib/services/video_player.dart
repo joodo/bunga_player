@@ -159,9 +159,7 @@ class VideoPlayer with WindowListener {
     if (!success) throw 'All source tested, no one success';
 
     // wait for video loaded
-    await for (var buffering in _player.stream.buffering) {
-      if (!buffering) break;
-    }
+    await _player.stream.buffer.first;
 
     // load audio if exist
     if (biliEntry.sources.audio != null) {
