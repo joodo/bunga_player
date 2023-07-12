@@ -7,7 +7,6 @@ import 'package:bunga_player/services/snack_bar.dart';
 import 'package:bunga_player/services/tokens.dart';
 import 'package:bunga_player/utils/value_listenable.dart';
 import 'package:flutter/foundation.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:stream_chat_flutter_core/stream_chat_flutter_core.dart';
 
 enum CallStatus {
@@ -142,11 +141,13 @@ class VoiceCall {
   final _callChannelUsers = <int>{};
   Future<void> init() async {
     // Mic permission
+    /*
     try {
       await [Permission.microphone].request();
     } catch (e) {
       logger.e(e);
     }
+    */
 
     // Engine
     await _agoraEngine.initialize(RtcEngineContext(

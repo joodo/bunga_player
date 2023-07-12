@@ -10,7 +10,6 @@ list(APPEND FLUTTER_PLUGIN_LIST
   iris_method_channel
   media_kit_libs_windows_video
   media_kit_video
-  permission_handler_windows
   rive_common
   screen_retriever
   url_launcher_windows
