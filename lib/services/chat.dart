@@ -66,7 +66,7 @@ class Chat {
       logLevel: Level.WARNING,
     );
     _currentUserNameNotifier.value = Preferences().get<String>('user_name');
-    updateLoginInfo();
+    await updateLoginInfo();
   }
 
   Future<void> updateLoginInfo() async {

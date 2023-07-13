@@ -30,7 +30,7 @@ class InitControl extends StatelessWidget {
     await Tokens().init();
 
     // [2]
-    await Chat().init();
-    await VoiceCall().init();
+    Chat().init();
+    VoiceCall().init();
   }
 }
