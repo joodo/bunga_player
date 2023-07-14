@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:bunga_player/models/bili_entry.dart';
+import 'package:bunga_player/services/get_it.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/utils/value_listenable.dart';
@@ -182,8 +183,8 @@ class VideoPlayer with WindowListener {
     await _controller.waitUntilFirstFrameRendered;
     _videoHashNotifier.value = null;
 
-    final info = await PackageInfo.fromPlatform();
-    windowManager.setTitle(info.appName);
+    final appName = getIt<PackageInfo>().appName;
+    windowManager.setTitle(appName);
   }
 
   void setAudioTrack(String? id) {

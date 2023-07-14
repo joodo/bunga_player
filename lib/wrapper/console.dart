@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:bunga_player/services/chat.dart';
+import 'package:bunga_player/services/get_it.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/snack_bar.dart';
@@ -160,25 +161,21 @@ Widget _padding(Widget child) => Padding(
 class _VariablesView extends StatelessWidget {
   final _jsonEncoder = const JsonEncoder.withIndent('  ');
 
-  late final _variables = <String, Future<String?> Function()>{
-    'Current verion': () async {
-      final info = await PackageInfo.fromPlatform();
-      return info.version;
-    },
-    'Tokens': () => Future.value(_jsonEncoder.convert({
+  late final _variables = <String, String? Function()>{
+    'Current verion': () => getIt<PackageInfo>().version,
+    'Tokens': () => _jsonEncoder.convert({
           'bunga': Tokens().bunga.toJson(),
           'stream': Tokens().streamIO.toJson(),
           'agora': Tokens().agora.toJson(),
-        })),
-    'Chat User Name': () => Future.value(Chat().currentUserNameNotifier.value),
-    'Chat Channel': () => Future.value(_jsonEncoder.convert({
+        }),
+    'Chat User Name': () => Chat().currentUserNameNotifier.value,
+    'Chat Channel': () => _jsonEncoder.convert({
           'id': Chat().currentChannelNotifier.value?.id,
           if (Chat().currentChannelNotifier.value != null)
             ...Chat().currentChannelNotifier.value!.extraData,
-        })),
-    'Video Hash': () => Future.value(VideoPlayer().videoHashNotifier.value),
-    'Call Status': () =>
-        Future.value(VoiceCall().callStatusNotifier.value.name),
+        }),
+    'Video Hash': () => VideoPlayer().videoHashNotifier.value,
+    'Call Status': () => VoiceCall().callStatusNotifier.value.name,
   };
 
   @override
@@ -244,7 +241,7 @@ class _VariablesView extends StatelessWidget {
 }
 
 class _TableValue extends StatefulWidget {
-  final Future<String?> Function() func;
+  final String? Function() func;
 
   const _TableValue({required this.func});
 
@@ -254,15 +251,7 @@ class _TableValue extends StatefulWidget {
 
 class _TableValueState extends State<_TableValue> {
   bool _isHovered = false;
-  String? _text;
-
-  @override
-  void initState() {
-    super.initState();
-    widget.func().then((value) => setState(() {
-          _text = value;
-        }));
-  }
+  late String? _text = widget.func();
 
   @override
   Widget build(BuildContext context) {
@@ -297,9 +286,9 @@ class _TableValueState extends State<_TableValue> {
                   ),
                   IconButton(
                     icon: const Icon(Icons.refresh),
-                    onPressed: () => widget.func().then((value) => setState(() {
-                          _text = value;
-                        })),
+                    onPressed: () => setState(() {
+                      _text = widget.func();
+                    }),
                   ),
                 ],
               ),
