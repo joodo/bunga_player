@@ -204,7 +204,7 @@ class _VariablesView extends StatelessWidget {
         0: IntrinsicColumnWidth(),
         1: FlexColumnWidth(),
       },
-      children: Preferences().keys.map((key) {
+      children: getIt<Preferences>().keys.map((key) {
         if (key == 'watch_progress') {
           return TableRow(
             children: [
@@ -216,7 +216,7 @@ class _VariablesView extends StatelessWidget {
         return TableRow(
           children: [
             _padding(Text(key)),
-            _padding(Text(Preferences().get(key).toString())),
+            _padding(Text(getIt<Preferences>().get(key).toString())),
           ],
         );
       }).toList(),

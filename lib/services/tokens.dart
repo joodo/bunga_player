@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:bunga_player/constants/global_keys.dart';
+import 'package:bunga_player/services/get_it.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/utils/http_response.dart';
 import 'package:flutter/material.dart';
@@ -22,10 +23,10 @@ class Tokens {
   late AgoraToken agora;
 
   Future<void> init() async {
-    String? clientID = Preferences().get<String>('client_id');
+    String? clientID = getIt<Preferences>().get<String>('client_id');
     if (clientID == null) {
       clientID = const Uuid().v4();
-      Preferences().set('client_id', clientID);
+      getIt<Preferences>().set('client_id', clientID);
     }
 
     http.Response? response;

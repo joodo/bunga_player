@@ -1,6 +1,7 @@
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:bunga_player/services/chat.dart';
+import 'package:bunga_player/services/get_it.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/snack_bar.dart';
@@ -31,7 +32,7 @@ class VoiceCall {
     volume.addListener(() {
       mute.value = false;
       _setVolume(volume.value);
-      Preferences().set('call_volume', volume.value);
+      getIt<Preferences>().set('call_volume', volume.value);
     });
     mute.addListener(
       () {
@@ -252,7 +253,7 @@ class VoiceCall {
   final volume = ValueNotifier<int>(100);
   final mute = ValueNotifier<bool>(false);
   void _loadSavedVolume() {
-    final savedVolume = Preferences().get<int>('call_volume');
+    final savedVolume = getIt<Preferences>().get<int>('call_volume');
     if (savedVolume != null) volume.value = savedVolume;
   }
 

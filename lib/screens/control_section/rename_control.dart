@@ -1,4 +1,5 @@
 import 'package:bunga_player/services/chat.dart';
+import 'package:bunga_player/services/get_it.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/snack_bar.dart';
@@ -76,7 +77,7 @@ class _RenameControlState extends State<RenameControl> {
       showSnackBar('改名失败');
     });
 
-    Preferences().set('user_name', userName);
+    getIt<Preferences>().set('user_name', userName);
     Navigator.of(context).popAndPushNamed('control:welcome');
   }
 }

@@ -2,15 +2,10 @@ import 'package:bunga_player/services/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Preferences {
-  // Singleton
-  static final _instance = Preferences._internal();
-  factory Preferences() => _instance;
-
-  Preferences._internal();
-
-  late final SharedPreferences _pref;
-  Future<void> init() async {
-    _pref = await SharedPreferences.getInstance();
+  Preferences(this._pref);
+  final SharedPreferences _pref;
+  static Future<Preferences> create() async {
+    return Preferences(await SharedPreferences.getInstance());
   }
 
   Future<bool> set(String key, dynamic value) async {

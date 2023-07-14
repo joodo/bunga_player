@@ -14,7 +14,7 @@ void main() async {
   await windowManager.ensureInitialized();
   windowManager.setMinimumSize(const Size(800, 600));
 
-  await Preferences().init();
+  getIt.registerSingleton<Preferences>(await Preferences.create());
   getIt.registerSingleton<PackageInfo>(await PackageInfo.fromPlatform());
 
   final home = wrap(const MainScreen());

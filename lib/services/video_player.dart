@@ -53,7 +53,7 @@ class VideoPlayer with WindowListener {
   final volume = ValueNotifier<double>(100.0);
   final isMute = ValueNotifier<bool>(false);
   void _loadSavedVolume() {
-    final savedVolume = Preferences().get<double>('video_volume');
+    final savedVolume = getIt<Preferences>().get<double>('video_volume');
     if (savedVolume != null) volume.value = savedVolume;
   }
 
@@ -81,7 +81,7 @@ class VideoPlayer with WindowListener {
     volume.addListener(() {
       isMute.value = false;
       _player.setVolume(volume.value);
-      Preferences().set('video_volume', volume.value);
+      getIt<Preferences>().set('video_volume', volume.value);
     });
     isMute.addListener(() {
       if (isMute.value) {
@@ -232,7 +232,7 @@ class VideoPlayer with WindowListener {
 
   void _loadSavedProgress() {
     _watchProgress = Map.castFrom(
-        jsonDecode(Preferences().get<String>('watch_progress') ?? '{}'));
+        jsonDecode(getIt<Preferences>().get<String>('watch_progress') ?? '{}'));
 
     Timer.periodic(const Duration(seconds: 5), (timer) {
       final hash = videoHashNotifier.value;
@@ -249,6 +249,7 @@ class VideoPlayer with WindowListener {
   // TODO: Should change to AppLifecycleListener
   // https://github.com/flutter/flutter/issues/30735
   void onWindowClose() async {
-    await Preferences().set('watch_progress', jsonEncode(_watchProgress));
+    await getIt<Preferences>()
+        .set('watch_progress', jsonEncode(_watchProgress));
   }
 }

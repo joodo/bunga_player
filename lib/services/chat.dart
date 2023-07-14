@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:bunga_player/services/get_it.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/snack_bar.dart';
@@ -65,7 +66,8 @@ class Chat {
       Tokens().streamIO.appKey,
       logLevel: Level.WARNING,
     );
-    _currentUserNameNotifier.value = Preferences().get<String>('user_name');
+    _currentUserNameNotifier.value =
+        getIt<Preferences>().get<String>('user_name');
     await updateLoginInfo();
   }
 
@@ -81,7 +83,7 @@ class Chat {
   }
 
   Future<void> clearUserName() async {
-    await Preferences().remove('user_name');
+    await getIt<Preferences>().remove('user_name');
     _currentUserNameNotifier.value = null;
   }
 
