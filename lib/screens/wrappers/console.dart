@@ -1,17 +1,20 @@
 import 'dart:async';
-import 'dart:convert';
 
-import 'package:bunga_player/services/chat.dart';
-import 'package:bunga_player/services/get_it.dart';
+import 'package:bunga_player/models/app_key/app_key.dart';
+import 'package:bunga_player/providers/current_channel.dart';
+import 'package:bunga_player/providers/current_user.dart';
+import 'package:bunga_player/providers/voice_call.dart';
+import 'package:bunga_player/screens/dialogs/host.dart';
+import 'package:bunga_player/screens/wrappers/restart.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/preferences.dart';
-import 'package:bunga_player/services/snack_bar.dart';
-import 'package:bunga_player/services/tokens.dart';
-import 'package:bunga_player/services/video_player.dart';
-import 'package:bunga_player/services/voice_call.dart';
+import 'package:bunga_player/services/services.dart';
+import 'package:bunga_player/providers/toast.dart';
+import 'package:bunga_player/providers/video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:provider/provider.dart';
 
 class ConsoleWrapper extends StatefulWidget {
   final Widget child;
@@ -29,7 +32,7 @@ class _ConsoleWrapperState extends State<ConsoleWrapper> {
   @override
   void initState() {
     super.initState();
-    _subscribe = loggerStream.listen((logs) {
+    _subscribe = logger.stream.listen((logs) {
       _logTextController.text += '${logs.join('\n')}\n';
     });
   }
@@ -42,6 +45,8 @@ class _ConsoleWrapperState extends State<ConsoleWrapper> {
 
   @override
   Widget build(BuildContext context) {
+    final showSnackBar = context.read<Toast>().show;
+
     final logView = TextField(
       controller: _logTextController,
       decoration: const InputDecoration(
@@ -59,7 +64,9 @@ class _ConsoleWrapperState extends State<ConsoleWrapper> {
       children: [
         FilledButton(
           onPressed: () async {
-            final currentID = Tokens().bunga.clientID;
+            final currentUser = context.read<CurrentUser>();
+
+            final currentID = currentUser.id;
             final split = currentID.split('__');
 
             late final String newID;
@@ -69,12 +76,32 @@ class _ConsoleWrapperState extends State<ConsoleWrapper> {
               newID = '${split.first}__${int.parse(split.last) + 1}';
             }
 
-            await Tokens().setClientID(newID);
-            await Chat().updateLoginInfo();
+            await currentUser.changeID(newID);
 
-            showSnackBar('Update to $newID');
+            showSnackBar('User ID has changed to $newID');
           },
-          child: const Text('Change user id'),
+          child: const Text('Change User ID'),
+        ),
+        const SizedBox(height: 8),
+        FilledButton(
+          onPressed: () async {
+            final preferences = getService<Preferences>();
+            final newHost = await showDialog<String>(
+              context: context,
+              builder: (context) =>
+                  HostDialog(host: preferences.get('bunga_host')),
+            );
+
+            if (newHost == null || !context.mounted) return;
+            preferences.set('bunga_host', newHost);
+            RestartWrapper.restartApp(context);
+          },
+          child: const Text('Change Bunga Host'),
+        ),
+        const SizedBox(height: 8),
+        FilledButton(
+          onPressed: () => throw 'Exception!',
+          child: const Text('Throw an exception'),
         ),
       ],
     );
@@ -159,23 +186,15 @@ Widget _padding(Widget child) => Padding(
     );
 
 class _VariablesView extends StatelessWidget {
-  final _jsonEncoder = const JsonEncoder.withIndent('  ');
-
-  late final _variables = <String, String? Function()>{
-    'Current verion': () => getIt<PackageInfo>().version,
-    'Tokens': () => _jsonEncoder.convert({
-          'bunga': Tokens().bunga.toJson(),
-          'stream': Tokens().streamIO.toJson(),
-          'agora': Tokens().agora.toJson(),
-        }),
-    'Chat User Name': () => Chat().currentUserNameNotifier.value,
-    'Chat Channel': () => _jsonEncoder.convert({
-          'id': Chat().currentChannelNotifier.value?.id,
-          if (Chat().currentChannelNotifier.value != null)
-            ...Chat().currentChannelNotifier.value!.extraData,
-        }),
-    'Video Hash': () => VideoPlayer().videoHashNotifier.value,
-    'Call Status': () => VoiceCall().callStatusNotifier.value.name,
+  late final _variables = <String, String? Function(BuildContext context)>{
+    'App Key': (context) => context.read<AppKey>().toString(),
+    'Current verion': (context) => getService<PackageInfo>().version,
+    'Chat User Name': (context) => context.read<CurrentUser>().toString(),
+    'Chat Channel': (context) => context.read<CurrentChannel>().toString(),
+    'Video Hash': (context) =>
+        context.read<VideoPlayer>().videoHashNotifier.value ??
+        'No Video Playing',
+    'Call Status': (context) => context.read<VoiceCall>().callStatus.name,
   };
 
   @override
@@ -204,7 +223,7 @@ class _VariablesView extends StatelessWidget {
         0: IntrinsicColumnWidth(),
         1: FlexColumnWidth(),
       },
-      children: getIt<Preferences>().keys.map((key) {
+      children: getService<Preferences>().keys.map((key) {
         if (key == 'watch_progress') {
           return TableRow(
             children: [
@@ -216,7 +235,7 @@ class _VariablesView extends StatelessWidget {
         return TableRow(
           children: [
             _padding(Text(key)),
-            _padding(Text(getIt<Preferences>().get(key).toString())),
+            _padding(Text(getService<Preferences>().get(key).toString())),
           ],
         );
       }).toList(),
@@ -241,7 +260,7 @@ class _VariablesView extends StatelessWidget {
 }
 
 class _TableValue extends StatefulWidget {
-  final String? Function() func;
+  final String? Function(BuildContext context) func;
 
   const _TableValue({required this.func});
 
@@ -251,10 +270,11 @@ class _TableValue extends StatefulWidget {
 
 class _TableValueState extends State<_TableValue> {
   bool _isHovered = false;
-  late String? _text = widget.func();
+  late String? _text = widget.func(context);
 
   @override
   Widget build(BuildContext context) {
+    final showSnackBar = context.read<Toast>().show;
     return MouseRegion(
       onEnter: (event) => setState(() {
         _isHovered = true;
@@ -287,7 +307,7 @@ class _TableValueState extends State<_TableValue> {
                   IconButton(
                     icon: const Icon(Icons.refresh),
                     onPressed: () => setState(() {
-                      _text = widget.func();
+                      _text = widget.func(context);
                     }),
                   ),
                 ],

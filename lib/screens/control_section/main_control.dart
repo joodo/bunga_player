@@ -1,22 +1,28 @@
 import 'package:bunga_player/actions/play.dart';
-import 'package:bunga_player/models/bili_entry.dart';
-import 'package:bunga_player/controllers/player_controller.dart';
+import 'package:bunga_player/services/bilibili.dart';
+import 'package:bunga_player/providers/player_controller.dart';
 import 'package:bunga_player/mocks/popup_menu.dart' as mock;
 import 'package:bunga_player/mocks/slider.dart' as mock;
-import 'package:bunga_player/services/chat.dart';
-import 'package:bunga_player/controllers/ui_notifiers.dart';
+import 'package:bunga_player/providers/current_channel.dart';
+import 'package:bunga_player/providers/ui.dart';
+import 'package:bunga_player/providers/voice_call.dart';
 import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/services/video_player.dart';
-import 'package:bunga_player/services/voice_call.dart';
+import 'package:bunga_player/providers/video_player.dart';
 import 'package:bunga_player/utils/duration.dart';
 import 'package:flutter/material.dart';
 import 'package:multi_value_listenable_builder/multi_value_listenable_builder.dart';
+import 'package:provider/provider.dart';
 
 class MainControl extends StatelessWidget {
   const MainControl({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final currentChannel = context.read<CurrentChannel>();
+    final isBusy = context.read<IsBusy>();
+    final videoPlayer = context.read<VideoPlayer>();
+    final playerController = context.read<PlayerController>();
+
     return Stack(
       children: [
         Row(
@@ -24,7 +30,7 @@ class MainControl extends StatelessWidget {
             const SizedBox(width: 8),
             // Play button
             ValueListenableBuilder(
-              valueListenable: VideoPlayer().isPlaying,
+              valueListenable: videoPlayer.isPlaying,
               builder: (context, isPlaying, child) => IconButton(
                 icon: isPlaying
                     ? const Icon(Icons.pause)
@@ -38,19 +44,19 @@ class MainControl extends StatelessWidget {
 
             // Volume section
             ValueListenableBuilder(
-              valueListenable: VideoPlayer().isMute,
+              valueListenable: videoPlayer.isMute,
               builder: (context, isMute, child) => IconButton(
                 icon: isMute
                     ? const Icon(Icons.volume_mute)
                     : const Icon(Icons.volume_up),
-                onPressed: () => VideoPlayer().isMute.value = !isMute,
+                onPressed: () => videoPlayer.isMute.value = !isMute,
               ),
             ),
             const SizedBox(width: 8),
             MultiValueListenableBuilder(
               valueListenables: [
-                VideoPlayer().volume,
-                VideoPlayer().isMute,
+                videoPlayer.volume,
+                videoPlayer.isMute,
               ],
               builder: (context, values, child) => SizedBox(
                 width: 100,
@@ -58,7 +64,7 @@ class MainControl extends StatelessWidget {
                   value: values[1] ? 0.0 : values[0],
                   max: 100.0,
                   label: '${values[0].toInt()}%',
-                  onChanged: (value) => VideoPlayer().volume.value = value,
+                  onChanged: (value) => videoPlayer.volume.value = value,
                   focusNode: FocusNode(canRequestFocus: false),
                   useRootOverlay: true,
                 ),
@@ -87,9 +93,7 @@ class MainControl extends StatelessWidget {
               useRootOverlay: true,
               itemBuilder: (context) => [
                 // Reload button
-                if (!(VideoPlayer()
-                        .videoHashNotifier
-                        .value
+                if (!(videoPlayer.videoHashNotifier.value
                         ?.startsWith('local') ??
                     true))
                   mock.PopupMenuItem(
@@ -99,16 +103,16 @@ class MainControl extends StatelessWidget {
                       onTap: () async {
                         Navigator.of(context, rootNavigator: true).pop();
                         try {
-                          UINotifiers().isBusy.value = true;
-                          await PlayerController()
+                          isBusy.value = true;
+                          await playerController
                               .loadBiliEntry(BiliEntry.fromHash(
-                                  VideoPlayer().videoHashNotifier.value!))
+                                  videoPlayer.videoHashNotifier.value!))
                               .last;
-                          await PlayerController().askPosition();
+                          await playerController.askPosition();
                         } catch (e) {
                           logger.w(e);
                         } finally {
-                          UINotifiers().isBusy.value = false;
+                          isBusy.value = false;
                         }
                       },
                     ),
@@ -159,12 +163,12 @@ class MainControl extends StatelessWidget {
 
                       final navigator = Navigator.of(context);
 
-                      UINotifiers().isBusy.value = true;
-                      await Chat().leaveRoom();
-                      await VideoPlayer().stop();
+                      isBusy.value = true;
+                      await currentChannel.leave();
+                      await videoPlayer.stop();
 
                       navigator.popAndPushNamed('control:welcome');
-                      UINotifiers().isBusy.value = false;
+                      isBusy.value = false;
                     },
                   ),
                 ),
@@ -173,16 +177,15 @@ class MainControl extends StatelessWidget {
             const SizedBox(width: 16),
 
             // Full screen button
-            ValueListenableBuilder(
-              valueListenable: UINotifiers().isFullScreen,
+            Consumer<IsFullScreen>(
               builder: (context, isFullScreen, child) => IconButton(
-                icon: isFullScreen
+                icon: isFullScreen.value
                     ? const Icon(Icons.fullscreen_exit)
                     : const Icon(Icons.fullscreen),
-                onPressed: () => UINotifiers().isFullScreen.value =
-                    !UINotifiers().isFullScreen.value,
+                onPressed: () => isFullScreen.value = !isFullScreen.value,
               ),
             ),
+
             const SizedBox(width: 8),
           ],
         ),
@@ -230,6 +233,37 @@ class _CallButtonState extends State<CallButton> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    return Consumer<VoiceCall>(
+      builder: (context, voiceCall, child) => switch (voiceCall.callStatus) {
+        CallStatus.none => IconButton(
+            icon: const Icon(Icons.call),
+            onPressed: () {
+              voiceCall.startAsking();
+              widget.onPressed?.call();
+            },
+          ),
+        CallStatus.callOut || CallStatus.calling => IconButton(
+            style: const ButtonStyle(
+              backgroundColor: MaterialStatePropertyAll<Color>(Colors.green),
+            ),
+            color: Colors.white70,
+            icon: const Icon(Icons.call),
+            onPressed: widget.onPressed,
+          ),
+        CallStatus.callIn => RotationTransition(
+            turns: _animation,
+            child: IconButton(
+              style: const ButtonStyle(
+                backgroundColor: MaterialStatePropertyAll<Color>(Colors.green),
+              ),
+              color: Colors.white70,
+              icon: const Icon(Icons.call),
+              onPressed: widget.onPressed,
+            ),
+          ),
+      },
+    );
+    /*
     return ValueListenableBuilder(
       valueListenable: VoiceCall().callStatusNotifier,
       builder: (context, callStatus, child) {
@@ -268,6 +302,7 @@ class _CallButtonState extends State<CallButton> with TickerProviderStateMixin {
         }
       },
     );
+    */
   }
 }
 
@@ -283,11 +318,12 @@ class _DurationButtonState extends State<DurationButton> {
 
   @override
   Widget build(BuildContext context) {
+    final videoPlayer = context.read<VideoPlayer>();
     return TextButton(
       child: MultiValueListenableBuilder(
         valueListenables: [
-          VideoPlayer().position,
-          VideoPlayer().duration,
+          videoPlayer.position,
+          videoPlayer.duration,
         ],
         builder: (context, values, child) {
           final position = values[0] as Duration;

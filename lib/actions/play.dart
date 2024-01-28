@@ -1,7 +1,8 @@
-import 'package:bunga_player/controllers/player_controller.dart';
-import 'package:bunga_player/controllers/ui_notifiers.dart';
-import 'package:bunga_player/services/video_player.dart';
+import 'package:bunga_player/providers/player_controller.dart';
+import 'package:bunga_player/providers/ui.dart';
+import 'package:bunga_player/providers/video_player.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class SetVolumeIntent extends Intent {
   const SetVolumeIntent(this.amount, {this.isIncrease = false});
@@ -9,19 +10,20 @@ class SetVolumeIntent extends Intent {
   final bool isIncrease;
 }
 
-class SetVolumeAction extends Action<SetVolumeIntent> {
+class SetVolumeAction extends ContextAction<SetVolumeIntent> {
   @override
-  void invoke(SetVolumeIntent intent) {
+  void invoke(SetVolumeIntent intent, [BuildContext? context]) {
+    final videoPlayer = context!.read<VideoPlayer>();
     if (intent.isIncrease) {
-      var volume = VideoPlayer().volume.value + intent.amount;
+      var volume = videoPlayer.volume.value + intent.amount;
       volume = volume > 100.0
           ? 100
           : volume < 0
               ? 0
               : volume;
-      VideoPlayer().volume.value = volume;
+      videoPlayer.volume.value = volume;
     } else {
-      VideoPlayer().volume.value = intent.amount;
+      videoPlayer.volume.value = intent.amount;
     }
   }
 }
@@ -32,43 +34,50 @@ class SetPositionIntent extends Intent {
   final bool isIncrease;
 }
 
-class SetPositionAction extends Action<SetPositionIntent> {
+class SetPositionAction extends ContextAction<SetPositionIntent> {
   @override
-  void invoke(SetPositionIntent intent) {
+  void invoke(SetPositionIntent intent, [BuildContext? context]) {
+    final videoPlayer = context!.read<VideoPlayer>();
+    final playerController = context.read<PlayerController>();
     if (intent.isIncrease) {
-      var position = VideoPlayer().position.value + intent.duration;
-      position = position > VideoPlayer().duration.value
-          ? VideoPlayer().duration.value
+      var position = videoPlayer.position.value + intent.duration;
+      position = position > videoPlayer.duration.value
+          ? videoPlayer.duration.value
           : position < Duration.zero
               ? Duration.zero
               : position;
-      VideoPlayer().position.value = position;
+      videoPlayer.position.value = position;
     } else {
-      VideoPlayer().position.value = intent.duration;
+      videoPlayer.position.value = intent.duration;
     }
-    PlayerController().sendPlayerStatus();
+    playerController.sendPlayerStatus();
   }
 
   @override
-  bool isEnabled(SetPositionIntent intent) =>
-      !VideoPlayer().isStoppedNotifier.value;
+  bool isEnabled(SetPositionIntent intent, [BuildContext? context]) =>
+      !context!.read<VideoPlayer>().isStoppedNotifier.value;
 }
 
 class TogglePlayIntent extends Intent {
   const TogglePlayIntent();
 }
 
-class TogglePlayAction extends Action<TogglePlayIntent> {
+class TogglePlayAction extends ContextAction<TogglePlayIntent> {
   @override
-  void invoke(TogglePlayIntent intent) {
-    VideoPlayer().isPlaying.value = !VideoPlayer().isPlaying.value;
-    PlayerController().sendPlayerStatus();
+  void invoke(TogglePlayIntent intent, [BuildContext? context]) {
+    final videoPlayer = context!.read<VideoPlayer>();
+    final playerController = context.read<PlayerController>();
+    videoPlayer.isPlaying.value = !videoPlayer.isPlaying.value;
+    playerController.sendPlayerStatus();
   }
 
   @override
-  bool isEnabled(TogglePlayIntent intent) =>
-      !VideoPlayer().isStoppedNotifier.value &&
-      !PlayerController().justToggledByRemote;
+  bool isEnabled(TogglePlayIntent intent, [BuildContext? context]) {
+    final videoPlayer = context!.read<VideoPlayer>();
+    final playerController = context.read<PlayerController>();
+    return !videoPlayer.isStoppedNotifier.value &&
+        !playerController.justToggledByRemote;
+  }
 }
 
 class SetFullScreenIntent extends Intent {
@@ -76,12 +85,17 @@ class SetFullScreenIntent extends Intent {
   final bool isFullScreen;
 }
 
+class SetFullScreenAction extends ContextAction<SetFullScreenIntent> {
+  @override
+  void invoke(SetFullScreenIntent intent, [BuildContext? context]) {
+    context!.read<IsFullScreen>().value = intent.isFullScreen;
+    context.read<IsControlSectionHidden>().value = false;
+  }
+}
+
 final bindings = <Type, Action<Intent>>{
   SetVolumeIntent: SetVolumeAction(),
   SetPositionIntent: SetPositionAction(),
   TogglePlayIntent: TogglePlayAction(),
-  SetFullScreenIntent: CallbackAction<SetFullScreenIntent>(
-    onInvoke: (SetFullScreenIntent intent) =>
-        UINotifiers().isFullScreen.value = intent.isFullScreen,
-  ),
+  SetFullScreenIntent: SetFullScreenAction(),
 };

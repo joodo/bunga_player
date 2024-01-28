@@ -1,9 +1,11 @@
 import 'dart:ui';
 
-import 'package:bunga_player/actions/popmoji.dart';
 import 'package:bunga_player/constants/constants.dart';
+import 'package:bunga_player/providers/current_channel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:provider/provider.dart';
+import 'package:stream_chat_flutter_core/stream_chat_flutter_core.dart';
 
 class PopmojiControl extends StatelessWidget {
   const PopmojiControl({super.key});
@@ -65,7 +67,9 @@ class _EmojiButton extends StatelessWidget {
     return IconButton(
       icon: svg,
       onPressed: () {
-        sendPopmoji(code);
+        // send popmoji
+        final currentChannel = context.read<CurrentChannel>();
+        currentChannel.send(Message(text: 'popmoji $code'));
         _showThrowEmojiAnimation(context);
         Navigator.of(context).pop();
       },

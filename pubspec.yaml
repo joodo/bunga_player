@@ -5,11 +5,11 @@ description: A video player which can let users watch together.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
 
-version: 0.5.1
+version: 0.6.0
 
 
 environment:
-  sdk: '>=2.18.4 <3.0.0'
+  sdk: '>=3.2.0 <4.0.0'
 
 
 dependencies:
@@ -17,66 +17,60 @@ dependencies:
     sdk: flutter
 
   # video play
-  media_kit: ^1.0.0
-  media_kit_native_event_loop: ^1.0.4
-  media_kit_video: ^1.0.0
-  media_kit_libs_macos_video: ^1.0.5
-  media_kit_libs_windows_video: ^1.0.2
-  ffi: ^2.0.2
+  media_kit: ^1.1.10+1
+  media_kit_native_event_loop: ^1.0.8
+  media_kit_video: ^1.2.4
+  media_kit_libs_macos_video: ^1.1.4
+  media_kit_libs_windows_video: ^1.0.9
+  ffi: ^2.1.0
 
   # Communication
-  stream_chat_flutter_core: ^6.1.0
-  agora_rtc_engine: ^6.2.0
+  stream_chat_flutter_core: ^7.0.1
+  agora_rtc_engine: ^6.2.6
 
   # Update
-  package_info_plus: ^4.0.0
-  updat: ^1.3.0
+  package_info_plus: ^5.0.1
+  updat: ^1.3.2
 
   # Chatroom
   crclib: ^3.0.0
 
   # UI
-  bot_toast: ^4.0.3
-  rive: ^0.11.0
+  rive: ^0.12.4
   animated_text_kit: ^4.2.2
-  audioplayers: ^4.0.1
-  flutter_portal: ^1.1.4
+  audioplayers: ^5.2.1 
 
   # Popmoji
-  flutter_svg: ^2.0.6
-  lottie: ^2.4.0
+  flutter_svg: ^2.0.9
+  lottie: ^3.0.0
   fireworks:
     git:
       url: https://github.com/joodo/fireworks
       path: fireworks
 
   # Utils
-  logger: ^1.3.0
-  file_selector: ^1.0.0
-  window_manager: ^0.3.2
-  http: ^1.0.0
-  shared_preferences: ^2.1.1
+  logger: ^2.0.2+1
+  file_selector: ^1.0.2
+  window_manager: ^0.3.7
+  http: ^1.2.0
+  shared_preferences: ^2.2.2
   async: ^2.11.0
   multi_value_listenable_builder: ^0.0.2
-  collection: ^1.17.1
-  uuid: ^3.0.7
+  collection: ^1.18.0
+  uuid: ^4.3.3  
   json_annotation: ^4.8.1
-  get_it: ^7.6.0
-  provider: ^6.0.5
+  get_it: ^7.6.7
+  provider: ^6.1.1
 
 
 dependency_overrides:
-  # solve wakelock: 0.6.2 and package_info_plus 4.0.1 of wakelock_windows
-  win32: ^4.0.0
-  # solve audioplayers 4.1.0 and http 1.0.0
-  http: ^1.0.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^2.0.0
+  flutter_lints: ^3.0.1
   flutter_launcher_icons: ^0.13.1
-  build_runner: ^2.4.6
+  build_runner: ^2.4.8
   json_serializable: ^6.7.1
 
 

@@ -1,12 +1,13 @@
 import 'package:bunga_player/mocks/slider.dart' as mock;
 import 'package:bunga_player/mocks/dropdown.dart' as mock;
-import 'package:bunga_player/services/video_player.dart';
+import 'package:bunga_player/providers/video_player.dart';
 import 'package:bunga_player/screens/control_section/dropdown.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:multi_value_listenable_builder/multi_value_listenable_builder.dart';
+import 'package:provider/provider.dart';
 
 enum SubtitleControlUIState {
   delay,
@@ -26,10 +27,11 @@ class _SubtitleControlState extends State<SubtitleControl> {
 
   @override
   Widget build(BuildContext context) {
+    final videoPlayer = context.read<VideoPlayer>();
     final listenable = {
-      SubtitleControlUIState.delay: VideoPlayer().subDelay,
-      SubtitleControlUIState.size: VideoPlayer().subSize,
-      SubtitleControlUIState.position: VideoPlayer().subPosition,
+      SubtitleControlUIState.delay: videoPlayer.subDelay,
+      SubtitleControlUIState.size: videoPlayer.subSize,
+      SubtitleControlUIState.position: videoPlayer.subPosition,
     }[_subtitleUIState]!;
     final minValue = {
       SubtitleControlUIState.delay: -10.0,
@@ -60,8 +62,8 @@ class _SubtitleControlState extends State<SubtitleControl> {
         // Subtitle dropbox
         MultiValueListenableBuilder(
           valueListenables: [
-            VideoPlayer().track,
-            VideoPlayer().tracks,
+            videoPlayer.track,
+            videoPlayer.tracks,
           ],
           builder: (context, values, child) {
             var subtitleTracks = (values[1] as Tracks?)?.subtitle;
@@ -96,12 +98,12 @@ class _SubtitleControlState extends State<SubtitleControl> {
                 value: values[0]?.subtitle.id,
                 onChanged: (subtitleID) async {
                   if (subtitleID != 'OPEN') {
-                    return VideoPlayer().setSubtitleTrack(subtitleID);
+                    return videoPlayer.setSubtitleTrack(subtitleID);
                   }
 
                   final file = await openFile();
                   if (file != null) {
-                    VideoPlayer().addSubtitleTrack(file.path);
+                    videoPlayer.addSubtitleTrack(file.path);
                   }
                 },
               ),

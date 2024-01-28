@@ -1,10 +1,9 @@
-import 'package:bunga_player/services/chat.dart';
-import 'package:bunga_player/services/get_it.dart';
+import 'package:bunga_player/providers/current_user.dart';
+import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/services/preferences.dart';
-import 'package:bunga_player/services/snack_bar.dart';
-import 'package:bunga_player/controllers/ui_notifiers.dart';
+import 'package:bunga_player/providers/toast.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class RenameControl extends StatefulWidget {
   final String? previousName;
@@ -22,7 +21,7 @@ class _RenameControlState extends State<RenameControl> {
     super.initState();
 
     Future.microtask(() {
-      UINotifiers().hintText.value = '怎样称呼你？';
+      context.read<BusinessName>().value = '怎样称呼你？';
     });
 
     if (widget.previousName != null) {
@@ -72,12 +71,11 @@ class _RenameControlState extends State<RenameControl> {
   }
 
   void _onSubmit(String userName) async {
-    Chat().renameUser(userName).onError((error, stackTrace) {
+    context.read<CurrentUser>().rename(userName).onError((error, stackTrace) {
       logger.e(error);
-      showSnackBar('改名失败');
+      context.read<Toast>().show('改名失败');
+      throw error ?? '改名失败';
     });
-
-    getIt<Preferences>().set('user_name', userName);
     Navigator.of(context).popAndPushNamed('control:welcome');
   }
 }

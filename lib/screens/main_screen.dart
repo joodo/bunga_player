@@ -1,10 +1,11 @@
+import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/screens/progress_section/progress_section.dart';
 import 'package:bunga_player/screens/room_section.dart';
 import 'package:bunga_player/screens/control_section/control_section.dart';
 import 'package:bunga_player/screens/player_section/player_section.dart';
-import 'package:bunga_player/controllers/ui_notifiers.dart';
 import 'package:flutter/material.dart';
 import 'package:async/async.dart';
+import 'package:provider/provider.dart';
 
 const kRoomSectionHeight = 36.0;
 const kControlSectionHeight = 64.0;
@@ -21,16 +22,15 @@ class MainScreenState extends State<MainScreen> {
   final _playerSectionKey = GlobalKey<State<PlayerSection>>();
   final _roomSectionKey = GlobalKey<State<RoomSection>>();
   @override
-  Widget build(Object context) {
+  Widget build(BuildContext context) {
     final playerSection = PlayerSection(key: _playerSectionKey);
     final controlSection = ControlSection(key: _controlSectionKey);
     final roomSection = RoomSection(key: _roomSectionKey);
     const progressSection = ProgressSection();
 
-    final body = ValueListenableBuilder(
-      valueListenable: UINotifiers().isFullScreen,
+    final body = Consumer<IsFullScreen>(
       builder: (context, isFullScreen, child) {
-        if (isFullScreen) {
+        if (isFullScreen.value) {
           final hideableUI = Stack(
             fit: StackFit.loose,
             children: [
@@ -99,7 +99,7 @@ class MainScreenState extends State<MainScreen> {
       },
     );
 
-    return Material(
+    return Container(
       color: Colors.black,
       child: body,
     );
@@ -118,34 +118,33 @@ class HideWrapper extends StatefulWidget {
 class _HideWrapperState extends State<HideWrapper> {
   late final RestartableTimer _hideUITimer = RestartableTimer(
     const Duration(seconds: 3),
-    () => UINotifiers().isUIHidden.value = true,
+    () {
+      if (context.mounted) context.read<IsControlSectionHidden>().value = true;
+    },
   );
 
   @override
   void dispose() {
-    // for anime
-    Future.microtask(() {
-      UINotifiers().isUIHidden.value = false;
-      _hideUITimer.cancel();
-    });
+    _hideUITimer.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: UINotifiers().isUIHidden,
-      builder: (context, isUIHidden, child) => MouseRegion(
+    return Consumer<IsControlSectionHidden>(
+      builder: (context, isControlSectionHidden, child) => MouseRegion(
         opaque: false,
-        cursor: isUIHidden ? SystemMouseCursors.none : SystemMouseCursors.basic,
+        cursor: isControlSectionHidden.value
+            ? SystemMouseCursors.none
+            : SystemMouseCursors.basic,
         onEnter: (event) => _hideUITimer.reset(),
         onExit: (event) => _hideUITimer.cancel(),
         onHover: (event) {
           _hideUITimer.reset();
-          UINotifiers().isUIHidden.value = false;
+          isControlSectionHidden.value = false;
         },
         child: AnimatedOpacity(
-          opacity: isUIHidden ? 0.0 : 1.0,
+          opacity: isControlSectionHidden.value ? 0.0 : 1.0,
           curve: Curves.easeInCubic,
           duration: const Duration(milliseconds: 200),
           child: child,

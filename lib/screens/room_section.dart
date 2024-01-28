@@ -1,14 +1,14 @@
 import 'package:bunga_player/actions/open_local_video.dart';
-import 'package:bunga_player/services/chat.dart';
-import 'package:bunga_player/controllers/player_controller.dart';
+import 'package:bunga_player/providers/current_channel.dart';
+import 'package:bunga_player/providers/player_controller.dart';
+import 'package:bunga_player/providers/current_user.dart';
+import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/services/snack_bar.dart';
-import 'package:bunga_player/controllers/ui_notifiers.dart';
-import 'package:bunga_player/services/tokens.dart';
-import 'package:bunga_player/services/video_player.dart';
+import 'package:bunga_player/providers/toast.dart';
+import 'package:bunga_player/providers/video_player.dart';
 import 'package:bunga_player/utils/exceptions.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_portal/flutter_portal.dart';
+import 'package:provider/provider.dart';
 import 'package:stream_chat_flutter_core/stream_chat_flutter_core.dart';
 
 class RoomSection extends StatefulWidget {
@@ -21,14 +21,18 @@ class RoomSection extends StatefulWidget {
 class _RoomSectionState extends State<RoomSection> {
   @override
   Widget build(BuildContext context) {
+    final currentChannel = context.read<CurrentChannel>();
+    final isBusy = context.read<IsBusy>();
+    final videoPlayer = context.read<VideoPlayer>();
+
     return Row(
       children: [
         // Watcher list
         ValueListenableBuilder(
-          valueListenable: Chat().watchersNotifier,
-          builder: (context, value, child) {
-            String text =
-                _getUsersStringExceptMe(Chat().watchersNotifier.value);
+          valueListenable: currentChannel.watchersNotifier,
+          builder: (context, watchers, child) {
+            String text = _getUsersStringExceptId(
+                watchers, context.read<CurrentUser>().id);
             if (text.isEmpty) {
               return const SizedBox.shrink();
             }
@@ -42,28 +46,22 @@ class _RoomSectionState extends State<RoomSection> {
         const Spacer(),
 
         // Unsync hint
-        StreamBuilder<Event?>(
-          stream: Chat().channelUpdateEventStream,
-          initialData: null,
-          builder: (context, eventSnapshot) => ValueListenableBuilder(
-            valueListenable: VideoPlayer().videoHashNotifier,
-            builder: (context, value, child) {
-              final channelData = Chat().channelExtraDataNotifier.value;
-              if (UINotifiers().isBusy.value == true || // loading video
-                  VideoPlayer().isStoppedNotifier.value || // stopped
-                  channelData['hash'] ==
-                      VideoPlayer().videoHashNotifier.value) {
-                return const SizedBox.shrink();
-              }
+        ValueListenableBuilder(
+          valueListenable: currentChannel.channelDataNotifier,
+          builder: (context, channelData, child) {
+            if (isBusy.value == true || // loading video
+                videoPlayer.isStoppedNotifier.value || // stopped
+                channelData == null || // no one change data
+                channelData.videoHash == videoPlayer.videoHashNotifier.value) {
+              return const SizedBox.shrink();
+            }
 
-              return _VideoUnsyncNotification(
-                onAction: () =>
-                    _onOpenVideoPressed(channelData['hash'] as String),
-                otherUserName: eventSnapshot.data?.user?.name ?? "对方",
-                otherVideoTitle: channelData['name'] as String? ?? '',
-              );
-            },
-          ),
+            return _VideoUnsyncNotification(
+              onAction: () => _onOpenVideoPressed(channelData.videoHash),
+              otherUserName: currentChannel.lastChannelDataUpdater?.name,
+              otherVideoTitle: channelData.name,
+            );
+          },
         ),
       ],
     );
@@ -72,34 +70,40 @@ class _RoomSectionState extends State<RoomSection> {
   void _onOpenVideoPressed(String videoHash) {
     return videoHash.split('-').first == 'local'
         ? _openLocalVideo()
-        : PlayerController().followRemoteBiliVideoHash(videoHash);
+        : context.read<PlayerController>().followRemoteBiliVideoHash(videoHash);
   }
 
   void _openLocalVideo() async {
+    final isBusy = context.read<IsBusy>();
+    final businessName = context.read<BusinessName>();
+    final videoPlayer = context.read<VideoPlayer>();
+    final playerController = context.read<PlayerController>();
+    final showSnackBar = context.read<Toast>().show;
+
     try {
       final file = await openLocalVideoDialog();
       if (file == null) throw NoFileSelectedException();
 
-      UINotifiers().isBusy.value = true;
-      UINotifiers().hintText.value = '正在收拾客厅……';
-      await VideoPlayer().loadLocalVideo(file);
+      isBusy.value = true;
+      businessName.value = '正在收拾客厅……';
+      await videoPlayer.loadLocalVideo(file);
 
-      PlayerController().askPosition();
+      playerController.askPosition();
     } catch (e) {
       if (e is! NoFileSelectedException) {
         logger.e(e);
         showSnackBar('加载失败');
       }
     } finally {
-      UINotifiers().hintText.value = null;
-      UINotifiers().isBusy.value = false;
+      businessName.value = null;
+      isBusy.value = false;
     }
   }
 
-  String _getUsersStringExceptMe(List<User> userList) {
+  String _getUsersStringExceptId(List<User> userList, String id) {
     String result = '';
     for (var user in userList) {
-      if (user.id == Tokens().bunga.clientID) continue;
+      if (user.id == id) continue;
       result += '${user.name}, ';
     }
 
@@ -113,9 +117,9 @@ class _RoomSectionState extends State<RoomSection> {
   }
 }
 
-class _VideoUnsyncNotification extends StatefulWidget {
+class _VideoUnsyncNotification extends StatelessWidget {
   final VoidCallback onAction;
-  final String otherUserName;
+  final String? otherUserName;
   final String otherVideoTitle;
 
   const _VideoUnsyncNotification({
@@ -125,85 +129,59 @@ class _VideoUnsyncNotification extends StatefulWidget {
   });
 
   @override
-  State<_VideoUnsyncNotification> createState() =>
-      _VideoUnsyncNotificationState();
-}
-
-class _VideoUnsyncNotificationState extends State<_VideoUnsyncNotification> {
-  bool _isUnsyncNotificationShow = false;
-
-  @override
-  Widget build(BuildContext context) => PortalTarget(
-        visible: _isUnsyncNotificationShow,
-        portalFollower: GestureDetector(
-          onTap: () {
-            setState(() {
-              _isUnsyncNotificationShow = false;
-            });
-          },
-        ),
-        child: PortalTarget(
-          visible: _isUnsyncNotificationShow,
-          anchor: const Aligned(
-            follower: Alignment.topRight,
-            target: Alignment.bottomRight,
-          ),
-          portalFollower: Card(
-            elevation: 8,
-            child: SizedBox(
-              width: 260,
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text('你和 ${widget.otherUserName} 正在播放不同的视频。'),
-                    const SizedBox(height: 8),
-                    Text.rich(
-                      TextSpan(
-                        text: '对方正在播放 ',
-                        children: <TextSpan>[
-                          TextSpan(
-                            text: widget.otherVideoTitle,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
+  Widget build(BuildContext context) {
+    final dialogContent = SizedBox(
+      width: 260,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('你和 ${otherUserName ?? '对方'} 正在播放不同的视频。'),
+            const SizedBox(height: 8),
+            Text.rich(
+              TextSpan(
+                text: '对方正在播放 ',
+                children: <TextSpan>[
+                  TextSpan(
+                    text: otherVideoTitle,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
                     ),
-                    const SizedBox(height: 8),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton(
-                        onPressed: () {
-                          setState(() {
-                            _isUnsyncNotificationShow = false;
-                          });
-                          widget.onAction();
-                        },
-                        child: const Text('打开对应的视频'),
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
-          ),
-          child: TextButton.icon(
-            onPressed: () => setState(() {
-              _isUnsyncNotificationShow = true;
-            }),
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.error,
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  onAction();
+                },
+                child: const Text('打开对应的视频'),
+              ),
             ),
-            icon: const Icon(
-              Icons.warning,
-              size: 16,
-            ),
-            label: const Text('播放不同步'),
-          ),
+          ],
         ),
-      );
+      ),
+    );
+
+    return TextButton.icon(
+      onPressed: () => showDialog(
+        context: context,
+        builder: (context) => Dialog(
+          alignment: Alignment.topRight,
+          insetPadding: const EdgeInsets.symmetric(vertical: 36, horizontal: 8),
+          child: dialogContent,
+        ),
+      ),
+      style: TextButton.styleFrom(
+          foregroundColor: Theme.of(context).colorScheme.error),
+      icon: const Icon(Icons.warning, size: 16),
+      label: const Text('播放不同步'),
+    );
+  }
 }

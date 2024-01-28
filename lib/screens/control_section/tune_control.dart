@@ -1,17 +1,19 @@
 import 'package:bunga_player/mocks/slider.dart' as mock;
 import 'package:bunga_player/mocks/dropdown.dart' as mock;
-import 'package:bunga_player/services/video_player.dart';
+import 'package:bunga_player/providers/video_player.dart';
 import 'package:bunga_player/screens/control_section/card.dart';
 import 'package:bunga_player/screens/control_section/dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:multi_value_listenable_builder/multi_value_listenable_builder.dart';
+import 'package:provider/provider.dart';
 
 class TuneControl extends StatelessWidget {
   const TuneControl({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final videoPlayer = context.read<VideoPlayer>();
     return Row(
       children: [
         const SizedBox(width: 8),
@@ -30,7 +32,7 @@ class TuneControl extends StatelessWidget {
               const Text('视频亮度'),
               const SizedBox(width: 12),
               ValueListenableBuilder(
-                valueListenable: VideoPlayer().contrast,
+                valueListenable: videoPlayer.contrast,
                 builder: (context, contrast, child) => SizedBox(
                   width: 100,
                   child: mock.MySlider(
@@ -39,7 +41,7 @@ class TuneControl extends StatelessWidget {
                     min: -30,
                     label: '$contrast%',
                     onChanged: (value) =>
-                        VideoPlayer().contrast.value = value.toInt(),
+                        videoPlayer.contrast.value = value.toInt(),
                     focusNode: FocusNode(canRequestFocus: false),
                     useRootOverlay: true,
                   ),
@@ -49,7 +51,7 @@ class TuneControl extends StatelessWidget {
               IconButton(
                 icon: const Icon(Icons.restart_alt),
                 iconSize: 16.0,
-                onPressed: VideoPlayer().contrast.reset,
+                onPressed: videoPlayer.contrast.reset,
               ),
               const SizedBox(width: 8),
             ],
@@ -61,8 +63,8 @@ class TuneControl extends StatelessWidget {
         ControlCard(
           child: MultiValueListenableBuilder(
             valueListenables: [
-              VideoPlayer().track,
-              VideoPlayer().tracks,
+              videoPlayer.track,
+              videoPlayer.tracks,
             ],
             builder: (context, values, child) {
               var audioTracks = values[1]?.audio as List<AudioTrack>?;
@@ -96,7 +98,7 @@ class TuneControl extends StatelessWidget {
                               .toList() ??
                           [],
                       value: values[0]?.audio.id,
-                      onChanged: VideoPlayer().setAudioTrack,
+                      onChanged: videoPlayer.setAudioTrack,
                     ),
                   ),
                   const SizedBox(width: 16),

@@ -1,16 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 
-class ReadonlyStreamNotifier<T> extends ChangeNotifier
+class ReadonlyStreamValueNotifier<T> extends ChangeNotifier
     implements ValueListenable<T> {
   T _value;
-  ReadonlyStreamNotifier(this._value);
+  ReadonlyStreamValueNotifier(this._value);
 
-  bool _isBinded = false;
-  void bind(Stream<T> stream) {
-    if (_isBinded) throw Exception('Notifier already binded');
-    _isBinded = true;
-
-    stream.listen((value) {
+  StreamSubscription<T> bind(Stream<T> stream) {
+    return stream.listen((value) {
       if (_value == value) return;
       _value = value;
       notifyListeners();
@@ -57,9 +55,7 @@ class StreamNotifier<T> extends ChangeNotifier implements ValueListenable<T> {
 class ValueNotifierWithReset<T> extends ValueNotifier<T> {
   final T _initValue;
 
-  ValueNotifierWithReset(T value)
-      : _initValue = value,
-        super(value);
+  ValueNotifierWithReset(super.value) : _initValue = value;
 
   void reset() {
     value = _initValue;

@@ -1,35 +1,39 @@
-import 'package:bot_toast/bot_toast.dart';
-import 'package:bunga_player/constants/global_keys.dart';
-import 'package:bunga_player/services/get_it.dart';
-import 'package:bunga_player/services/preferences.dart';
+import 'dart:async';
+
+import 'package:bunga_player/services/logger.dart';
+import 'package:bunga_player/services/services.dart' as services;
 import 'package:bunga_player/screens/main_screen.dart';
-import 'package:bunga_player/wrapper/wrap.dart';
+import 'package:bunga_player/screens/wrappers/wrap.dart';
 import 'package:flutter/material.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:window_manager/window_manager.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+void main() {
+  FlutterError.onError = (FlutterErrorDetails details) {
+    logger.e(details);
+  };
 
-  await windowManager.ensureInitialized();
-  windowManager.setMinimumSize(const Size(800, 600));
+  runZonedGuarded(
+    () async {
+      WidgetsFlutterBinding.ensureInitialized();
 
-  getIt.registerSingleton<Preferences>(await Preferences.create());
-  getIt.registerSingleton<PackageInfo>(await PackageInfo.fromPlatform());
+      await windowManager.ensureInitialized();
+      windowManager.setMinimumSize(const Size(800, 600));
 
-  final home = wrap(const MainScreen());
-  runApp(
-    MaterialApp(
-      navigatorKey: rootNavigatorKey,
-      scaffoldMessengerKey: globalMessengerKey,
-      builder: BotToastInit(),
-      navigatorObservers: [BotToastNavigatorObserver()],
-      theme: ThemeData(
-        brightness: Brightness.dark,
-        useMaterial3: true,
-        colorSchemeSeed: const Color(0xFFF5C253),
-      ),
-      home: home,
-    ),
+      await services.init();
+
+      final home = wrap(const MainScreen());
+      final app = MaterialApp(
+        theme: ThemeData(
+          brightness: Brightness.dark,
+          useMaterial3: true,
+          colorSchemeSeed: const Color(0xFFF5C253),
+        ),
+        home: Scaffold(body: home),
+      );
+      runApp(app);
+    },
+    (error, stackTrace) {
+      logger.e(error, stackTrace: stackTrace);
+    },
   );
 }

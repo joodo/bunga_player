@@ -1,14 +1,17 @@
-import 'package:bunga_player/models/bili_entry.dart';
+import 'package:bunga_player/services/bilibili.dart';
 import 'package:bunga_player/actions/open_local_video.dart';
-import 'package:bunga_player/services/chat.dart';
-import 'package:bunga_player/controllers/player_controller.dart';
+import 'package:bunga_player/models/chat/channel_data.dart';
+import 'package:bunga_player/providers/current_channel.dart';
+import 'package:bunga_player/providers/player_controller.dart';
+import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/services/snack_bar.dart';
-import 'package:bunga_player/controllers/ui_notifiers.dart';
-import 'package:bunga_player/services/video_player.dart';
+import 'package:bunga_player/providers/toast.dart';
+import 'package:bunga_player/providers/video_player.dart';
+import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/exceptions.dart';
 import 'package:bunga_player/utils/string.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class VideoOpenControl extends StatefulWidget {
   const VideoOpenControl({super.key});
@@ -20,61 +23,67 @@ class VideoOpenControl extends StatefulWidget {
 class _VideoOpenControlState extends State<VideoOpenControl> {
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: UINotifiers().isBusy,
-      builder: (context, isBusy, child) => Stack(
-        alignment: Alignment.centerLeft,
-        children: [
-          Row(
-            children: [
-              const SizedBox(width: 8),
-              // Back button
-              IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: Navigator.of(context).pop,
-              ),
-            ],
-          ),
-          Row(
+    return Stack(
+      alignment: Alignment.centerLeft,
+      children: [
+        Row(
+          children: [
+            const SizedBox(width: 8),
+            // Back button
+            IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: Navigator.of(context).pop,
+            ),
+          ],
+        ),
+        Consumer<IsBusy>(
+          builder: (context, isBusy, child) => Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               FilledButton(
-                onPressed: isBusy ? null : _openLocalVideo,
+                onPressed: isBusy.value ? null : _openLocalVideo,
                 child: const Text('视频文件'),
               ),
               const SizedBox(width: 16),
               FilledButton(
-                onPressed: isBusy ? null : _openBilibili,
+                onPressed: isBusy.value ? null : _openBilibili,
                 child: const Text('Bilibili 视频'),
               ),
             ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   void _openLocalVideo() async {
+    final currentChannel = context.read<CurrentChannel>();
+    final isBusy = context.read<IsBusy>();
+    final businessName = context.read<BusinessName>();
+    final videoPlayer = context.read<VideoPlayer>();
+    final playerController = context.read<PlayerController>();
+    final showSnackBar = context.read<Toast>().show;
+
     try {
-      // Update room data only if playing correct video
-      final shouldUpdateRoomData = PlayerController().isVideoSameWithRoom;
+      final shouldUpdateChannelData = playerController.isVideoSameWithRoom;
 
       final file = await openLocalVideoDialog();
       if (file == null) throw NoFileSelectedException();
 
-      UINotifiers().isBusy.value = true;
-      UINotifiers().hintText.value = '正在收拾客厅……';
-      await VideoPlayer().loadLocalVideo(file);
+      isBusy.value = true;
+      businessName.value = '正在收拾客厅……';
+      await videoPlayer.loadLocalVideo(file);
 
-      if (shouldUpdateRoomData) {
-        UINotifiers().hintText.value = '正在发送请柬……';
-        await Chat().updateChannelData({
-          'name': file.name,
-          'hash': VideoPlayer().videoHashNotifier.value,
-          'video_type': 'local',
-        });
+      // Update room data only if playing correct video
+      if (shouldUpdateChannelData) {
+        businessName.value = '正在发送请柬……';
+        await currentChannel.updateData(ChannelData(
+          videoType: VideoType.local,
+          name: file.name,
+          videoHash: videoPlayer.videoHashNotifier.value!,
+        ));
       }
-      PlayerController().askPosition();
+      playerController.askPosition();
 
       _onVideoLoaded();
     } catch (e) {
@@ -83,15 +92,21 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
         showSnackBar('加载失败');
       }
     } finally {
-      UINotifiers().hintText.value = null;
-      UINotifiers().isBusy.value = false;
+      businessName.value = null;
+      isBusy.value = false;
     }
   }
 
   void _openBilibili() async {
+    final currentChannel = context.read<CurrentChannel>();
+    final isBusy = context.read<IsBusy>();
+    final businessName = context.read<BusinessName>();
+    final playerController = context.read<PlayerController>();
+    final showSnackBar = context.read<Toast>().show;
+
     try {
       // Update room data only if playing correct video
-      final shouldUpdateRoomData = PlayerController().isVideoSameWithRoom;
+      final shouldUpdateRoomData = playerController.isVideoSameWithRoom;
 
       final result = await showDialog(
         context: context,
@@ -99,32 +114,33 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
       );
       if (result == null) throw NoFileSelectedException();
 
-      UINotifiers().isBusy.value = true;
-      final biliEntry = await BiliEntry.fromUrl((result as String).parseUri());
-      await for (var hintText in PlayerController().loadBiliEntry(biliEntry)) {
-        UINotifiers().hintText.value = hintText;
+      isBusy.value = true;
+      final biliEntry = await getService<Bilibili>()
+          .getEntryFromUri((result as String).parseUri());
+      await for (var hintText in playerController.loadBiliEntry(biliEntry)) {
+        businessName.value = hintText;
       }
 
       if (shouldUpdateRoomData) {
-        UINotifiers().hintText.value = '正在发送请柬……';
-        await Chat().updateChannelData({
-          'video_type': 'bilibili',
-          'hash': biliEntry.hash,
-          'name': biliEntry.title,
-          'pic': biliEntry.pic,
-        });
+        businessName.value = '正在发送请柬……';
+        await currentChannel.updateData(ChannelData(
+          videoType: VideoType.bilibili,
+          name: biliEntry.title,
+          videoHash: biliEntry.hash,
+          pic: biliEntry.pic,
+        ));
       }
-      PlayerController().askPosition();
+      playerController.askPosition();
 
       _onVideoLoaded();
     } catch (e) {
       if (e is! NoFileSelectedException) {
-        logger.e(e);
         showSnackBar('解析失败');
+        rethrow;
       }
     } finally {
-      UINotifiers().hintText.value = null;
-      UINotifiers().isBusy.value = false;
+      businessName.value = null;
+      isBusy.value = false;
     }
   }
 

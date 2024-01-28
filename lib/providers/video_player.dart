@@ -1,35 +1,32 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:ui';
 
-import 'package:bunga_player/models/bili_entry.dart';
-import 'package:bunga_player/services/get_it.dart';
+import 'package:bunga_player/services/bilibili.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/preferences.dart';
+import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/value_listenable.dart';
 import 'package:collection/collection.dart';
 import 'package:crclib/catalog.dart';
 import 'package:ffi/ffi.dart';
 import 'package:file_selector/file_selector.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart' as media_kit;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:window_manager/window_manager.dart';
 
-class VideoPlayer with WindowListener {
-  static final emptyMedia = Media('asset:///assets/images/black.png');
-
-  // Singleton
-  static final _instance = VideoPlayer._internal();
-  factory VideoPlayer() => _instance;
-
-  VideoPlayer._internal() {
+class VideoPlayer {
+  VideoPlayer() {
     MediaKit.ensureInitialized();
 
     // set mpv auto reconnect
     // from https://github.com/mpv-player/mpv/issues/5793#issuecomment-553877261
-    _mpvProperty('stream-lavf-o', 'reconnect_streamed=1');
+    _mpvProperty('stream-lavf-o-append', 'reconnect_on_http_error=4xx,5xx');
+    _mpvProperty('stream-lavf-o-append', 'reconnect_delay_max=30');
+    _mpvProperty('stream-lavf-o-append', 'reconnect_streamed=yes');
 
     _setUpBindings();
 
@@ -40,26 +37,26 @@ class VideoPlayer with WindowListener {
 
   late final _player = Player(
     configuration: const PlayerConfiguration(logLevel: MPVLogLevel.warn),
-  )..open(emptyMedia, play: false);
+  );
 
   late final _controller = media_kit.VideoController(_player);
   media_kit.VideoController get controller => _controller;
 
-  final duration = ReadonlyStreamNotifier<Duration>(Duration.zero);
-  final buffer = ReadonlyStreamNotifier<Duration>(Duration.zero);
+  final duration = ReadonlyStreamValueNotifier<Duration>(Duration.zero);
+  final buffer = ReadonlyStreamValueNotifier<Duration>(Duration.zero);
   final position = StreamNotifier<Duration>(Duration.zero);
   final isPlaying = StreamNotifier<bool>(false);
 
   final volume = ValueNotifier<double>(100.0);
   final isMute = ValueNotifier<bool>(false);
   void _loadSavedVolume() {
-    final savedVolume = getIt<Preferences>().get<double>('video_volume');
+    final savedVolume = getService<Preferences>().get<double>('video_volume');
     if (savedVolume != null) volume.value = savedVolume;
   }
 
   final contrast = ValueNotifierWithReset<int>(0);
-  final tracks = ReadonlyStreamNotifier<Tracks?>(null);
-  final track = ReadonlyStreamNotifier<Track?>(null);
+  final tracks = ReadonlyStreamValueNotifier<Tracks?>(null);
+  final track = ReadonlyStreamValueNotifier<Track?>(null);
 
   final subDelay = ValueNotifierWithReset<double>(0.0); // sub-delay
   final subSize = ValueNotifierWithReset<double>(55.0); // sub-font-size
@@ -81,7 +78,7 @@ class VideoPlayer with WindowListener {
     volume.addListener(() {
       isMute.value = false;
       _player.setVolume(volume.value);
-      getIt<Preferences>().set('video_volume', volume.value);
+      getService<Preferences>().set('video_volume', volume.value);
     });
     isMute.addListener(() {
       if (isMute.value) {
@@ -128,6 +125,8 @@ class VideoPlayer with WindowListener {
     final videoHash = 'local-$crcString';
     if (_watchProgress.containsKey(videoHash)) {
       position.value = Duration(milliseconds: _watchProgress[videoHash]!);
+    } else {
+      position.value = Duration.zero;
     }
 
     windowManager.setTitle(file.name);
@@ -171,6 +170,8 @@ class VideoPlayer with WindowListener {
     final videoHash = biliEntry.hash;
     if (_watchProgress.containsKey(videoHash)) {
       position.value = Duration(milliseconds: _watchProgress[videoHash]!);
+    } else {
+      position.value = Duration.zero;
     }
 
     windowManager.setTitle(biliEntry.title);
@@ -178,12 +179,12 @@ class VideoPlayer with WindowListener {
   }
 
   Future<void> stop() async {
-    _player.pause();
-    await _player.open(emptyMedia, play: false);
-    await _controller.waitUntilFirstFrameRendered;
+    _player.stop();
+    //await _player.open(emptyMedia, play: false);
+    //await _controller.waitUntilFirstFrameRendered;
     _videoHashNotifier.value = null;
 
-    final appName = getIt<PackageInfo>().appName;
+    final appName = getService<PackageInfo>().appName;
     windowManager.setTitle(appName);
   }
 
@@ -211,7 +212,7 @@ class VideoPlayer with WindowListener {
 
   void _mpvCommand(String command) {
     final mpvPlayer = _player.platform;
-    if (mpvPlayer is libmpvPlayer) {
+    if (mpvPlayer is NativePlayer) {
       command = command.replaceAll('\\', '\\\\');
       final mpv = mpvPlayer.mpv;
       final cmd = command.toNativeUtf8();
@@ -222,7 +223,7 @@ class VideoPlayer with WindowListener {
 
   void _mpvProperty(String key, String value) {
     final mpvPlayer = _player.platform;
-    if (mpvPlayer is libmpvPlayer) {
+    if (mpvPlayer is NativePlayer) {
       mpvPlayer.setProperty(key, value);
     }
   }
@@ -231,8 +232,8 @@ class VideoPlayer with WindowListener {
   late final Map<String, int> _watchProgress;
 
   void _loadSavedProgress() {
-    _watchProgress = Map.castFrom(
-        jsonDecode(getIt<Preferences>().get<String>('watch_progress') ?? '{}'));
+    _watchProgress = Map.castFrom(jsonDecode(
+        getService<Preferences>().get<String>('watch_progress') ?? '{}'));
 
     Timer.periodic(const Duration(seconds: 5), (timer) {
       final hash = videoHashNotifier.value;
@@ -242,14 +243,13 @@ class VideoPlayer with WindowListener {
       }
     });
 
-    windowManager.addListener(this);
-  }
-
-  @override
-  // TODO: Should change to AppLifecycleListener
-  // https://github.com/flutter/flutter/issues/30735
-  void onWindowClose() async {
-    await getIt<Preferences>()
-        .set('watch_progress', jsonEncode(_watchProgress));
+    // Save watch progress on exit
+    AppLifecycleListener(
+      onExitRequested: () async {
+        await getService<Preferences>()
+            .set('watch_progress', jsonEncode(_watchProgress));
+        return AppExitResponse.exit;
+      },
+    );
   }
 }

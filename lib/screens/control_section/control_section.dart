@@ -1,4 +1,6 @@
-import 'package:bunga_player/screens/control_section/init_control.dart';
+import 'package:bunga_player/providers/current_user.dart';
+import 'package:bunga_player/providers/ui.dart';
+import 'package:bunga_player/providers/voice_call.dart';
 import 'package:bunga_player/screens/control_section/video_open_control.dart';
 import 'package:bunga_player/screens/control_section/call_control.dart';
 import 'package:bunga_player/screens/control_section/rename_control.dart';
@@ -8,21 +10,9 @@ import 'package:bunga_player/screens/control_section/subtitle_control.dart';
 import 'package:bunga_player/screens/control_section/tune_control.dart';
 import 'package:bunga_player/screens/control_section/welcome_control.dart';
 import 'package:bunga_player/screens/progress_section/video_progress_indicator.dart';
-import 'package:bunga_player/controllers/ui_notifiers.dart';
-import 'package:bunga_player/services/video_player.dart';
-import 'package:bunga_player/services/voice_call.dart';
+import 'package:bunga_player/providers/video_player.dart';
 import 'package:flutter/material.dart';
-
-enum ControlUIState {
-  login,
-  welcome,
-  main,
-  call,
-  popmoji,
-  subtitle,
-  tune,
-  open,
-}
+import 'package:provider/provider.dart';
 
 class ControlSection extends StatefulWidget {
   const ControlSection({super.key});
@@ -37,27 +27,30 @@ class _ControlSectionState extends State<ControlSection> {
   void initState() {
     super.initState();
 
-    UINotifiers().isUIHidden.addListener(_onUIHiddenChanged);
-    VoiceCall().callStatusNotifier.addListener(_onCallStatusChanged);
+    context.read<IsControlSectionHidden>().addListener(_onUIHiddenChanged);
+    context.read<VoiceCall>().addListener(_onCallStatusChanged);
   }
 
   @override
   void dispose() {
-    UINotifiers().isUIHidden.removeListener(_onUIHiddenChanged);
-    VoiceCall().callStatusNotifier.removeListener(_onCallStatusChanged);
+    context.read<IsControlSectionHidden>().removeListener(_onUIHiddenChanged);
+    context.read<VoiceCall>().removeListener(_onCallStatusChanged);
 
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final currentUser = context.read<CurrentUser>();
+    final hasUserName = currentUser.name != null;
+    final initialRouteName = 'control:${hasUserName ? 'welcome' : 'rename'}';
+
     final body = Navigator(
-      initialRoute: 'control:init',
+      initialRoute: initialRouteName,
       key: _navigatorStateKey,
       onGenerateRoute: (settings) {
         final arguments = settings.arguments as Map<String, Object?>?;
         final routes = {
-          'control:init': const InitControl(),
           'control:rename': RenameControl(
               previousName: arguments?['previousName'] as String?),
           'control:welcome': const WelcomeControl(),
@@ -72,6 +65,7 @@ class _ControlSectionState extends State<ControlSection> {
         Widget? control = routes[settings.name];
         if (control == null) throw Exception('Invalid route: ${settings.name}');
 
+        //context.read<UI>().changeRoute(settings.name!);
         return _ControlRoute<void>(
           builder: (BuildContext context) => Container(
             color: Theme.of(context).colorScheme.surface,
@@ -97,7 +91,7 @@ class _ControlSectionState extends State<ControlSection> {
 
   void _onCallStatusChanged() {
     // Route to call control when call in
-    if (VoiceCall().callStatusNotifier.value == CallStatus.callIn) {
+    if (context.read<VoiceCall>().callStatus == CallStatus.callIn) {
       final navigator = _navigatorStateKey.currentState!;
       navigator.pushNamed('control:call');
     }
@@ -105,9 +99,9 @@ class _ControlSectionState extends State<ControlSection> {
 
   void _onUIHiddenChanged() {
     // When show again during fullscreen, route to main control
-    if (UINotifiers().isUIHidden.value == false &&
+    if (context.read<IsControlSectionHidden>().value == false &&
         // Avoid change login control to main control
-        !VideoPlayer().isStoppedNotifier.value) {
+        !context.read<VideoPlayer>().isStoppedNotifier.value) {
       final navigator = _navigatorStateKey.currentState!;
       navigator.popUntil((route) =>
           route.settings.name == 'control:main' ||
@@ -118,9 +112,9 @@ class _ControlSectionState extends State<ControlSection> {
 
 class _ControlRoute<T> extends MaterialPageRoute<T> {
   _ControlRoute({
-    required WidgetBuilder builder,
-    required RouteSettings settings,
-  }) : super(builder: builder, settings: settings);
+    required super.builder,
+    required RouteSettings super.settings,
+  });
 
   @override
   Duration get transitionDuration => const Duration(milliseconds: 150);

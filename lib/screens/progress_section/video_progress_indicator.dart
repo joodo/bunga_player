@@ -1,8 +1,9 @@
-import 'package:bunga_player/controllers/player_controller.dart';
+import 'package:bunga_player/providers/player_controller.dart';
 import 'package:bunga_player/utils/duration.dart';
-import 'package:bunga_player/services/video_player.dart';
+import 'package:bunga_player/providers/video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:multi_value_listenable_builder/multi_value_listenable_builder.dart';
+import 'package:provider/provider.dart';
 
 class VideoProgressIndicator extends StatefulWidget {
   const VideoProgressIndicator({super.key});
@@ -20,6 +21,9 @@ class _VideoProgressIndicatorState extends State<VideoProgressIndicator> {
 
   @override
   Widget build(BuildContext context) {
+    final videoPlayer = context.read<VideoPlayer>();
+    final playerController = context.read<PlayerController>();
+
     return MouseRegion(
       onEnter: (event) => setState(() {
         _isHovered = true;
@@ -46,9 +50,9 @@ class _VideoProgressIndicatorState extends State<VideoProgressIndicator> {
         },
         child: MultiValueListenableBuilder(
           valueListenables: [
-            VideoPlayer().position,
-            VideoPlayer().duration,
-            VideoPlayer().buffer,
+            videoPlayer.position,
+            videoPlayer.duration,
+            videoPlayer.buffer,
           ],
           builder: (context, values, child) {
             final position = values[0] as Duration;
@@ -70,13 +74,13 @@ class _VideoProgressIndicatorState extends State<VideoProgressIndicator> {
                   _slideThemeLerpT = 1.0;
                 });
 
-                _isPlayingBeforeDraggingSlider = VideoPlayer().isPlaying.value;
-                VideoPlayer().isPlaying.value = false;
-                VideoPlayer().position.follow = false;
-                VideoPlayer().position.value = value.asMilliseconds;
+                _isPlayingBeforeDraggingSlider = videoPlayer.isPlaying.value;
+                videoPlayer.isPlaying.value = false;
+                videoPlayer.position.follow = false;
+                videoPlayer.position.value = value.asMilliseconds;
               },
               onChanged: (double value) {
-                VideoPlayer().position.value = value.asMilliseconds;
+                videoPlayer.position.value = value.asMilliseconds;
               },
               onChangeEnd: (value) {
                 setState(() {
@@ -84,12 +88,12 @@ class _VideoProgressIndicatorState extends State<VideoProgressIndicator> {
                   if (!_isHovered) _slideThemeLerpT = 0;
                 });
 
-                VideoPlayer().position.value = value.asMilliseconds;
-                VideoPlayer().position.follow = true;
+                videoPlayer.position.value = value.asMilliseconds;
+                videoPlayer.position.follow = true;
                 if (_isPlayingBeforeDraggingSlider) {
-                  VideoPlayer().isPlaying.value = true;
+                  videoPlayer.isPlaying.value = true;
                 }
-                PlayerController().sendPlayerStatus();
+                playerController.sendPlayerStatus();
               },
             );
           },

@@ -1,81 +1,116 @@
-import 'package:bunga_player/models/bili_entry.dart';
-import 'package:bunga_player/services/chat.dart';
+import 'dart:async';
+
+import 'package:bunga_player/services/bilibili.dart';
+import 'package:bunga_player/models/chat/channel_data.dart';
+import 'package:bunga_player/providers/current_channel.dart';
+import 'package:bunga_player/providers/current_user.dart';
+import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/services/snack_bar.dart';
-import 'package:bunga_player/controllers/ui_notifiers.dart';
-import 'package:bunga_player/services/tokens.dart';
-import 'package:bunga_player/services/video_player.dart';
+import 'package:bunga_player/providers/toast.dart';
+import 'package:bunga_player/providers/video_player.dart';
+import 'package:bunga_player/services/services.dart';
+import 'package:provider/provider.dart';
 import 'package:stream_chat_flutter_core/stream_chat_flutter_core.dart';
 
+/// Methods connecting video player and chat
 class PlayerController {
-  // Singleton
-  static final _instance = PlayerController._internal();
-  factory PlayerController() => _instance;
+  PlayerController(Locator read)
+      : _read = read,
+        _currentUser = read<CurrentUser>(),
+        _currentChannel = read<CurrentChannel>(),
+        _videoPlayer = read<VideoPlayer>() {
+    _currentChannel.addListener(_onChannelChanged);
+    _currentChannel.channelDataNotifier.addListener(
+      () {
+        // Try to follow if it's bili video
+        final channelData = _currentChannel.channelDataNotifier.value;
+        if (!isVideoSameWithRoom &&
+            channelData?.videoType == VideoType.bilibili) {
+          followRemoteBiliVideoHash(channelData!.videoHash);
+        }
+      },
+    );
+  }
 
-  PlayerController._internal() {
-    Chat().channelExtraDataNotifier.addListener(_onRoomDataChanged);
-    Chat().messageStream.where((message) {
+  final Locator _read;
+
+  Future _onChannelChanged() async {
+    // Listen to new chat message
+    await _messageSubscription?.cancel();
+    _messageSubscription = _currentChannel.messageStream.listen((message) {
+      if (message?.user?.id == _currentUser.id) return;
+
       final prefix = message?.text?.split(' ').first;
-      return prefix == 'pause' || prefix == 'play';
-    }).listen((message) => _processPlayStatus(message!));
-    Chat()
-        .messageStream
-        .where((message) => message?.text?.split(' ').first == 'where')
-        .listen((message) => _answerPlayStatus(message!));
+      switch (prefix) {
+        case 'pause':
+        case 'play':
+          _processPlayStatus(message!);
+          break;
+
+        case 'where':
+          _answerPlayStatus(message!);
+          break;
+
+        default:
+          return;
+      }
+    });
   }
 
-  Future<void> _onRoomDataChanged() async {
-    final extraData = Chat().channelExtraDataNotifier.value;
-
-    if (!isVideoSameWithRoom && extraData['video_type'] == 'bilibili') {
-      followRemoteBiliVideoHash(extraData['hash'] as String);
-    }
-  }
+  // Chat
+  final CurrentUser _currentUser;
+  final CurrentChannel _currentChannel;
+  final VideoPlayer _videoPlayer;
+  StreamSubscription? _messageSubscription;
 
   Future<void> followRemoteBiliVideoHash(String videoHash) async {
+    final isBusy = _read<IsBusy>();
+    final businessName = _read<BusinessName>();
+
     try {
-      UINotifiers().isBusy.value = true;
+      isBusy.value = true;
       await for (var hintText in loadBiliEntry(BiliEntry.fromHash(videoHash))) {
-        UINotifiers().hintText.value = hintText;
+        businessName.value = hintText;
       }
-      await PlayerController().askPosition();
+      await askPosition();
     } catch (e) {
       logger.e(e);
     } finally {
-      UINotifiers().hintText.value = null;
-      UINotifiers().isBusy.value = false;
+      businessName.value = null;
+      isBusy.value = false;
     }
   }
 
   Stream<String> loadBiliEntry(BiliEntry biliEntry) async* {
-    VideoPlayer().stop();
+    _videoPlayer.stop();
 
     yield '正在鬼鬼祟祟……';
-    await biliEntry.fetch();
-    if (!biliEntry.isHD) {
+    await getService<Bilibili>().fetch(biliEntry);
+    final showSnackBar = _read<Toast>().show;
+    if (biliEntry is BiliVideo && !biliEntry.isHD) {
       showSnackBar('无法获取高清视频');
       logger.w('Bilibili: Cookie of serverless funtion outdated');
     }
 
     yield '正在收拾客厅……';
-    await VideoPlayer().loadBiliVideo(biliEntry);
+    await _videoPlayer.loadBiliVideo(biliEntry);
   }
 
   bool get isVideoSameWithRoom =>
-      Chat().channelExtraDataNotifier.value['hash'] ==
-      VideoPlayer().videoHashNotifier.value;
+      _currentChannel.channelDataNotifier.value?.videoHash ==
+      _videoPlayer.videoHashNotifier.value;
 
   // About play status
   void sendPlayerStatus({String? quoteMessageId}) {
     // Not playing the same video, ignore
     if (!isVideoSameWithRoom) return;
 
-    final isPlay = VideoPlayer().isPlaying.value;
-    final position = VideoPlayer().position.value;
+    final isPlay = _videoPlayer.isPlaying.value;
+    final position = _videoPlayer.position.value;
 
     final messageText =
         '${isPlay ? "play" : "pause"} at ${position.inMilliseconds}';
-    Chat().sendMessage(
+    _currentChannel.send(
       Message(
         text: messageText,
         quotedMessageId: quoteMessageId,
@@ -88,7 +123,9 @@ class PlayerController {
     // Not playing the same video, ignore
     if (!isVideoSameWithRoom) return;
 
-    _askID = await Chat().sendMessage(Message(text: 'where'));
+    final message = Message(text: 'where');
+    await _currentChannel.send(message);
+    _askID = message.id;
 
     Future.delayed(const Duration(seconds: 6), () {
       if (_askID != null) {
@@ -111,10 +148,6 @@ class PlayerController {
   }
 
   Future<void> _processPlayStatus(Message message) async {
-    if (message.user?.id == Tokens().bunga.clientID) {
-      return;
-    }
-
     final quoteID = message.quotedMessageId;
 
     if (quoteID != null) {
@@ -135,9 +168,10 @@ class PlayerController {
     // If apply status is because asking where, then don't show snack bar
     if (_askID != null) canShowSnackBar = false;
 
-    final isPlaying = VideoPlayer().isPlaying.value;
+    final isPlaying = _videoPlayer.isPlaying.value;
+    final showSnackBar = _read<Toast>().show;
     if (re.first == 'pause' && isPlaying) {
-      VideoPlayer().isPlaying.value = false;
+      _videoPlayer.isPlaying.value = false;
       if (canShowSnackBar) {
         showSnackBar('${message.user!.name} 暂停了视频');
         canShowSnackBar = false;
@@ -145,7 +179,7 @@ class PlayerController {
       }
     }
     if (re.first == 'play' && !isPlaying) {
-      VideoPlayer().isPlaying.value = true;
+      _videoPlayer.isPlaying.value = true;
       if (canShowSnackBar) {
         showSnackBar('${message.user!.name} 播放了视频');
         canShowSnackBar = false;
@@ -153,10 +187,10 @@ class PlayerController {
       }
     }
 
-    final position = VideoPlayer().position.value;
+    final position = _videoPlayer.position.value;
     final remotePosition = Duration(milliseconds: int.parse(re.last));
     if ((position - remotePosition).inMilliseconds.abs() > 1000) {
-      VideoPlayer().position.value = remotePosition;
+      _videoPlayer.position.value = remotePosition;
       if (canShowSnackBar) {
         showSnackBar('${message.user!.name} 调整了进度');
         canShowSnackBar = false;
@@ -165,10 +199,6 @@ class PlayerController {
   }
 
   void _answerPlayStatus(Message message) {
-    if (message.user?.id == Tokens().bunga.clientID) {
-      return;
-    }
-
     if (_askID == null) {
       sendPlayerStatus(quoteMessageId: message.id);
     }

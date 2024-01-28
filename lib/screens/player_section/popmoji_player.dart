@@ -1,7 +1,10 @@
-import 'package:bunga_player/services/chat.dart';
+import 'dart:async';
+
+import 'package:bunga_player/providers/current_channel.dart';
 import 'package:fireworks/fireworks.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:provider/provider.dart';
 
 class PopmojiPlayer extends StatefulWidget {
   const PopmojiPlayer({super.key});
@@ -62,17 +65,31 @@ class _PopmojiPlayerState extends State<PopmojiPlayer>
   void initState() {
     super.initState();
     _fireworkController.start();
-    Chat()
-        .messageStream
-        .where((message) => message?.text?.split(' ')[0] == 'popmoji')
-        .map<String?>((message) => message?.text?.split(' ')[1])
-        .listen((code) => _emojiCodeNotifier.value = code);
+
+    // Listen to new chat message
+    final currentChannel = context.read<CurrentChannel>();
+    currentChannel.addListener(() async {
+      await _messageSubscrition?.cancel();
+      _messageSubscrition = currentChannel.messageStream
+          .where((message) => message?.text?.split(' ')[0] == 'popmoji')
+          .map<String?>((message) => message?.text?.split(' ')[1])
+          .listen((code) => _emojiCodeNotifier.value = code);
+    });
+
+    _animationController.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        _emojiCodeNotifier.value = null;
+      }
+    });
   }
+
+  // Chat
+  StreamSubscription? _messageSubscrition;
 
   @override
   dispose() {
-    _animationController.dispose();
     _fireworkController.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
@@ -82,7 +99,6 @@ class _PopmojiPlayerState extends State<PopmojiPlayer>
       valueListenable: _emojiCodeNotifier,
       builder: (context, value, child) {
         final code = _emojiCodeNotifier.value;
-
         switch (code) {
           case null:
             return const SizedBox.shrink();

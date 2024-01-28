@@ -1,15 +1,11 @@
-import 'package:bunga_player/controllers/ui_notifiers.dart';
-import 'package:flutter/foundation.dart';
+import 'package:bunga_player/providers/current_user.dart';
+import 'package:bunga_player/providers/ui.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:rive/rive.dart';
 
 class PlayerPlaceholder extends StatefulWidget {
-  final ValueListenable<bool> isAwakeNotifier;
-
-  const PlayerPlaceholder({
-    super.key,
-    required this.isAwakeNotifier,
-  });
+  const PlayerPlaceholder({super.key});
 
   @override
   State<PlayerPlaceholder> createState() => _PlayerPlaceholderState();
@@ -21,8 +17,10 @@ class _PlayerPlaceholderState extends State<PlayerPlaceholder> {
   @override
   void initState() {
     super.initState();
-    widget.isAwakeNotifier.addListener(() {
-      _isCatAwakeInput.value = widget.isAwakeNotifier.value;
+
+    final currentUser = context.read<CurrentUser>();
+    currentUser.addListener(() {
+      _isCatAwakeInput.value = currentUser.name != null && currentUser.isOnline;
     });
   }
 
@@ -49,7 +47,7 @@ class _PlayerPlaceholderState extends State<PlayerPlaceholder> {
 
                       _isCatAwakeInput =
                           controller.findInput<bool>('isWaken') as SMIBool;
-                      _isCatAwakeInput.value = widget.isAwakeNotifier.value;
+                      _isCatAwakeInput.value = false;
                     },
                   ),
                 ),
@@ -58,12 +56,9 @@ class _PlayerPlaceholderState extends State<PlayerPlaceholder> {
             ),
             Positioned(
               top: 340,
-              child: ValueListenableBuilder<String?>(
-                valueListenable: UINotifiers().hintText,
-                builder: (context, text, child) => Text(
-                  text ?? '',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
+              child: Text(
+                context.watch<BusinessName>().value ?? '',
+                style: Theme.of(context).textTheme.titleLarge,
               ),
             ),
           ],
