@@ -1,5 +1,4 @@
 import 'package:bunga_player/screens/dialogs/host.dart';
-import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:flutter/material.dart';
@@ -32,11 +31,13 @@ class _HostInitWrapperState extends State<HostInitWrapper> {
         await initHost(bungaHost);
         success = true;
       } catch (e) {
-        logger.e(e);
         if (!context.mounted) return;
         bungaHost = await showDialog<String>(
               context: context,
-              builder: (context) => HostDialog(host: bungaHost),
+              builder: (context) => HostDialog(
+                host: bungaHost,
+                error: e.toString(),
+              ),
               barrierDismissible: false,
             ) ??
             '';

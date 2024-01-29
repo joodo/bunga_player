@@ -23,3 +23,10 @@ Future<void> initHost(String host) async {
   getService.registerSingleton<Agora>(Agora(appKey.agora));
   getService.registerSingleton<Bilibili>(Bilibili());
 }
+
+void unregisterHost() {
+  getService.unregister<Bunga>();
+  getService.unregister<StreamIO>();
+  getService.unregister<Agora>();
+  getService.unregister<Bilibili>();
+}

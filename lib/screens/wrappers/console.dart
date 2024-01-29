@@ -94,6 +94,7 @@ class _ConsoleWrapperState extends State<ConsoleWrapper> {
 
             if (newHost == null || !context.mounted) return;
             preferences.set('bunga_host', newHost);
+            unregisterHost();
             RestartWrapper.restartApp(context);
           },
           child: const Text('Change Bunga Host'),
@@ -209,7 +210,7 @@ class _VariablesView extends StatelessWidget {
           .map(
             (row) => TableRow(
               children: [
-                _padding(Text(row.key)),
+                _padding(SelectableText(row.key)),
                 _TableValue(func: row.value),
               ],
             ),
@@ -234,8 +235,9 @@ class _VariablesView extends StatelessWidget {
         }
         return TableRow(
           children: [
-            _padding(Text(key)),
-            _padding(Text(getService<Preferences>().get(key).toString())),
+            _padding(SelectableText(key)),
+            _padding(
+                SelectableText(getService<Preferences>().get(key).toString())),
           ],
         );
       }).toList(),
@@ -274,7 +276,6 @@ class _TableValueState extends State<_TableValue> {
 
   @override
   Widget build(BuildContext context) {
-    final showSnackBar = context.read<Toast>().show;
     return MouseRegion(
       onEnter: (event) => setState(() {
         _isHovered = true;
@@ -286,31 +287,17 @@ class _TableValueState extends State<_TableValue> {
         children: [
           _padding(SizedBox(
             width: double.maxFinite,
-            child: Text(_text ?? ''),
+            child: SelectableText(_text ?? ''),
           )),
           Visibility(
             visible: _isHovered,
             child: Positioned(
               right: 0,
-              child: Row(
-                children: [
-                  Visibility(
-                    visible: _text != null,
-                    child: IconButton(
-                      icon: const Icon(Icons.copy),
-                      onPressed: () async {
-                        await Clipboard.setData(ClipboardData(text: _text!));
-                        showSnackBar('已复制');
-                      },
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.refresh),
-                    onPressed: () => setState(() {
-                      _text = widget.func(context);
-                    }),
-                  ),
-                ],
+              child: IconButton(
+                icon: const Icon(Icons.refresh),
+                onPressed: () => setState(() {
+                  _text = widget.func(context);
+                }),
               ),
             ),
           ),

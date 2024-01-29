@@ -13,5 +13,6 @@ class BungaLogger extends Logger {
         );
 
   final StreamOutput _streamOutput;
-  Stream<List<String>> get stream => _streamOutput.stream.asBroadcastStream();
+  late final Stream<List<String>> stream =
+      _streamOutput.stream.asBroadcastStream();
 }
