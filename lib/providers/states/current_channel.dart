@@ -2,11 +2,11 @@ import 'dart:async';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:bunga_player/models/chat/channel_data.dart';
-import 'package:bunga_player/providers/current_user.dart';
+import 'package:bunga_player/providers/states/current_user.dart';
 import 'package:bunga_player/services/stream_io.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/providers/toast.dart';
+import 'package:bunga_player/providers/ui/toast.dart';
 import 'package:bunga_player/utils/value_listenable.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

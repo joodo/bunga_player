@@ -1,13 +1,13 @@
 import 'package:bunga_player/actions/play.dart';
 import 'package:bunga_player/services/bilibili.dart';
-import 'package:bunga_player/providers/player_controller.dart';
+import 'package:bunga_player/providers/business/remote_playing.dart';
 import 'package:bunga_player/mocks/popup_menu.dart' as mock;
 import 'package:bunga_player/mocks/slider.dart' as mock;
-import 'package:bunga_player/providers/current_channel.dart';
-import 'package:bunga_player/providers/ui.dart';
-import 'package:bunga_player/providers/voice_call.dart';
+import 'package:bunga_player/providers/states/current_channel.dart';
+import 'package:bunga_player/providers/ui/ui.dart';
+import 'package:bunga_player/providers/states/voice_call.dart';
 import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/providers/video_player.dart';
+import 'package:bunga_player/providers/business/video_player.dart';
 import 'package:bunga_player/utils/duration.dart';
 import 'package:flutter/material.dart';
 import 'package:multi_value_listenable_builder/multi_value_listenable_builder.dart';
@@ -21,7 +21,7 @@ class MainControl extends StatelessWidget {
     final currentChannel = context.read<CurrentChannel>();
     final isBusy = context.read<IsBusy>();
     final videoPlayer = context.read<VideoPlayer>();
-    final playerController = context.read<PlayerController>();
+    final playerController = context.read<RemotePlaying>();
 
     return Stack(
       children: [

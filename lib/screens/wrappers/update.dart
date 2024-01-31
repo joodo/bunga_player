@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/providers/toast.dart';
+import 'package:bunga_player/providers/ui/toast.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';

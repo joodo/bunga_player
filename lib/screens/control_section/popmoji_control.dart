@@ -1,7 +1,7 @@
 import 'dart:ui';
 
 import 'package:bunga_player/constants/constants.dart';
-import 'package:bunga_player/providers/current_channel.dart';
+import 'package:bunga_player/providers/states/current_channel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';

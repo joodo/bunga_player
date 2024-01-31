@@ -1,5 +1,5 @@
-import 'package:bunga_player/providers/current_user.dart';
-import 'package:bunga_player/providers/ui.dart';
+import 'package:bunga_player/providers/states/current_user.dart';
+import 'package:bunga_player/providers/ui/ui.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rive/rive.dart';

@@ -1,16 +1,16 @@
 import 'dart:async';
 
 import 'package:bunga_player/models/app_key/app_key.dart';
-import 'package:bunga_player/providers/current_channel.dart';
-import 'package:bunga_player/providers/current_user.dart';
-import 'package:bunga_player/providers/voice_call.dart';
+import 'package:bunga_player/providers/states/current_channel.dart';
+import 'package:bunga_player/providers/states/current_user.dart';
+import 'package:bunga_player/providers/states/voice_call.dart';
 import 'package:bunga_player/screens/dialogs/host.dart';
 import 'package:bunga_player/screens/wrappers/restart.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/providers/toast.dart';
-import 'package:bunga_player/providers/video_player.dart';
+import 'package:bunga_player/providers/ui/toast.dart';
+import 'package:bunga_player/providers/business/video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';

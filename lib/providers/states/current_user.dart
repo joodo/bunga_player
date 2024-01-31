@@ -1,6 +1,6 @@
 import 'package:bunga_player/services/bunga.dart';
 import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/providers/toast.dart';
+import 'package:bunga_player/providers/ui/toast.dart';
 import 'package:bunga_player/services/stream_io.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';

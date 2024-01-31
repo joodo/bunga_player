@@ -1,13 +1,13 @@
 import 'dart:async';
 
 import 'package:audioplayers/audioplayers.dart';
-import 'package:bunga_player/providers/current_channel.dart';
-import 'package:bunga_player/providers/current_user.dart';
+import 'package:bunga_player/providers/states/current_channel.dart';
+import 'package:bunga_player/providers/states/current_user.dart';
 import 'package:bunga_player/services/agora.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/providers/toast.dart';
+import 'package:bunga_player/providers/ui/toast.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:stream_chat_flutter_core/stream_chat_flutter_core.dart';

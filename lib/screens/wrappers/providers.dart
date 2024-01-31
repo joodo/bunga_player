@@ -1,13 +1,13 @@
 import 'package:bunga_player/models/app_key/app_key.dart';
-import 'package:bunga_player/providers/current_channel.dart';
-import 'package:bunga_player/providers/current_user.dart';
-import 'package:bunga_player/providers/player_controller.dart';
-import 'package:bunga_player/providers/ui.dart';
-import 'package:bunga_player/providers/video_player.dart';
-import 'package:bunga_player/providers/voice_call.dart';
+import 'package:bunga_player/providers/states/current_channel.dart';
+import 'package:bunga_player/providers/states/current_user.dart';
+import 'package:bunga_player/providers/business/remote_playing.dart';
+import 'package:bunga_player/providers/ui/ui.dart';
+import 'package:bunga_player/providers/business/video_player.dart';
+import 'package:bunga_player/providers/states/voice_call.dart';
 import 'package:bunga_player/services/agora.dart';
 import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/providers/toast.dart';
+import 'package:bunga_player/providers/ui/toast.dart';
 import 'package:bunga_player/services/stream_io.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -33,7 +33,7 @@ class ProvidersWrapper extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => VoiceCall(context.read)),
         Provider(create: (context) => VideoPlayer()),
         Provider(
-          create: (context) => PlayerController(context.read),
+          create: (context) => RemotePlaying(context.read),
           lazy: false,
         ),
       ],

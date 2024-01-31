@@ -3,14 +3,14 @@ import 'dart:async';
 import 'package:bunga_player/services/bilibili.dart';
 import 'package:bunga_player/actions/open_local_video.dart';
 import 'package:bunga_player/models/chat/channel_data.dart';
-import 'package:bunga_player/providers/current_channel.dart';
-import 'package:bunga_player/providers/player_controller.dart';
-import 'package:bunga_player/providers/current_user.dart';
-import 'package:bunga_player/providers/ui.dart';
+import 'package:bunga_player/providers/states/current_channel.dart';
+import 'package:bunga_player/providers/business/remote_playing.dart';
+import 'package:bunga_player/providers/states/current_user.dart';
+import 'package:bunga_player/providers/ui/ui.dart';
 import 'package:bunga_player/services/stream_io.dart';
 import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/providers/toast.dart';
-import 'package:bunga_player/providers/video_player.dart';
+import 'package:bunga_player/providers/ui/toast.dart';
+import 'package:bunga_player/providers/business/video_player.dart';
 import 'package:bunga_player/utils/exceptions.dart';
 import 'package:bunga_player/utils/string.dart';
 import 'package:flutter/material.dart';
@@ -62,7 +62,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
     final isBusy = context.read<IsBusy>();
     final businessName = context.read<BusinessName>();
     final videoPlayer = context.read<VideoPlayer>();
-    final playerController = context.read<PlayerController>();
+    final playerController = context.read<RemotePlaying>();
     final showSnackBar = context.read<Toast>().show;
 
     try {
@@ -98,7 +98,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
     final currentChannel = context.read<CurrentChannel>();
     final isBusy = context.read<IsBusy>();
     final businessName = context.read<BusinessName>();
-    final playerController = context.read<PlayerController>();
+    final playerController = context.read<RemotePlaying>();
     final toast = context.read<Toast>();
 
     try {

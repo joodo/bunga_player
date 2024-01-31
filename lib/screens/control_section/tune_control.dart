@@ -1,6 +1,6 @@
 import 'package:bunga_player/mocks/slider.dart' as mock;
 import 'package:bunga_player/mocks/dropdown.dart' as mock;
-import 'package:bunga_player/providers/video_player.dart';
+import 'package:bunga_player/providers/business/video_player.dart';
 import 'package:bunga_player/screens/control_section/card.dart';
 import 'package:bunga_player/screens/control_section/dropdown.dart';
 import 'package:flutter/material.dart';

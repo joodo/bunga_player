@@ -1,5 +1,5 @@
 import 'package:bunga_player/models/chat/channel_data.dart';
-import 'package:bunga_player/providers/current_user.dart';
+import 'package:bunga_player/providers/states/current_user.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:stream_chat_flutter_core/stream_chat_flutter_core.dart';
 

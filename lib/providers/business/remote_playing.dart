@@ -2,19 +2,18 @@ import 'dart:async';
 
 import 'package:bunga_player/services/bilibili.dart';
 import 'package:bunga_player/models/chat/channel_data.dart';
-import 'package:bunga_player/providers/current_channel.dart';
-import 'package:bunga_player/providers/current_user.dart';
-import 'package:bunga_player/providers/ui.dart';
+import 'package:bunga_player/providers/states/current_channel.dart';
+import 'package:bunga_player/providers/states/current_user.dart';
+import 'package:bunga_player/providers/ui/ui.dart';
 import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/providers/toast.dart';
-import 'package:bunga_player/providers/video_player.dart';
+import 'package:bunga_player/providers/ui/toast.dart';
+import 'package:bunga_player/providers/business/video_player.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:provider/provider.dart';
 import 'package:stream_chat_flutter_core/stream_chat_flutter_core.dart';
 
-/// Methods connecting video player and chat
-class PlayerController {
-  PlayerController(Locator read)
+class RemotePlaying {
+  RemotePlaying(Locator read)
       : _read = read,
         _currentUser = read<CurrentUser>(),
         _currentChannel = read<CurrentChannel>(),

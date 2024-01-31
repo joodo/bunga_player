@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:bunga_player/providers/current_channel.dart';
+import 'package:bunga_player/providers/states/current_channel.dart';
 import 'package:fireworks/fireworks.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';

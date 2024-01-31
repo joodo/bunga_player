@@ -1,6 +1,6 @@
-import 'package:bunga_player/providers/player_controller.dart';
+import 'package:bunga_player/providers/business/remote_playing.dart';
 import 'package:bunga_player/utils/duration.dart';
-import 'package:bunga_player/providers/video_player.dart';
+import 'package:bunga_player/providers/business/video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:multi_value_listenable_builder/multi_value_listenable_builder.dart';
 import 'package:provider/provider.dart';
@@ -22,7 +22,7 @@ class _VideoProgressIndicatorState extends State<VideoProgressIndicator> {
   @override
   Widget build(BuildContext context) {
     final videoPlayer = context.read<VideoPlayer>();
-    final playerController = context.read<PlayerController>();
+    final playerController = context.read<RemotePlaying>();
 
     return MouseRegion(
       onEnter: (event) => setState(() {

@@ -1,6 +1,6 @@
-import 'package:bunga_player/providers/player_controller.dart';
-import 'package:bunga_player/providers/ui.dart';
-import 'package:bunga_player/providers/video_player.dart';
+import 'package:bunga_player/providers/business/remote_playing.dart';
+import 'package:bunga_player/providers/ui/ui.dart';
+import 'package:bunga_player/providers/business/video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -38,7 +38,7 @@ class SetPositionAction extends ContextAction<SetPositionIntent> {
   @override
   void invoke(SetPositionIntent intent, [BuildContext? context]) {
     final videoPlayer = context!.read<VideoPlayer>();
-    final playerController = context.read<PlayerController>();
+    final playerController = context.read<RemotePlaying>();
     if (intent.isIncrease) {
       var position = videoPlayer.position.value + intent.duration;
       position = position > videoPlayer.duration.value
@@ -66,7 +66,7 @@ class TogglePlayAction extends ContextAction<TogglePlayIntent> {
   @override
   void invoke(TogglePlayIntent intent, [BuildContext? context]) {
     final videoPlayer = context!.read<VideoPlayer>();
-    final playerController = context.read<PlayerController>();
+    final playerController = context.read<RemotePlaying>();
     videoPlayer.isPlaying.value = !videoPlayer.isPlaying.value;
     playerController.sendPlayerStatus();
   }
@@ -74,7 +74,7 @@ class TogglePlayAction extends ContextAction<TogglePlayIntent> {
   @override
   bool isEnabled(TogglePlayIntent intent, [BuildContext? context]) {
     final videoPlayer = context!.read<VideoPlayer>();
-    final playerController = context.read<PlayerController>();
+    final playerController = context.read<RemotePlaying>();
     return !videoPlayer.isStoppedNotifier.value &&
         !playerController.justToggledByRemote;
   }

@@ -1,6 +1,6 @@
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:bunga_player/mocks/slider.dart' as mock;
-import 'package:bunga_player/providers/voice_call.dart';
+import 'package:bunga_player/providers/states/voice_call.dart';
 import 'package:flutter/material.dart';
 import 'package:multi_value_listenable_builder/multi_value_listenable_builder.dart';
 import 'package:provider/provider.dart';
