@@ -129,6 +129,9 @@ class Bilibili {
         // fetch cookie
         sess = await getSess();
         video.isHD = sess != null;
+        if (!video.isHD) {
+          logger.w('Bilibili: Cookie of serverless funtion outdated');
+        }
       }(),
       () async {
         // fetch video info

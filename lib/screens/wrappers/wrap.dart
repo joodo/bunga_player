@@ -8,7 +8,6 @@ import 'host_init.dart';
 import 'restart.dart';
 import 'providers.dart';
 
-// TODO: use wrapper mixin
 Widget wrap(Widget child) {
   child = ConsoleWrapper(child: child);
   child = UpdateWrapper(child: child);

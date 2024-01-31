@@ -1,4 +1,5 @@
 import 'package:bunga_player/actions/play.dart';
+import 'package:bunga_player/providers/business/business_indicator.dart';
 import 'package:bunga_player/providers/ui/ui.dart';
 import 'package:bunga_player/providers/business/video_player.dart';
 import 'package:bunga_player/screens/player_section/placeholder.dart';
@@ -29,7 +30,8 @@ class _PlayerSectionState extends State<PlayerSection> {
             wakelock: true,
           ),
           AnimatedOpacity(
-            opacity: context.watch<BusinessName>().value == null ? 0.0 : 1.0,
+            opacity: context.select<BusinessIndicator, double>(
+                (bi) => bi.currentMissionName == null ? 0.0 : 1.0),
             duration: const Duration(milliseconds: 250),
             child: const PlayerPlaceholder(),
           ),

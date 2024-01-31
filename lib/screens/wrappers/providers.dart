@@ -1,4 +1,5 @@
 import 'package:bunga_player/models/app_key/app_key.dart';
+import 'package:bunga_player/providers/business/business_indicator.dart';
 import 'package:bunga_player/providers/states/current_channel.dart';
 import 'package:bunga_player/providers/states/current_user.dart';
 import 'package:bunga_player/providers/business/remote_playing.dart';
@@ -28,6 +29,7 @@ class ProvidersWrapper extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => CurrentUser(context)),
         ChangeNotifierProvider(create: (context) => CurrentChannel(context)),
         ChangeNotifierProvider(create: (context) => VoiceCall(context)),
+        ChangeNotifierProvider(create: (context) => BusinessIndicator()),
         Provider(create: (context) => VideoPlayer()),
         Provider(
           create: (context) => RemotePlaying(context),

@@ -1,14 +1,12 @@
+import 'package:bunga_player/providers/business/business_indicator.dart';
 import 'package:bunga_player/screens/wrappers/toast.dart';
 import 'package:bunga_player/services/bilibili.dart';
 import 'package:bunga_player/actions/open_local_video.dart';
 import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/providers/states/current_channel.dart';
 import 'package:bunga_player/providers/business/remote_playing.dart';
-import 'package:bunga_player/providers/ui/ui.dart';
-import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/providers/business/video_player.dart';
 import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/utils/exceptions.dart';
 import 'package:bunga_player/utils/string.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -36,17 +34,18 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
             ),
           ],
         ),
-        Consumer<IsBusy>(
+        Selector<BusinessIndicator, bool>(
+          selector: (context, bi) => bi.currentProgress != null,
           builder: (context, isBusy, child) => Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               FilledButton(
-                onPressed: isBusy.value ? null : _openLocalVideo,
+                onPressed: isBusy ? null : _openLocalVideo,
                 child: const Text('视频文件'),
               ),
               const SizedBox(width: 16),
               FilledButton(
-                onPressed: isBusy.value ? null : _openBilibili,
+                onPressed: isBusy ? null : _openBilibili,
                 child: const Text('Bilibili 视频'),
               ),
             ],
@@ -58,90 +57,104 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
 
   void _openLocalVideo() async {
     final currentChannel = context.read<CurrentChannel>();
-    final isBusy = context.read<IsBusy>();
-    final businessName = context.read<BusinessName>();
     final videoPlayer = context.read<VideoPlayer>();
     final playerController = context.read<RemotePlaying>();
-    final showToast = context.showToast;
+    final bi = context.read<BusinessIndicator>();
 
-    try {
-      final shouldUpdateChannelData = playerController.isVideoSameWithRoom;
+    final shouldUpdateChannelData = playerController.isVideoSameWithRoom;
 
-      final file = await openLocalVideoDialog();
-      if (file == null) throw NoFileSelectedException();
+    final file = await openLocalVideoDialog();
+    if (file == null) return;
 
-      isBusy.value = true;
-      businessName.value = '正在收拾客厅……';
-      await videoPlayer.loadLocalVideo(file);
+    await bi.run(
+      missions: [
+        Mission(
+          name: '正在收拾客厅……',
+          tasks: [
+            () => videoPlayer.loadLocalVideo(file),
+          ],
+        ),
+        Mission(
+          name: '正在发送请柬……',
+          tasks: [
+            () async {
+              // Update room data only if playing correct video
+              if (shouldUpdateChannelData) {
+                await currentChannel.updateData(ChannelData(
+                  videoType: VideoType.local,
+                  name: file.name,
+                  videoHash: videoPlayer.videoHashNotifier.value!,
+                ));
+              } else {
+                playerController.askPosition();
+              }
+            },
+          ],
+        ),
+      ],
+      onError: () {
+        context.showToast('加载失败');
+      },
+    );
 
-      // Update room data only if playing correct video
-      if (shouldUpdateChannelData) {
-        businessName.value = '正在发送请柬……';
-        await currentChannel.updateData(ChannelData(
-          videoType: VideoType.local,
-          name: file.name,
-          videoHash: videoPlayer.videoHashNotifier.value!,
-        ));
-      }
-      playerController.askPosition();
-
-      _onVideoLoaded();
-    } catch (e) {
-      if (e is! NoFileSelectedException) {
-        logger.e(e);
-        showToast('加载失败');
-      }
-    } finally {
-      businessName.value = null;
-      isBusy.value = false;
-    }
+    _onVideoLoaded();
   }
 
   void _openBilibili() async {
     final currentChannel = context.read<CurrentChannel>();
-    final isBusy = context.read<IsBusy>();
-    final businessName = context.read<BusinessName>();
+    final videoPlayer = context.read<VideoPlayer>();
     final playerController = context.read<RemotePlaying>();
+    final bi = context.read<BusinessIndicator>();
     final showToast = context.showToast;
 
-    try {
-      // Update room data only if playing correct video
-      final shouldUpdateRoomData = playerController.isVideoSameWithRoom;
+    // Update room data only if playing correct video
+    final shouldUpdateRoomData = playerController.isVideoSameWithRoom;
 
-      final result = await showDialog(
-        context: context,
-        builder: (context) => const _BiliDialog(),
-      );
-      if (result == null) throw NoFileSelectedException();
+    final result = await showDialog(
+      context: context,
+      builder: (context) => const _BiliDialog(),
+    );
+    if (result == null) return;
 
-      isBusy.value = true;
-      final biliEntry = await getService<Bilibili>()
-          .getEntryFromUri((result as String).parseUri());
-      await for (var hintText in playerController.loadBiliEntry(biliEntry)) {
-        businessName.value = hintText;
-      }
+    final biliEntry = await getService<Bilibili>()
+        .getEntryFromUri((result as String).parseUri());
+    await bi.run(
+      missions: [
+        Mission(
+          name: '正在鬼鬼祟祟……',
+          tasks: [
+            () async {
+              videoPlayer.stop();
 
-      if (shouldUpdateRoomData) {
-        businessName.value = '正在发送请柬……';
-        await currentChannel.updateData(ChannelData(
-          videoType: VideoType.bilibili,
-          name: biliEntry.title,
-          videoHash: biliEntry.hash,
-          pic: biliEntry.pic,
-        ));
-      }
-      playerController.askPosition();
+              await getService<Bilibili>().fetch(biliEntry);
+              if (biliEntry is BiliVideo && !(biliEntry).isHD) {
+                showToast('无法获取高清视频');
+              }
+            },
+          ],
+        ),
+        Mission(name: '正在收拾客厅……', tasks: [
+          () async {
+            await videoPlayer.loadBiliVideo(biliEntry);
 
-      _onVideoLoaded();
-    } catch (e) {
-      if (e is! NoFileSelectedException) {
-        showToast('解析失败');
-        rethrow;
-      }
-    } finally {
-      businessName.value = null;
-      isBusy.value = false;
-    }
+            if (shouldUpdateRoomData) {
+              await currentChannel.updateData(ChannelData(
+                videoType: VideoType.bilibili,
+                name: biliEntry.title,
+                videoHash: biliEntry.hash,
+                pic: biliEntry.pic,
+              ));
+            } else {
+              // if it's me that updated channel data, then no need to ask
+              playerController.askPosition();
+            }
+          },
+        ]),
+      ],
+      onError: () => showToast('解析失败'),
+    );
+
+    _onVideoLoaded();
   }
 
   void _onVideoLoaded() {

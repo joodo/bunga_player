@@ -34,6 +34,7 @@ void main() {
     },
     (error, stackTrace) {
       logger.e(error, stackTrace: stackTrace);
+      throw error;
     },
   );
 }

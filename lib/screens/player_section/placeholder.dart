@@ -1,5 +1,5 @@
+import 'package:bunga_player/providers/business/business_indicator.dart';
 import 'package:bunga_player/providers/states/current_user.dart';
-import 'package:bunga_player/providers/ui/ui.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rive/rive.dart';
@@ -27,7 +27,7 @@ class _PlayerPlaceholderState extends State<PlayerPlaceholder> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.black.withOpacity(0.3),
+      color: Colors.black,
       child: Center(
         child: Stack(
           alignment: Alignment.center,
@@ -57,7 +57,9 @@ class _PlayerPlaceholderState extends State<PlayerPlaceholder> {
             Positioned(
               top: 340,
               child: Text(
-                context.watch<BusinessName>().value ?? '',
+                context.select<BusinessIndicator, String?>(
+                        (bi) => bi.currentMissionName) ??
+                    '',
                 style: Theme.of(context).textTheme.titleLarge,
               ),
             ),

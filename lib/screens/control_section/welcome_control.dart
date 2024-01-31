@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:bunga_player/providers/business/business_indicator.dart';
 import 'package:bunga_player/screens/wrappers/toast.dart';
 import 'package:bunga_player/services/bilibili.dart';
 import 'package:bunga_player/actions/open_local_video.dart';
@@ -7,11 +8,9 @@ import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/providers/states/current_channel.dart';
 import 'package:bunga_player/providers/business/remote_playing.dart';
 import 'package:bunga_player/providers/states/current_user.dart';
-import 'package:bunga_player/providers/ui/ui.dart';
 import 'package:bunga_player/services/stream_io.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/providers/business/video_player.dart';
-import 'package:bunga_player/utils/exceptions.dart';
 import 'package:bunga_player/utils/string.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -24,32 +23,46 @@ class WelcomeControl extends StatefulWidget {
 }
 
 class _WelcomeControlState extends State<WelcomeControl> {
-  String get _welcomeText => '${context.read<CurrentUser>().name}, 你好！';
+  Completer<void>? _completer;
+  late final _mission = Mission(
+    name: '${context.read<CurrentUser>().name}, 你好！',
+    tasks: [
+      () {
+        _completer = Completer();
+        return _completer!.future;
+      }
+    ],
+  );
+  void _initBusinessIndicator() => context.read<BusinessIndicator>().run(
+        missions: [_mission],
+        showProgress: false,
+      );
 
   @override
   void initState() {
     super.initState();
-    Future.microtask(() => context.read<BusinessName>().value = _welcomeText);
+    Future.microtask(_initBusinessIndicator);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<IsBusy>(
+    return Selector<BusinessIndicator, bool>(
+      selector: (context, bi) => bi.currentProgress != null,
       builder: (context, isBusy, child) => Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           OutlinedButton(
-            onPressed: isBusy.value ? null : _onChangeName,
+            onPressed: isBusy ? null : _onChangeName,
             child: const Text('换个名字'),
           ),
           const SizedBox(width: 16),
           FilledButton(
-            onPressed: isBusy.value ? null : _openLocalVideo,
+            onPressed: isBusy ? null : _openLocalVideo,
             child: const Text('打开视频文件'),
           ),
           const SizedBox(width: 16),
           FilledButton(
-            onPressed: isBusy.value ? null : _openBilibili,
+            onPressed: isBusy ? null : _openBilibili,
             child: const Text('Bilibili 视频'),
           ),
         ],
@@ -59,99 +72,129 @@ class _WelcomeControlState extends State<WelcomeControl> {
 
   void _openLocalVideo() async {
     final currentChannel = context.read<CurrentChannel>();
-    final isBusy = context.read<IsBusy>();
-    final businessName = context.read<BusinessName>();
     final videoPlayer = context.read<VideoPlayer>();
-    final playerController = context.read<RemotePlaying>();
-    final showToast = context.showToast;
+    final remotePlaying = context.read<RemotePlaying>();
 
-    try {
-      final file = await openLocalVideoDialog();
-      if (file == null) throw NoFileSelectedException();
+    final file = await openLocalVideoDialog();
+    if (file == null) return;
 
-      isBusy.value = true;
-      businessName.value = '正在收拾客厅……';
-      await videoPlayer.loadLocalVideo(file);
+    _completer?.complete();
+    Future.microtask(() => context.read<BusinessIndicator>().run(
+          missions: [
+            Mission(
+              name: '正在收拾客厅……',
+              tasks: [
+                () => videoPlayer.loadLocalVideo(file),
+              ],
+            ),
+            Mission(
+              name: '正在发送请柬……',
+              tasks: [
+                () async {
+                  final hash = videoPlayer.videoHashNotifier.value!;
+                  await currentChannel.createOrJoin(ChannelData(
+                    videoType: VideoType.local,
+                    name: file.name,
+                    videoHash: hash,
+                  ));
+                  remotePlaying.askPosition();
 
-      businessName.value = '正在发送请柬……';
-      final hash = videoPlayer.videoHashNotifier.value!;
-      await currentChannel.createOrJoin(ChannelData(
-        videoType: VideoType.local,
-        name: file.name,
-        videoHash: hash,
-      ));
-      playerController.askPosition();
-
-      _onVideoLoaded();
-    } catch (e) {
-      businessName.value = _welcomeText;
-      if (e is! NoFileSelectedException) {
-        showToast('加载失败');
-        rethrow;
-      }
-    } finally {
-      isBusy.value = false;
-    }
+                  _onVideoLoaded();
+                },
+              ],
+            ),
+          ],
+          onError: () {
+            context.showToast('加载失败');
+            Future.microtask(_initBusinessIndicator);
+          },
+        ));
   }
 
   void _openBilibili() async {
     final currentChannel = context.read<CurrentChannel>();
-    final isBusy = context.read<IsBusy>();
-    final businessName = context.read<BusinessName>();
     final playerController = context.read<RemotePlaying>();
+    final videoPlayer = context.read<VideoPlayer>();
+    final showToast = context.showToast;
 
-    try {
-      final result = await showDialog(
-        context: context,
-        builder: (context) => const _BiliDialog(),
-      );
-      if (result == null) throw NoFileSelectedException();
+    final result = await showDialog(
+      context: context,
+      builder: (context) => const _BiliDialog(),
+    );
+    if (result == null) return;
 
-      isBusy.value = true;
-      final BiliEntry biliEntry;
-      String? channelId;
-      if (result is String && result.isNotEmpty) {
-        // Open video by url
-        biliEntry =
-            await getService<Bilibili>().getEntryFromUri(result.parseUri());
-      } else if (result is _BiliChannelData) {
-        // Join others
-        biliEntry = BiliEntry.fromHash(result.hash);
-        channelId = result.id;
-      } else {
-        throw 'Unknown dialog result';
-      }
-      await for (var hintText in playerController.loadBiliEntry(biliEntry)) {
-        businessName.value = hintText;
-      }
+    late final BiliEntry biliEntry;
+    String? channelId;
 
-      businessName.value = '正在发送请柬……';
-      if (channelId == null) {
-        await currentChannel.createOrJoin(ChannelData(
-          videoType: VideoType.bilibili,
-          name: biliEntry.title,
-          videoHash: biliEntry.hash,
-          pic: biliEntry.pic,
+    _completer?.complete();
+    Future.microtask(() => context.read<BusinessIndicator>().run(
+          missions: [
+            Mission(
+              name: '正在鬼鬼祟祟……',
+              tasks: [
+                // get BiliEntry
+                () async {
+                  if (result is String && result.isNotEmpty) {
+                    // Open video by url
+                    biliEntry = await getService<Bilibili>()
+                        .getEntryFromUri(result.parseUri());
+                  } else if (result is _BiliChannelData) {
+                    // Join others
+                    biliEntry = BiliEntry.fromHash(result.hash);
+                    channelId = result.id;
+                  } else {
+                    throw 'Unknown dialog result';
+                  }
+                },
+                // fetch BiliEntry
+                () async {
+                  await getService<Bilibili>().fetch(biliEntry);
+                  if (biliEntry is BiliVideo &&
+                      !(biliEntry as BiliVideo).isHD) {
+                    showToast('无法获取高清视频');
+                  }
+                },
+              ],
+            ),
+            Mission(
+              name: '正在收拾客厅……',
+              tasks: [
+                // load BiliEntry
+                () async {
+                  await videoPlayer.loadBiliVideo(biliEntry);
+                },
+              ],
+            ),
+            Mission(
+              name: '正在发送请柬……',
+              tasks: [
+                () async {
+                  if (channelId == null) {
+                    await currentChannel.createOrJoin(ChannelData(
+                      videoType: VideoType.bilibili,
+                      name: biliEntry.title,
+                      videoHash: biliEntry.hash,
+                      pic: biliEntry.pic,
+                    ));
+                  } else {
+                    await currentChannel.joinById(channelId!);
+                  }
+                  playerController.askPosition();
+
+                  _onVideoLoaded();
+                },
+              ],
+            ),
+          ],
+          onError: () {
+            context.showToast('解析失败');
+            Future.microtask(_initBusinessIndicator);
+          },
         ));
-      } else {
-        await currentChannel.joinById(channelId);
-      }
-      playerController.askPosition();
-
-      businessName.value = null;
-      _onVideoLoaded();
-    } catch (e) {
-      businessName.value = _welcomeText;
-      if (e is! NoFileSelectedException) {
-        if (context.mounted) context.showToast('解析失败');
-        rethrow;
-      }
-    } finally {
-      isBusy.value = false;
-    }
   }
 
   void _onChangeName() async {
+    _completer?.complete();
     Navigator.of(context).popAndPushNamed(
       'control:rename',
       arguments: {'previousName': context.read<CurrentUser>().name},
@@ -159,7 +202,6 @@ class _WelcomeControlState extends State<WelcomeControl> {
   }
 
   void _onVideoLoaded() {
-    context.read<BusinessName>().value = null;
     Navigator.of(context).popAndPushNamed('control:main');
   }
 }

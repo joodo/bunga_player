@@ -1,5 +1,7 @@
+import 'dart:async';
+
+import 'package:bunga_player/providers/business/business_indicator.dart';
 import 'package:bunga_player/providers/states/current_user.dart';
-import 'package:bunga_player/providers/ui/ui.dart';
 import 'package:bunga_player/screens/wrappers/toast.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:flutter/material.dart';
@@ -16,13 +18,25 @@ class RenameControl extends StatefulWidget {
 class _RenameControlState extends State<RenameControl> {
   final _textController = TextEditingController();
 
+  Completer<void>? _completer;
+  late final _mission = Mission(
+    name: '怎样称呼你？',
+    tasks: [
+      () {
+        _completer = Completer();
+        return _completer!.future;
+      }
+    ],
+  );
+
   @override
   void initState() {
     super.initState();
 
-    Future.microtask(() {
-      context.read<BusinessName>().value = '怎样称呼你？';
-    });
+    Future.microtask(() => context.read<BusinessIndicator>().run(
+          missions: [_mission],
+          showProgress: false,
+        ));
 
     if (widget.previousName != null) {
       _textController.text = widget.previousName!;
@@ -76,6 +90,7 @@ class _RenameControlState extends State<RenameControl> {
       context.showToast('改名失败');
       throw error ?? '改名失败';
     });
+    _completer?.complete();
     Navigator.of(context).popAndPushNamed('control:welcome');
   }
 }

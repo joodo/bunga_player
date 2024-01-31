@@ -1,12 +1,10 @@
 import 'package:bunga_player/actions/open_local_video.dart';
+import 'package:bunga_player/providers/business/business_indicator.dart';
 import 'package:bunga_player/providers/states/current_channel.dart';
 import 'package:bunga_player/providers/business/remote_playing.dart';
 import 'package:bunga_player/providers/states/current_user.dart';
-import 'package:bunga_player/providers/ui/ui.dart';
 import 'package:bunga_player/screens/wrappers/toast.dart';
-import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/providers/business/video_player.dart';
-import 'package:bunga_player/utils/exceptions.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:stream_chat_flutter_core/stream_chat_flutter_core.dart';
@@ -22,7 +20,7 @@ class _RoomSectionState extends State<RoomSection> {
   @override
   Widget build(BuildContext context) {
     final currentChannel = context.read<CurrentChannel>();
-    final isBusy = context.read<IsBusy>();
+    final isBusy = context.read<BusinessIndicator>().currentProgress != null;
     final videoPlayer = context.read<VideoPlayer>();
 
     return Row(
@@ -49,7 +47,7 @@ class _RoomSectionState extends State<RoomSection> {
         ValueListenableBuilder(
           valueListenable: currentChannel.channelDataNotifier,
           builder: (context, channelData, child) {
-            if (isBusy.value == true || // loading video
+            if (isBusy == true || // maybe loading video
                 videoPlayer.isStoppedNotifier.value || // stopped
                 channelData == null || // no one change data
                 channelData.videoHash == videoPlayer.videoHashNotifier.value) {
@@ -74,30 +72,27 @@ class _RoomSectionState extends State<RoomSection> {
   }
 
   void _openLocalVideo() async {
-    final isBusy = context.read<IsBusy>();
-    final businessName = context.read<BusinessName>();
     final videoPlayer = context.read<VideoPlayer>();
     final playerController = context.read<RemotePlaying>();
-    final showToast = context.showToast;
+    final bi = context.read<BusinessIndicator>();
 
-    try {
-      final file = await openLocalVideoDialog();
-      if (file == null) throw NoFileSelectedException();
+    final file = await openLocalVideoDialog();
+    if (file == null) return;
 
-      isBusy.value = true;
-      businessName.value = '正在收拾客厅……';
-      await videoPlayer.loadLocalVideo(file);
-
-      playerController.askPosition();
-    } catch (e) {
-      if (e is! NoFileSelectedException) {
-        logger.e(e);
-        showToast('加载失败');
-      }
-    } finally {
-      businessName.value = null;
-      isBusy.value = false;
-    }
+    await bi.run(
+      missions: [
+        Mission(
+          name: '正在收拾客厅……',
+          tasks: [
+            () => videoPlayer.loadLocalVideo(file),
+            () => playerController.askPosition(),
+          ],
+        ),
+      ],
+      onError: () {
+        context.showToast('加载失败');
+      },
+    );
   }
 
   String _getUsersStringExceptId(List<User> userList, String id) {

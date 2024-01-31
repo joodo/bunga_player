@@ -1,13 +1,11 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'dart:async';
 
+import 'package:bunga_player/providers/business/business_indicator.dart';
 import 'package:bunga_player/screens/wrappers/toast.dart';
 import 'package:bunga_player/services/bilibili.dart';
 import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/providers/states/current_channel.dart';
 import 'package:bunga_player/providers/states/current_user.dart';
-import 'package:bunga_player/providers/ui/ui.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/providers/business/video_player.dart';
 import 'package:bunga_player/services/services.dart';
@@ -24,6 +22,7 @@ class RemotePlaying {
         // Try to follow if it's bili video
         final channelData = currentChannel.channelDataNotifier.value;
         if (!isVideoSameWithRoom &&
+            _context.read<VideoPlayer>().videoHashNotifier.value != null &&
             channelData?.videoType == VideoType.bilibili) {
           followRemoteBiliVideoHash(channelData!.videoHash);
         }
@@ -35,9 +34,10 @@ class RemotePlaying {
 
   Future _onChannelChanged() async {
     // Listen to new chat message
+    final messageStream = _context.read<CurrentChannel>().messageStream;
+
     await _messageSubscription?.cancel();
-    _messageSubscription =
-        _context.read<CurrentChannel>().messageStream.listen((message) {
+    _messageSubscription = messageStream.listen((message) {
       if (message?.user?.id == _context.read<CurrentUser>().id) return;
 
       final prefix = message?.text?.split(' ').first;
@@ -61,37 +61,31 @@ class RemotePlaying {
   StreamSubscription? _messageSubscription;
 
   Future<void> followRemoteBiliVideoHash(String videoHash) async {
-    final isBusy = _context.read<IsBusy>();
-    final businessName = _context.read<BusinessName>();
-
-    try {
-      isBusy.value = true;
-      await for (var hintText in loadBiliEntry(BiliEntry.fromHash(videoHash))) {
-        businessName.value = hintText;
-      }
-      await askPosition();
-    } catch (e) {
-      logger.e(e);
-    } finally {
-      businessName.value = null;
-      isBusy.value = false;
-    }
-  }
-
-  Stream<String> loadBiliEntry(BiliEntry biliEntry) async* {
+    final bi = _context.read<BusinessIndicator>();
+    final showToast = _context.showToast;
     final videoPlayer = _context.read<VideoPlayer>();
 
-    videoPlayer.stop();
+    final biliEntry = BiliEntry.fromHash(videoHash);
+    await bi.run(
+      missions: [
+        Mission(name: '正在鬼鬼祟祟……', tasks: [
+          () async {
+            videoPlayer.stop();
 
-    yield '正在鬼鬼祟祟……';
-    await getService<Bilibili>().fetch(biliEntry);
-    if (biliEntry is BiliVideo && !biliEntry.isHD) {
-      _context.showToast('无法获取高清视频');
-      logger.w('Bilibili: Cookie of serverless funtion outdated');
-    }
-
-    yield '正在收拾客厅……';
-    await videoPlayer.loadBiliVideo(biliEntry);
+            await getService<Bilibili>().fetch(biliEntry);
+            if (biliEntry is BiliVideo && !biliEntry.isHD) {
+              showToast('无法获取高清视频');
+            }
+          },
+        ]),
+        Mission(name: '正在收拾客厅……', tasks: [
+          () async {
+            await videoPlayer.loadBiliVideo(biliEntry);
+            await askPosition();
+          },
+        ]),
+      ],
+    );
   }
 
   bool get isVideoSameWithRoom =>
