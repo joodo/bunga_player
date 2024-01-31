@@ -6,10 +6,10 @@ import 'package:bunga_player/providers/states/current_user.dart';
 import 'package:bunga_player/providers/states/voice_call.dart';
 import 'package:bunga_player/screens/dialogs/host.dart';
 import 'package:bunga_player/screens/wrappers/restart.dart';
+import 'package:bunga_player/screens/wrappers/toast.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/providers/ui/toast.dart';
 import 'package:bunga_player/providers/business/video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -45,8 +45,6 @@ class _ConsoleWrapperState extends State<ConsoleWrapper> {
 
   @override
   Widget build(BuildContext context) {
-    final showSnackBar = context.read<Toast>().show;
-
     final logView = TextField(
       controller: _logTextController,
       decoration: const InputDecoration(
@@ -78,7 +76,9 @@ class _ConsoleWrapperState extends State<ConsoleWrapper> {
 
             await currentUser.changeID(newID);
 
-            showSnackBar('User ID has changed to $newID');
+            if (context.mounted) {
+              context.showToast('User ID has changed to $newID');
+            }
           },
           child: const Text('Change User ID'),
         ),
@@ -103,6 +103,11 @@ class _ConsoleWrapperState extends State<ConsoleWrapper> {
         FilledButton(
           onPressed: () => throw 'Exception!',
           child: const Text('Throw an exception'),
+        ),
+        const SizedBox(height: 8),
+        FilledButton(
+          onPressed: () => context.showToast('A new toast!'),
+          child: const Text('Show a toast'),
         ),
       ],
     );

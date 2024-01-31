@@ -1,12 +1,14 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:async';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/providers/states/current_user.dart';
+import 'package:bunga_player/screens/wrappers/toast.dart';
 import 'package:bunga_player/services/stream_io.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/providers/ui/toast.dart';
 import 'package:bunga_player/utils/value_listenable.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -15,8 +17,8 @@ import 'package:stream_chat_flutter_core/stream_chat_flutter_core.dart';
 const videoTypeChannelDataKey = 'video_type';
 
 class CurrentChannel extends ChangeNotifier {
-  CurrentChannel(this.read);
-  final Locator read;
+  CurrentChannel(this._context);
+  final BuildContext _context;
 
   Channel? _channel;
   bool get isEmpty => _channel == null;
@@ -83,7 +85,7 @@ class CurrentChannel extends ChangeNotifier {
     notifyListeners();
   }
 
-  bool _isCurrentUser(User user) => read<CurrentUser>().id == user.id;
+  bool _isCurrentUser(User user) => _context.read<CurrentUser>().id == user.id;
 
   Future _onUserJoin(User user) async {
     if (_isCurrentUser(user)) return;
@@ -94,7 +96,7 @@ class CurrentChannel extends ChangeNotifier {
 
     _watchersNotifier.value = List.from(_watchersNotifier.value)..add(user);
 
-    read<Toast>().show('${user.name} 已加入');
+    _context.showToast('${user.name} 已加入');
     AudioPlayer().play(AssetSource('sounds/user_join.wav'));
   }
 
@@ -102,7 +104,7 @@ class CurrentChannel extends ChangeNotifier {
     _watchersNotifier.value = List.from(_watchersNotifier.value)
       ..removeWhere((u) {
         if (u.id == user.id) {
-          read<Toast>().show('${u.name} 已离开');
+          _context.showToast('${u.name} 已离开');
           AudioPlayer().play(AssetSource('sounds/user_leave.wav'));
           return true;
         } else {
@@ -140,7 +142,7 @@ class CurrentChannel extends ChangeNotifier {
           .listen((user) {
         logger.i('${user.name} changed channel data');
         if (_isCurrentUser(user)) return;
-        read<Toast>().show('${user.name} 更换了影片');
+        _context.showToast('${user.name} 更换了影片');
         _lastChannelDataUpdater = user;
       }),
       channelDataNotifier.bind(_channel!.extraDataStream

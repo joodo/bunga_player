@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:bunga_player/screens/wrappers/toast.dart';
 import 'package:bunga_player/services/bilibili.dart';
 import 'package:bunga_player/actions/open_local_video.dart';
 import 'package:bunga_player/models/chat/channel_data.dart';
@@ -9,7 +10,6 @@ import 'package:bunga_player/providers/states/current_user.dart';
 import 'package:bunga_player/providers/ui/ui.dart';
 import 'package:bunga_player/services/stream_io.dart';
 import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/providers/ui/toast.dart';
 import 'package:bunga_player/providers/business/video_player.dart';
 import 'package:bunga_player/utils/exceptions.dart';
 import 'package:bunga_player/utils/string.dart';
@@ -63,7 +63,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
     final businessName = context.read<BusinessName>();
     final videoPlayer = context.read<VideoPlayer>();
     final playerController = context.read<RemotePlaying>();
-    final showSnackBar = context.read<Toast>().show;
+    final showToast = context.showToast;
 
     try {
       final file = await openLocalVideoDialog();
@@ -86,7 +86,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
     } catch (e) {
       businessName.value = _welcomeText;
       if (e is! NoFileSelectedException) {
-        showSnackBar('加载失败');
+        showToast('加载失败');
         rethrow;
       }
     } finally {
@@ -99,7 +99,6 @@ class _WelcomeControlState extends State<WelcomeControl> {
     final isBusy = context.read<IsBusy>();
     final businessName = context.read<BusinessName>();
     final playerController = context.read<RemotePlaying>();
-    final toast = context.read<Toast>();
 
     try {
       final result = await showDialog(
@@ -144,7 +143,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
     } catch (e) {
       businessName.value = _welcomeText;
       if (e is! NoFileSelectedException) {
-        toast.show('解析失败');
+        if (context.mounted) context.showToast('解析失败');
         rethrow;
       }
     } finally {

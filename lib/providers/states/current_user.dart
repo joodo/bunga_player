@@ -1,15 +1,14 @@
+import 'package:bunga_player/screens/wrappers/toast.dart';
 import 'package:bunga_player/services/bunga.dart';
 import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/providers/ui/toast.dart';
 import 'package:bunga_player/services/stream_io.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
-import 'package:flutter/foundation.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
 class CurrentUser extends ChangeNotifier {
-  CurrentUser(this.read) {
+  CurrentUser(this._context) {
     final pref = getService<Preferences>();
 
     _name = pref.get<String>('user_name');
@@ -22,11 +21,11 @@ class CurrentUser extends ChangeNotifier {
     _id = prefID;
 
     login().onError((error, stackTrace) {
-      read<Toast>().show('登录失败');
+      _context.showToast('登录失败');
       logger.e('Login failed: $error');
     });
   }
-  final Locator read;
+  final BuildContext _context;
 
   late String _id;
   String get id => _id;

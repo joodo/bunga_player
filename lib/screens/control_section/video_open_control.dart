@@ -1,3 +1,4 @@
+import 'package:bunga_player/screens/wrappers/toast.dart';
 import 'package:bunga_player/services/bilibili.dart';
 import 'package:bunga_player/actions/open_local_video.dart';
 import 'package:bunga_player/models/chat/channel_data.dart';
@@ -5,7 +6,6 @@ import 'package:bunga_player/providers/states/current_channel.dart';
 import 'package:bunga_player/providers/business/remote_playing.dart';
 import 'package:bunga_player/providers/ui/ui.dart';
 import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/providers/ui/toast.dart';
 import 'package:bunga_player/providers/business/video_player.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/exceptions.dart';
@@ -62,7 +62,7 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
     final businessName = context.read<BusinessName>();
     final videoPlayer = context.read<VideoPlayer>();
     final playerController = context.read<RemotePlaying>();
-    final showSnackBar = context.read<Toast>().show;
+    final showToast = context.showToast;
 
     try {
       final shouldUpdateChannelData = playerController.isVideoSameWithRoom;
@@ -89,7 +89,7 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
     } catch (e) {
       if (e is! NoFileSelectedException) {
         logger.e(e);
-        showSnackBar('加载失败');
+        showToast('加载失败');
       }
     } finally {
       businessName.value = null;
@@ -102,7 +102,7 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
     final isBusy = context.read<IsBusy>();
     final businessName = context.read<BusinessName>();
     final playerController = context.read<RemotePlaying>();
-    final showSnackBar = context.read<Toast>().show;
+    final showToast = context.showToast;
 
     try {
       // Update room data only if playing correct video
@@ -135,7 +135,7 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
       _onVideoLoaded();
     } catch (e) {
       if (e is! NoFileSelectedException) {
-        showSnackBar('解析失败');
+        showToast('解析失败');
         rethrow;
       }
     } finally {

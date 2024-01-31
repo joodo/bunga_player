@@ -3,11 +3,11 @@ import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:bunga_player/providers/states/current_channel.dart';
 import 'package:bunga_player/providers/states/current_user.dart';
+import 'package:bunga_player/screens/wrappers/toast.dart';
 import 'package:bunga_player/services/agora.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/providers/ui/toast.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:stream_chat_flutter_core/stream_chat_flutter_core.dart';
@@ -20,10 +20,10 @@ enum CallStatus {
 }
 
 class VoiceCall extends ChangeNotifier {
-  VoiceCall(Locator read)
-      : _currentChannel = read<CurrentChannel>(),
-        _currentUser = read<CurrentUser>(),
-        _showSnackBar = read<Toast>().show {
+  VoiceCall(BuildContext context)
+      : _currentChannel = context.read<CurrentChannel>(),
+        _currentUser = context.read<CurrentUser>(),
+        _showToast = context.showToast {
     // Call Ring
     addListener(() {
       if (callStatus == CallStatus.callIn || callStatus == CallStatus.callOut) {
@@ -45,7 +45,7 @@ class VoiceCall extends ChangeNotifier {
       onUserLeft: (channelId, localUserId, remoteUserId) {
         _talkingUsers.remove(remoteUserId);
         if (_talkingUsers.isEmpty) {
-          _showSnackBar('对方已挂断');
+          _showToast('对方已挂断');
           hangUp();
         }
       },
@@ -95,7 +95,7 @@ class VoiceCall extends ChangeNotifier {
     });
   }
 
-  final void Function(String text) _showSnackBar;
+  final void Function(String text) _showToast;
 
   final CurrentUser _currentUser;
   final CurrentChannel _currentChannel;
@@ -118,7 +118,7 @@ class VoiceCall extends ChangeNotifier {
   late final _callAskingTimeOutTimer = RestartableTimer(
     const Duration(seconds: 30),
     () {
-      _showSnackBar('无人接听');
+      _showToast('无人接听');
       cancelAsking();
     },
   )..cancel();
@@ -206,7 +206,7 @@ class VoiceCall extends ChangeNotifier {
         '${user.id} rejected call asking or leaved, hope list: $_myCallAskingHopeList');
 
     if (_myCallAskingHopeList!.isEmpty) {
-      _showSnackBar('呼叫已被拒绝');
+      _showToast('呼叫已被拒绝');
       cancelAsking();
     }
   }

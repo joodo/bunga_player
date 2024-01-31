@@ -1,11 +1,25 @@
 import 'package:flutter/material.dart';
 
-class Toast {
-  Toast(BuildContext context) : _context = context;
-  final BuildContext _context;
+extension ShowToast on BuildContext {
+  void showToast(String text) {
+    findAncestorStateOfType<_ToastWrapperState>()!.show(text);
+  }
+}
+
+class ToastWrapper extends StatefulWidget {
+  const ToastWrapper({super.key, required this.child});
+  final Widget child;
+
+  @override
+  State<ToastWrapper> createState() => _ToastWrapperState();
+}
+
+class _ToastWrapperState extends State<ToastWrapper> {
+  @override
+  Widget build(BuildContext context) => widget.child;
 
   void show(String text) {
-    ScaffoldMessenger.of(_context).showSnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
