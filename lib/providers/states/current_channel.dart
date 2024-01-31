@@ -71,8 +71,9 @@ class CurrentChannel extends ChangeNotifier {
   Future leave() async {
     assert(_channel != null);
 
-    _streamSubscriptions
-        .map((subscription) async => await subscription.cancel());
+    for (final subscription in _streamSubscriptions) {
+      await subscription.cancel();
+    }
     _streamSubscriptions.clear();
 
     final chatService = getService<StreamIO>();
@@ -152,6 +153,7 @@ class CurrentChannel extends ChangeNotifier {
 
   Future<void> send(Message message) async {
     assert(_channel != null);
+    logger.i('Send message: $message');
     await _channel!.sendMessage(message);
   }
 
