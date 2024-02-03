@@ -114,9 +114,6 @@ class RemotePlaying {
 
   String? _askID;
   Future<void> askPosition() async {
-    // Not playing the same video, ignore
-    if (!isVideoSameWithRoom) return;
-
     final message = Message(text: 'where');
     await _context.read<CurrentChannel>().send(message);
     _askID = message.id;
@@ -153,10 +150,10 @@ class RemotePlaying {
   }
 
   void _applyStatus(Message message) {
-    final videoPlayer = _context.read<VideoPlayer>();
-
     // Not playing the same video, ignore
     if (!isVideoSameWithRoom) return;
+
+    final videoPlayer = _context.read<VideoPlayer>();
 
     final re = message.text!.split(' ');
 

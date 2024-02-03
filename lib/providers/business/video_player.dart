@@ -180,8 +180,6 @@ class VideoPlayer {
 
   Future<void> stop() async {
     _player.stop();
-    //await _player.open(emptyMedia, play: false);
-    //await _controller.waitUntilFirstFrameRendered;
     _videoHashNotifier.value = null;
 
     final appName = getService<PackageInfo>().appName;

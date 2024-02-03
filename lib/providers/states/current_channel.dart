@@ -26,7 +26,7 @@ class CurrentChannel extends ChangeNotifier {
   final _watchersNotifier = ValueNotifier<List<User>>([]);
   late final watchersNotifier = _watchersNotifier.createReadonly();
 
-  final channelDataNotifier = ReadonlyStreamValueNotifier<ChannelData?>(null);
+  final channelDataNotifier = ValueNotifier<ChannelData?>(null);
 
   User? _lastChannelDataUpdater;
   User? get lastChannelDataUpdater => _lastChannelDataUpdater;
@@ -44,7 +44,7 @@ class CurrentChannel extends ChangeNotifier {
 
   final List<StreamSubscription> _streamSubscriptions = [];
 
-  Future createOrJoin(ChannelData data) async {
+  Future<void> createOrJoin(ChannelData data) async {
     if (_channel != null) await leave();
     assert(_channel == null);
 
@@ -56,7 +56,7 @@ class CurrentChannel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future joinById(String id) async {
+  Future<void> joinById(String id) async {
     if (_channel != null) await leave();
     assert(_channel == null);
 
@@ -68,7 +68,7 @@ class CurrentChannel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future leave() async {
+  Future<void> leave() async {
     assert(_channel != null);
 
     for (final subscription in _streamSubscriptions) {
@@ -80,6 +80,7 @@ class CurrentChannel extends ChangeNotifier {
     await chatService.leaveChannel(_channel!);
 
     _channel = null;
+    channelDataNotifier.value = null;
     _watchersNotifier.value = [];
     _lastChannelDataUpdater = null;
 
@@ -88,7 +89,7 @@ class CurrentChannel extends ChangeNotifier {
 
   bool _isCurrentUser(User user) => _context.read<CurrentUser>().id == user.id;
 
-  Future _onUserJoin(User user) async {
+  Future<void> _onUserJoin(User user) async {
     if (_isCurrentUser(user)) return;
 
     final chatService = getService<StreamIO>();
@@ -114,7 +115,7 @@ class CurrentChannel extends ChangeNotifier {
       });
   }
 
-  Future _setUpChannel() async {
+  Future<void> _setUpChannel() async {
     assert(_channel != null);
 
     // HACK: watchers won't auto query
@@ -146,8 +147,9 @@ class CurrentChannel extends ChangeNotifier {
         _context.showToast('${user.name} 更换了影片');
         _lastChannelDataUpdater = user;
       }),
-      channelDataNotifier.bind(_channel!.extraDataStream
-          .map<ChannelData?>((jsonData) => ChannelData.fromJson(jsonData))),
+      _channel!.extraDataStream
+          .map<ChannelData?>((jsonData) => ChannelData.fromJson(jsonData))
+          .listen((channelData) => channelDataNotifier.value = channelData),
     ]);
   }
 
