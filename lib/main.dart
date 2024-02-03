@@ -4,8 +4,10 @@ import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart' as services;
 import 'package:bunga_player/screens/main_screen.dart';
 import 'package:bunga_player/screens/wrappers/wrap.dart';
+import 'package:bunga_player/utils/ssl_walkthrough.dart';
 import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:platform/platform.dart';
 
 void main() {
   FlutterError.onError = (FlutterErrorDetails details) {
@@ -15,6 +17,8 @@ void main() {
   runZonedGuarded(
     () async {
       WidgetsFlutterBinding.ensureInitialized();
+
+      if (const LocalPlatform().isWindows) sslWalkthrough();
 
       await windowManager.ensureInitialized();
       windowManager.setMinimumSize(const Size(800, 600));
