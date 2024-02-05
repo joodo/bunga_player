@@ -1,4 +1,5 @@
 import 'package:bunga_player/providers/business/business_indicator.dart';
+import 'package:bunga_player/screens/dialogs/bili_dialog.dart';
 import 'package:bunga_player/screens/wrappers/toast.dart';
 import 'package:bunga_player/services/bilibili.dart';
 import 'package:bunga_player/actions/open_local_video.dart';
@@ -110,14 +111,14 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
     // Update room data only if playing correct video
     final shouldUpdateRoomData = playerController.isVideoSameWithRoom;
 
-    final result = await showDialog(
+    final result = await showDialog<String?>(
       context: context,
-      builder: (context) => const _BiliDialog(),
+      builder: (context) => const BiliDialog(),
     );
     if (result == null) return;
 
-    final biliEntry = await getService<Bilibili>()
-        .getEntryFromUri((result as String).parseUri());
+    final biliEntry =
+        await getService<Bilibili>().getEntryFromUri(result.parseUri());
     await bi.run(
       missions: [
         Mission(
@@ -159,64 +160,5 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
 
   void _onVideoLoaded() {
     Navigator.of(context).pop();
-  }
-}
-
-class _BiliDialog extends StatefulWidget {
-  const _BiliDialog();
-  @override
-  State<_BiliDialog> createState() => _BiliDialogState();
-}
-
-class _BiliDialogState extends State<_BiliDialog> {
-  final _textController = TextEditingController();
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      insetPadding: const EdgeInsets.all(40),
-      title: const Text('打开 Bilibili 视频'),
-      content: SizedBox(
-        width: 400,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: _textController,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: '视频链接',
-              ),
-              onTap: () {
-                _textController.selection = TextSelection(
-                  baseOffset: 0,
-                  extentOffset: _textController.text.length,
-                );
-              },
-              onSubmitted: (text) {
-                if (text.isNotEmpty) _onSubmitBiliUrl();
-              },
-            ),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context, null),
-          child: const Text('取消'),
-        ),
-        ValueListenableBuilder(
-          valueListenable: _textController,
-          builder: (context, value, child) => TextButton(
-            onPressed: value.text.isEmpty ? null : _onSubmitBiliUrl,
-            child: const Text('解析'),
-          ),
-        ),
-      ],
-    );
-  }
-
-  void _onSubmitBiliUrl() {
-    Navigator.pop(context, _textController.text);
   }
 }

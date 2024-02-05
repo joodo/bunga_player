@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:bunga_player/mocks/menu_anchor.dart' as mock;
 import 'package:bunga_player/providers/business/business_indicator.dart';
+import 'package:bunga_player/screens/dialogs/bili_dialog.dart';
 import 'package:bunga_player/screens/wrappers/toast.dart';
 import 'package:bunga_player/services/bilibili.dart';
 import 'package:bunga_player/actions/open_local_video.dart';
@@ -56,14 +58,32 @@ class _WelcomeControlState extends State<WelcomeControl> {
             child: const Text('换个名字'),
           ),
           const SizedBox(width: 16),
-          FilledButton(
-            onPressed: isBusy ? null : _openLocalVideo,
-            child: const Text('打开视频文件'),
+          mock.MyMenuAnchor(
+            rootOverlay: true,
+            alignmentOffset: const Offset(0, 8),
+            builder: (context, controller, child) => FilledButton(
+              onPressed: isBusy
+                  ? null
+                  : controller.isOpen
+                      ? controller.close
+                      : controller.open,
+              child: const Text('打开视频'),
+            ),
+            menuChildren: [
+              MenuItemButton(
+                onPressed: _openLocalVideo,
+                child: const Text('视频文件'),
+              ),
+              MenuItemButton(
+                onPressed: _openBilibili,
+                child: const Text('Bilibili'),
+              ),
+            ],
           ),
           const SizedBox(width: 16),
           FilledButton(
-            onPressed: isBusy ? null : _openBilibili,
-            child: const Text('Bilibili 视频'),
+            onPressed: isBusy ? null : _showOthers,
+            child: const Text('其他人'),
           ),
         ],
       ),
@@ -117,14 +137,13 @@ class _WelcomeControlState extends State<WelcomeControl> {
     final videoPlayer = context.read<VideoPlayer>();
     final showToast = context.showToast;
 
-    final result = await showDialog(
+    final result = await showDialog<String?>(
       context: context,
-      builder: (context) => const _BiliDialog(),
+      builder: (context) => const BiliDialog(),
     );
     if (result == null) return;
 
     late final BiliEntry biliEntry;
-    String? channelId;
 
     _completer?.complete();
     Future.microtask(() => context.read<BusinessIndicator>().run(
@@ -134,17 +153,8 @@ class _WelcomeControlState extends State<WelcomeControl> {
               tasks: [
                 // get BiliEntry
                 () async {
-                  if (result is String && result.isNotEmpty) {
-                    // Open video by url
-                    biliEntry = await getService<Bilibili>()
-                        .getEntryFromUri(result.parseUri());
-                  } else if (result is _BiliChannelData) {
-                    // Join others
-                    biliEntry = BiliEntry.fromHash(result.hash);
-                    channelId = result.id;
-                  } else {
-                    throw 'Unknown dialog result';
-                  }
+                  biliEntry = await getService<Bilibili>()
+                      .getEntryFromUri(result.parseUri());
                 },
                 // fetch BiliEntry
                 () async {
@@ -169,16 +179,73 @@ class _WelcomeControlState extends State<WelcomeControl> {
               name: '正在发送请柬……',
               tasks: [
                 () async {
-                  if (channelId == null) {
-                    await currentChannel.createOrJoin(ChannelData(
-                      videoType: VideoType.bilibili,
-                      name: biliEntry.title,
-                      videoHash: biliEntry.hash,
-                      pic: biliEntry.pic,
-                    ));
-                  } else {
-                    await currentChannel.joinById(channelId!);
+                  await currentChannel.createOrJoin(ChannelData(
+                    videoType: VideoType.bilibili,
+                    name: biliEntry.title,
+                    videoHash: biliEntry.hash,
+                    pic: biliEntry.pic,
+                  ));
+                  playerController.askPosition();
+
+                  _onVideoLoaded();
+                },
+              ],
+            ),
+          ],
+          onError: () {
+            context.showToast('解析失败');
+            Future.microtask(_initBusinessIndicator);
+          },
+        ));
+  }
+
+  void _showOthers() async {
+    final currentChannel = context.read<CurrentChannel>();
+    final playerController = context.read<RemotePlaying>();
+    final videoPlayer = context.read<VideoPlayer>();
+    final showToast = context.showToast;
+
+    final result = await showDialog<_BiliChannelData?>(
+      context: context,
+      builder: (context) => const _OthersDialog(),
+    );
+    if (result == null) return;
+
+    late final BiliEntry biliEntry;
+    late final String channelId;
+
+    _completer?.complete();
+    Future.microtask(() => context.read<BusinessIndicator>().run(
+          missions: [
+            Mission(
+              name: '正在鬼鬼祟祟……',
+              tasks: [
+                // fetch BiliEntry
+                () async {
+                  biliEntry = BiliEntry.fromHash(result.hash);
+                  channelId = result.id;
+                  await getService<Bilibili>().fetch(biliEntry);
+                  if (biliEntry is BiliVideo &&
+                      !(biliEntry as BiliVideo).isHD) {
+                    showToast('无法获取高清视频');
                   }
+                },
+              ],
+            ),
+            Mission(
+              name: '正在收拾客厅……',
+              tasks: [
+                // load BiliEntry
+                () async {
+                  await videoPlayer.loadBiliVideo(biliEntry);
+                },
+              ],
+            ),
+            Mission(
+              name: '正在发送请柬……',
+              tasks: [
+                () async {
+                  await currentChannel.joinById(channelId);
                   playerController.askPosition();
 
                   _onVideoLoaded();
@@ -207,14 +274,14 @@ class _WelcomeControlState extends State<WelcomeControl> {
 }
 
 class _BiliChannelData {
-  final String? id;
+  final String id;
   final String hash;
   final String name;
   final String pic;
   final String? creator;
 
   _BiliChannelData({
-    this.id,
+    required this.id,
     required this.hash,
     required this.name,
     required this.pic,
@@ -222,18 +289,17 @@ class _BiliChannelData {
   });
 }
 
-class _BiliDialog extends StatefulWidget {
-  const _BiliDialog();
+class _OthersDialog extends StatefulWidget {
+  const _OthersDialog();
   @override
-  State<_BiliDialog> createState() => _BiliDialogState();
+  State<_OthersDialog> createState() => _OthersDialogState();
 }
 
-class _BiliDialogState extends State<_BiliDialog> {
+class _OthersDialogState extends State<_OthersDialog> {
   List<_BiliChannelData>? _channels;
   late final Timer _timer;
   bool _isPulling = false;
 
-  final _textController = TextEditingController();
   final _scrollController = ScrollController();
 
   @override
@@ -296,67 +362,21 @@ class _BiliDialogState extends State<_BiliDialog> {
     );
 
     return AlertDialog(
+      title: const Text('加入其他人'),
       content: SizedBox(
         width: 500,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 8),
-            Text(
-              '加入其他人',
-              style: themeData.textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              height: 220,
-              child: _channels == null
-                  ? const Center(child: CircularProgressIndicator())
-                  : channelsView,
-            ),
-            const SizedBox(height: 24),
-            Text(
-              '或打开新视频',
-              style: themeData.textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _textController,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: '视频链接',
-              ),
-              onTap: () {
-                _textController.selection = TextSelection(
-                  baseOffset: 0,
-                  extentOffset: _textController.text.length,
-                );
-              },
-              onSubmitted: (text) {
-                if (text.isNotEmpty) _onSubmitBiliUrl();
-              },
-            ),
-          ],
-        ),
+        height: 220,
+        child: _channels == null
+            ? const Center(child: CircularProgressIndicator())
+            : channelsView,
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.pop(context, null),
+          onPressed: () => Navigator.pop<_BiliChannelData?>(context),
           child: const Text('取消'),
-        ),
-        ValueListenableBuilder(
-          valueListenable: _textController,
-          builder: (context, value, child) => TextButton(
-            onPressed: value.text.isEmpty ? null : _onSubmitBiliUrl,
-            child: const Text('解析'),
-          ),
         ),
       ],
     );
-  }
-
-  void _onSubmitBiliUrl() {
-    Navigator.pop(context, _textController.text);
   }
 
   Widget _createVideoCard(_BiliChannelData channelInfo) {
@@ -431,7 +451,8 @@ class _BiliDialogState extends State<_BiliDialog> {
               ),
               elevation: 0,
               child: InkWell(
-                onTap: () => Navigator.pop(context, channelInfo),
+                onTap: () =>
+                    Navigator.pop<_BiliChannelData?>(context, channelInfo),
                 child: cardContent,
               ),
             );
