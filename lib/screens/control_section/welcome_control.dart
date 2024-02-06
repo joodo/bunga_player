@@ -2,7 +2,8 @@ import 'dart:async';
 
 import 'package:bunga_player/mocks/menu_anchor.dart' as mock;
 import 'package:bunga_player/providers/business/business_indicator.dart';
-import 'package:bunga_player/screens/dialogs/bili_dialog.dart';
+import 'package:bunga_player/screens/dialogs/bilibili.dart';
+import 'package:bunga_player/screens/dialogs/net_disk.dart';
 import 'package:bunga_player/screens/wrappers/toast.dart';
 import 'package:bunga_player/services/bilibili.dart';
 import 'package:bunga_player/actions/open_local_video.dart';
@@ -61,6 +62,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
           mock.MyMenuAnchor(
             rootOverlay: true,
             alignmentOffset: const Offset(0, 8),
+            anchorTapClosesMenu: true,
             builder: (context, controller, child) => FilledButton(
               onPressed: isBusy
                   ? null
@@ -70,13 +72,17 @@ class _WelcomeControlState extends State<WelcomeControl> {
               child: const Text('打开视频'),
             ),
             menuChildren: [
-              MenuItemButton(
+              mock.MenuItemButton(
                 onPressed: _openLocalVideo,
                 child: const Text('视频文件'),
               ),
-              MenuItemButton(
+              mock.MenuItemButton(
                 onPressed: _openBilibili,
-                child: const Text('Bilibili'),
+                child: const Text('Bilibili 链接'),
+              ),
+              mock.MenuItemButton(
+                onPressed: _openNetDisk,
+                child: const Text('网盘文件'),
               ),
             ],
           ),
@@ -197,6 +203,14 @@ class _WelcomeControlState extends State<WelcomeControl> {
             Future.microtask(_initBusinessIndicator);
           },
         ));
+  }
+
+  void _openNetDisk() async {
+    final result = await showDialog(
+      context: context,
+      builder: (context) => const NetDiskDialog(),
+    );
+    print(result);
   }
 
   void _showOthers() async {

@@ -1,5 +1,5 @@
 import 'package:bunga_player/providers/business/business_indicator.dart';
-import 'package:bunga_player/screens/dialogs/bili_dialog.dart';
+import 'package:bunga_player/screens/dialogs/bilibili.dart';
 import 'package:bunga_player/screens/wrappers/toast.dart';
 import 'package:bunga_player/services/bilibili.dart';
 import 'package:bunga_player/actions/open_local_video.dart';

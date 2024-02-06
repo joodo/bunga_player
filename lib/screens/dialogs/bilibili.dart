@@ -15,27 +15,21 @@ class _BiliDialogState extends State<BiliDialog> {
       title: const Text('打开 Bilibili 视频'),
       content: SizedBox(
         width: 400,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: _textController,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: '视频链接',
-              ),
-              onTap: () {
-                _textController.selection = TextSelection(
-                  baseOffset: 0,
-                  extentOffset: _textController.text.length,
-                );
-              },
-              onSubmitted: (text) {
-                if (text.isNotEmpty) _onSubmitBiliUrl();
-              },
-            ),
-          ],
+        child: TextField(
+          controller: _textController,
+          decoration: const InputDecoration(
+            border: OutlineInputBorder(),
+            labelText: '视频链接',
+          ),
+          onTap: () {
+            _textController.selection = TextSelection(
+              baseOffset: 0,
+              extentOffset: _textController.text.length,
+            );
+          },
+          onSubmitted: (text) {
+            if (text.isNotEmpty) _onSubmitBiliUrl();
+          },
         ),
       ),
       actions: [

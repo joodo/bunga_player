@@ -1,5 +1,6 @@
 import 'package:bunga_player/models/app_key/app_key.dart';
 import 'package:bunga_player/services/agora.dart';
+import 'package:bunga_player/services/alist.dart';
 import 'package:bunga_player/services/bilibili.dart';
 import 'package:bunga_player/services/bunga.dart';
 import 'package:bunga_player/services/stream_io.dart';
@@ -21,6 +22,7 @@ Future<void> initHost(String host) async {
   getService.registerSingleton<Bunga>(bungaService);
   getService.registerSingleton<StreamIO>(StreamIO(appKey.streamIO));
   getService.registerSingleton<Agora>(Agora(appKey.agora));
+  getService.registerSingleton<AList>(AList());
   getService.registerSingleton<Bilibili>(Bilibili());
 }
 
