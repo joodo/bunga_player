@@ -3,11 +3,11 @@ import 'package:bunga_player/models/alist/search_result.dart';
 import 'package:bunga_player/services/alist.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/services/toast.dart';
 import 'package:flutter/material.dart';
 
 class NetDiskDialog extends StatefulWidget {
-  const NetDiskDialog({super.key});
+  final Map<String, String> watchProgress;
+  const NetDiskDialog({super.key, required this.watchProgress});
   @override
   State<NetDiskDialog> createState() => _NetDiskDialogState();
 }
@@ -27,13 +27,16 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
 
   @override
   void initState() {
-    Future.microtask(() => _cd('/'));
+    final lastPath =
+        getService<Preferences>().get<String>('alist_last_path') ?? '/';
+    Future.microtask(() => _cd(lastPath));
     super.initState();
   }
 
   @override
   void dispose() {
     getService<Preferences>().set('alist_bookmarks', _alistBookmarks);
+    getService<Preferences>().set('alist_last_path', _currentPath);
     super.dispose();
   }
 
@@ -189,6 +192,16 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
                         }
 
                         final info = _currentFiles[index];
+                        final videoHash =
+                            '${AListEntry.hashPrefix}-${AListEntry.hashFromPath('$_currentPath${info.name}')}';
+                        final progressString = widget.watchProgress[videoHash];
+                        int? percent;
+                        if (progressString != null) {
+                          final split = progressString.split('/');
+                          percent =
+                              (int.parse(split[0]) * 100 / int.parse(split[1]))
+                                  .round();
+                        }
                         return ListTile(
                           leading: Icon(switch (info.type) {
                             AListFileType.folder => Icons.folder,
@@ -199,8 +212,8 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
                             AListFileType.unknown => Icons.note,
                           }),
                           title: Text(info.name),
-                          // TODO: show watch progress
-                          //subtitle: Text('已看 58%'),
+                          subtitle:
+                              percent != null ? Text('已看 $percent%') : null,
                           onTap: switch (info.type) {
                             AListFileType.folder => () => _cd('${info.name}/'),
                             AListFileType.video => () => Navigator.pop(
@@ -246,7 +259,6 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
     try {
       _currentFiles = await getService<AList>().list(_currentPath);
     } catch (e) {
-      getService<Toast>().show('获取目录失败');
       _currentPath = oldPath;
       rethrow;
     } finally {

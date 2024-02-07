@@ -5,12 +5,14 @@ import 'package:bunga_player/models/playing/online_video_entry.dart';
 import 'package:bunga_player/providers/business/business_indicator.dart';
 import 'package:bunga_player/screens/dialogs/bilibili.dart';
 import 'package:bunga_player/screens/dialogs/net_disk.dart';
+import 'package:bunga_player/services/alist.dart';
 import 'package:bunga_player/services/bilibili.dart';
 import 'package:bunga_player/actions/open_local_video.dart';
 import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/providers/states/current_channel.dart';
 import 'package:bunga_player/providers/business/remote_playing.dart';
 import 'package:bunga_player/providers/states/current_user.dart';
+import 'package:bunga_player/services/bunga.dart';
 import 'package:bunga_player/services/stream_io.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/providers/business/video_player.dart';
@@ -149,7 +151,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
           },
           joinChannel: (videoEntry) {
             return currentChannel.createOrJoin(ChannelData(
-              videoType: VideoType.bilibili,
+              videoType: VideoType.online,
               name: videoEntry.title,
               videoHash: videoEntry.hash,
               pic: videoEntry.pic,
@@ -169,18 +171,53 @@ class _WelcomeControlState extends State<WelcomeControl> {
   }
 
   void _openNetDisk() async {
-    final result = await showDialog(
+    final currentChannel = context.read<CurrentChannel>();
+    final remotePlaying = context.read<RemotePlaying>();
+    final watchProgress = context.read<VideoPlayer>().watchProgress;
+
+    final alistPath = await showDialog(
       context: context,
-      builder: (context) => const NetDiskDialog(),
+      builder: (context) => NetDiskDialog(watchProgress: watchProgress),
     );
-    print(result);
+    if (alistPath == null) return;
+
+    final alistEntry = AListEntry(path: alistPath);
+    void doOpen() async {
+      try {
+        await remotePlaying.openOnlineVideo(
+          alistEntry,
+          joinChannel: (videoEntry) async {
+            // Set hash string
+            await getService<Bunga>().setStringHash(
+              text: alistPath,
+              hash: AListEntry.hashFromPath(alistPath),
+            );
+
+            return currentChannel.createOrJoin(ChannelData(
+              videoType: VideoType.online,
+              name: videoEntry.title,
+              videoHash: videoEntry.hash,
+              pic: videoEntry.pic,
+            ));
+          },
+        );
+        _onVideoLoaded();
+      } catch (e) {
+        getService<Toast>().show('解析失败');
+        Future.microtask(_initBusinessIndicator);
+        rethrow;
+      }
+    }
+
+    _completer?.complete();
+    Future.microtask(doOpen);
   }
 
   void _showOthers() async {
     final currentChannel = context.read<CurrentChannel>();
     final remotePlaying = context.read<RemotePlaying>();
 
-    final result = await showDialog<_BiliChannelData?>(
+    final result = await showDialog<_OnlineVideoChannelData?>(
       context: context,
       builder: (context) => const _OthersDialog(),
     );
@@ -220,14 +257,14 @@ class _WelcomeControlState extends State<WelcomeControl> {
   }
 }
 
-class _BiliChannelData {
+class _OnlineVideoChannelData {
   final String id;
   final String hash;
   final String name;
   final String pic;
   final String? creator;
 
-  _BiliChannelData({
+  _OnlineVideoChannelData({
     required this.id,
     required this.hash,
     required this.name,
@@ -243,7 +280,7 @@ class _OthersDialog extends StatefulWidget {
 }
 
 class _OthersDialogState extends State<_OthersDialog> {
-  List<_BiliChannelData>? _channels;
+  List<_OnlineVideoChannelData>? _channels;
   late final Timer _timer;
   bool _isPulling = false;
 
@@ -319,14 +356,14 @@ class _OthersDialogState extends State<_OthersDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.pop<_BiliChannelData?>(context),
+          onPressed: () => Navigator.pop<_OnlineVideoChannelData?>(context),
           child: const Text('取消'),
         ),
       ],
     );
   }
 
-  Widget _createVideoCard(_BiliChannelData channelInfo) {
+  Widget _createVideoCard(_OnlineVideoChannelData channelInfo) {
     final themeData = Theme.of(context);
     final videoImage = Image.network(
       channelInfo.pic,
@@ -398,8 +435,8 @@ class _OthersDialogState extends State<_OthersDialog> {
               ),
               elevation: 0,
               child: InkWell(
-                onTap: () =>
-                    Navigator.pop<_BiliChannelData?>(context, channelInfo),
+                onTap: () => Navigator.pop<_OnlineVideoChannelData?>(
+                    context, channelInfo),
                 child: cardContent,
               ),
             );
@@ -424,13 +461,13 @@ class _OthersDialogState extends State<_OthersDialog> {
       });
 
       final chatService = getService<StreamIO>();
-      final channels = await chatService.fetchBiliChannels();
+      final channels = await chatService.queryOnlineChannels();
 
       if (!mounted) return;
       setState(() {
-        _channels = channels.map<_BiliChannelData>((channel) {
+        _channels = channels.map<_OnlineVideoChannelData>((channel) {
           final (id, creator, data) = channel;
-          return _BiliChannelData(
+          return _OnlineVideoChannelData(
             id: id,
             hash: data.videoHash,
             name: data.name,

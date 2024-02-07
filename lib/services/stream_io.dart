@@ -79,9 +79,9 @@ class StreamIO {
   }
 
   Future<List<(String id, String creator, ChannelData channelData)>>
-      fetchBiliChannels() async {
+      queryOnlineChannels() async {
     final filter =
-        Filter.equal(ChannelData.videoTypeJsonKey, VideoType.bilibili.name);
+        Filter.equal(ChannelData.videoTypeJsonKey, VideoType.online.name);
     final channels = await _client
         .queryChannels(
           filter: filter,

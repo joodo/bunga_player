@@ -15,6 +15,7 @@ AListFileInfo _$AListFileInfoFromJson(Map<String, dynamic> json) =>
       modified: DateTime.parse(json['modified'] as String),
       thumb: json['thumb'] as String,
       sign: json['sign'] as String,
+      rawUrl: json['raw_url'] as String?,
     );
 
 Map<String, dynamic> _$AListFileInfoToJson(AListFileInfo instance) =>
@@ -26,6 +27,7 @@ Map<String, dynamic> _$AListFileInfoToJson(AListFileInfo instance) =>
       'modified': instance.modified.toIso8601String(),
       'thumb': instance.thumb,
       'sign': instance.sign,
+      'raw_url': instance.rawUrl,
     };
 
 const _$AListFileTypeEnumMap = {

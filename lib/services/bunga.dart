@@ -13,6 +13,13 @@ class Bunga {
     return jsonDecode(response.body);
   }
 
+  Future<(String host, String token)> getAListToken() async {
+    final response = await http.get(_host.resolve('auth/alist'));
+    if (!response.isSuccess) throw response.body;
+    final data = jsonDecode(response.body);
+    return (data['host'] as String, data['token'] as String);
+  }
+
   String? _userToken;
   Future<String> userLogin(String id) async {
     final response = await http.post(
@@ -33,5 +40,22 @@ class Bunga {
       headers: {'Authorization': _userToken ?? ''},
     );
     return response.statusCode == 200 ? response.body : null;
+  }
+
+  Future<String> getStringByHash(String hash) async {
+    final response = await http.get(
+      _host.resolve('utils/hash-string?hash=$hash'),
+      headers: {'Authorization': _userToken ?? ''},
+    );
+    final data = jsonDecode(response.body);
+    return data['data']['text'];
+  }
+
+  Future<void> setStringHash({required String text, required String hash}) {
+    return http.post(
+      _host.resolve('utils/hash-string'),
+      headers: {'Authorization': _userToken ?? ''},
+      body: {'hash': hash, 'text': text},
+    );
   }
 }

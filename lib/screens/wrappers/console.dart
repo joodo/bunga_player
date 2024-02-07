@@ -6,6 +6,7 @@ import 'package:bunga_player/providers/states/current_user.dart';
 import 'package:bunga_player/providers/states/voice_call.dart';
 import 'package:bunga_player/screens/dialogs/host.dart';
 import 'package:bunga_player/screens/wrappers/restart.dart';
+import 'package:bunga_player/services/alist.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
@@ -201,6 +202,8 @@ class _VariablesView extends StatelessWidget {
         context.read<VideoPlayer>().videoHashNotifier.value ??
         'No Video Playing',
     'Call Status': (context) => context.read<VoiceCall>().callStatus.name,
+    'AList': (context) =>
+        'host: ${getService<AList>().host},\ntoken: ${getService<AList>().token}',
   };
 
   @override

@@ -1,5 +1,7 @@
 import 'package:bunga_player/providers/business/business_indicator.dart';
 import 'package:bunga_player/screens/dialogs/bilibili.dart';
+import 'package:bunga_player/screens/dialogs/net_disk.dart';
+import 'package:bunga_player/services/alist.dart';
 import 'package:bunga_player/services/bilibili.dart';
 import 'package:bunga_player/actions/open_local_video.dart';
 import 'package:bunga_player/models/chat/channel_data.dart';
@@ -48,6 +50,11 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
               FilledButton(
                 onPressed: isBusy ? null : _openBilibili,
                 child: const Text('Bilibili 视频'),
+              ),
+              const SizedBox(width: 16),
+              FilledButton(
+                onPressed: isBusy ? null : _openNetDisk,
+                child: const Text('网盘视频'),
               ),
             ],
           ),
@@ -109,10 +116,44 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
 
     if (shouldUpdateRoomData) {
       currentChannel.updateData(ChannelData(
-        videoType: VideoType.bilibili,
+        videoType: VideoType.online,
         name: biliEntry.title,
         videoHash: biliEntry.hash,
         pic: biliEntry.pic,
+      ));
+    }
+
+    _onVideoLoaded();
+  }
+
+  void _openNetDisk() async {
+    final currentChannel = context.read<CurrentChannel>();
+    final remotePlaying = context.read<RemotePlaying>();
+    final watchProgress = context.read<VideoPlayer>().watchProgress;
+
+    // Update room data only if playing correct video
+    final shouldUpdateRoomData = remotePlaying.isVideoSameWithRoom;
+
+    final alistPath = await showDialog(
+      context: context,
+      builder: (context) => NetDiskDialog(watchProgress: watchProgress),
+    );
+    if (alistPath == null) return;
+
+    final alistEntry = AListEntry(path: alistPath);
+    try {
+      await remotePlaying.openOnlineVideo(alistEntry);
+    } catch (e) {
+      getService<Toast>().show('解析失败');
+      rethrow;
+    }
+
+    if (shouldUpdateRoomData) {
+      currentChannel.updateData(ChannelData(
+        videoType: VideoType.online,
+        name: alistEntry.title,
+        videoHash: alistEntry.hash,
+        pic: alistEntry.pic,
       ));
     }
 

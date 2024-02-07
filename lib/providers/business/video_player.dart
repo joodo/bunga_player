@@ -4,6 +4,8 @@ import 'dart:io';
 import 'dart:ui';
 
 import 'package:bunga_player/models/playing/online_video_entry.dart';
+import 'package:bunga_player/services/alist.dart';
+import 'package:bunga_player/services/bilibili.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
@@ -123,8 +125,8 @@ class VideoPlayer {
     final crcString = crcValue.toString();
 
     final videoHash = 'local-$crcString';
-    if (_watchProgress.containsKey(videoHash)) {
-      position.value = Duration(milliseconds: _watchProgress[videoHash]!);
+    if (watchProgress.containsKey(videoHash)) {
+      position.value = _progressFromString(watchProgress[videoHash]!);
     } else {
       position.value = Duration.zero;
     }
@@ -133,15 +135,20 @@ class VideoPlayer {
     _videoHashNotifier.value = videoHash;
   }
 
-  Future<void> loadBiliVideo(OnlineVideoEntry biliEntry) async {
+  Future<void> loadBiliVideo(OnlineVideoEntry onlineEntry) async {
+    final httpHeaders = switch (onlineEntry.runtimeType) {
+      const (BiliVideoEntry) || const (BiliBungumiEntry) => {
+          'Referer': 'https://www.bilibili.com/'
+        },
+      const (AListEntry) => {'User-Agent': 'pan.baidu.com'},
+      Type() => null,
+    };
+
     // try every url
     bool success = false;
-    for (var url in biliEntry.sources.video) {
+    for (var url in onlineEntry.sources.video) {
       await _player.open(
-        Media(
-          url,
-          httpHeaders: {'Referer': 'https://www.bilibili.com/'},
-        ),
+        Media(url, httpHeaders: httpHeaders),
         play: false,
       );
 
@@ -162,19 +169,19 @@ class VideoPlayer {
     await _player.stream.buffer.first;
 
     // load audio if exist
-    if (biliEntry.sources.audio != null) {
-      addAudioTrack(biliEntry.sources.audio![0]);
+    if (onlineEntry.sources.audio != null) {
+      addAudioTrack(onlineEntry.sources.audio![0]);
     }
 
     // load history watching progress
-    final videoHash = biliEntry.hash;
-    if (_watchProgress.containsKey(videoHash)) {
-      position.value = Duration(milliseconds: _watchProgress[videoHash]!);
+    final videoHash = onlineEntry.hash;
+    if (watchProgress.containsKey(videoHash)) {
+      position.value = _progressFromString(watchProgress[videoHash]!);
     } else {
       position.value = Duration.zero;
     }
 
-    windowManager.setTitle(biliEntry.title);
+    windowManager.setTitle(onlineEntry.title);
     _videoHashNotifier.value = videoHash;
   }
 
@@ -227,17 +234,20 @@ class VideoPlayer {
   }
 
   // Watch progress
-  late final Map<String, int> _watchProgress;
+  late final Map<String, String> watchProgress;
+  Duration _progressFromString(String s) =>
+      Duration(milliseconds: int.parse(s.split('/')[0]));
 
   void _loadSavedProgress() {
-    _watchProgress = Map.castFrom(jsonDecode(
+    watchProgress = Map.castFrom(jsonDecode(
         getService<Preferences>().get<String>('watch_progress') ?? '{}'));
 
     Timer.periodic(const Duration(seconds: 5), (timer) {
       final hash = videoHashNotifier.value;
       final progress = position.value;
       if (hash != null) {
-        _watchProgress[hash] = progress.inMilliseconds;
+        watchProgress[hash] =
+            '${progress.inMilliseconds}/${duration.value.inMilliseconds}';
       }
     });
 
@@ -245,7 +255,7 @@ class VideoPlayer {
     AppLifecycleListener(
       onExitRequested: () async {
         await getService<Preferences>()
-            .set('watch_progress', jsonEncode(_watchProgress));
+            .set('watch_progress', jsonEncode(watchProgress));
         return AppExitResponse.exit;
       },
     );

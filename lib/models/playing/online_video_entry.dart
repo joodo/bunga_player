@@ -8,7 +8,6 @@ class VideoSources {
 abstract class OnlineVideoEntry {
   late final String title;
   late final String pic;
-
   late final VideoSources sources; // DURL | Dash
 
   static final Map<String, OnlineVideoEntry Function(String hash)> fromHashMap =
@@ -19,6 +18,7 @@ abstract class OnlineVideoEntry {
   bool get isFetched;
   Future<void> fetch();
 
+  String get hash;
   factory OnlineVideoEntry.fromHash(String hash) {
     final prefix = hash.split('-').first;
     if (!fromHashMap.containsKey(prefix)) {
@@ -27,5 +27,4 @@ abstract class OnlineVideoEntry {
 
     return fromHashMap[prefix]!(hash);
   }
-  String get hash;
 }

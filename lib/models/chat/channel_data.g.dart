@@ -23,5 +23,5 @@ Map<String, dynamic> _$ChannelDataToJson(ChannelData instance) =>
 
 const _$VideoTypeEnumMap = {
   VideoType.local: 'local',
-  VideoType.bilibili: 'bilibili',
+  VideoType.online: 'online',
 };

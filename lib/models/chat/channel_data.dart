@@ -4,7 +4,7 @@ part 'channel_data.g.dart';
 
 enum VideoType {
   local,
-  bilibili,
+  online,
 }
 
 @JsonSerializable()

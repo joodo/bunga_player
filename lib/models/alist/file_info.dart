@@ -26,6 +26,8 @@ class AListFileInfo {
   final DateTime modified;
   final String thumb;
   final String sign;
+  @JsonKey(name: 'raw_url')
+  final String? rawUrl;
 
   AListFileInfo({
     required this.name,
@@ -35,6 +37,7 @@ class AListFileInfo {
     required this.modified,
     required this.thumb,
     required this.sign,
+    this.rawUrl,
   });
 
   factory AListFileInfo.fromJson(Map<String, dynamic> json) =>

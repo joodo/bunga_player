@@ -24,6 +24,8 @@ class BiliVideoEntry extends OnlineVideoEntry {
   bool get isFetched => _isFetched;
   @override
   Future<void> fetch() async {
+    if (_isFetched) return;
+
     logger.i('Bili video: start fetch BV=$bvid, p=$p');
 
     final getSess = getService<Bunga>().getBiliSess;
@@ -118,6 +120,8 @@ class BiliBungumiEntry extends OnlineVideoEntry {
   bool get isFetched => _isFetched;
   @override
   Future<void> fetch() async {
+    if (_isFetched) return;
+
     logger.i('Bili bungumi: start fetch epid=$epid');
 
     final getSess = getService<Bunga>().getBiliSess;
