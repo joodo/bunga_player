@@ -68,31 +68,21 @@ class _RoomSectionState extends State<RoomSection> {
   void _onOpenVideoPressed(String videoHash) {
     return videoHash.split('-').first == 'local'
         ? _openLocalVideo()
-        : context.read<RemotePlaying>().followRemoteBiliVideoHash(videoHash);
+        : context.read<RemotePlaying>().followRemoteOnlineVideoHash(videoHash);
   }
 
   void _openLocalVideo() async {
-    final videoPlayer = context.read<VideoPlayer>();
-    final playerController = context.read<RemotePlaying>();
-    final bi = context.read<BusinessIndicator>();
+    final remotePlaying = context.read<RemotePlaying>();
 
     final file = await openLocalVideoDialog();
     if (file == null) return;
 
-    await bi.run(
-      missions: [
-        Mission(
-          name: '正在收拾客厅……',
-          tasks: [
-            () => videoPlayer.loadLocalVideo(file),
-            () => playerController.askPosition(),
-          ],
-        ),
-      ],
-      onError: () {
-        context.showToast('加载失败');
-      },
-    );
+    try {
+      await remotePlaying.openLocalVideo(file);
+    } catch (e) {
+      context.showToast('加载失败');
+      rethrow;
+    }
   }
 
   String _getUsersStringExceptId(List<User> userList, String id) {

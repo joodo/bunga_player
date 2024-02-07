@@ -1,14 +1,14 @@
 import 'dart:async';
 
+import 'package:bunga_player/models/playing/online_video_entry.dart';
 import 'package:bunga_player/providers/business/business_indicator.dart';
 import 'package:bunga_player/screens/wrappers/toast.dart';
-import 'package:bunga_player/services/bilibili.dart';
 import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/providers/states/current_channel.dart';
 import 'package:bunga_player/providers/states/current_user.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/providers/business/video_player.dart';
-import 'package:bunga_player/services/services.dart';
+import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:stream_chat_flutter_core/stream_chat_flutter_core.dart';
@@ -19,12 +19,12 @@ class RemotePlaying {
     currentChannel.addListener(_onChannelChanged);
     currentChannel.channelDataNotifier.addListener(
       () {
-        // Try to follow if it's bili video
+        // Try to follow if it's online video
         final channelData = currentChannel.channelDataNotifier.value;
         if (!isVideoSameWithRoom &&
             _context.read<VideoPlayer>().videoHashNotifier.value != null &&
-            channelData?.videoType == VideoType.bilibili) {
-          followRemoteBiliVideoHash(channelData!.videoHash);
+            channelData?.videoType != VideoType.local) {
+          followRemoteOnlineVideoHash(channelData!.videoHash);
         }
       },
     );
@@ -60,30 +60,69 @@ class RemotePlaying {
   // Chat
   StreamSubscription? _messageSubscription;
 
-  Future<void> followRemoteBiliVideoHash(String videoHash) async {
+  Future<void> followRemoteOnlineVideoHash(String videoHash) async {
+    final videoEntry = OnlineVideoEntry.fromHash(videoHash);
+    await openOnlineVideo(videoEntry);
+  }
+
+  Future<void> openOnlineVideo(
+    OnlineVideoEntry? videoEntry, {
+    Future<OnlineVideoEntry> Function()? entryGetter,
+    Future<void> Function(OnlineVideoEntry videoEntry)? joinChannel,
+  }) async {
+    assert(videoEntry != null || entryGetter != null);
+
     final bi = _context.read<BusinessIndicator>();
-    final showToast = _context.showToast;
     final videoPlayer = _context.read<VideoPlayer>();
 
-    final biliEntry = BiliEntry.fromHash(videoHash);
+    Future<OnlineVideoEntry> getEntry() async {
+      videoEntry ??= await entryGetter!();
+      return videoEntry!;
+    }
+
     await bi.run(
       missions: [
         Mission(name: '正在鬼鬼祟祟……', tasks: [
-          () async {
-            videoPlayer.stop();
-
-            await getService<Bilibili>().fetch(biliEntry);
-            if (biliEntry is BiliVideo && !biliEntry.isHD) {
-              showToast('无法获取高清视频');
-            }
-          },
+          videoPlayer.stop,
+          (await getEntry()).fetch,
         ]),
         Mission(name: '正在收拾客厅……', tasks: [
-          () async {
-            await videoPlayer.loadBiliVideo(biliEntry);
-            await askPosition();
-          },
+          () async => videoPlayer.loadBiliVideo(await getEntry()),
+          if (joinChannel == null) askPosition,
         ]),
+        if (joinChannel != null)
+          Mission(
+            name: '正在发送请柬……',
+            tasks: [
+              () async => joinChannel(await getEntry()),
+              askPosition,
+            ],
+          )
+      ],
+    );
+  }
+
+  Future<void> openLocalVideo(
+    XFile file, {
+    Future<void> Function()? joinChannel,
+  }) async {
+    final bi = _context.read<BusinessIndicator>();
+    final videoPlayer = _context.read<VideoPlayer>();
+
+    await bi.run(
+      missions: [
+        Mission(name: '正在收拾客厅……', tasks: [
+          () => videoPlayer.loadLocalVideo(file),
+          if (joinChannel == null) askPosition,
+        ]),
+        if (joinChannel != null)
+          Mission(
+            name: '正在发送请柬……',
+            tasks: [
+              () => joinChannel(),
+              askPosition,
+            ],
+          )
       ],
     );
   }

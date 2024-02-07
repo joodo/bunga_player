@@ -5,6 +5,7 @@ import 'package:bunga_player/models/alist/search_result.dart';
 import 'package:http/http.dart' as http;
 
 class AList {
+  // TODO: fetch from bunga player
   final host = Uri.parse('https://alist-joodo.koyeb.app/api/');
   final token =
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwicHdkX3RzIjoxNzA3MjAwMzI1LCJleHAiOjE3MDczNzMxNDQsIm5iZiI6MTcwNzIwMDM0NCwiaWF0IjoxNzA3MjAwMzQ0fQ._5m_IxVBSlEIOF3UsEZX_JfcdGQWN8QCsKIlBK-fiqk';

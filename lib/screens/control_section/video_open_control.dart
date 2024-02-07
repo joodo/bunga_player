@@ -59,57 +59,39 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
   void _openLocalVideo() async {
     final currentChannel = context.read<CurrentChannel>();
     final videoPlayer = context.read<VideoPlayer>();
-    final playerController = context.read<RemotePlaying>();
-    final bi = context.read<BusinessIndicator>();
+    final remotePlaying = context.read<RemotePlaying>();
 
-    final shouldUpdateChannelData = playerController.isVideoSameWithRoom;
+    final shouldUpdateChannelData = remotePlaying.isVideoSameWithRoom;
 
     final file = await openLocalVideoDialog();
     if (file == null) return;
 
-    await bi.run(
-      missions: [
-        Mission(
-          name: '正在收拾客厅……',
-          tasks: [
-            () => videoPlayer.loadLocalVideo(file),
-          ],
-        ),
-        Mission(
-          name: '正在发送请柬……',
-          tasks: [
-            () async {
-              // Update room data only if playing correct video
-              if (shouldUpdateChannelData) {
-                await currentChannel.updateData(ChannelData(
-                  videoType: VideoType.local,
-                  name: file.name,
-                  videoHash: videoPlayer.videoHashNotifier.value!,
-                ));
-              } else {
-                playerController.askPosition();
-              }
-            },
-          ],
-        ),
-      ],
-      onError: () {
-        context.showToast('加载失败');
-      },
-    );
+    try {
+      await remotePlaying.openLocalVideo(file);
 
-    _onVideoLoaded();
+      // Update room data only if playing correct video
+      if (shouldUpdateChannelData) {
+        currentChannel.updateData(ChannelData(
+          videoType: VideoType.local,
+          name: file.name,
+          videoHash: videoPlayer.videoHashNotifier.value!,
+        ));
+      }
+
+      _onVideoLoaded();
+    } catch (e) {
+      context.showToast('加载失败');
+      rethrow;
+    }
   }
 
   void _openBilibili() async {
     final currentChannel = context.read<CurrentChannel>();
-    final videoPlayer = context.read<VideoPlayer>();
-    final playerController = context.read<RemotePlaying>();
-    final bi = context.read<BusinessIndicator>();
+    final remotePlaying = context.read<RemotePlaying>();
     final showToast = context.showToast;
 
     // Update room data only if playing correct video
-    final shouldUpdateRoomData = playerController.isVideoSameWithRoom;
+    final shouldUpdateRoomData = remotePlaying.isVideoSameWithRoom;
 
     final result = await showDialog<String?>(
       context: context,
@@ -119,41 +101,21 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
 
     final biliEntry =
         await getService<Bilibili>().getEntryFromUri(result.parseUri());
-    await bi.run(
-      missions: [
-        Mission(
-          name: '正在鬼鬼祟祟……',
-          tasks: [
-            () async {
-              videoPlayer.stop();
+    try {
+      await remotePlaying.openOnlineVideo(biliEntry);
+    } catch (e) {
+      showToast('解析失败');
+      rethrow;
+    }
 
-              await getService<Bilibili>().fetch(biliEntry);
-              if (biliEntry is BiliVideo && !(biliEntry).isHD) {
-                showToast('无法获取高清视频');
-              }
-            },
-          ],
-        ),
-        Mission(name: '正在收拾客厅……', tasks: [
-          () async {
-            await videoPlayer.loadBiliVideo(biliEntry);
-
-            if (shouldUpdateRoomData) {
-              await currentChannel.updateData(ChannelData(
-                videoType: VideoType.bilibili,
-                name: biliEntry.title,
-                videoHash: biliEntry.hash,
-                pic: biliEntry.pic,
-              ));
-            } else {
-              // if it's me that updated channel data, then no need to ask
-              playerController.askPosition();
-            }
-          },
-        ]),
-      ],
-      onError: () => showToast('解析失败'),
-    );
+    if (shouldUpdateRoomData) {
+      currentChannel.updateData(ChannelData(
+        videoType: VideoType.bilibili,
+        name: biliEntry.title,
+        videoHash: biliEntry.hash,
+        pic: biliEntry.pic,
+      ));
+    }
 
     _onVideoLoaded();
   }

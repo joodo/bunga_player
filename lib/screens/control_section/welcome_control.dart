@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bunga_player/mocks/menu_anchor.dart' as mock;
+import 'package:bunga_player/models/playing/online_video_entry.dart';
 import 'package:bunga_player/providers/business/business_indicator.dart';
 import 'package:bunga_player/screens/dialogs/bilibili.dart';
 import 'package:bunga_player/screens/dialogs/net_disk.dart';
@@ -104,43 +105,34 @@ class _WelcomeControlState extends State<WelcomeControl> {
     final file = await openLocalVideoDialog();
     if (file == null) return;
 
-    _completer?.complete();
-    Future.microtask(() => context.read<BusinessIndicator>().run(
-          missions: [
-            Mission(
-              name: '正在收拾客厅……',
-              tasks: [
-                () => videoPlayer.loadLocalVideo(file),
-              ],
-            ),
-            Mission(
-              name: '正在发送请柬……',
-              tasks: [
-                () async {
-                  final hash = videoPlayer.videoHashNotifier.value!;
-                  await currentChannel.createOrJoin(ChannelData(
-                    videoType: VideoType.local,
-                    name: file.name,
-                    videoHash: hash,
-                  ));
-                  remotePlaying.askPosition();
-
-                  _onVideoLoaded();
-                },
-              ],
-            ),
-          ],
-          onError: () {
-            context.showToast('加载失败');
-            Future.microtask(_initBusinessIndicator);
+    void doOpen() async {
+      try {
+        await remotePlaying.openLocalVideo(
+          file,
+          joinChannel: () {
+            final hash = videoPlayer.videoHashNotifier.value!;
+            return currentChannel.createOrJoin(ChannelData(
+              videoType: VideoType.local,
+              name: file.name,
+              videoHash: hash,
+            ));
           },
-        ));
+        );
+        _onVideoLoaded();
+      } catch (e) {
+        context.showToast('加载失败');
+        Future.microtask(_initBusinessIndicator);
+        rethrow;
+      }
+    }
+
+    _completer?.complete();
+    Future.microtask(doOpen);
   }
 
   void _openBilibili() async {
     final currentChannel = context.read<CurrentChannel>();
-    final playerController = context.read<RemotePlaying>();
-    final videoPlayer = context.read<VideoPlayer>();
+    final remotePlaying = context.read<RemotePlaying>();
     final showToast = context.showToast;
 
     final result = await showDialog<String?>(
@@ -149,60 +141,33 @@ class _WelcomeControlState extends State<WelcomeControl> {
     );
     if (result == null) return;
 
-    late final BiliEntry biliEntry;
+    void doOpen() async {
+      try {
+        await remotePlaying.openOnlineVideo(
+          null,
+          entryGetter: () {
+            print('dfas');
+            return getService<Bilibili>().getEntryFromUri(result.parseUri());
+          },
+          joinChannel: (videoEntry) {
+            return currentChannel.createOrJoin(ChannelData(
+              videoType: VideoType.bilibili,
+              name: videoEntry.title,
+              videoHash: videoEntry.hash,
+              pic: videoEntry.pic,
+            ));
+          },
+        );
+        _onVideoLoaded();
+      } catch (e) {
+        showToast('解析失败');
+        Future.microtask(_initBusinessIndicator);
+        rethrow;
+      }
+    }
 
     _completer?.complete();
-    Future.microtask(() => context.read<BusinessIndicator>().run(
-          missions: [
-            Mission(
-              name: '正在鬼鬼祟祟……',
-              tasks: [
-                // get BiliEntry
-                () async {
-                  biliEntry = await getService<Bilibili>()
-                      .getEntryFromUri(result.parseUri());
-                },
-                // fetch BiliEntry
-                () async {
-                  await getService<Bilibili>().fetch(biliEntry);
-                  if (biliEntry is BiliVideo &&
-                      !(biliEntry as BiliVideo).isHD) {
-                    showToast('无法获取高清视频');
-                  }
-                },
-              ],
-            ),
-            Mission(
-              name: '正在收拾客厅……',
-              tasks: [
-                // load BiliEntry
-                () async {
-                  await videoPlayer.loadBiliVideo(biliEntry);
-                },
-              ],
-            ),
-            Mission(
-              name: '正在发送请柬……',
-              tasks: [
-                () async {
-                  await currentChannel.createOrJoin(ChannelData(
-                    videoType: VideoType.bilibili,
-                    name: biliEntry.title,
-                    videoHash: biliEntry.hash,
-                    pic: biliEntry.pic,
-                  ));
-                  playerController.askPosition();
-
-                  _onVideoLoaded();
-                },
-              ],
-            ),
-          ],
-          onError: () {
-            context.showToast('解析失败');
-            Future.microtask(_initBusinessIndicator);
-          },
-        ));
+    Future.microtask(doOpen);
   }
 
   void _openNetDisk() async {
@@ -215,8 +180,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
 
   void _showOthers() async {
     final currentChannel = context.read<CurrentChannel>();
-    final playerController = context.read<RemotePlaying>();
-    final videoPlayer = context.read<VideoPlayer>();
+    final remotePlaying = context.read<RemotePlaying>();
     final showToast = context.showToast;
 
     final result = await showDialog<_BiliChannelData?>(
@@ -225,53 +189,25 @@ class _WelcomeControlState extends State<WelcomeControl> {
     );
     if (result == null) return;
 
-    late final BiliEntry biliEntry;
-    late final String channelId;
+    void doOpen() async {
+      try {
+        final onlineEntry = OnlineVideoEntry.fromHash(result.hash);
+        await remotePlaying.openOnlineVideo(
+          onlineEntry,
+          joinChannel: (videoEntry) {
+            return currentChannel.joinById(result.id);
+          },
+        );
+        _onVideoLoaded();
+      } catch (e) {
+        showToast('打开失败');
+        Future.microtask(_initBusinessIndicator);
+        rethrow;
+      }
+    }
 
     _completer?.complete();
-    Future.microtask(() => context.read<BusinessIndicator>().run(
-          missions: [
-            Mission(
-              name: '正在鬼鬼祟祟……',
-              tasks: [
-                // fetch BiliEntry
-                () async {
-                  biliEntry = BiliEntry.fromHash(result.hash);
-                  channelId = result.id;
-                  await getService<Bilibili>().fetch(biliEntry);
-                  if (biliEntry is BiliVideo &&
-                      !(biliEntry as BiliVideo).isHD) {
-                    showToast('无法获取高清视频');
-                  }
-                },
-              ],
-            ),
-            Mission(
-              name: '正在收拾客厅……',
-              tasks: [
-                // load BiliEntry
-                () async {
-                  await videoPlayer.loadBiliVideo(biliEntry);
-                },
-              ],
-            ),
-            Mission(
-              name: '正在发送请柬……',
-              tasks: [
-                () async {
-                  await currentChannel.joinById(channelId);
-                  playerController.askPosition();
-
-                  _onVideoLoaded();
-                },
-              ],
-            ),
-          ],
-          onError: () {
-            context.showToast('解析失败');
-            Future.microtask(_initBusinessIndicator);
-          },
-        ));
+    Future.microtask(doOpen);
   }
 
   void _onChangeName() async {

@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:ui';
 
-import 'package:bunga_player/services/bilibili.dart';
+import 'package:bunga_player/models/playing/online_video_entry.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
@@ -133,7 +133,7 @@ class VideoPlayer {
     _videoHashNotifier.value = videoHash;
   }
 
-  Future<void> loadBiliVideo(BiliEntry biliEntry) async {
+  Future<void> loadBiliVideo(OnlineVideoEntry biliEntry) async {
     // try every url
     bool success = false;
     for (var url in biliEntry.sources.video) {

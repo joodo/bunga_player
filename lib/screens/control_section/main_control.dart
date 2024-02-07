@@ -1,7 +1,5 @@
 import 'package:bunga_player/actions/play.dart';
-import 'package:bunga_player/providers/business/business_indicator.dart';
-import 'package:bunga_player/screens/wrappers/toast.dart';
-import 'package:bunga_player/services/bilibili.dart';
+import 'package:bunga_player/models/playing/online_video_entry.dart';
 import 'package:bunga_player/providers/business/remote_playing.dart';
 import 'package:bunga_player/mocks/popup_menu.dart' as mock;
 import 'package:bunga_player/mocks/slider.dart' as mock;
@@ -9,7 +7,6 @@ import 'package:bunga_player/providers/states/current_channel.dart';
 import 'package:bunga_player/providers/ui/ui.dart';
 import 'package:bunga_player/providers/states/voice_call.dart';
 import 'package:bunga_player/providers/business/video_player.dart';
-import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/duration.dart';
 import 'package:flutter/material.dart';
 import 'package:multi_value_listenable_builder/multi_value_listenable_builder.dart';
@@ -22,8 +19,7 @@ class MainControl extends StatelessWidget {
   Widget build(BuildContext context) {
     final currentChannel = context.read<CurrentChannel>();
     final videoPlayer = context.read<VideoPlayer>();
-    final playerController = context.read<RemotePlaying>();
-    final showToast = context.showToast;
+    final remotePlaying = context.read<RemotePlaying>();
 
     return Stack(
       children: [
@@ -105,28 +101,9 @@ class MainControl extends StatelessWidget {
                       onTap: () async {
                         Navigator.of(context, rootNavigator: true).pop();
 
-                        final biliEntry = BiliEntry.fromHash(
+                        final onlineEntry = OnlineVideoEntry.fromHash(
                             videoPlayer.videoHashNotifier.value!);
-                        await context.read<BusinessIndicator>().run(
-                          missions: [
-                            Mission(name: '正在鬼鬼祟祟……', tasks: [
-                              () async {
-                                videoPlayer.stop();
-
-                                await getService<Bilibili>().fetch(biliEntry);
-                                if (biliEntry is BiliVideo && !biliEntry.isHD) {
-                                  showToast('无法获取高清视频');
-                                }
-                              },
-                            ]),
-                            Mission(name: '正在收拾客厅……', tasks: [
-                              () async {
-                                await videoPlayer.loadBiliVideo(biliEntry);
-                                await playerController.askPosition();
-                              },
-                            ]),
-                          ],
-                        );
+                        await remotePlaying.openOnlineVideo(onlineEntry);
                       },
                     ),
                   ),

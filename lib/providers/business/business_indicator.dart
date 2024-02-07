@@ -16,7 +16,6 @@ class BusinessIndicator extends ChangeNotifier {
     required List<Mission> missions,
     bool showProgress = true,
     bool determinate = false,
-    void Function()? onError,
   }) async {
     assert(!_isRunning);
     _isRunning = true;
@@ -40,7 +39,6 @@ class BusinessIndicator extends ChangeNotifier {
         }
       }
     } catch (e) {
-      onError?.call();
       rethrow;
     } finally {
       totalProgress = null;
