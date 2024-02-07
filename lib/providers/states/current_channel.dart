@@ -5,10 +5,10 @@ import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/providers/states/current_user.dart';
-import 'package:bunga_player/screens/wrappers/toast.dart';
 import 'package:bunga_player/services/stream_io.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart';
+import 'package:bunga_player/services/toast.dart';
 import 'package:bunga_player/utils/value_listenable.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -98,7 +98,7 @@ class CurrentChannel extends ChangeNotifier {
 
     _watchersNotifier.value = List.from(_watchersNotifier.value)..add(user);
 
-    _context.showToast('${user.name} 已加入');
+    getService<Toast>().show('${user.name} 已加入');
     AudioPlayer().play(AssetSource('sounds/user_join.wav'));
   }
 
@@ -106,7 +106,7 @@ class CurrentChannel extends ChangeNotifier {
     _watchersNotifier.value = List.from(_watchersNotifier.value)
       ..removeWhere((u) {
         if (u.id == user.id) {
-          _context.showToast('${u.name} 已离开');
+          getService<Toast>().show('${u.name} 已离开');
           AudioPlayer().play(AssetSource('sounds/user_leave.wav'));
           return true;
         } else {
@@ -144,7 +144,7 @@ class CurrentChannel extends ChangeNotifier {
           .listen((user) {
         logger.i('${user.name} changed channel data');
         if (_isCurrentUser(user)) return;
-        _context.showToast('${user.name} 更换了影片');
+        getService<Toast>().show('${user.name} 更换了影片');
         _lastChannelDataUpdater = user;
       }),
       _channel!.extraDataStream

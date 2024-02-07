@@ -2,12 +2,13 @@ import 'dart:async';
 
 import 'package:bunga_player/models/playing/online_video_entry.dart';
 import 'package:bunga_player/providers/business/business_indicator.dart';
-import 'package:bunga_player/screens/wrappers/toast.dart';
 import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/providers/states/current_channel.dart';
 import 'package:bunga_player/providers/states/current_user.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/providers/business/video_player.dart';
+import 'package:bunga_player/services/services.dart';
+import 'package:bunga_player/services/toast.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -193,6 +194,7 @@ class RemotePlaying {
     if (!isVideoSameWithRoom) return;
 
     final videoPlayer = _context.read<VideoPlayer>();
+    final toast = getService<Toast>();
 
     final re = message.text!.split(' ');
 
@@ -204,7 +206,7 @@ class RemotePlaying {
     if (re.first == 'pause' && isPlaying) {
       videoPlayer.isPlaying.value = false;
       if (canShowSnackBar) {
-        _context.showToast('${message.user!.name} 暂停了视频');
+        toast.show('${message.user!.name} 暂停了视频');
         canShowSnackBar = false;
         _markRemoteToggle();
       }
@@ -212,7 +214,7 @@ class RemotePlaying {
     if (re.first == 'play' && !isPlaying) {
       videoPlayer.isPlaying.value = true;
       if (canShowSnackBar) {
-        _context.showToast('${message.user!.name} 播放了视频');
+        toast.show('${message.user!.name} 播放了视频');
         canShowSnackBar = false;
         _markRemoteToggle();
       }
@@ -223,7 +225,7 @@ class RemotePlaying {
     if ((position - remotePosition).inMilliseconds.abs() > 1000) {
       videoPlayer.position.value = remotePosition;
       if (canShowSnackBar) {
-        _context.showToast('${message.user!.name} 调整了进度');
+        toast.show('${message.user!.name} 调整了进度');
         canShowSnackBar = false;
       }
     }

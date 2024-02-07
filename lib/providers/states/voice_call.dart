@@ -3,11 +3,11 @@ import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:bunga_player/providers/states/current_channel.dart';
 import 'package:bunga_player/providers/states/current_user.dart';
-import 'package:bunga_player/screens/wrappers/toast.dart';
 import 'package:bunga_player/services/agora.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
+import 'package:bunga_player/services/toast.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:stream_chat_flutter_core/stream_chat_flutter_core.dart';
@@ -23,7 +23,7 @@ class VoiceCall extends ChangeNotifier {
   VoiceCall(BuildContext context)
       : _currentChannel = context.read<CurrentChannel>(),
         _currentUser = context.read<CurrentUser>(),
-        _showToast = context.showToast {
+        _showToast = getService<Toast>().show {
     // Call Ring
     addListener(() {
       if (callStatus == CallStatus.callIn || callStatus == CallStatus.callOut) {

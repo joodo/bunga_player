@@ -3,6 +3,7 @@ import 'package:bunga_player/models/alist/search_result.dart';
 import 'package:bunga_player/services/alist.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
+import 'package:bunga_player/services/toast.dart';
 import 'package:flutter/material.dart';
 
 class NetDiskDialog extends StatefulWidget {
@@ -245,8 +246,7 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
     try {
       _currentFiles = await getService<AList>().list(_currentPath);
     } catch (e) {
-      // TODO: change showToast to provider
-      //if (context.mounted) context.showToast('获取目录失败');
+      getService<Toast>().show('获取目录失败');
       _currentPath = oldPath;
       rethrow;
     } finally {

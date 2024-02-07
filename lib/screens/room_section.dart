@@ -3,8 +3,9 @@ import 'package:bunga_player/providers/business/business_indicator.dart';
 import 'package:bunga_player/providers/states/current_channel.dart';
 import 'package:bunga_player/providers/business/remote_playing.dart';
 import 'package:bunga_player/providers/states/current_user.dart';
-import 'package:bunga_player/screens/wrappers/toast.dart';
 import 'package:bunga_player/providers/business/video_player.dart';
+import 'package:bunga_player/services/services.dart';
+import 'package:bunga_player/services/toast.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:stream_chat_flutter_core/stream_chat_flutter_core.dart';
@@ -80,7 +81,7 @@ class _RoomSectionState extends State<RoomSection> {
     try {
       await remotePlaying.openLocalVideo(file);
     } catch (e) {
-      context.showToast('加载失败');
+      getService<Toast>().show('加载失败');
       rethrow;
     }
   }

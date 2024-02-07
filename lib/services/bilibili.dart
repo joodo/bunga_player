@@ -4,6 +4,7 @@ import 'package:bunga_player/models/playing/online_video_entry.dart';
 import 'package:bunga_player/services/bunga.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart';
+import 'package:bunga_player/services/toast.dart';
 import 'package:http/http.dart' as http;
 
 class BiliVideoEntry extends OnlineVideoEntry {
@@ -33,7 +34,7 @@ class BiliVideoEntry extends OnlineVideoEntry {
         sess = await getSess();
         isHD = sess != null;
         if (!isHD) {
-          // TODO: showToast
+          getService<Toast>().show('无法获取高清视频');
           logger.w('Bilibili: Cookie of serverless funtion outdated');
         }
       }(),

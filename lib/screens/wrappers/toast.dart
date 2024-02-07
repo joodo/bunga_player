@@ -1,10 +1,6 @@
+import 'package:bunga_player/services/services.dart';
+import 'package:bunga_player/services/toast.dart';
 import 'package:flutter/material.dart';
-
-extension ShowToast on BuildContext {
-  void showToast(String text) {
-    findAncestorStateOfType<_ToastWrapperState>()!.show(text);
-  }
-}
 
 class ToastWrapper extends StatefulWidget {
   const ToastWrapper({super.key, required this.child});
@@ -15,6 +11,19 @@ class ToastWrapper extends StatefulWidget {
 }
 
 class _ToastWrapperState extends State<ToastWrapper> {
+  late final _service = getService<Toast>();
+  @override
+  void initState() {
+    _service.register(show);
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _service.unregister(show);
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) => widget.child;
 

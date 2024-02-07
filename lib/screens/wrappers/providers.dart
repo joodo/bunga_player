@@ -26,7 +26,7 @@ class ProvidersWrapper extends StatelessWidget {
                   streamIO: getService<StreamIO>().appKey,
                   agora: getService<Agora>().appId,
                 )),
-        ChangeNotifierProvider(create: (context) => CurrentUser(context)),
+        ChangeNotifierProvider(create: (context) => CurrentUser()),
         ChangeNotifierProvider(create: (context) => CurrentChannel(context)),
         ChangeNotifierProvider(create: (context) => VoiceCall(context)),
         ChangeNotifierProvider(create: (context) => BusinessIndicator()),

@@ -2,8 +2,9 @@ import 'dart:async';
 
 import 'package:bunga_player/providers/business/business_indicator.dart';
 import 'package:bunga_player/providers/states/current_user.dart';
-import 'package:bunga_player/screens/wrappers/toast.dart';
 import 'package:bunga_player/services/logger.dart';
+import 'package:bunga_player/services/services.dart';
+import 'package:bunga_player/services/toast.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -87,7 +88,7 @@ class _RenameControlState extends State<RenameControl> {
   void _onSubmit(String userName) async {
     context.read<CurrentUser>().rename(userName).onError((error, stackTrace) {
       logger.e(error);
-      context.showToast('改名失败');
+      getService<Toast>().show('改名失败');
       throw error ?? '改名失败';
     });
     _completer?.complete();

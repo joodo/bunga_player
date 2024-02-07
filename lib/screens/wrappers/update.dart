@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:bunga_player/screens/wrappers/toast.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart';
+import 'package:bunga_player/services/toast.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:updat/updat.dart';
@@ -55,7 +55,7 @@ class UpdateWrapper extends StatelessWidget {
         logger.i('Update status: $status');
         if (status == UpdatStatus.available ||
             status == UpdatStatus.availableWithChangelog) {
-          Future.microtask(() => context.showToast('检查到更新，正在下载…'));
+          Future.microtask(() => getService<Toast>().show('检查到更新，正在下载…'));
         }
       },
       child: child,

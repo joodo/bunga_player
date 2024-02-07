@@ -6,11 +6,11 @@ import 'package:bunga_player/providers/states/current_user.dart';
 import 'package:bunga_player/providers/states/voice_call.dart';
 import 'package:bunga_player/screens/dialogs/host.dart';
 import 'package:bunga_player/screens/wrappers/restart.dart';
-import 'package:bunga_player/screens/wrappers/toast.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/providers/business/video_player.dart';
+import 'package:bunga_player/services/toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -77,7 +77,7 @@ class _ConsoleWrapperState extends State<ConsoleWrapper> {
             await currentUser.changeID(newID);
 
             if (context.mounted) {
-              context.showToast('User ID has changed to $newID');
+              getService<Toast>().show('User ID has changed to $newID');
             }
           },
           child: const Text('Change User ID'),
@@ -106,7 +106,7 @@ class _ConsoleWrapperState extends State<ConsoleWrapper> {
         ),
         const SizedBox(height: 8),
         FilledButton(
-          onPressed: () => context.showToast('A new toast!'),
+          onPressed: () => getService<Toast>().show('A new toast!'),
           child: const Text('Show a toast'),
         ),
       ],

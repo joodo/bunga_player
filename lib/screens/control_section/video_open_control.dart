@@ -1,6 +1,5 @@
 import 'package:bunga_player/providers/business/business_indicator.dart';
 import 'package:bunga_player/screens/dialogs/bilibili.dart';
-import 'package:bunga_player/screens/wrappers/toast.dart';
 import 'package:bunga_player/services/bilibili.dart';
 import 'package:bunga_player/actions/open_local_video.dart';
 import 'package:bunga_player/models/chat/channel_data.dart';
@@ -8,6 +7,7 @@ import 'package:bunga_player/providers/states/current_channel.dart';
 import 'package:bunga_player/providers/business/remote_playing.dart';
 import 'package:bunga_player/providers/business/video_player.dart';
 import 'package:bunga_player/services/services.dart';
+import 'package:bunga_player/services/toast.dart';
 import 'package:bunga_player/utils/string.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -80,7 +80,7 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
 
       _onVideoLoaded();
     } catch (e) {
-      context.showToast('加载失败');
+      getService<Toast>().show('加载失败');
       rethrow;
     }
   }
@@ -88,7 +88,6 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
   void _openBilibili() async {
     final currentChannel = context.read<CurrentChannel>();
     final remotePlaying = context.read<RemotePlaying>();
-    final showToast = context.showToast;
 
     // Update room data only if playing correct video
     final shouldUpdateRoomData = remotePlaying.isVideoSameWithRoom;
@@ -104,7 +103,7 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
     try {
       await remotePlaying.openOnlineVideo(biliEntry);
     } catch (e) {
-      showToast('解析失败');
+      getService<Toast>().show('解析失败');
       rethrow;
     }
 
