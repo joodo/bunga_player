@@ -59,6 +59,7 @@ class _ConsoleWrapperState extends State<ConsoleWrapper> {
       readOnly: true,
     );
 
+    final watchProgress = context.read<VideoPlayer>().watchProgress;
     final actionView = Column(
       children: [
         FilledButton(
@@ -109,6 +110,15 @@ class _ConsoleWrapperState extends State<ConsoleWrapper> {
         FilledButton(
           onPressed: () => getService<Toast>().show('A new toast!'),
           child: const Text('Show a toast'),
+        ),
+        const SizedBox(height: 8),
+        FilledButton(
+          onPressed: () {
+            setState(() {
+              watchProgress.clear();
+            });
+          },
+          child: Text('Clear all watch progress (${watchProgress.length})'),
         ),
       ],
     );
