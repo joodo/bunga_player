@@ -72,13 +72,19 @@ class AList {
     logger.i('Alist token got successfully.');
   }
 
-  Future<List<AListFileInfo>> list(String path) async {
+  Future<List<AListFileInfo>> list(String path, {bool refresh = false}) async {
     assert(_host != null && _token != null);
 
     final response = await http.post(
       _host!.resolve('fs/list'),
-      headers: {'Authorization': _token!},
-      body: {'path': path},
+      headers: {
+        'Authorization': _token!,
+        'content-type': 'application/json',
+      },
+      body: jsonEncode({
+        'path': path,
+        if (refresh) 'refresh': true,
+      }),
     );
 
     if (!_requestSuccess(response)) {

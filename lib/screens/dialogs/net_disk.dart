@@ -73,6 +73,11 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
               ),
               const SizedBox(width: 12),
               IconButton.outlined(
+                onPressed: _refresh,
+                icon: const Icon(Icons.refresh),
+              ),
+              const SizedBox(width: 12),
+              IconButton.outlined(
                 onPressed: () => setState(() {
                   _alistBookmarks.add(_currentPath);
                 }),
@@ -261,6 +266,23 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
     } catch (e) {
       _currentPath = oldPath;
       rethrow;
+    } finally {
+      setState(() {
+        _pending = false;
+      });
+    }
+  }
+
+  void _refresh() async {
+    setState(() {
+      _pending = true;
+    });
+
+    try {
+      _currentFiles = await getService<AList>().list(
+        _currentPath,
+        refresh: true,
+      );
     } finally {
       setState(() {
         _pending = false;
