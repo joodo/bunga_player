@@ -9,6 +9,7 @@ import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/providers/states/current_channel.dart';
 import 'package:bunga_player/providers/business/remote_playing.dart';
 import 'package:bunga_player/providers/business/video_player.dart';
+import 'package:bunga_player/services/bunga.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
 import 'package:bunga_player/utils/string.dart';
@@ -148,7 +149,13 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
 
     final alistEntry = AListEntry(path: alistPath);
     try {
-      await remotePlaying.openOnlineVideo(alistEntry);
+      await remotePlaying.openOnlineVideo(
+        alistEntry,
+        beforeAskingPosition: (videoEntry) => getService<Bunga>().setStringHash(
+          text: alistPath,
+          hash: AListEntry.hashFromPath(alistPath),
+        ),
+      );
     } catch (e) {
       getService<Toast>().show('解析失败');
       rethrow;

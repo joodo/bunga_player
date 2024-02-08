@@ -47,6 +47,10 @@ class Bunga {
       _host.resolve('utils/hash-string?hash=$hash'),
       headers: {'Authorization': _userToken ?? ''},
     );
+    if (!response.isSuccess) {
+      throw Exception('Fail to get string of hash $hash: ${response.body}');
+    }
+
     final data = jsonDecode(response.body);
     return data['data']['text'];
   }

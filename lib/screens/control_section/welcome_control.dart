@@ -152,7 +152,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
           entryGetter: () {
             return getService<Bilibili>().getEntryFromUri(result.parseUri());
           },
-          joinChannel: (videoEntry) {
+          beforeAskingPosition: (videoEntry) {
             return currentChannel.createOrJoin(ChannelData(
               videoType: VideoType.online,
               name: videoEntry.title,
@@ -191,7 +191,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
       try {
         await remotePlaying.openOnlineVideo(
           alistEntry,
-          joinChannel: (videoEntry) async {
+          beforeAskingPosition: (videoEntry) async {
             // Set hash string
             await getService<Bunga>().setStringHash(
               text: alistPath,
@@ -234,7 +234,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
         final onlineEntry = OnlineVideoEntry.fromHash(result.data.videoHash);
         await remotePlaying.openOnlineVideo(
           onlineEntry,
-          joinChannel: (videoEntry) {
+          beforeAskingPosition: (videoEntry) {
             return currentChannel.joinById(result.id);
           },
         );

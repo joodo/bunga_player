@@ -69,7 +69,7 @@ class RemotePlaying {
   Future<void> openOnlineVideo(
     OnlineVideoEntry? videoEntry, {
     Future<OnlineVideoEntry> Function()? entryGetter,
-    Future<void> Function(OnlineVideoEntry videoEntry)? joinChannel,
+    Future<void> Function(OnlineVideoEntry videoEntry)? beforeAskingPosition,
   }) async {
     assert(videoEntry != null || entryGetter != null);
 
@@ -89,16 +89,14 @@ class RemotePlaying {
         ]),
         Mission(name: '正在收拾客厅……', tasks: [
           () async => videoPlayer.loadBiliVideo(await getEntry()),
-          if (joinChannel == null) askPosition,
         ]),
-        if (joinChannel != null)
-          Mission(
-            name: '正在发送请柬……',
-            tasks: [
-              () async => joinChannel(await getEntry()),
-              askPosition,
-            ],
-          )
+        Mission(
+          name: '正在发送请柬……',
+          tasks: [
+            () async => beforeAskingPosition?.call(await getEntry()),
+            askPosition,
+          ],
+        ),
       ],
     );
   }
