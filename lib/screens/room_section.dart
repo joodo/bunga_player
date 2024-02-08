@@ -21,7 +21,6 @@ class _RoomSectionState extends State<RoomSection> {
   @override
   Widget build(BuildContext context) {
     final currentChannel = context.read<CurrentChannel>();
-    final isBusy = context.read<BusinessIndicator>().currentProgress != null;
     final videoPlayer = context.read<VideoPlayer>();
 
     return Row(
@@ -48,7 +47,8 @@ class _RoomSectionState extends State<RoomSection> {
         ValueListenableBuilder(
           valueListenable: currentChannel.channelDataNotifier,
           builder: (context, channelData, child) {
-            if (isBusy == true || // maybe loading video
+            if (context.watch<BusinessIndicator>().currentProgress !=
+                    null || // busy, maybe loading video
                 videoPlayer.isStoppedNotifier.value || // stopped
                 channelData == null || // no one change data
                 channelData.videoHash == videoPlayer.videoHashNotifier.value) {
@@ -57,7 +57,7 @@ class _RoomSectionState extends State<RoomSection> {
 
             return _VideoUnsyncNotification(
               onAction: () => _onOpenVideoPressed(channelData.videoHash),
-              otherUserName: currentChannel.lastChannelDataUpdater?.name,
+              otherUserName: channelData.sharer.name,
               otherVideoTitle: channelData.name,
             );
           },

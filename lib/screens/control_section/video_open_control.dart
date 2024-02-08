@@ -1,4 +1,5 @@
 import 'package:bunga_player/providers/business/business_indicator.dart';
+import 'package:bunga_player/providers/states/current_user.dart';
 import 'package:bunga_player/screens/dialogs/bilibili.dart';
 import 'package:bunga_player/screens/dialogs/net_disk.dart';
 import 'package:bunga_player/services/alist.dart';
@@ -64,6 +65,7 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
   }
 
   void _openLocalVideo() async {
+    final currentUser = context.read<CurrentUser>();
     final currentChannel = context.read<CurrentChannel>();
     final videoPlayer = context.read<VideoPlayer>();
     final remotePlaying = context.read<RemotePlaying>();
@@ -82,6 +84,7 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
           videoType: VideoType.local,
           name: file.name,
           videoHash: videoPlayer.videoHashNotifier.value!,
+          sharer: currentUser.streamUser!,
         ));
       }
 
@@ -93,6 +96,7 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
   }
 
   void _openBilibili() async {
+    final currentUser = context.read<CurrentUser>();
     final currentChannel = context.read<CurrentChannel>();
     final remotePlaying = context.read<RemotePlaying>();
 
@@ -119,7 +123,8 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
         videoType: VideoType.online,
         name: biliEntry.title,
         videoHash: biliEntry.hash,
-        pic: biliEntry.pic,
+        sharer: currentUser.streamUser!,
+        image: biliEntry.pic,
       ));
     }
 
@@ -128,6 +133,7 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
 
   void _openNetDisk() async {
     final currentChannel = context.read<CurrentChannel>();
+    final currentUser = context.read<CurrentUser>();
     final remotePlaying = context.read<RemotePlaying>();
     final watchProgress = context.read<VideoPlayer>().watchProgress;
 
@@ -153,7 +159,8 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
         videoType: VideoType.online,
         name: alistEntry.title,
         videoHash: alistEntry.hash,
-        pic: alistEntry.pic,
+        sharer: currentUser.streamUser!,
+        image: alistEntry.pic,
       ));
     }
 

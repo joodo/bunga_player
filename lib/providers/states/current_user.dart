@@ -5,7 +5,7 @@ import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
 import 'package:flutter/material.dart';
-import 'package:uuid/uuid.dart';
+import 'package:stream_chat_flutter_core/stream_chat_flutter_core.dart';
 
 class CurrentUser extends ChangeNotifier {
   CurrentUser() {
@@ -34,6 +34,8 @@ class CurrentUser extends ChangeNotifier {
 
   late String _token;
   String get token => _token;
+
+  User? get streamUser => getService<StreamIO>().currentUser;
 
   bool __isOnline = false;
   bool get isOnline => __isOnline;

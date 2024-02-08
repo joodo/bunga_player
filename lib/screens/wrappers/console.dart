@@ -206,7 +206,7 @@ class _VariablesView extends StatelessWidget {
   late final _variables = <String, String? Function(BuildContext context)>{
     'App Key': (context) => context.read<AppKey>().toString(),
     'Current verion': (context) => getService<PackageInfo>().version,
-    'Chat User Name': (context) => context.read<CurrentUser>().toString(),
+    'Chat User': (context) => context.read<CurrentUser>().toString(),
     'Chat Channel': (context) => context.read<CurrentChannel>().toString(),
     'Video Hash': (context) =>
         context.read<VideoPlayer>().videoHashNotifier.value ??

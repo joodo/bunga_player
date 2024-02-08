@@ -38,6 +38,8 @@ class StreamIO {
 
   Future<void> logout() => _client.disconnectUser();
 
+  User? get currentUser => _client.state.currentUser;
+
   Future<void> updateUserInfo(CurrentUser user) async {
     await _client.updateUser(User(
       id: user.id,
@@ -78,7 +80,7 @@ class StreamIO {
     return channel;
   }
 
-  Future<List<(String id, String creator, ChannelData channelData)>>
+  Future<List<(String id, ChannelData channelData)>>
       queryOnlineChannels() async {
     final filter =
         Filter.equal(ChannelData.videoTypeJsonKey, VideoType.online.name);
@@ -95,7 +97,6 @@ class StreamIO {
     return channels
         .map((channel) => (
               channel.id!,
-              channel.createdBy!.name,
               ChannelData.fromJson(channel.extraData),
             ))
         .toList();

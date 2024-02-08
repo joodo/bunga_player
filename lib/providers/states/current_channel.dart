@@ -17,8 +17,18 @@ import 'package:stream_chat_flutter_core/stream_chat_flutter_core.dart';
 const videoTypeChannelDataKey = 'video_type';
 
 class CurrentChannel extends ChangeNotifier {
-  CurrentChannel(this._context);
   final BuildContext _context;
+  CurrentChannel(this._context) {
+    channelDataNotifier.addListener(() {
+      final data = channelDataNotifier.value;
+      if (data == null) return;
+
+      logger.i('${data.sharer.name} changed channel data: $data');
+
+      if (_isCurrentUser(data.sharer) || _muteChannelUpdateNotify) return;
+      getService<Toast>().show('${data.sharer.name} 更换了影片');
+    });
+  }
 
   Channel? _channel;
   bool get isEmpty => _channel == null;
@@ -27,9 +37,7 @@ class CurrentChannel extends ChangeNotifier {
   late final watchersNotifier = _watchersNotifier.createReadonly();
 
   final channelDataNotifier = ValueNotifier<ChannelData?>(null);
-
-  User? _lastChannelDataUpdater;
-  User? get lastChannelDataUpdater => _lastChannelDataUpdater;
+  bool _muteChannelUpdateNotify = false;
 
   // Streams
   Stream<Message?> get messageStream =>
@@ -82,7 +90,6 @@ class CurrentChannel extends ChangeNotifier {
     _channel = null;
     channelDataNotifier.value = null;
     _watchersNotifier.value = [];
-    _lastChannelDataUpdater = null;
 
     notifyListeners();
   }
@@ -138,19 +145,19 @@ class CurrentChannel extends ChangeNotifier {
       }),
       watcherJoinEventStream.listen(_onUserJoin),
       watcherLeaveEventStream.listen(_onUserLeave),
-      _channel!
-          .on('channel.updated')
-          .map((event) => event.user!)
-          .listen((user) {
-        logger.i('${user.name} changed channel data');
-        if (_isCurrentUser(user)) return;
-        getService<Toast>().show('${user.name} 更换了影片');
-        _lastChannelDataUpdater = user;
-      }),
       _channel!.extraDataStream
-          .map<ChannelData?>((jsonData) => ChannelData.fromJson(jsonData))
-          .listen((channelData) => channelDataNotifier.value = channelData),
+          .map<ChannelData>((jsonData) => ChannelData.fromJson(jsonData))
+          .listen((channelData) {
+        channelDataNotifier.value = channelData;
+      }),
     ]);
+
+    // Mute notify because joining channel may cause a channel data update
+    _muteChannelUpdateNotify = true;
+    Future.delayed(
+      const Duration(seconds: 5),
+      () => _muteChannelUpdateNotify = false,
+    );
   }
 
   Future<void> send(Message message) async {

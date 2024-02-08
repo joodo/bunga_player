@@ -100,6 +100,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
   }
 
   void _openLocalVideo() async {
+    final currentUser = context.read<CurrentUser>();
     final currentChannel = context.read<CurrentChannel>();
     final videoPlayer = context.read<VideoPlayer>();
     final remotePlaying = context.read<RemotePlaying>();
@@ -117,6 +118,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
               videoType: VideoType.local,
               name: file.name,
               videoHash: hash,
+              sharer: currentUser.streamUser!,
             ));
           },
         );
@@ -133,6 +135,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
   }
 
   void _openBilibili() async {
+    final currentUser = context.read<CurrentUser>();
     final currentChannel = context.read<CurrentChannel>();
     final remotePlaying = context.read<RemotePlaying>();
 
@@ -154,7 +157,8 @@ class _WelcomeControlState extends State<WelcomeControl> {
               videoType: VideoType.online,
               name: videoEntry.title,
               videoHash: videoEntry.hash,
-              pic: videoEntry.pic,
+              sharer: currentUser.streamUser!,
+              image: videoEntry.pic,
             ));
           },
         );
@@ -171,6 +175,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
   }
 
   void _openNetDisk() async {
+    final currentUser = context.read<CurrentUser>();
     final currentChannel = context.read<CurrentChannel>();
     final remotePlaying = context.read<RemotePlaying>();
     final watchProgress = context.read<VideoPlayer>().watchProgress;
@@ -197,7 +202,8 @@ class _WelcomeControlState extends State<WelcomeControl> {
               videoType: VideoType.online,
               name: videoEntry.title,
               videoHash: videoEntry.hash,
-              pic: videoEntry.pic,
+              sharer: currentUser.streamUser!,
+              image: videoEntry.pic,
             ));
           },
         );
@@ -225,7 +231,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
 
     void doOpen() async {
       try {
-        final onlineEntry = OnlineVideoEntry.fromHash(result.hash);
+        final onlineEntry = OnlineVideoEntry.fromHash(result.data.videoHash);
         await remotePlaying.openOnlineVideo(
           onlineEntry,
           joinChannel: (videoEntry) {
@@ -259,17 +265,11 @@ class _WelcomeControlState extends State<WelcomeControl> {
 
 class _OnlineVideoChannelData {
   final String id;
-  final String hash;
-  final String name;
-  final String pic;
-  final String? creator;
+  final ChannelData data;
 
   _OnlineVideoChannelData({
     required this.id,
-    required this.hash,
-    required this.name,
-    required this.pic,
-    this.creator,
+    required this.data,
   });
 }
 
@@ -366,7 +366,7 @@ class _OthersDialogState extends State<_OthersDialog> {
   Widget _createVideoCard(_OnlineVideoChannelData channelInfo) {
     final themeData = Theme.of(context);
     final videoImage = Image.network(
-      channelInfo.pic,
+      channelInfo.data.image!,
       height: 125,
       width: 200,
       fit: BoxFit.cover,
@@ -385,7 +385,7 @@ class _OthersDialogState extends State<_OthersDialog> {
               children: [
                 Flexible(
                   child: Text(
-                    channelInfo.creator!,
+                    channelInfo.data.sharer.name,
                     style: themeData.textTheme.labelSmall,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -403,9 +403,9 @@ class _OthersDialogState extends State<_OthersDialog> {
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
             child: Tooltip(
-              message: channelInfo.name,
+              message: channelInfo.data.name,
               child: Text(
-                channelInfo.name,
+                channelInfo.data.name,
                 overflow: TextOverflow.ellipsis,
                 style: themeData.textTheme.titleSmall,
               ),
@@ -466,13 +466,10 @@ class _OthersDialogState extends State<_OthersDialog> {
       if (!mounted) return;
       setState(() {
         _channels = channels.map<_OnlineVideoChannelData>((channel) {
-          final (id, creator, data) = channel;
+          final (id, data) = channel;
           return _OnlineVideoChannelData(
             id: id,
-            hash: data.videoHash,
-            name: data.name,
-            pic: data.pic!,
-            creator: creator,
+            data: data,
           );
         }).toList();
         _isPulling = false;
