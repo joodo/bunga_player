@@ -52,6 +52,9 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
       return '.../${splits.join('/')}';
     }
 
+    final itemCount =
+        _searchMode ? _searchResults.length : _currentFiles.length;
+
     return AlertDialog(
       insetPadding: const EdgeInsets.all(40),
       title: IndexedStack(
@@ -60,7 +63,7 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
           Row(
             children: [
               Container(
-                constraints: const BoxConstraints(maxWidth: 420),
+                constraints: const BoxConstraints(maxWidth: 440),
                 child: Padding(
                   padding: const EdgeInsets.all(12),
                   child: Text(ellipseStart(_currentPath)),
@@ -84,6 +87,7 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
                 icon: const Icon(Icons.bookmark_add),
               ),
               const Spacer(),
+              const SizedBox(width: 16),
               IconButton.filled(
                 onPressed: () {
                   setState(() {
@@ -154,85 +158,93 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
             Expanded(
               child: _pending
                   ? const Center(child: CircularProgressIndicator())
-                  : ListView.separated(
-                      itemCount: _searchMode
-                          ? _searchResults.length
-                          : _currentFiles.length,
-                      itemBuilder: (context, index) {
-                        if (_searchMode) {
-                          final result = _searchResults[index];
-                          return ListTile(
-                            leading: Icon(switch (result.type) {
-                              AListFileType.folder => Icons.folder,
-                              AListFileType.video => Icons.movie,
-                              AListFileType.audio => Icons.music_note,
-                              AListFileType.text => Icons.description,
-                              AListFileType.image => Icons.image,
-                              AListFileType.unknown => Icons.note,
-                            }),
-                            title: Row(children: [
-                              Expanded(child: Text(result.name)),
-                              if (result.type != AListFileType.folder)
-                                IconButton.outlined(
-                                  onPressed: () {
-                                    _searchMode = false;
-                                    _cd('${result.parent}/');
-                                  },
-                                  icon: const Icon(Icons.drive_file_move),
-                                )
-                            ]),
-                            onTap: switch (result.type) {
-                              AListFileType.folder => () {
-                                  _searchMode = false;
-                                  _cd('${result.parent}/${result.name}/');
+                  : itemCount == 0
+                      ? Center(
+                          child: Text(
+                          '无结果',
+                          style: themeData.textTheme.labelMedium,
+                        ))
+                      : ListView.separated(
+                          itemCount: itemCount,
+                          itemBuilder: (context, index) {
+                            if (_searchMode) {
+                              final result = _searchResults[index];
+                              return ListTile(
+                                leading: Icon(switch (result.type) {
+                                  AListFileType.folder => Icons.folder,
+                                  AListFileType.video => Icons.movie,
+                                  AListFileType.audio => Icons.music_note,
+                                  AListFileType.text => Icons.description,
+                                  AListFileType.image => Icons.image,
+                                  AListFileType.unknown => Icons.note,
+                                }),
+                                title: Row(children: [
+                                  Expanded(child: Text(result.name)),
+                                  if (result.type != AListFileType.folder)
+                                    IconButton.outlined(
+                                      onPressed: () {
+                                        _searchMode = false;
+                                        _cd('${result.parent}/');
+                                      },
+                                      icon: const Icon(Icons.drive_file_move),
+                                    )
+                                ]),
+                                onTap: switch (result.type) {
+                                  AListFileType.folder => () {
+                                      _searchMode = false;
+                                      _cd('${result.parent}/${result.name}/');
+                                    },
+                                  AListFileType.video => () => Navigator.pop(
+                                      context,
+                                      '${result.parent}/${result.name}'),
+                                  AListFileType.audio => null,
+                                  AListFileType.text => null,
+                                  AListFileType.image => null,
+                                  AListFileType.unknown => null,
                                 },
-                              AListFileType.video => () => Navigator.pop(
-                                  context, '${result.parent}/${result.name}'),
-                              AListFileType.audio => null,
-                              AListFileType.text => null,
-                              AListFileType.image => null,
-                              AListFileType.unknown => null,
-                            },
-                          );
-                        }
+                              );
+                            }
 
-                        final info = _currentFiles[index];
-                        final videoHash =
-                            '${AListEntry.hashPrefix}-${AListEntry.hashFromPath('$_currentPath${info.name}')}';
-                        final progressString = widget.watchProgress[videoHash];
-                        int? percent;
-                        if (progressString != null) {
-                          final split = progressString.split('/');
-                          percent =
-                              (int.parse(split[0]) * 100 / int.parse(split[1]))
+                            final info = _currentFiles[index];
+                            final videoHash =
+                                '${AListEntry.hashPrefix}-${AListEntry.hashFromPath('$_currentPath${info.name}')}';
+                            final progressString =
+                                widget.watchProgress[videoHash];
+                            int? percent;
+                            if (progressString != null) {
+                              final split = progressString.split('/');
+                              percent = (int.parse(split[0]) *
+                                      100 /
+                                      int.parse(split[1]))
                                   .round();
-                        }
-                        return ListTile(
-                          leading: Icon(switch (info.type) {
-                            AListFileType.folder => Icons.folder,
-                            AListFileType.video => Icons.movie,
-                            AListFileType.audio => Icons.music_note,
-                            AListFileType.text => Icons.description,
-                            AListFileType.image => Icons.image,
-                            AListFileType.unknown => Icons.note,
-                          }),
-                          title: Text(info.name),
-                          subtitle:
-                              percent != null ? Text('已看 $percent%') : null,
-                          onTap: switch (info.type) {
-                            AListFileType.folder => () => _cd('${info.name}/'),
-                            AListFileType.video => () => Navigator.pop(
-                                context, '$_currentPath${info.name}'),
-                            AListFileType.audio => null,
-                            AListFileType.text => null,
-                            AListFileType.image => null,
-                            AListFileType.unknown => null,
+                            }
+                            return ListTile(
+                              leading: Icon(switch (info.type) {
+                                AListFileType.folder => Icons.folder,
+                                AListFileType.video => Icons.movie,
+                                AListFileType.audio => Icons.music_note,
+                                AListFileType.text => Icons.description,
+                                AListFileType.image => Icons.image,
+                                AListFileType.unknown => Icons.note,
+                              }),
+                              title: Text(info.name),
+                              subtitle:
+                                  percent != null ? Text('已看 $percent%') : null,
+                              onTap: switch (info.type) {
+                                AListFileType.folder => () =>
+                                    _cd('${info.name}/'),
+                                AListFileType.video => () => Navigator.pop(
+                                    context, '$_currentPath${info.name}'),
+                                AListFileType.audio => null,
+                                AListFileType.text => null,
+                                AListFileType.image => null,
+                                AListFileType.unknown => null,
+                              },
+                            );
                           },
-                        );
-                      },
-                      separatorBuilder: (context, index) =>
-                          const SizedBox(height: 8),
-                    ),
+                          separatorBuilder: (context, index) =>
+                              const SizedBox(height: 8),
+                        ),
             ),
           ],
         ),

@@ -91,8 +91,10 @@ class AList {
       throw Exception('AList: list directory $path failed: ${response.body}');
     }
 
-    final infos = jsonDecode(response.body)['data']['content'] as List;
-    return infos
+    final infos = jsonDecode(response.body)['data']['content'];
+    if (infos == null) return [];
+
+    return (infos as List)
         .map((originValue) => AListFileInfo.fromJson(originValue))
         .toList()
       ..sort(
