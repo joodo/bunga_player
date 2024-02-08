@@ -218,7 +218,7 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
                                       int.parse(split[1]))
                                   .round();
                             }
-                            return ListTile(
+                            final tile = ListTile(
                               leading: Icon(switch (info.type) {
                                 AListFileType.folder => Icons.folder,
                                 AListFileType.video => Icons.movie,
@@ -240,6 +240,15 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
                                 AListFileType.image => null,
                                 AListFileType.unknown => null,
                               },
+                            );
+
+                            bool clickable = {
+                              AListFileType.folder,
+                              AListFileType.video,
+                            }.contains(info.type);
+                            return Opacity(
+                              opacity: clickable ? 1.0 : 0.7,
+                              child: tile,
                             );
                           },
                           separatorBuilder: (context, index) =>
