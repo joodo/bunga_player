@@ -71,13 +71,16 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
     final videoPlayer = context.read<VideoPlayer>();
     final remotePlaying = context.read<RemotePlaying>();
 
-    final shouldUpdateChannelData = remotePlaying.isVideoSameWithRoom;
+    final shouldUpdateChannelData = remotePlaying.isVideoSameWithChannel;
 
     final file = await openLocalVideoDialog();
     if (file == null) return;
 
     try {
-      await remotePlaying.openLocalVideo(file);
+      await remotePlaying.openLocalVideo(
+        file,
+        askPosition: !shouldUpdateChannelData,
+      );
 
       // Update room data only if playing correct video
       if (shouldUpdateChannelData) {
@@ -102,7 +105,7 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
     final remotePlaying = context.read<RemotePlaying>();
 
     // Update room data only if playing correct video
-    final shouldUpdateRoomData = remotePlaying.isVideoSameWithRoom;
+    final shouldUpdateChannelData = remotePlaying.isVideoSameWithChannel;
 
     final result = await showDialog<String?>(
       context: context,
@@ -113,13 +116,16 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
     final biliEntry =
         await getService<Bilibili>().getEntryFromUri(result.parseUri());
     try {
-      await remotePlaying.openOnlineVideo(biliEntry);
+      await remotePlaying.openOnlineVideo(
+        biliEntry,
+        askPosition: !shouldUpdateChannelData,
+      );
     } catch (e) {
       getService<Toast>().show('解析失败');
       rethrow;
     }
 
-    if (shouldUpdateRoomData) {
+    if (shouldUpdateChannelData) {
       currentChannel.updateData(ChannelData(
         videoType: VideoType.online,
         name: biliEntry.title,
@@ -139,7 +145,7 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
     final watchProgress = context.read<VideoPlayer>().watchProgress;
 
     // Update room data only if playing correct video
-    final shouldUpdateRoomData = remotePlaying.isVideoSameWithRoom;
+    final shouldUpdateChannelData = remotePlaying.isVideoSameWithChannel;
 
     final alistPath = await showDialog(
       context: context,
@@ -155,13 +161,14 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
           text: alistPath,
           hash: AListEntry.hashFromPath(alistPath),
         ),
+        askPosition: !shouldUpdateChannelData,
       );
     } catch (e) {
       getService<Toast>().show('解析失败');
       rethrow;
     }
 
-    if (shouldUpdateRoomData) {
+    if (shouldUpdateChannelData) {
       currentChannel.updateData(ChannelData(
         videoType: VideoType.online,
         name: alistEntry.title,

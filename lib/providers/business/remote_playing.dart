@@ -22,7 +22,7 @@ class RemotePlaying {
       () {
         // Try to follow if it's online video
         final channelData = currentChannel.channelDataNotifier.value;
-        if (!isVideoSameWithRoom &&
+        if (!isVideoSameWithChannel &&
             _context.read<VideoPlayer>().videoHashNotifier.value != null &&
             channelData?.videoType != VideoType.local) {
           followRemoteOnlineVideoHash(channelData!.videoHash);
@@ -70,6 +70,7 @@ class RemotePlaying {
     OnlineVideoEntry? videoEntry, {
     Future<OnlineVideoEntry> Function()? entryGetter,
     Future<void> Function(OnlineVideoEntry videoEntry)? beforeAskingPosition,
+    bool askPosition = true,
   }) async {
     assert(videoEntry != null || entryGetter != null);
 
@@ -94,7 +95,7 @@ class RemotePlaying {
           name: '正在发送请柬……',
           tasks: [
             () async => beforeAskingPosition?.call(await getEntry()),
-            askPosition,
+            if (askPosition) this.askPosition,
           ],
         ),
       ],
@@ -103,7 +104,8 @@ class RemotePlaying {
 
   Future<void> openLocalVideo(
     XFile file, {
-    Future<void> Function()? joinChannel,
+    Future<void> Function()? beforeAskingPosition,
+    bool askPosition = true,
   }) async {
     final bi = _context.read<BusinessIndicator>();
     final videoPlayer = _context.read<VideoPlayer>();
@@ -112,21 +114,19 @@ class RemotePlaying {
       missions: [
         Mission(name: '正在收拾客厅……', tasks: [
           () => videoPlayer.loadLocalVideo(file),
-          if (joinChannel == null) askPosition,
         ]),
-        if (joinChannel != null)
-          Mission(
-            name: '正在发送请柬……',
-            tasks: [
-              () => joinChannel(),
-              askPosition,
-            ],
-          )
+        Mission(
+          name: '正在发送请柬……',
+          tasks: [
+            () async => beforeAskingPosition?.call(),
+            if (askPosition) this.askPosition,
+          ],
+        )
       ],
     );
   }
 
-  bool get isVideoSameWithRoom =>
+  bool get isVideoSameWithChannel =>
       _context.read<CurrentChannel>().channelDataNotifier.value?.videoHash ==
       _context.read<VideoPlayer>().videoHashNotifier.value;
 
@@ -135,7 +135,7 @@ class RemotePlaying {
     final videoPlayer = _context.read<VideoPlayer>();
 
     // Not playing the same video, ignore
-    if (!isVideoSameWithRoom) return;
+    if (!isVideoSameWithChannel) return;
 
     final isPlay = videoPlayer.isPlaying.value;
     final position = videoPlayer.position.value;
@@ -189,7 +189,7 @@ class RemotePlaying {
 
   void _applyStatus(Message message) {
     // Not playing the same video, ignore
-    if (!isVideoSameWithRoom) return;
+    if (!isVideoSameWithChannel) return;
 
     final videoPlayer = _context.read<VideoPlayer>();
     final toast = getService<Toast>();

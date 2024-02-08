@@ -112,7 +112,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
       try {
         await remotePlaying.openLocalVideo(
           file,
-          joinChannel: () {
+          beforeAskingPosition: () {
             final hash = videoPlayer.videoHashNotifier.value!;
             return currentChannel.createOrJoin(ChannelData(
               videoType: VideoType.local,
