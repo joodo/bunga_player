@@ -266,8 +266,9 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
   void _cd(String path) async {
     final newPath = Uri.decodeFull(Uri(path: _currentPath).resolve(path).path);
     if (newPath == _currentPath) return;
-
     final oldPath = _currentPath;
+
+    if (_pending) return;
     setState(() {
       _currentPath = newPath;
       _pending = true;
@@ -286,6 +287,7 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
   }
 
   void _refresh() async {
+    if (_pending) return;
     setState(() {
       _pending = true;
     });
