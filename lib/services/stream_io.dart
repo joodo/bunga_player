@@ -1,5 +1,4 @@
 import 'package:bunga_player/models/chat/channel_data.dart';
-import 'package:bunga_player/providers/states/current_user.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:stream_chat_flutter_core/stream_chat_flutter_core.dart';
 
@@ -40,11 +39,8 @@ class StreamIO {
 
   User? get currentUser => _client.state.currentUser;
 
-  Future<void> updateUserInfo(CurrentUser user) async {
-    await _client.updateUser(User(
-      id: user.id,
-      name: user.name,
-    ));
+  Future<void> updateUserName(String id, String name) async {
+    await _client.updateUser(User(id: id, name: name));
   }
 
   // Channel

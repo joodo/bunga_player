@@ -68,7 +68,7 @@ class CurrentUser extends ChangeNotifier {
     getService<Preferences>().set('user_name', newName);
 
     final chatService = getService<StreamIO>();
-    await chatService.updateUserInfo(this);
+    await chatService.updateUserName(_id, _name!);
 
     notifyListeners();
   }
