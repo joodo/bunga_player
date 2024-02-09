@@ -1,12 +1,12 @@
 import 'dart:async';
 
 import 'package:bunga_player/mocks/menu_anchor.dart' as mock;
+import 'package:bunga_player/models/playing/a_list_entry.dart';
 import 'package:bunga_player/models/playing/local_video_entry.dart';
 import 'package:bunga_player/models/playing/video_entry.dart';
 import 'package:bunga_player/providers/business/business_indicator.dart';
 import 'package:bunga_player/screens/dialogs/bilibili.dart';
 import 'package:bunga_player/screens/dialogs/net_disk.dart';
-import 'package:bunga_player/services/alist.dart';
 import 'package:bunga_player/services/bilibili.dart';
 import 'package:bunga_player/actions/open_local_video.dart';
 import 'package:bunga_player/models/chat/channel_data.dart';
