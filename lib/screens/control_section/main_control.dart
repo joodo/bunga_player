@@ -1,5 +1,5 @@
 import 'package:bunga_player/actions/play.dart';
-import 'package:bunga_player/models/playing/online_video_entry.dart';
+import 'package:bunga_player/models/playing/video_entry.dart';
 import 'package:bunga_player/providers/business/remote_playing.dart';
 import 'package:bunga_player/mocks/popup_menu.dart' as mock;
 import 'package:bunga_player/mocks/slider.dart' as mock;
@@ -101,9 +101,9 @@ class MainControl extends StatelessWidget {
                       onTap: () async {
                         Navigator.of(context, rootNavigator: true).pop();
 
-                        final onlineEntry = OnlineVideoEntry.fromHash(
+                        final onlineEntry = VideoEntry.fromHash(
                             videoPlayer.videoHashNotifier.value!);
-                        await remotePlaying.openOnlineVideo(onlineEntry);
+                        await remotePlaying.openVideo(onlineEntry);
                       },
                     ),
                   ),

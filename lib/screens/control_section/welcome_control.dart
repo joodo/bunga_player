@@ -1,7 +1,8 @@
 import 'dart:async';
 
 import 'package:bunga_player/mocks/menu_anchor.dart' as mock;
-import 'package:bunga_player/models/playing/online_video_entry.dart';
+import 'package:bunga_player/models/playing/local_video_entry.dart';
+import 'package:bunga_player/models/playing/video_entry.dart';
 import 'package:bunga_player/providers/business/business_indicator.dart';
 import 'package:bunga_player/screens/dialogs/bilibili.dart';
 import 'package:bunga_player/screens/dialogs/net_disk.dart';
@@ -102,24 +103,19 @@ class _WelcomeControlState extends State<WelcomeControl> {
   void _openLocalVideo() async {
     final currentUser = context.read<CurrentUser>();
     final currentChannel = context.read<CurrentChannel>();
-    final videoPlayer = context.read<VideoPlayer>();
     final remotePlaying = context.read<RemotePlaying>();
 
     final file = await openLocalVideoDialog();
     if (file == null) return;
 
+    final videoEntry = LocalVideoEntry.fromFile(file);
     void doOpen() async {
       try {
-        await remotePlaying.openLocalVideo(
-          file,
-          beforeAskingPosition: () {
-            final hash = videoPlayer.videoHashNotifier.value!;
-            return currentChannel.createOrJoin(ChannelData(
-              videoType: VideoType.local,
-              name: file.name,
-              videoHash: hash,
-              sharer: currentUser.streamUser!,
-            ));
+        await remotePlaying.openVideo(
+          videoEntry,
+          beforeAskingPosition: (videoEntry) {
+            return currentChannel
+                .createOrJoin(currentUser.getSharingData(videoEntry));
           },
         );
         _onVideoLoaded();
@@ -147,19 +143,14 @@ class _WelcomeControlState extends State<WelcomeControl> {
 
     void doOpen() async {
       try {
-        await remotePlaying.openOnlineVideo(
+        await remotePlaying.openVideo(
           null,
           entryGetter: () {
             return getService<Bilibili>().getEntryFromUri(result.parseUri());
           },
           beforeAskingPosition: (videoEntry) {
-            return currentChannel.createOrJoin(ChannelData(
-              videoType: VideoType.online,
-              name: videoEntry.title,
-              videoHash: videoEntry.hash,
-              sharer: currentUser.streamUser!,
-              image: videoEntry.pic,
-            ));
+            return currentChannel
+                .createOrJoin(currentUser.getSharingData(videoEntry));
           },
         );
         _onVideoLoaded();
@@ -189,7 +180,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
     final alistEntry = AListEntry(path: alistPath);
     void doOpen() async {
       try {
-        await remotePlaying.openOnlineVideo(
+        await remotePlaying.openVideo(
           alistEntry,
           beforeAskingPosition: (videoEntry) async {
             // Set hash string
@@ -198,13 +189,8 @@ class _WelcomeControlState extends State<WelcomeControl> {
               hash: AListEntry.hashFromPath(alistPath),
             );
 
-            return currentChannel.createOrJoin(ChannelData(
-              videoType: VideoType.online,
-              name: videoEntry.title,
-              videoHash: videoEntry.hash,
-              sharer: currentUser.streamUser!,
-              image: videoEntry.pic,
-            ));
+            return currentChannel
+                .createOrJoin(currentUser.getSharingData(videoEntry));
           },
         );
         _onVideoLoaded();
@@ -231,8 +217,8 @@ class _WelcomeControlState extends State<WelcomeControl> {
 
     void doOpen() async {
       try {
-        final onlineEntry = OnlineVideoEntry.fromHash(result.data.videoHash);
-        await remotePlaying.openOnlineVideo(
+        final onlineEntry = VideoEntry.fromHash(result.data.videoHash);
+        await remotePlaying.openVideo(
           onlineEntry,
           beforeAskingPosition: (videoEntry) {
             return currentChannel.joinById(result.id);

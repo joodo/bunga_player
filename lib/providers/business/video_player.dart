@@ -1,19 +1,17 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'dart:ui';
 
-import 'package:bunga_player/models/playing/online_video_entry.dart';
+import 'package:bunga_player/models/playing/bili_bungumi_entry.dart';
+import 'package:bunga_player/models/playing/bili_video_entry.dart';
+import 'package:bunga_player/models/playing/video_entry.dart';
 import 'package:bunga_player/services/alist.dart';
-import 'package:bunga_player/services/bilibili.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/value_listenable.dart';
 import 'package:collection/collection.dart';
-import 'package:crclib/catalog.dart';
 import 'package:ffi/ffi.dart';
-import 'package:file_selector/file_selector.dart';
 import 'package:flutter/widgets.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart' as media_kit;
@@ -116,27 +114,8 @@ class VideoPlayer {
   late final isStoppedNotifier =
       _videoHashNotifier.map<bool>((originValue) => originValue == null);
 
-  Future<void> loadLocalVideo(XFile file) async {
-    await _player.open(Media(file.path), play: false);
-    await _controller.waitUntilFirstFrameRendered;
-
-    final crcValue =
-        await File(file.path).openRead().take(1000).transform(Crc32Xz()).single;
-    final crcString = crcValue.toString();
-
-    final videoHash = 'local-$crcString';
-    if (watchProgress.containsKey(videoHash)) {
-      position.value = _progressFromString(watchProgress[videoHash]!);
-    } else {
-      position.value = Duration.zero;
-    }
-
-    windowManager.setTitle(file.name);
-    _videoHashNotifier.value = videoHash;
-  }
-
-  Future<void> loadBiliVideo(OnlineVideoEntry onlineEntry) async {
-    final httpHeaders = switch (onlineEntry.runtimeType) {
+  Future<void> loadVideo(VideoEntry entry) async {
+    final httpHeaders = switch (entry.runtimeType) {
       const (BiliVideoEntry) || const (BiliBungumiEntry) => {
           'Referer': 'https://www.bilibili.com/'
         },
@@ -146,7 +125,7 @@ class VideoPlayer {
 
     // try every url
     bool success = false;
-    for (var url in onlineEntry.sources.video) {
+    for (var url in entry.sources.video) {
       await _player.open(
         Media(url, httpHeaders: httpHeaders),
         play: false,
@@ -169,19 +148,21 @@ class VideoPlayer {
     await _player.stream.buffer.first;
 
     // load audio if exist
-    if (onlineEntry.sources.audio != null) {
-      addAudioTrack(onlineEntry.sources.audio![0]);
+    if (entry.sources.audio != null) {
+      addAudioTrack(entry.sources.audio![0]);
     }
 
+    // TODO: wait api
+    // https://github.com/media-kit/media-kit/issues/228
     // load history watching progress
-    final videoHash = onlineEntry.hash;
+    final videoHash = entry.hash;
     if (watchProgress.containsKey(videoHash)) {
       position.value = _progressFromString(watchProgress[videoHash]!);
     } else {
       position.value = Duration.zero;
     }
 
-    windowManager.setTitle(onlineEntry.title);
+    windowManager.setTitle(entry.title);
     _videoHashNotifier.value = videoHash;
   }
 

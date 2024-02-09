@@ -1,3 +1,4 @@
+import 'package:bunga_player/models/playing/local_video_entry.dart';
 import 'package:bunga_player/providers/business/business_indicator.dart';
 import 'package:bunga_player/providers/states/current_user.dart';
 import 'package:bunga_player/screens/dialogs/bilibili.dart';
@@ -5,7 +6,6 @@ import 'package:bunga_player/screens/dialogs/net_disk.dart';
 import 'package:bunga_player/services/alist.dart';
 import 'package:bunga_player/services/bilibili.dart';
 import 'package:bunga_player/actions/open_local_video.dart';
-import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/providers/states/current_channel.dart';
 import 'package:bunga_player/providers/business/remote_playing.dart';
 import 'package:bunga_player/providers/business/video_player.dart';
@@ -68,7 +68,6 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
   void _openLocalVideo() async {
     final currentUser = context.read<CurrentUser>();
     final currentChannel = context.read<CurrentChannel>();
-    final videoPlayer = context.read<VideoPlayer>();
     final remotePlaying = context.read<RemotePlaying>();
 
     final shouldUpdateChannelData = remotePlaying.isVideoSameWithChannel;
@@ -76,20 +75,16 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
     final file = await openLocalVideoDialog();
     if (file == null) return;
 
+    final entry = LocalVideoEntry.fromFile(file);
     try {
-      await remotePlaying.openLocalVideo(
-        file,
+      await remotePlaying.openVideo(
+        entry,
         askPosition: !shouldUpdateChannelData,
       );
 
       // Update room data only if playing correct video
       if (shouldUpdateChannelData) {
-        currentChannel.updateData(ChannelData(
-          videoType: VideoType.local,
-          name: file.name,
-          videoHash: videoPlayer.videoHashNotifier.value!,
-          sharer: currentUser.streamUser!,
-        ));
+        currentChannel.updateData(currentUser.getSharingData(entry));
       }
 
       _onVideoLoaded();
@@ -116,7 +111,7 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
     final biliEntry =
         await getService<Bilibili>().getEntryFromUri(result.parseUri());
     try {
-      await remotePlaying.openOnlineVideo(
+      await remotePlaying.openVideo(
         biliEntry,
         askPosition: !shouldUpdateChannelData,
       );
@@ -126,13 +121,7 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
     }
 
     if (shouldUpdateChannelData) {
-      currentChannel.updateData(ChannelData(
-        videoType: VideoType.online,
-        name: biliEntry.title,
-        videoHash: biliEntry.hash,
-        sharer: currentUser.streamUser!,
-        image: biliEntry.pic,
-      ));
+      currentChannel.updateData(currentUser.getSharingData(biliEntry));
     }
 
     _onVideoLoaded();
@@ -155,7 +144,7 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
 
     final alistEntry = AListEntry(path: alistPath);
     try {
-      await remotePlaying.openOnlineVideo(
+      await remotePlaying.openVideo(
         alistEntry,
         beforeAskingPosition: (videoEntry) => getService<Bunga>().setStringHash(
           text: alistPath,
@@ -169,13 +158,7 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
     }
 
     if (shouldUpdateChannelData) {
-      currentChannel.updateData(ChannelData(
-        videoType: VideoType.online,
-        name: alistEntry.title,
-        videoHash: alistEntry.hash,
-        sharer: currentUser.streamUser!,
-        image: alistEntry.pic,
-      ));
+      currentChannel.updateData(currentUser.getSharingData(alistEntry));
     }
 
     _onVideoLoaded();

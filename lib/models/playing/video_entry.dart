@@ -5,21 +5,20 @@ class VideoSources {
   VideoSources({required this.video, this.audio});
 }
 
-abstract class OnlineVideoEntry {
+abstract class VideoEntry {
   late final String title;
-  late final String pic;
+  late final String image;
   late final VideoSources sources; // DURL | Dash
 
-  static final Map<String, OnlineVideoEntry Function(String hash)> fromHashMap =
-      {};
+  static final Map<String, VideoEntry Function(String hash)> fromHashMap = {};
 
-  OnlineVideoEntry();
+  VideoEntry();
 
   bool get isFetched;
   Future<void> fetch();
 
   String get hash;
-  factory OnlineVideoEntry.fromHash(String hash) {
+  factory VideoEntry.fromHash(String hash) {
     final prefix = hash.split('-').first;
     if (!fromHashMap.containsKey(prefix)) {
       throw FormatException('RemoteVideoEntry: unknown hash prefix: $prefix');

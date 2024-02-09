@@ -1,3 +1,6 @@
+import 'package:bunga_player/models/chat/channel_data.dart';
+import 'package:bunga_player/models/playing/local_video_entry.dart';
+import 'package:bunga_player/models/playing/video_entry.dart';
 import 'package:bunga_player/services/bunga.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/stream_io.dart';
@@ -34,8 +37,6 @@ class CurrentUser extends ChangeNotifier {
 
   late String _token;
   String get token => _token;
-
-  User? get streamUser => getService<StreamIO>().currentUser;
 
   bool __isOnline = false;
   bool get isOnline => __isOnline;
@@ -79,6 +80,18 @@ class CurrentUser extends ChangeNotifier {
 
     _id = newID;
     await login();
+  }
+
+  ChannelData getSharingData(VideoEntry entry) {
+    final currentUser = getService<StreamIO>().currentUser;
+    assert(currentUser != null);
+
+    return ChannelData(
+      videoType: entry is LocalVideoEntry ? VideoType.local : VideoType.online,
+      name: entry.title,
+      videoHash: entry.hash,
+      sharer: currentUser!,
+    );
   }
 
   @override

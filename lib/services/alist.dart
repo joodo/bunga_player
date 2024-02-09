@@ -2,13 +2,13 @@ import 'dart:convert';
 
 import 'package:bunga_player/models/alist/file_info.dart';
 import 'package:bunga_player/models/alist/search_result.dart';
-import 'package:bunga_player/models/playing/online_video_entry.dart';
+import 'package:bunga_player/models/playing/video_entry.dart';
 import 'package:bunga_player/services/bunga.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:http/http.dart' as http;
 
-class AListEntry extends OnlineVideoEntry {
+class AListEntry extends VideoEntry {
   static String hashFromPath(String path) => path.hashCode.toRadixString(36);
   static const hashPrefix = 'alist';
 
@@ -47,7 +47,7 @@ class AListEntry extends OnlineVideoEntry {
 
     final info = await getService<AList>().get(path!);
     title = info.name;
-    pic = info.thumb;
+    image = info.thumb;
     sources = VideoSources(video: [info.rawUrl!]);
 
     _isFetched = true;
@@ -62,7 +62,7 @@ class AList {
 
   AList() {
     _getToken();
-    OnlineVideoEntry.fromHashMap[AListEntry.hashPrefix] = AListEntry.fromHash;
+    VideoEntry.fromHashMap[AListEntry.hashPrefix] = AListEntry.fromHash;
   }
 
   Future<void> _getToken() async {
@@ -72,15 +72,17 @@ class AList {
     logger.i('Alist token got successfully.');
   }
 
+  late final _header = {
+    'Authorization': _token!,
+    'content-type': 'application/json',
+  };
+
   Future<List<AListFileInfo>> list(String path, {bool refresh = false}) async {
     assert(_host != null && _token != null);
 
     final response = await http.post(
       _host!.resolve('fs/list'),
-      headers: {
-        'Authorization': _token!,
-        'content-type': 'application/json',
-      },
+      headers: _header,
       body: jsonEncode({
         'path': path,
         if (refresh) 'refresh': true,
@@ -111,10 +113,7 @@ class AList {
 
     final response = await http.post(
       _host!.resolve('fs/search'),
-      headers: {
-        'Authorization': _token!,
-        'content-type': 'application/json',
-      },
+      headers: _header,
       body: jsonEncode({
         "parent": "/",
         "keywords": keywords,
@@ -140,9 +139,7 @@ class AList {
 
     final response = await http.post(
       _host!.resolve('fs/get'),
-      headers: {
-        'Authorization': _token!,
-      },
+      headers: _header,
       body: {'path': path},
     );
 

@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:bunga_player/models/playing/online_video_entry.dart';
+import 'package:bunga_player/models/playing/video_entry.dart';
 import 'package:bunga_player/providers/business/business_indicator.dart';
 import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/providers/states/current_channel.dart';
@@ -9,7 +9,6 @@ import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/providers/business/video_player.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
-import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:stream_chat_flutter_core/stream_chat_flutter_core.dart';
@@ -62,14 +61,14 @@ class RemotePlaying {
   StreamSubscription? _messageSubscription;
 
   Future<void> followRemoteOnlineVideoHash(String videoHash) async {
-    final videoEntry = OnlineVideoEntry.fromHash(videoHash);
-    await openOnlineVideo(videoEntry);
+    final videoEntry = VideoEntry.fromHash(videoHash);
+    await openVideo(videoEntry);
   }
 
-  Future<void> openOnlineVideo(
-    OnlineVideoEntry? videoEntry, {
-    Future<OnlineVideoEntry> Function()? entryGetter,
-    Future<void> Function(OnlineVideoEntry videoEntry)? beforeAskingPosition,
+  Future<void> openVideo(
+    VideoEntry? videoEntry, {
+    Future<VideoEntry> Function()? entryGetter,
+    Future<void> Function(VideoEntry videoEntry)? beforeAskingPosition,
     bool askPosition = true,
   }) async {
     assert(videoEntry != null || entryGetter != null);
@@ -77,7 +76,7 @@ class RemotePlaying {
     final bi = _context.read<BusinessIndicator>();
     final videoPlayer = _context.read<VideoPlayer>();
 
-    Future<OnlineVideoEntry> getEntry() async {
+    Future<VideoEntry> getEntry() async {
       videoEntry ??= await entryGetter!();
       return videoEntry!;
     }
@@ -89,7 +88,7 @@ class RemotePlaying {
           (await getEntry()).fetch,
         ]),
         Mission(name: '正在收拾客厅……', tasks: [
-          () async => videoPlayer.loadBiliVideo(await getEntry()),
+          () async => videoPlayer.loadVideo(await getEntry()),
         ]),
         Mission(
           name: '正在发送请柬……',
@@ -98,30 +97,6 @@ class RemotePlaying {
             if (askPosition) this.askPosition,
           ],
         ),
-      ],
-    );
-  }
-
-  Future<void> openLocalVideo(
-    XFile file, {
-    Future<void> Function()? beforeAskingPosition,
-    bool askPosition = true,
-  }) async {
-    final bi = _context.read<BusinessIndicator>();
-    final videoPlayer = _context.read<VideoPlayer>();
-
-    await bi.run(
-      missions: [
-        Mission(name: '正在收拾客厅……', tasks: [
-          () => videoPlayer.loadLocalVideo(file),
-        ]),
-        Mission(
-          name: '正在发送请柬……',
-          tasks: [
-            () async => beforeAskingPosition?.call(),
-            if (askPosition) this.askPosition,
-          ],
-        )
       ],
     );
   }

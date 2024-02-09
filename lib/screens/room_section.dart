@@ -1,4 +1,5 @@
 import 'package:bunga_player/actions/open_local_video.dart';
+import 'package:bunga_player/models/playing/local_video_entry.dart';
 import 'package:bunga_player/providers/business/business_indicator.dart';
 import 'package:bunga_player/providers/states/current_channel.dart';
 import 'package:bunga_player/providers/business/remote_playing.dart';
@@ -79,7 +80,8 @@ class _RoomSectionState extends State<RoomSection> {
     if (file == null) return;
 
     try {
-      await remotePlaying.openLocalVideo(file);
+      final entry = LocalVideoEntry.fromFile(file);
+      await remotePlaying.openVideo(entry);
     } catch (e) {
       getService<Toast>().show('加载失败');
       rethrow;
