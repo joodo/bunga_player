@@ -14,6 +14,7 @@ import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
 import 'package:bunga_player/utils/string.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 
 class VideoOpenControl extends StatefulWidget {
@@ -44,19 +45,29 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
           builder: (context, isBusy, child) => Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              FilledButton(
+              FilledButton.icon(
+                icon: const Icon(Icons.folder_outlined),
+                label: const Text('本地文件'),
                 onPressed: isBusy ? null : _openLocalVideo,
-                child: const Text('视频文件'),
               ),
               const SizedBox(width: 16),
-              FilledButton(
+              FilledButton.icon(
+                icon: SvgPicture.asset(
+                  'assets/images/bilibili.svg',
+                  colorFilter: ColorFilter.mode(
+                    Theme.of(context).colorScheme.onPrimary,
+                    BlendMode.srcIn,
+                  ),
+                  fit: BoxFit.cover,
+                ),
+                label: const Text('Bilibili'),
                 onPressed: isBusy ? null : _openBilibili,
-                child: const Text('Bilibili 视频'),
               ),
               const SizedBox(width: 16),
-              FilledButton(
+              FilledButton.icon(
+                icon: const Icon(Icons.cloud_outlined),
+                label: const Text('网盘'),
                 onPressed: isBusy ? null : _openNetDisk,
-                child: const Text('网盘视频'),
               ),
             ],
           ),

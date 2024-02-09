@@ -20,6 +20,7 @@ import 'package:bunga_player/providers/business/video_player.dart';
 import 'package:bunga_player/services/toast.dart';
 import 'package:bunga_player/utils/string.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 
 class WelcomeControl extends StatefulWidget {
@@ -64,6 +65,11 @@ class _WelcomeControlState extends State<WelcomeControl> {
           ),
           const SizedBox(width: 16),
           mock.MyMenuAnchor(
+            style: MenuStyle(
+              elevation: MaterialStateProperty.all(12),
+              padding: MaterialStateProperty.all(
+                  const EdgeInsets.symmetric(vertical: 12)),
+            ),
             rootOverlay: true,
             alignmentOffset: const Offset(0, 8),
             anchorTapClosesMenu: true,
@@ -77,16 +83,26 @@ class _WelcomeControlState extends State<WelcomeControl> {
             ),
             menuChildren: [
               mock.MenuItemButton(
-                onPressed: _openLocalVideo,
-                child: const Text('视频文件'),
-              ),
-              mock.MenuItemButton(
-                onPressed: _openBilibili,
-                child: const Text('Bilibili 链接'),
-              ),
-              mock.MenuItemButton(
+                leadingIcon: const Icon(Icons.cloud_outlined),
                 onPressed: _openNetDisk,
-                child: const Text('网盘文件'),
+                child: const Text('网盘'),
+              ),
+              mock.MenuItemButton(
+                leadingIcon: SvgPicture.asset(
+                  'assets/images/bilibili.svg',
+                  colorFilter: ColorFilter.mode(
+                    Theme.of(context).indicatorColor,
+                    BlendMode.srcIn,
+                  ),
+                  fit: BoxFit.cover,
+                ),
+                onPressed: _openBilibili,
+                child: const Text('Bilibili'),
+              ),
+              mock.MenuItemButton(
+                leadingIcon: const Icon(Icons.folder_outlined),
+                onPressed: _openLocalVideo,
+                child: const Text('本地文件  '),
               ),
             ],
           ),
