@@ -20,6 +20,7 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
   // Search
   bool _searchMode = false;
   List<AListSearchResult> _searchResults = [];
+  late final FocusNode _searchFieldFocusNode = FocusNode();
 
   // Bookmarks
   late final _alistBookmarks =
@@ -93,12 +94,14 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
                   setState(() {
                     _searchMode = true;
                   });
+                  _searchFieldFocusNode.requestFocus();
                 },
                 icon: const Icon(Icons.search),
               ),
             ],
           ),
           TextField(
+            focusNode: _searchFieldFocusNode,
             decoration: InputDecoration(
               hintText: '搜索文件和文件夹',
               suffixIcon: IconButton(
