@@ -1,6 +1,5 @@
 import 'package:bunga_player/models/chat/channel_data.dart';
-import 'package:bunga_player/models/playing/local_video_entry.dart';
-import 'package:bunga_player/models/playing/video_entry.dart';
+import 'package:bunga_player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/services/bunga.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/stream_io.dart';

@@ -1,6 +1,4 @@
-import 'package:bunga_player/models/playing/bili_bungumi_entry.dart';
-import 'package:bunga_player/models/playing/bili_video_entry.dart';
-import 'package:bunga_player/models/playing/video_entry.dart';
+import 'package:bunga_player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/services/bunga.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart';
@@ -8,13 +6,6 @@ import 'package:http/http.dart' as http;
 
 class Bilibili {
   final getSess = getService<Bunga>().getBiliSess;
-
-  Bilibili() {
-    // Register fromHash factory method
-    VideoEntry.fromHashMap[BiliVideoEntry.hashPrefix] = BiliVideoEntry.fromHash;
-    VideoEntry.fromHashMap[BiliBungumiEntry.hashPrefix] =
-        BiliBungumiEntry.fromHash;
-  }
 
   Future<VideoEntry> getEntryFromUri(Uri uri) async {
     switch (uri.host) {

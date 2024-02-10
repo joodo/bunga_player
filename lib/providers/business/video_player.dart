@@ -2,10 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:ui';
 
-import 'package:bunga_player/models/playing/a_list_entry.dart';
-import 'package:bunga_player/models/playing/bili_bungumi_entry.dart';
-import 'package:bunga_player/models/playing/bili_video_entry.dart';
-import 'package:bunga_player/models/playing/video_entry.dart';
+import 'package:bunga_player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';

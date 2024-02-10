@@ -1,5 +1,5 @@
 import 'package:bunga_player/actions/play.dart';
-import 'package:bunga_player/models/playing/video_entry.dart';
+import 'package:bunga_player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/providers/business/remote_playing.dart';
 import 'package:bunga_player/mocks/popup_menu.dart' as mock;
 import 'package:bunga_player/mocks/slider.dart' as mock;

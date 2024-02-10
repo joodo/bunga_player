@@ -2,8 +2,6 @@ import 'dart:convert';
 
 import 'package:bunga_player/models/alist/file_info.dart';
 import 'package:bunga_player/models/alist/search_result.dart';
-import 'package:bunga_player/models/playing/a_list_entry.dart';
-import 'package:bunga_player/models/playing/video_entry.dart';
 import 'package:bunga_player/services/bunga.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart';
@@ -17,7 +15,6 @@ class AList {
 
   AList() {
     _getToken();
-    VideoEntry.fromHashMap[AListEntry.hashPrefix] = AListEntry.fromHash;
   }
 
   Future<void> _getToken() async {

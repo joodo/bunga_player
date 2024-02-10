@@ -1,6 +1,8 @@
+import 'package:bunga_player/models/chat/channel.dart';
 import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/services/logger.dart';
-import 'package:stream_chat_flutter_core/stream_chat_flutter_core.dart';
+import 'package:stream_chat_flutter_core/stream_chat_flutter_core.dart'
+    as stream;
 
 class VoiceCallChannelData {
   VoiceCallChannelData({
@@ -17,17 +19,17 @@ class VoiceCallChannelData {
 
 class StreamIO {
   StreamIO(this.appKey)
-      : _client = StreamChatClient(
+      : _client = stream.StreamChatClient(
           appKey,
-          logLevel: Level.WARNING,
+          logLevel: stream.Level.WARNING,
         );
-  final StreamChatClient _client;
+  final stream.StreamChatClient _client;
   final String appKey;
 
   // User
   Future<void> login(String id, String token, String? name) async {
     await _client.connectUser(
-      User(
+      stream.User(
         id: id,
         name: name,
       ),
@@ -37,15 +39,15 @@ class StreamIO {
 
   Future<void> logout() => _client.disconnectUser();
 
-  User? get currentUser => _client.state.currentUser;
+  stream.User? get currentUser => _client.state.currentUser;
 
   Future<void> updateUserName(String id, String name) async {
-    await _client.updateUser(User(id: id, name: name));
+    await _client.updateUser(stream.User(id: id, name: name));
   }
 
   // Channel
-  Future<Channel> createOrJoinChannelByData(ChannelData data) async {
-    Channel channel;
+  Future<stream.Channel> createOrJoinChannelByData(ChannelData data) async {
+    stream.Channel channel;
 
     for (int suffix = 0; true; suffix++) {
       // Unique id
@@ -67,7 +69,7 @@ class StreamIO {
     return channel;
   }
 
-  Future<Channel> joinChannelById(String id) async {
+  Future<stream.Channel> joinChannelById(String id) async {
     final channel = _client.channel(
       'livestream',
       id: id,
@@ -76,38 +78,41 @@ class StreamIO {
     return channel;
   }
 
-  Future<List<(String id, ChannelData channelData)>>
-      queryOnlineChannels() async {
-    final filter =
-        Filter.equal(ChannelData.videoTypeJsonKey, VideoType.online.name);
+  Future<List<Channel>> queryOnlineChannels() async {
+    final filter = stream.Filter.equal(
+        ChannelData.videoTypeJsonKey, VideoType.online.name);
     final channels = await _client
         .queryChannels(
           filter: filter,
           channelStateSort: [
-            const SortOption('last_message_at', direction: SortOption.DESC)
+            const stream.SortOption('last_message_at',
+                direction: stream.SortOption.DESC)
           ],
           watch: false,
           state: false,
         )
         .last;
     return channels
-        .map((channel) => (
-              channel.id!,
-              ChannelData.fromJson(channel.extraData),
+        .map((channel) => Channel(
+              id: channel.id!,
+              createdAt: channel.createdAt!,
+              updatedAt: channel.updatedAt!,
+              creator: channel.createdBy!,
+              data: ChannelData.fromJson(channel.extraData),
             ))
         .toList();
   }
 
-  Future<List<User>> updateUsers(List<User> users) async {
+  Future<List<stream.User>> updateUsers(List<stream.User> users) async {
     final response = await _client.queryUsers(
-        filter: Filter.in_(
+        filter: stream.Filter.in_(
       'id',
       users.map((user) => user.id).toList(),
     ));
     return response.users;
   }
 
-  Future leaveChannel(Channel channel) async {
+  Future leaveChannel(stream.Channel channel) async {
     return await channel.stopWatching();
   }
 

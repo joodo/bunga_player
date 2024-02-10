@@ -1,4 +1,4 @@
-import 'package:bunga_player/models/playing/video_entry.dart';
+import 'package:bunga_player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/services/bilibili.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:flutter/material.dart';

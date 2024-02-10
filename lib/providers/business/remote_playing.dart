@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:bunga_player/models/playing/video_entry.dart';
+import 'package:bunga_player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/providers/business/business_indicator.dart';
 import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/providers/states/current_channel.dart';

@@ -1,11 +1,9 @@
-import 'package:bunga_player/models/playing/a_list_entry.dart';
-import 'package:bunga_player/models/playing/local_video_entry.dart';
-import 'package:bunga_player/models/playing/video_entry.dart';
+import 'package:bunga_player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/providers/business/business_indicator.dart';
 import 'package:bunga_player/providers/states/current_user.dart';
 import 'package:bunga_player/screens/dialogs/bilibili.dart';
+import 'package:bunga_player/screens/dialogs/local_video_entry.dart';
 import 'package:bunga_player/screens/dialogs/net_disk.dart';
-import 'package:bunga_player/actions/open_local_video.dart';
 import 'package:bunga_player/providers/states/current_channel.dart';
 import 'package:bunga_player/providers/business/remote_playing.dart';
 import 'package:bunga_player/providers/business/video_player.dart';
@@ -76,60 +74,41 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
   }
 
   void _openLocalVideo() async {
-    final currentUser = context.read<CurrentUser>();
-    final currentChannel = context.read<CurrentChannel>();
-    final remotePlaying = context.read<RemotePlaying>();
-
-    final shouldUpdateChannelData = remotePlaying.isVideoSameWithChannel;
-
-    final file = await openLocalVideoDialog();
-    if (file == null) return;
-
-    final entry = LocalVideoEntry.fromFile(file);
-    try {
-      await remotePlaying.openVideo(
-        entry,
-        askPosition: !shouldUpdateChannelData,
-      );
-
-      // Update room data only if playing correct video
-      if (shouldUpdateChannelData) {
-        currentChannel.updateData(currentUser.getSharingData(entry));
-      }
-
-      _onVideoLoaded();
-    } catch (e) {
-      getService<Toast>().show('加载失败');
-      rethrow;
-    }
+    _openVideo(entryGetter: LocalVideoEntryDialog().show);
   }
 
   void _openBilibili() async {
+    _openVideo(
+      entryGetter: () => showDialog<VideoEntry?>(
+        context: context,
+        builder: (context) => const BiliDialog(),
+      ),
+    );
+  }
+
+  void _openVideo({required Future<VideoEntry?> Function() entryGetter}) async {
     final currentUser = context.read<CurrentUser>();
     final currentChannel = context.read<CurrentChannel>();
     final remotePlaying = context.read<RemotePlaying>();
+
+    final videoEntry = await entryGetter();
+    if (videoEntry == null) return;
 
     // Update room data only if playing correct video
     final shouldUpdateChannelData = remotePlaying.isVideoSameWithChannel;
 
-    final biliEntry = await showDialog<VideoEntry?>(
-      context: context,
-      builder: (context) => const BiliDialog(),
-    );
-    if (biliEntry == null) return;
-
     try {
       await remotePlaying.openVideo(
-        biliEntry,
+        videoEntry,
         askPosition: !shouldUpdateChannelData,
       );
     } catch (e) {
-      getService<Toast>().show('解析失败');
+      getService<Toast>().show('加载失败');
       rethrow;
     }
 
     if (shouldUpdateChannelData) {
-      currentChannel.updateData(currentUser.getSharingData(biliEntry));
+      currentChannel.updateData(currentUser.getSharingData(videoEntry));
     }
 
     _onVideoLoaded();
@@ -141,7 +120,6 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
     final remotePlaying = context.read<RemotePlaying>();
     final watchProgress = context.read<VideoPlayer>().watchProgress;
 
-    // Update room data only if playing correct video
     final shouldUpdateChannelData = remotePlaying.isVideoSameWithChannel;
 
     final alistPath = await showDialog(
@@ -154,6 +132,7 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
     try {
       await remotePlaying.openVideo(
         alistEntry,
+        // TODO: add path field to channel data, then remove this
         beforeAskingPosition: () => getService<Bunga>().setStringHash(
           text: alistPath,
           hash: AListEntry.hashFromPath(alistPath),

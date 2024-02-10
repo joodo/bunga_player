@@ -1,9 +1,4 @@
-import 'dart:convert';
-import 'package:bunga_player/models/playing/video_entry.dart';
-import 'package:bunga_player/services/bunga.dart';
-import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/services/services.dart';
-import 'package:http/http.dart' as http;
+part of 'video_entry.dart';
 
 class BiliBungumiEntry extends VideoEntry {
   static const hashPrefix = 'bilibungumi';

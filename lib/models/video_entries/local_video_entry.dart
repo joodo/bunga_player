@@ -1,8 +1,4 @@
-import 'dart:io';
-
-import 'package:bunga_player/models/playing/video_entry.dart';
-import 'package:crclib/catalog.dart';
-import 'package:file_selector/file_selector.dart';
+part of 'video_entry.dart';
 
 class LocalVideoEntry extends VideoEntry {
   LocalVideoEntry.fromFile(XFile file) {

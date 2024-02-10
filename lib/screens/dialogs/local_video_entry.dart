@@ -1,9 +1,8 @@
-import 'dart:async';
-
+import 'package:bunga_player/models/video_entries/video_entry.dart';
 import 'package:file_selector/file_selector.dart';
 
-Future<XFile?> openLocalVideoDialog() async {
-  const typeGroup = XTypeGroup(
+class LocalVideoEntryDialog {
+  static const typeGroup = XTypeGroup(
     label: 'videos',
     extensions: <String>[
       'webm',
@@ -45,9 +44,13 @@ Future<XFile?> openLocalVideoDialog() async {
       'f4b',
       'mod',
       'rm',
-      'rmvb',
     ],
   );
 
-  return openFile(acceptedTypeGroups: <XTypeGroup>[typeGroup]);
+  Future<LocalVideoEntry?> show() async {
+    final file = await openFile(acceptedTypeGroups: <XTypeGroup>[typeGroup]);
+    if (file == null) return null;
+
+    return LocalVideoEntry.fromFile(file);
+  }
 }

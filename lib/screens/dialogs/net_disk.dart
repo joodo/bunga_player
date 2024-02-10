@@ -1,6 +1,6 @@
 import 'package:bunga_player/models/alist/file_info.dart';
 import 'package:bunga_player/models/alist/search_result.dart';
-import 'package:bunga_player/models/playing/a_list_entry.dart';
+import 'package:bunga_player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/services/alist.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';

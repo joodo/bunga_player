@@ -1,8 +1,4 @@
-import 'package:bunga_player/models/playing/video_entry.dart';
-import 'package:bunga_player/services/alist.dart';
-import 'package:bunga_player/services/bunga.dart';
-import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/services/services.dart';
+part of 'video_entry.dart';
 
 class AListEntry extends VideoEntry {
   static String hashFromPath(String path) => path.hashCode.toRadixString(36);

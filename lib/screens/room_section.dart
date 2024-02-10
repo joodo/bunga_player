@@ -1,10 +1,9 @@
-import 'package:bunga_player/actions/open_local_video.dart';
-import 'package:bunga_player/models/playing/local_video_entry.dart';
 import 'package:bunga_player/providers/business/business_indicator.dart';
 import 'package:bunga_player/providers/states/current_channel.dart';
 import 'package:bunga_player/providers/business/remote_playing.dart';
 import 'package:bunga_player/providers/states/current_user.dart';
 import 'package:bunga_player/providers/business/video_player.dart';
+import 'package:bunga_player/screens/dialogs/local_video_entry.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
 import 'package:flutter/material.dart';
@@ -76,11 +75,10 @@ class _RoomSectionState extends State<RoomSection> {
   void _openLocalVideo() async {
     final remotePlaying = context.read<RemotePlaying>();
 
-    final file = await openLocalVideoDialog();
-    if (file == null) return;
+    final entry = await LocalVideoEntryDialog().show();
+    if (entry == null) return;
 
     try {
-      final entry = LocalVideoEntry.fromFile(file);
       await remotePlaying.openVideo(entry);
     } catch (e) {
       getService<Toast>().show('加载失败');

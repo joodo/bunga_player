@@ -1,14 +1,12 @@
 import 'dart:async';
 
 import 'package:bunga_player/mocks/menu_anchor.dart' as mock;
-import 'package:bunga_player/models/playing/a_list_entry.dart';
-import 'package:bunga_player/models/playing/local_video_entry.dart';
-import 'package:bunga_player/models/playing/video_entry.dart';
+import 'package:bunga_player/models/chat/channel.dart';
+import 'package:bunga_player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/providers/business/business_indicator.dart';
 import 'package:bunga_player/screens/dialogs/bilibili.dart';
+import 'package:bunga_player/screens/dialogs/local_video_entry.dart';
 import 'package:bunga_player/screens/dialogs/net_disk.dart';
-import 'package:bunga_player/actions/open_local_video.dart';
-import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/providers/states/current_channel.dart';
 import 'package:bunga_player/providers/business/remote_playing.dart';
 import 'package:bunga_player/providers/states/current_user.dart';
@@ -116,7 +114,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
           ),
           const SizedBox(width: 16),
           FilledButton(
-            onPressed: isBusy ? null : _showOthers,
+            onPressed: isBusy ? null : _joinOthersChannel,
             child: const Text('其他人'),
           ),
         ],
@@ -125,61 +123,16 @@ class _WelcomeControlState extends State<WelcomeControl> {
   }
 
   void _openLocalVideo() async {
-    final currentUser = context.read<CurrentUser>();
-    final currentChannel = context.read<CurrentChannel>();
-    final remotePlaying = context.read<RemotePlaying>();
-
-    final file = await openLocalVideoDialog();
-    if (file == null) return;
-
-    final videoEntry = LocalVideoEntry.fromFile(file);
-    void doOpen() async {
-      try {
-        await remotePlaying.openVideo(
-          videoEntry,
-          beforeAskingPosition: () => currentChannel
-              .createOrJoin(currentUser.getSharingData(videoEntry)),
-        );
-        _onVideoLoaded();
-      } catch (e) {
-        getService<Toast>().show('加载失败');
-        Future.microtask(_initBusinessIndicator);
-        rethrow;
-      }
-    }
-
-    _completer?.complete();
-    Future.microtask(doOpen);
+    _openChannel(entryGetter: LocalVideoEntryDialog().show);
   }
 
-  void _openBilibili() async {
-    final currentUser = context.read<CurrentUser>();
-    final currentChannel = context.read<CurrentChannel>();
-    final remotePlaying = context.read<RemotePlaying>();
-
-    final videoEntry = await showDialog<VideoEntry?>(
-      context: context,
-      builder: (context) => const BiliDialog(),
+  void _openBilibili() {
+    _openChannel(
+      entryGetter: () => showDialog<VideoEntry?>(
+        context: context,
+        builder: (context) => const BiliDialog(),
+      ),
     );
-    if (videoEntry == null) return;
-
-    void doOpen() async {
-      try {
-        await remotePlaying.openVideo(
-          videoEntry,
-          beforeAskingPosition: () => currentChannel
-              .createOrJoin(currentUser.getSharingData(videoEntry)),
-        );
-        _onVideoLoaded();
-      } catch (e) {
-        getService<Toast>().show('解析失败');
-        Future.microtask(_initBusinessIndicator);
-        rethrow;
-      }
-    }
-
-    _completer?.complete();
-    Future.microtask(doOpen);
   }
 
   void _openNetDisk() async {
@@ -200,6 +153,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
         await remotePlaying.openVideo(
           alistEntry,
           beforeAskingPosition: () async {
+            // TODO: add path field to channel data, then remove this
             // Set hash string
             await getService<Bunga>().setStringHash(
               text: alistPath,
@@ -222,26 +176,42 @@ class _WelcomeControlState extends State<WelcomeControl> {
     Future.microtask(doOpen);
   }
 
-  void _showOthers() async {
+  void _joinOthersChannel() async {
+    _openChannel(
+      entryGetter: () => showDialog<(String, VideoEntry)?>(
+        context: context,
+        builder: (context) => const _OthersDialog(),
+      ),
+    );
+  }
+
+  Future<void> _openChannel({
+    required Future Function() entryGetter,
+  }) async {
+    final currentUser = context.read<CurrentUser>();
     final currentChannel = context.read<CurrentChannel>();
     final remotePlaying = context.read<RemotePlaying>();
 
-    final result = await showDialog<_OnlineVideoChannelData?>(
-      context: context,
-      builder: (context) => const _OthersDialog(),
-    );
-    if (result == null) return;
+    final response = await entryGetter();
+    if (response == null) return;
 
     void doOpen() async {
       try {
-        final onlineEntry = VideoEntry.fromHash(result.data.videoHash);
-        await remotePlaying.openVideo(
-          onlineEntry,
-          beforeAskingPosition: () => currentChannel.joinById(result.id),
-        );
+        if (response is VideoEntry) {
+          await remotePlaying.openVideo(
+            response,
+            beforeAskingPosition: () => currentChannel
+                .createOrJoin(currentUser.getSharingData(response)),
+          );
+        } else {
+          await remotePlaying.openVideo(
+            response.$2,
+            beforeAskingPosition: () => currentChannel.joinById(response.$1),
+          );
+        }
         _onVideoLoaded();
       } catch (e) {
-        getService<Toast>().show('打开失败');
+        getService<Toast>().show('解析失败');
         Future.microtask(_initBusinessIndicator);
         rethrow;
       }
@@ -264,16 +234,6 @@ class _WelcomeControlState extends State<WelcomeControl> {
   }
 }
 
-class _OnlineVideoChannelData {
-  final String id;
-  final ChannelData data;
-
-  _OnlineVideoChannelData({
-    required this.id,
-    required this.data,
-  });
-}
-
 class _OthersDialog extends StatefulWidget {
   const _OthersDialog();
   @override
@@ -281,7 +241,7 @@ class _OthersDialog extends StatefulWidget {
 }
 
 class _OthersDialogState extends State<_OthersDialog> {
-  List<_OnlineVideoChannelData>? _channels;
+  List<Channel>? _channels;
   late final Timer _timer;
   bool _isPulling = false;
 
@@ -310,7 +270,7 @@ class _OthersDialogState extends State<_OthersDialog> {
         children: [
           const SizedBox(width: 8),
           if (_channels != null)
-            ..._channels!.map((info) => _createVideoCard(info)),
+            ..._channels!.map((channel) => _createVideoCard(channel)),
           const SizedBox(width: 8),
         ],
       ),
@@ -357,14 +317,14 @@ class _OthersDialogState extends State<_OthersDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.pop<_OnlineVideoChannelData?>(context),
+          onPressed: () => Navigator.pop(context),
           child: const Text('取消'),
         ),
       ],
     );
   }
 
-  Widget _createVideoCard(_OnlineVideoChannelData channelInfo) {
+  Widget _createVideoCard(Channel channelInfo) {
     final themeData = Theme.of(context);
     final videoImage = Image.network(
       channelInfo.data.image!,
@@ -436,8 +396,13 @@ class _OthersDialogState extends State<_OthersDialog> {
               ),
               elevation: 0,
               child: InkWell(
-                onTap: () => Navigator.pop<_OnlineVideoChannelData?>(
-                    context, channelInfo),
+                onTap: () => Navigator.pop<(String, VideoEntry)>(
+                  context,
+                  (
+                    channelInfo.id,
+                    VideoEntry.fromHash(channelInfo.data.videoHash),
+                  ),
+                ),
                 child: cardContent,
               ),
             );
@@ -466,13 +431,7 @@ class _OthersDialogState extends State<_OthersDialog> {
 
       if (!mounted) return;
       setState(() {
-        _channels = channels.map<_OnlineVideoChannelData>((channel) {
-          final (id, data) = channel;
-          return _OnlineVideoChannelData(
-            id: id,
-            data: data,
-          );
-        }).toList();
+        _channels = channels;
         _isPulling = false;
       });
     }
