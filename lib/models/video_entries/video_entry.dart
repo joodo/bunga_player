@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:crclib/catalog.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:http/http.dart' as http;
@@ -27,24 +28,26 @@ sealed class VideoEntry {
   late final String image;
   late final VideoSources sources; // DURL | Dash
 
-  static final Map<String, VideoEntry Function(String hash)> fromHashMap = {
-    AListEntry.hashPrefix: AListEntry.fromHash,
-    BiliBungumiEntry.hashPrefix: BiliBungumiEntry.fromHash,
-    BiliVideoEntry.hashPrefix: BiliVideoEntry.fromHash,
+  static final Map<String, VideoEntry Function(ChannelData hash)> _factoryMap =
+      {
+    AListEntry.hashPrefix: AListEntry.fromChannelData,
+    BiliBungumiEntry.hashPrefix: BiliBungumiEntry.fromChannelData,
+    BiliVideoEntry.hashPrefix: BiliVideoEntry.fromChannelData,
   };
 
   VideoEntry();
+
+  factory VideoEntry.fromChannelData(ChannelData channelData) {
+    final prefix = channelData.videoHash.split('-').first;
+    if (!_factoryMap.containsKey(prefix)) {
+      throw FormatException('RemoteVideoEntry: unknown hash prefix: $prefix');
+    }
+
+    return _factoryMap[prefix]!(channelData);
+  }
 
   bool get isFetched;
   Future<void> fetch();
 
   String get hash;
-  factory VideoEntry.fromHash(String hash) {
-    final prefix = hash.split('-').first;
-    if (!fromHashMap.containsKey(prefix)) {
-      throw FormatException('RemoteVideoEntry: unknown hash prefix: $prefix');
-    }
-
-    return fromHashMap[prefix]!(hash);
-  }
 }

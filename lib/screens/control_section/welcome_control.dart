@@ -400,7 +400,7 @@ class _OthersDialogState extends State<_OthersDialog> {
                   context,
                   (
                     channelInfo.id,
-                    VideoEntry.fromHash(channelInfo.data.videoHash),
+                    VideoEntry.fromChannelData(channelInfo.data),
                   ),
                 ),
                 child: cardContent,

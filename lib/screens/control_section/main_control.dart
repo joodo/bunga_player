@@ -101,8 +101,8 @@ class MainControl extends StatelessWidget {
                       onTap: () async {
                         Navigator.of(context, rootNavigator: true).pop();
 
-                        final onlineEntry = VideoEntry.fromHash(
-                            videoPlayer.videoHashNotifier.value!);
+                        final onlineEntry = VideoEntry.fromChannelData(
+                            currentChannel.channelDataNotifier.value!);
                         await remotePlaying.openVideo(onlineEntry);
                       },
                     ),

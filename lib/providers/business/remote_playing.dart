@@ -24,7 +24,7 @@ class RemotePlaying {
         if (!isVideoSameWithChannel &&
             _context.read<VideoPlayer>().videoHashNotifier.value != null &&
             channelData?.videoType != VideoType.local) {
-          followRemoteOnlineVideoHash(channelData!.videoHash);
+          followRemoteOnlineVideoHash(channelData!);
         }
       },
     );
@@ -60,8 +60,8 @@ class RemotePlaying {
   // Chat
   StreamSubscription? _messageSubscription;
 
-  Future<void> followRemoteOnlineVideoHash(String videoHash) async {
-    final videoEntry = VideoEntry.fromHash(videoHash);
+  Future<void> followRemoteOnlineVideoHash(ChannelData channelData) async {
+    final videoEntry = VideoEntry.fromChannelData(channelData);
     await openVideo(videoEntry);
   }
 

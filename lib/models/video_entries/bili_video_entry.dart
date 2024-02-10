@@ -94,8 +94,8 @@ class BiliVideoEntry extends VideoEntry {
   @override
   String get hash => '$hashPrefix-$bvid-$p';
 
-  factory BiliVideoEntry.fromHash(String hash) {
-    final splits = hash.split('-');
+  factory BiliVideoEntry.fromChannelData(ChannelData channelData) {
+    final splits = channelData.videoHash.split('-');
     assert(splits.first == hashPrefix);
     return BiliVideoEntry(bvid: splits[1], p: int.parse(splits[2]));
   }

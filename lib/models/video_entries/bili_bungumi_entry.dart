@@ -77,8 +77,8 @@ class BiliBungumiEntry extends VideoEntry {
   @override
   String get hash => '$hashPrefix-$epid';
 
-  factory BiliBungumiEntry.fromHash(String hash) {
-    final splits = hash.split('-');
+  factory BiliBungumiEntry.fromChannelData(ChannelData channelData) {
+    final splits = channelData.videoHash.split('-');
     assert(splits.first == hashPrefix);
     return BiliBungumiEntry(epid: int.parse(splits[1]));
   }

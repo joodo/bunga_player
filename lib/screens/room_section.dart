@@ -1,3 +1,4 @@
+import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/providers/business/business_indicator.dart';
 import 'package:bunga_player/providers/states/current_channel.dart';
 import 'package:bunga_player/providers/business/remote_playing.dart';
@@ -56,7 +57,7 @@ class _RoomSectionState extends State<RoomSection> {
             }
 
             return _VideoUnsyncNotification(
-              onAction: () => _onOpenVideoPressed(channelData.videoHash),
+              onAction: () => _onOpenVideoPressed(channelData),
               otherUserName: channelData.sharer.name,
               otherVideoTitle: channelData.name,
             );
@@ -66,10 +67,12 @@ class _RoomSectionState extends State<RoomSection> {
     );
   }
 
-  void _onOpenVideoPressed(String videoHash) {
-    return videoHash.split('-').first == 'local'
+  void _onOpenVideoPressed(ChannelData channelData) {
+    return channelData.videoType == VideoType.local
         ? _openLocalVideo()
-        : context.read<RemotePlaying>().followRemoteOnlineVideoHash(videoHash);
+        : context
+            .read<RemotePlaying>()
+            .followRemoteOnlineVideoHash(channelData);
   }
 
   void _openLocalVideo() async {

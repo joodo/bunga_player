@@ -21,8 +21,8 @@ class AListEntry extends VideoEntry {
     return '$hashPrefix-${_pathHash!}';
   }
 
-  factory AListEntry.fromHash(String hash) {
-    final splits = hash.split('-');
+  factory AListEntry.fromChannelData(ChannelData channelData) {
+    final splits = channelData.videoHash.split('-');
     assert(splits.first == hashPrefix);
     return AListEntry(pathHash: splits[1]);
   }
