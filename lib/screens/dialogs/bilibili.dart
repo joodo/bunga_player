@@ -1,3 +1,6 @@
+import 'package:bunga_player/models/playing/video_entry.dart';
+import 'package:bunga_player/services/bilibili.dart';
+import 'package:bunga_player/services/services.dart';
 import 'package:flutter/material.dart';
 
 class BiliDialog extends StatefulWidget {
@@ -7,6 +10,23 @@ class BiliDialog extends StatefulWidget {
 }
 
 class _BiliDialogState extends State<BiliDialog> {
+  bool _pending = false;
+  bool _failed = false;
+  final _focusNode = FocusNode();
+
+  @override
+  void initState() {
+    _focusNode.addListener(() {
+      if (_focusNode.hasFocus) {
+        _textController.selection = TextSelection(
+          baseOffset: 0,
+          extentOffset: _textController.text.length,
+        );
+      }
+    });
+    super.initState();
+  }
+
   final _textController = TextEditingController();
   @override
   Widget build(BuildContext context) {
@@ -16,17 +36,13 @@ class _BiliDialogState extends State<BiliDialog> {
       content: SizedBox(
         width: 400,
         child: TextField(
+          focusNode: _focusNode,
           controller: _textController,
-          decoration: const InputDecoration(
-            border: OutlineInputBorder(),
+          decoration: InputDecoration(
+            border: const OutlineInputBorder(),
             labelText: '视频链接',
+            errorText: _failed ? '解析失败' : null,
           ),
-          onTap: () {
-            _textController.selection = TextSelection(
-              baseOffset: 0,
-              extentOffset: _textController.text.length,
-            );
-          },
           onSubmitted: (text) {
             if (text.isNotEmpty) _onSubmitBiliUrl();
           },
@@ -40,15 +56,30 @@ class _BiliDialogState extends State<BiliDialog> {
         ValueListenableBuilder(
           valueListenable: _textController,
           builder: (context, value, child) => TextButton(
-            onPressed: value.text.isEmpty ? null : _onSubmitBiliUrl,
-            child: const Text('解析'),
+            onPressed: _pending || value.text.isEmpty ? null : _onSubmitBiliUrl,
+            child:
+                _pending ? const CircularProgressIndicator() : const Text('解析'),
           ),
         ),
       ],
     );
   }
 
-  void _onSubmitBiliUrl() {
-    Navigator.pop(context, _textController.text);
+  void _onSubmitBiliUrl() async {
+    setState(() {
+      _failed = false;
+      _pending = true;
+    });
+
+    try {
+      final uri = Uri.parse(_textController.text);
+      final entry = await getService<Bilibili>().getEntryFromUri(uri);
+      if (context.mounted) Navigator.pop<VideoEntry>(context, entry);
+    } finally {
+      setState(() {
+        _failed = true;
+        _pending = false;
+      });
+    }
   }
 }

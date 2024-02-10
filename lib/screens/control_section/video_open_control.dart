@@ -1,10 +1,10 @@
 import 'package:bunga_player/models/playing/a_list_entry.dart';
 import 'package:bunga_player/models/playing/local_video_entry.dart';
+import 'package:bunga_player/models/playing/video_entry.dart';
 import 'package:bunga_player/providers/business/business_indicator.dart';
 import 'package:bunga_player/providers/states/current_user.dart';
 import 'package:bunga_player/screens/dialogs/bilibili.dart';
 import 'package:bunga_player/screens/dialogs/net_disk.dart';
-import 'package:bunga_player/services/bilibili.dart';
 import 'package:bunga_player/actions/open_local_video.dart';
 import 'package:bunga_player/providers/states/current_channel.dart';
 import 'package:bunga_player/providers/business/remote_playing.dart';
@@ -12,7 +12,6 @@ import 'package:bunga_player/providers/business/video_player.dart';
 import 'package:bunga_player/services/bunga.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
-import 'package:bunga_player/utils/string.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
@@ -113,14 +112,12 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
     // Update room data only if playing correct video
     final shouldUpdateChannelData = remotePlaying.isVideoSameWithChannel;
 
-    final result = await showDialog<String?>(
+    final biliEntry = await showDialog<VideoEntry?>(
       context: context,
       builder: (context) => const BiliDialog(),
     );
-    if (result == null) return;
+    if (biliEntry == null) return;
 
-    final biliEntry =
-        await getService<Bilibili>().getEntryFromUri(result.parseUri());
     try {
       await remotePlaying.openVideo(
         biliEntry,
@@ -157,7 +154,7 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
     try {
       await remotePlaying.openVideo(
         alistEntry,
-        beforeAskingPosition: (videoEntry) => getService<Bunga>().setStringHash(
+        beforeAskingPosition: () => getService<Bunga>().setStringHash(
           text: alistPath,
           hash: AListEntry.hashFromPath(alistPath),
         ),

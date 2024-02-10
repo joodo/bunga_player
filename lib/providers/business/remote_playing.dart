@@ -66,34 +66,26 @@ class RemotePlaying {
   }
 
   Future<void> openVideo(
-    VideoEntry? videoEntry, {
-    Future<VideoEntry> Function()? entryGetter,
-    Future<void> Function(VideoEntry videoEntry)? beforeAskingPosition,
+    VideoEntry videoEntry, {
+    Future<void> Function()? beforeAskingPosition,
     bool askPosition = true,
   }) async {
-    assert(videoEntry != null || entryGetter != null);
-
     final bi = _context.read<BusinessIndicator>();
     final videoPlayer = _context.read<VideoPlayer>();
-
-    Future<VideoEntry> getEntry() async {
-      videoEntry ??= await entryGetter!();
-      return videoEntry!;
-    }
 
     await bi.run(
       missions: [
         Mission(name: '正在鬼鬼祟祟……', tasks: [
           videoPlayer.stop,
-          (await getEntry()).fetch,
+          videoEntry.fetch,
         ]),
         Mission(name: '正在收拾客厅……', tasks: [
-          () async => videoPlayer.loadVideo(await getEntry()),
+          () async => videoPlayer.loadVideo(videoEntry),
         ]),
         Mission(
           name: '正在发送请柬……',
           tasks: [
-            () async => beforeAskingPosition?.call(await getEntry()),
+            if (beforeAskingPosition != null) beforeAskingPosition,
             if (askPosition) this.askPosition,
           ],
         ),

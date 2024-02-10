@@ -7,7 +7,6 @@ import 'package:bunga_player/models/playing/video_entry.dart';
 import 'package:bunga_player/providers/business/business_indicator.dart';
 import 'package:bunga_player/screens/dialogs/bilibili.dart';
 import 'package:bunga_player/screens/dialogs/net_disk.dart';
-import 'package:bunga_player/services/bilibili.dart';
 import 'package:bunga_player/actions/open_local_video.dart';
 import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/providers/states/current_channel.dart';
@@ -18,7 +17,6 @@ import 'package:bunga_player/services/stream_io.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/providers/business/video_player.dart';
 import 'package:bunga_player/services/toast.dart';
-import 'package:bunga_player/utils/string.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
@@ -50,6 +48,16 @@ class _WelcomeControlState extends State<WelcomeControl> {
   void initState() {
     super.initState();
     Future.microtask(_initBusinessIndicator);
+  }
+
+  @override
+  void didChangeDependencies() {
+    // Precache svg icon
+    const biliIcon = SvgAssetLoader('assets/images/bilibili.svg');
+    svg.cache
+        .putIfAbsent(biliIcon.cacheKey(null), () => biliIcon.loadBytes(null));
+
+    super.didChangeDependencies();
   }
 
   @override
@@ -129,10 +137,8 @@ class _WelcomeControlState extends State<WelcomeControl> {
       try {
         await remotePlaying.openVideo(
           videoEntry,
-          beforeAskingPosition: (videoEntry) {
-            return currentChannel
-                .createOrJoin(currentUser.getSharingData(videoEntry));
-          },
+          beforeAskingPosition: () => currentChannel
+              .createOrJoin(currentUser.getSharingData(videoEntry)),
         );
         _onVideoLoaded();
       } catch (e) {
@@ -151,23 +157,18 @@ class _WelcomeControlState extends State<WelcomeControl> {
     final currentChannel = context.read<CurrentChannel>();
     final remotePlaying = context.read<RemotePlaying>();
 
-    final result = await showDialog<String?>(
+    final videoEntry = await showDialog<VideoEntry?>(
       context: context,
       builder: (context) => const BiliDialog(),
     );
-    if (result == null) return;
+    if (videoEntry == null) return;
 
     void doOpen() async {
       try {
         await remotePlaying.openVideo(
-          null,
-          entryGetter: () {
-            return getService<Bilibili>().getEntryFromUri(result.parseUri());
-          },
-          beforeAskingPosition: (videoEntry) {
-            return currentChannel
-                .createOrJoin(currentUser.getSharingData(videoEntry));
-          },
+          videoEntry,
+          beforeAskingPosition: () => currentChannel
+              .createOrJoin(currentUser.getSharingData(videoEntry)),
         );
         _onVideoLoaded();
       } catch (e) {
@@ -198,7 +199,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
       try {
         await remotePlaying.openVideo(
           alistEntry,
-          beforeAskingPosition: (videoEntry) async {
+          beforeAskingPosition: () async {
             // Set hash string
             await getService<Bunga>().setStringHash(
               text: alistPath,
@@ -206,7 +207,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
             );
 
             return currentChannel
-                .createOrJoin(currentUser.getSharingData(videoEntry));
+                .createOrJoin(currentUser.getSharingData(alistEntry));
           },
         );
         _onVideoLoaded();
@@ -236,9 +237,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
         final onlineEntry = VideoEntry.fromHash(result.data.videoHash);
         await remotePlaying.openVideo(
           onlineEntry,
-          beforeAskingPosition: (videoEntry) {
-            return currentChannel.joinById(result.id);
-          },
+          beforeAskingPosition: () => currentChannel.joinById(result.id),
         );
         _onVideoLoaded();
       } catch (e) {
