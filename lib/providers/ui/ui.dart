@@ -14,8 +14,13 @@ class IsControlSectionHidden extends ValueNotifier<bool> {
   IsControlSectionHidden(super.value);
 }
 
+class IsCatAwake extends ValueNotifier<bool> {
+  IsCatAwake(super.value);
+}
+
 uiProviders() => [
       ChangeNotifierProvider(create: (context) => IsFullScreen(false)),
       ChangeNotifierProvider(
           create: (context) => IsControlSectionHidden(false)),
+      ChangeNotifierProvider(create: (context) => IsCatAwake(false)),
     ];

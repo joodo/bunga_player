@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:bunga_player/providers/chat.dart';
 import 'package:bunga_player/providers/states/current_channel.dart';
-import 'package:bunga_player/providers/states/current_user.dart';
 import 'package:bunga_player/services/agora.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/preferences.dart';
@@ -87,7 +87,7 @@ class VoiceCall extends ChangeNotifier {
         _messageSubscription = _currentChannel.messageStream.listen((message) {
           if (message?.text?.split(' ').first != 'call') return;
 
-          if (message?.user?.id == _currentUser.id) return;
+          if (message?.user?.id == _currentUser.value?.id) return;
 
           _dealMessage(message!);
         });
@@ -219,7 +219,7 @@ class VoiceCall extends ChangeNotifier {
     _callAskingMessageId = message.id;
     _myCallAskingHopeList =
         _currentChannel.watchersNotifier.value.map((u) => u.id).toList();
-    _myCallAskingHopeList!.remove(_currentUser.id);
+    _myCallAskingHopeList!.remove(_currentUser.value?.id);
     logger.i('start call asking, hope list: $_myCallAskingHopeList');
 
     _callAskingTimeOutTimer.reset();

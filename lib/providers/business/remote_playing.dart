@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:bunga_player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/providers/business/business_indicator.dart';
 import 'package:bunga_player/models/chat/channel_data.dart';
+import 'package:bunga_player/providers/chat.dart';
 import 'package:bunga_player/providers/states/current_channel.dart';
-import 'package:bunga_player/providers/states/current_user.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/providers/business/video_player.dart';
 import 'package:bunga_player/services/services.dart';
@@ -38,7 +38,7 @@ class RemotePlaying {
 
     await _messageSubscription?.cancel();
     _messageSubscription = messageStream.listen((message) {
-      if (message?.user?.id == _context.read<CurrentUser>().id) return;
+      if (message?.user?.id == _context.read<CurrentUser>().value?.id) return;
 
       final prefix = message?.text?.split(' ').first;
       switch (prefix) {
@@ -74,21 +74,19 @@ class RemotePlaying {
     final videoPlayer = _context.read<VideoPlayer>();
 
     await bi.run(
-      missions: [
-        Mission(name: '正在鬼鬼祟祟……', tasks: [
-          videoPlayer.stop,
-          videoEntry.fetch,
-        ]),
-        Mission(name: '正在收拾客厅……', tasks: [
-          () async => videoPlayer.loadVideo(videoEntry),
-        ]),
-        Mission(
-          name: '正在发送请柬……',
-          tasks: [
-            if (beforeAskingPosition != null) beforeAskingPosition,
-            if (askPosition) this.askPosition,
-          ],
-        ),
+      tasks: [
+        bi.setTitle('正在鬼鬼祟祟……'),
+        (data) async {
+          await videoPlayer.stop();
+          await videoEntry.fetch();
+        },
+        bi.setTitle('正在收拾客厅……'),
+        (data) async => videoPlayer.loadVideo(videoEntry),
+        bi.setTitle('正在发送请柬……'),
+        (data) async {
+          if (beforeAskingPosition != null) await beforeAskingPosition();
+          if (askPosition) await this.askPosition();
+        },
       ],
     );
   }

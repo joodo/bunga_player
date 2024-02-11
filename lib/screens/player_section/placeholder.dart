@@ -1,5 +1,5 @@
 import 'package:bunga_player/providers/business/business_indicator.dart';
-import 'package:bunga_player/providers/states/current_user.dart';
+import 'package:bunga_player/providers/ui/ui.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rive/rive.dart';
@@ -18,9 +18,9 @@ class _PlayerPlaceholderState extends State<PlayerPlaceholder> {
   void initState() {
     super.initState();
 
-    final currentUser = context.read<CurrentUser>();
-    currentUser.addListener(() {
-      _isCatAwakeInput.value = currentUser.name != null && currentUser.isOnline;
+    final isCatAwake = context.read<IsCatAwake>();
+    isCatAwake.addListener(() {
+      _isCatAwakeInput.value = isCatAwake.value;
     });
   }
 

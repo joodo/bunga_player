@@ -1,7 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:stream_chat_flutter_core/stream_chat_flutter_core.dart';
 
 import 'channel_data.dart';
+import 'user.dart';
 
 part 'channel.g.dart';
 

@@ -1,6 +1,7 @@
+import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/providers/business/business_indicator.dart';
-import 'package:bunga_player/providers/states/current_user.dart';
+import 'package:bunga_player/providers/chat.dart';
 import 'package:bunga_player/screens/dialogs/bilibili.dart';
 import 'package:bunga_player/screens/dialogs/local_video_entry.dart';
 import 'package:bunga_player/screens/dialogs/net_disk.dart';
@@ -87,7 +88,7 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
   }
 
   void _openVideo({required Future<VideoEntry?> Function() entryGetter}) async {
-    final currentUser = context.read<CurrentUser>();
+    final currentUser = context.read<CurrentUser>().value!;
     final currentChannel = context.read<CurrentChannel>();
     final remotePlaying = context.read<RemotePlaying>();
 
@@ -108,7 +109,7 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
     }
 
     if (shouldUpdateChannelData) {
-      currentChannel.updateData(currentUser.getSharingData(videoEntry));
+      currentChannel.updateData(ChannelData.fromShare(currentUser, videoEntry));
     }
 
     _onVideoLoaded();
@@ -116,7 +117,7 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
 
   void _openNetDisk() async {
     final currentChannel = context.read<CurrentChannel>();
-    final currentUser = context.read<CurrentUser>();
+    final currentUser = context.read<CurrentUser>().value!;
     final remotePlaying = context.read<RemotePlaying>();
     final watchProgress = context.read<VideoPlayer>().watchProgress;
 
@@ -145,7 +146,7 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
     }
 
     if (shouldUpdateChannelData) {
-      currentChannel.updateData(currentUser.getSharingData(alistEntry));
+      currentChannel.updateData(ChannelData.fromShare(currentUser, alistEntry));
     }
 
     _onVideoLoaded();

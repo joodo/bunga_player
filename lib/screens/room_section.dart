@@ -1,8 +1,8 @@
 import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/providers/business/business_indicator.dart';
+import 'package:bunga_player/providers/chat.dart';
 import 'package:bunga_player/providers/states/current_channel.dart';
 import 'package:bunga_player/providers/business/remote_playing.dart';
-import 'package:bunga_player/providers/states/current_user.dart';
 import 'package:bunga_player/providers/business/video_player.dart';
 import 'package:bunga_player/screens/dialogs/local_video_entry.dart';
 import 'package:bunga_player/services/services.dart';
@@ -30,11 +30,11 @@ class _RoomSectionState extends State<RoomSection> {
         ValueListenableBuilder(
           valueListenable: currentChannel.watchersNotifier,
           builder: (context, watchers, child) {
-            String text = _getUsersStringExceptId(
-                watchers, context.read<CurrentUser>().id);
-            if (text.isEmpty) {
-              return const SizedBox.shrink();
-            }
+            final currentUserId = context.read<CurrentUser>().value?.id;
+            if (currentUserId == null) return const SizedBox.shrink();
+
+            String text = _getUsersStringExceptId(watchers, currentUserId);
+            if (text.isEmpty) return const SizedBox.shrink();
 
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

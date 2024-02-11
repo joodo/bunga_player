@@ -1,11 +1,6 @@
 import 'package:flutter/material.dart';
 
-class Mission {
-  final String name;
-  final List<Future Function()> tasks;
-
-  Mission({required this.name, required this.tasks});
-}
+typedef Task = Future Function(dynamic data);
 
 class BusinessIndicator extends ChangeNotifier {
   String? currentMissionName;
@@ -13,7 +8,7 @@ class BusinessIndicator extends ChangeNotifier {
 
   bool _isRunning = false;
   Future<void> run({
-    required List<Mission> missions,
+    required List<Task> tasks,
     bool showProgress = true,
     bool determinate = false,
   }) async {
@@ -21,22 +16,17 @@ class BusinessIndicator extends ChangeNotifier {
     _isRunning = true;
 
     if (determinate) {
-      totalProgress = missions.fold<int>(
-        0,
-        (previousValue, element) => previousValue += element.tasks.length,
-      );
+      totalProgress = tasks.length;
     }
 
     if (showProgress) currentProgress = 0;
 
+    dynamic result;
     try {
-      for (final mission in missions) {
-        currentMissionName = mission.name;
-        for (final task in mission.tasks) {
-          notifyListeners();
-          await task();
-          if (currentProgress != null) currentProgress = currentProgress! + 1;
-        }
+      for (final task in tasks) {
+        result = await task(result);
+        if (currentProgress != null) currentProgress = currentProgress! + 1;
+        notifyListeners();
       }
     } catch (e) {
       rethrow;
@@ -49,4 +39,15 @@ class BusinessIndicator extends ChangeNotifier {
       _isRunning = false;
     }
   }
+
+  Task setTitle(String? title) => (dynamic data) async {
+        currentMissionName = title;
+        return data;
+      };
+
+  Task setTitleFromLastTask(String? Function(dynamic lastResult) getTitle) =>
+      (dynamic data) async {
+        currentMissionName = getTitle(data);
+        return data;
+      };
 }

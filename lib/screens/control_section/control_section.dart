@@ -1,4 +1,3 @@
-import 'package:bunga_player/providers/states/current_user.dart';
 import 'package:bunga_player/providers/ui/ui.dart';
 import 'package:bunga_player/providers/states/voice_call.dart';
 import 'package:bunga_player/screens/control_section/video_open_control.dart';
@@ -11,6 +10,8 @@ import 'package:bunga_player/screens/control_section/tune_control.dart';
 import 'package:bunga_player/screens/control_section/welcome_control.dart';
 import 'package:bunga_player/screens/progress_section/video_progress_indicator.dart';
 import 'package:bunga_player/providers/business/video_player.dart';
+import 'package:bunga_player/services/preferences.dart';
+import 'package:bunga_player/services/services.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -41,9 +42,9 @@ class _ControlSectionState extends State<ControlSection> {
 
   @override
   Widget build(BuildContext context) {
-    final currentUser = context.read<CurrentUser>();
-    final hasUserName = currentUser.name != null;
-    final initialRouteName = 'control:${hasUserName ? 'welcome' : 'rename'}';
+    final pref = getService<Preferences>();
+    final name = pref.get<String>('user_name');
+    final initialRouteName = 'control:${name != null ? 'welcome' : 'rename'}';
 
     final body = Navigator(
       initialRoute: initialRouteName,

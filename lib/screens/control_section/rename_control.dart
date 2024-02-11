@@ -1,10 +1,7 @@
 import 'dart:async';
 
+import 'package:bunga_player/actions/chat.dart';
 import 'package:bunga_player/providers/business/business_indicator.dart';
-import 'package:bunga_player/providers/states/current_user.dart';
-import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/services/toast.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -20,24 +17,25 @@ class _RenameControlState extends State<RenameControl> {
   final _textController = TextEditingController();
 
   Completer<void>? _completer;
-  late final _mission = Mission(
-    name: '怎样称呼你？',
-    tasks: [
-      () {
-        _completer = Completer();
-        return _completer!.future;
-      }
-    ],
-  );
+  void _initBusinessIndicator() {
+    final bi = context.read<BusinessIndicator>();
+    bi.run(
+      tasks: [
+        bi.setTitle('怎样称呼你？'),
+        (data) {
+          _completer = Completer();
+          return _completer!.future;
+        },
+      ],
+      showProgress: false,
+    );
+  }
 
   @override
   void initState() {
     super.initState();
 
-    Future.microtask(() => context.read<BusinessIndicator>().run(
-          missions: [_mission],
-          showProgress: false,
-        ));
+    Future.microtask(_initBusinessIndicator);
 
     if (widget.previousName != null) {
       _textController.text = widget.previousName!;
@@ -85,12 +83,9 @@ class _RenameControlState extends State<RenameControl> {
     );
   }
 
-  void _onSubmit(String userName) async {
-    context.read<CurrentUser>().rename(userName).onError((error, stackTrace) {
-      logger.e(error);
-      getService<Toast>().show('改名失败');
-      throw error ?? '改名失败';
-    });
+  void _onSubmit(String userName) {
+    Actions.maybeInvoke(context, RenameCurrentUserIntent(userName));
+
     _completer?.complete();
     Navigator.of(context).popAndPushNamed('control:welcome');
   }

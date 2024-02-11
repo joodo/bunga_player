@@ -1,11 +1,11 @@
 import 'package:bunga_player/models/app_key/app_key.dart';
 import 'package:bunga_player/providers/business/business_indicator.dart';
 import 'package:bunga_player/providers/states/current_channel.dart';
-import 'package:bunga_player/providers/states/current_user.dart';
 import 'package:bunga_player/providers/business/remote_playing.dart';
 import 'package:bunga_player/providers/ui/ui.dart';
 import 'package:bunga_player/providers/business/video_player.dart';
 import 'package:bunga_player/providers/states/voice_call.dart';
+import 'package:bunga_player/providers/chat.dart' as chat;
 import 'package:bunga_player/services/agora.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/stream_io.dart';
@@ -26,7 +26,7 @@ class ProvidersWrapper extends StatelessWidget {
                   streamIO: getService<StreamIO>().appKey,
                   agora: getService<Agora>().appId,
                 )),
-        ChangeNotifierProvider(create: (context) => CurrentUser()),
+        chat.providers,
         ChangeNotifierProvider(create: (context) => CurrentChannel(context)),
         ChangeNotifierProvider(create: (context) => VoiceCall(context)),
         ChangeNotifierProvider(create: (context) => BusinessIndicator()),

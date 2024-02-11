@@ -1,15 +1,19 @@
 import 'dart:async';
 
+import 'package:bunga_player/actions/chat.dart';
 import 'package:bunga_player/mocks/menu_anchor.dart' as mock;
 import 'package:bunga_player/models/chat/channel.dart';
+import 'package:bunga_player/models/chat/channel_data.dart';
+import 'package:bunga_player/models/chat/user.dart';
 import 'package:bunga_player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/providers/business/business_indicator.dart';
+import 'package:bunga_player/providers/chat.dart';
+import 'package:bunga_player/providers/ui/ui.dart';
 import 'package:bunga_player/screens/dialogs/bilibili.dart';
 import 'package:bunga_player/screens/dialogs/local_video_entry.dart';
 import 'package:bunga_player/screens/dialogs/net_disk.dart';
 import 'package:bunga_player/providers/states/current_channel.dart';
 import 'package:bunga_player/providers/business/remote_playing.dart';
-import 'package:bunga_player/providers/states/current_user.dart';
 import 'package:bunga_player/services/bunga.dart';
 import 'package:bunga_player/services/stream_io.dart';
 import 'package:bunga_player/services/services.dart';
@@ -28,19 +32,38 @@ class WelcomeControl extends StatefulWidget {
 
 class _WelcomeControlState extends State<WelcomeControl> {
   Completer<void>? _completer;
-  late final _mission = Mission(
-    name: '${context.read<CurrentUser>().name}, 你好！',
-    tasks: [
-      () {
-        _completer = Completer();
-        return _completer!.future;
-      }
-    ],
-  );
-  void _initBusinessIndicator() => context.read<BusinessIndicator>().run(
-        missions: [_mission],
+  void _initBusinessIndicator() {
+    User? getCurrentUser() => context.read<CurrentUser>().value;
+    final bi = context.read<BusinessIndicator>();
+
+    if (getCurrentUser() == null) {
+      bi.run(
+        tasks: [
+          (data) async {
+            Actions.maybeInvoke(context, AutoLoginIntent());
+            return getCurrentUser()!.name;
+          },
+          bi.setTitleFromLastTask((lastResult) => '$lastResult, 你好！'),
+          (data) {
+            _completer = Completer();
+            return _completer!.future;
+          }
+        ],
         showProgress: false,
       );
+    } else {
+      bi.run(
+        tasks: [
+          bi.setTitle('${getCurrentUser()!.name}, 你好！'),
+          (data) {
+            _completer = Completer();
+            return _completer!.future;
+          }
+        ],
+        showProgress: false,
+      );
+    }
+  }
 
   @override
   void initState() {
@@ -136,7 +159,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
   }
 
   void _openNetDisk() async {
-    final currentUser = context.read<CurrentUser>();
+    final currentUser = context.read<CurrentUser>().value!;
     final currentChannel = context.read<CurrentChannel>();
     final remotePlaying = context.read<RemotePlaying>();
     final watchProgress = context.read<VideoPlayer>().watchProgress;
@@ -161,7 +184,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
             );
 
             return currentChannel
-                .createOrJoin(currentUser.getSharingData(alistEntry));
+                .createOrJoin(ChannelData.fromShare(currentUser, alistEntry));
           },
         );
         _onVideoLoaded();
@@ -188,7 +211,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
   Future<void> _openChannel({
     required Future Function() entryGetter,
   }) async {
-    final currentUser = context.read<CurrentUser>();
+    final currentUser = context.read<CurrentUser>().value!;
     final currentChannel = context.read<CurrentChannel>();
     final remotePlaying = context.read<RemotePlaying>();
 
@@ -201,7 +224,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
           await remotePlaying.openVideo(
             response,
             beforeAskingPosition: () => currentChannel
-                .createOrJoin(currentUser.getSharingData(response)),
+                .createOrJoin(ChannelData.fromShare(currentUser, response)),
           );
         } else {
           await remotePlaying.openVideo(
@@ -223,9 +246,10 @@ class _WelcomeControlState extends State<WelcomeControl> {
 
   void _onChangeName() async {
     _completer?.complete();
+    context.read<IsCatAwake>().value = false;
     Navigator.of(context).popAndPushNamed(
       'control:rename',
-      arguments: {'previousName': context.read<CurrentUser>().name},
+      arguments: {'previousName': context.read<CurrentUser>().value!.name},
     );
   }
 

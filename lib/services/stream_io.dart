@@ -1,5 +1,6 @@
 import 'package:bunga_player/models/chat/channel.dart';
 import 'package:bunga_player/models/chat/channel_data.dart';
+import 'package:bunga_player/models/chat/user.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:stream_chat_flutter_core/stream_chat_flutter_core.dart'
     as stream;
@@ -27,6 +28,9 @@ class StreamIO {
   final String appKey;
 
   // User
+  static User userFromStreamUser(stream.User streamUser) =>
+      User(id: streamUser.id, name: streamUser.name);
+
   Future<void> login(String id, String token, String? name) async {
     await _client.connectUser(
       stream.User(
@@ -39,10 +43,11 @@ class StreamIO {
 
   Future<void> logout() => _client.disconnectUser();
 
-  stream.User? get currentUser => _client.state.currentUser;
+  Future<User> renameUser(User user, String newName) async {
+    if (user.name == newName) return user;
 
-  Future<void> updateUserName(String id, String name) async {
-    await _client.updateUser(stream.User(id: id, name: name));
+    await _client.updateUser(stream.User(id: user.id, name: newName));
+    return User(id: user.id, name: newName);
   }
 
   // Channel
@@ -97,7 +102,7 @@ class StreamIO {
               id: channel.id!,
               createdAt: channel.createdAt!,
               updatedAt: channel.updatedAt!,
-              creator: channel.createdBy!,
+              creator: userFromStreamUser(channel.createdBy!),
               data: ChannelData.fromJson(channel.extraData),
             ))
         .toList();

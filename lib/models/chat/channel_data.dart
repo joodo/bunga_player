@@ -1,5 +1,6 @@
+import 'package:bunga_player/models/chat/user.dart';
+import 'package:bunga_player/models/video_entries/video_entry.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'package:stream_chat_flutter_core/stream_chat_flutter_core.dart';
 
 part 'channel_data.g.dart';
 
@@ -19,6 +20,15 @@ class ChannelData {
     required this.sharer,
     this.image,
   });
+
+  factory ChannelData.fromShare(User sharer, VideoEntry videoEntry) =>
+      ChannelData(
+        videoType:
+            videoEntry is LocalVideoEntry ? VideoType.local : VideoType.online,
+        name: videoEntry.title,
+        videoHash: videoEntry.hash,
+        sharer: sharer,
+      );
 
   @JsonKey(name: videoTypeJsonKey)
   final VideoType videoType;

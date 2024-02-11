@@ -4,7 +4,8 @@ import 'dart:async';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:bunga_player/models/chat/channel_data.dart';
-import 'package:bunga_player/providers/states/current_user.dart';
+import 'package:bunga_player/models/chat/user.dart';
+import 'package:bunga_player/providers/chat.dart';
 import 'package:bunga_player/services/stream_io.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart';
@@ -12,7 +13,8 @@ import 'package:bunga_player/services/toast.dart';
 import 'package:bunga_player/utils/value_listenable.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:stream_chat_flutter_core/stream_chat_flutter_core.dart';
+import 'package:stream_chat_flutter_core/stream_chat_flutter_core.dart'
+    as stream;
 
 const videoTypeChannelDataKey = 'video_type';
 
@@ -30,23 +32,23 @@ class CurrentChannel extends ChangeNotifier {
     });
   }
 
-  Channel? _channel;
+  stream.Channel? _channel;
   bool get isEmpty => _channel == null;
 
-  final _watchersNotifier = ValueNotifier<List<User>>([]);
+  final _watchersNotifier = ValueNotifier<List<stream.User>>([]);
   late final watchersNotifier = _watchersNotifier.createReadonly();
 
   final channelDataNotifier = ValueNotifier<ChannelData?>(null);
   bool _muteChannelUpdateNotify = false;
 
   // Streams
-  Stream<Message?> get messageStream =>
+  Stream<stream.Message?> get messageStream =>
       _channel?.on('message.new').map((event) => event.message) ??
       const Stream.empty();
-  Stream<User> get watcherJoinEventStream =>
+  Stream<stream.User> get watcherJoinEventStream =>
       _channel?.on('user.watching.start').map((event) => event.user!) ??
       const Stream.empty();
-  Stream<User> get watcherLeaveEventStream =>
+  Stream<stream.User> get watcherLeaveEventStream =>
       _channel?.on('user.watching.stop').map((event) => event.user!) ??
       const Stream.empty();
 
@@ -94,10 +96,11 @@ class CurrentChannel extends ChangeNotifier {
     notifyListeners();
   }
 
-  bool _isCurrentUser(User user) => _context.read<CurrentUser>().id == user.id;
+  bool _isCurrentUser(User user) =>
+      _context.read<CurrentUser>().value?.id == user.id;
 
-  Future<void> _onUserJoin(User user) async {
-    if (_isCurrentUser(user)) return;
+  Future<void> _onUserJoin(stream.User user) async {
+    if (_isCurrentUser(StreamIO.userFromStreamUser(user))) return;
 
     final chatService = getService<StreamIO>();
     // user name won't update if he renamed recently
@@ -109,7 +112,7 @@ class CurrentChannel extends ChangeNotifier {
     AudioPlayer().play(AssetSource('sounds/user_join.wav'));
   }
 
-  void _onUserLeave(User user) {
+  void _onUserLeave(stream.User user) {
     _watchersNotifier.value = List.from(_watchersNotifier.value)
       ..removeWhere((u) {
         if (u.id == user.id) {
@@ -129,7 +132,7 @@ class CurrentChannel extends ChangeNotifier {
     await _channel!.query(
       watch: true,
       // watchers won't query if no pagination
-      watchersPagination: const PaginationParams(limit: 1000),
+      watchersPagination: const stream.PaginationParams(limit: 1000),
     );
 
     final chatService = getService<StreamIO>();
@@ -160,13 +163,13 @@ class CurrentChannel extends ChangeNotifier {
     );
   }
 
-  Future<void> send(Message message) async {
+  Future<void> send(stream.Message message) async {
     assert(_channel != null);
     logger.i('Send message: $message');
     await _channel!.sendMessage(message);
   }
 
-  Future updateData(ChannelData data) async {
+  Future<void> updateData(ChannelData data) async {
     assert(_channel != null);
     await _channel!.updatePartial(set: data.toJson());
   }

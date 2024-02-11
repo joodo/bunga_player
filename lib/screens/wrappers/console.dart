@@ -1,8 +1,9 @@
 import 'dart:async';
 
+import 'package:bunga_player/actions/chat.dart';
 import 'package:bunga_player/models/app_key/app_key.dart';
+import 'package:bunga_player/providers/chat.dart';
 import 'package:bunga_player/providers/states/current_channel.dart';
-import 'package:bunga_player/providers/states/current_user.dart';
 import 'package:bunga_player/providers/states/voice_call.dart';
 import 'package:bunga_player/screens/dialogs/host.dart';
 import 'package:bunga_player/screens/wrappers/restart.dart';
@@ -64,7 +65,7 @@ class _ConsoleWrapperState extends State<ConsoleWrapper> {
       children: [
         FilledButton(
           onPressed: () async {
-            final currentUser = context.read<CurrentUser>();
+            final currentUser = context.read<CurrentUser>().value!;
 
             final currentID = currentUser.id;
             final split = currentID.split('__');
@@ -76,11 +77,9 @@ class _ConsoleWrapperState extends State<ConsoleWrapper> {
               newID = '${split.first}__${int.parse(split.last) + 1}';
             }
 
-            await currentUser.changeID(newID);
-
-            if (context.mounted) {
-              getService<Toast>().show('User ID has changed to $newID');
-            }
+            await (Actions.maybeInvoke(
+                context, ChangeCurrentUserIdIntent(newID)) as Future);
+            getService<Toast>().show('User ID has changed to $newID');
           },
           child: const Text('Change User ID'),
         ),
@@ -202,7 +201,12 @@ Widget _padding(Widget child) => Padding(
       child: child,
     );
 
-class _VariablesView extends StatelessWidget {
+class _VariablesView extends StatefulWidget {
+  @override
+  State<_VariablesView> createState() => _VariablesViewState();
+}
+
+class _VariablesViewState extends State<_VariablesView> {
   late final _variables = <String, String? Function(BuildContext context)>{
     'App Key': (context) => context.read<AppKey>().toString(),
     'Current verion': (context) => getService<PackageInfo>().version,
@@ -236,26 +240,30 @@ class _VariablesView extends StatelessWidget {
           .toList(),
     );
 
+    final pref = getService<Preferences>();
     final prefs = Table(
       border: TableBorder.all(color: Theme.of(context).colorScheme.onSurface),
       columnWidths: const <int, TableColumnWidth>{
         0: IntrinsicColumnWidth(),
         1: FlexColumnWidth(),
       },
-      children: getService<Preferences>().keys.map((key) {
-        if (key == 'watch_progress') {
-          return TableRow(
-            children: [
-              _padding(Text(key)),
-              _padding(const Text('...')),
-            ],
-          );
-        }
+      children: pref.keys.map((key) {
+        final content = key == 'watch_progress'
+            ? const Text('...')
+            : SelectableText(pref.get(key).toString());
         return TableRow(
           children: [
             _padding(SelectableText(key)),
-            _padding(
-                SelectableText(getService<Preferences>().get(key).toString())),
+            Row(children: [
+              _padding(content),
+              TextButton(
+                onPressed: () async {
+                  await pref.remove(key);
+                  setState(() {});
+                },
+                child: const Text('unset'),
+              ),
+            ]),
           ],
         );
       }).toList(),
