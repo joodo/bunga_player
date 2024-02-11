@@ -1,4 +1,4 @@
-import 'package:bunga_player/providers/ui/ui.dart';
+import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/providers/states/voice_call.dart';
 import 'package:bunga_player/screens/control_section/video_open_control.dart';
 import 'package:bunga_player/screens/control_section/call_control.dart';

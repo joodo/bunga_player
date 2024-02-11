@@ -1,5 +1,5 @@
 import 'package:bunga_player/providers/business/remote_playing.dart';
-import 'package:bunga_player/providers/ui/ui.dart';
+import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/providers/business/video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

@@ -1,6 +1,6 @@
 import 'package:bunga_player/models/chat/user.dart';
 import 'package:bunga_player/providers/chat.dart';
-import 'package:bunga_player/providers/ui/ui.dart';
+import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/services/bunga.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';

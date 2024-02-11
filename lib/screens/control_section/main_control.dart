@@ -4,7 +4,7 @@ import 'package:bunga_player/providers/business/remote_playing.dart';
 import 'package:bunga_player/mocks/popup_menu.dart' as mock;
 import 'package:bunga_player/mocks/slider.dart' as mock;
 import 'package:bunga_player/providers/states/current_channel.dart';
-import 'package:bunga_player/providers/ui/ui.dart';
+import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/providers/states/voice_call.dart';
 import 'package:bunga_player/providers/business/video_player.dart';
 import 'package:bunga_player/utils/duration.dart';

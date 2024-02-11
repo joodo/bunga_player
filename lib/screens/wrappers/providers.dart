@@ -2,7 +2,7 @@ import 'package:bunga_player/models/app_key/app_key.dart';
 import 'package:bunga_player/providers/business/business_indicator.dart';
 import 'package:bunga_player/providers/states/current_channel.dart';
 import 'package:bunga_player/providers/business/remote_playing.dart';
-import 'package:bunga_player/providers/ui/ui.dart';
+import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/providers/business/video_player.dart';
 import 'package:bunga_player/providers/states/voice_call.dart';
 import 'package:bunga_player/providers/chat.dart' as chat;
