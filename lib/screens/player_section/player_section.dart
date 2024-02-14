@@ -35,7 +35,11 @@ class _PlayerSectionState extends State<PlayerSection> {
             duration: const Duration(milliseconds: 250),
             child: const PlayerPlaceholder(),
           ),
-          const PopmojiPlayer(),
+          Navigator(
+            onGenerateRoute: (settings) => MaterialPageRoute<void>(
+              builder: (context) => const PopmojiPlayer(),
+            ),
+          ),
         ],
       ),
     );

@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:bunga_player/providers/chat.dart';
+import 'package:bunga_player/services/services.dart';
+import 'package:bunga_player/services/toast.dart';
 import 'package:fireworks/fireworks.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
@@ -13,11 +15,119 @@ class PopmojiPlayer extends StatefulWidget {
   State<PopmojiPlayer> createState() => _PopmojiPlayerState();
 }
 
-class _PopmojiPlayerState extends State<PopmojiPlayer>
+class _PopmojiPlayerState extends State<PopmojiPlayer> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<CurrentChannelMessage>().addListener(_progressMessage);
+  }
+
+  @override
+  void dispose() {
+    context.read<CurrentChannelMessage>().removeListener(_progressMessage);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const SizedBox.shrink();
+  }
+
+  bool _showing = false;
+  void _progressMessage() async {
+    if (_showing) return;
+
+    final message = context.read<CurrentChannelMessage>().value!;
+    final splits = message.text.split(' ');
+
+    if (splits.first == 'popmoji') {
+      _showing = true;
+      final isCurrentUser =
+          message.sender.id == context.read<CurrentUser>().value!.id;
+
+      final code = splits[1];
+      if (code == '1f386') {
+        if (!isCurrentUser) getIt<Toast>().show('${message.sender.name} 在放大呲花');
+        await _showFireworks();
+      } else {
+        if (!isCurrentUser) getIt<Toast>().show('${message.sender.name} 发来表情');
+        await _showPopmoji(code);
+      }
+
+      _showing = false;
+    }
+  }
+
+  Future<void> _showFireworks() {
+    return showDialog(
+      context: context,
+      useRootNavigator: false,
+      builder: (context) => Dialog.fullscreen(
+        backgroundColor: Colors.transparent,
+        child: _FireworkContent(),
+      ),
+    );
+  }
+
+  Future<void> _showPopmoji(String code) {
+    return showDialog(
+      context: context,
+      useRootNavigator: false,
+      barrierColor: Colors.transparent,
+      builder: (context) => Dialog.fullscreen(
+        backgroundColor: Colors.transparent,
+        child: _PopmojiContent(code: code),
+      ),
+    );
+  }
+}
+
+class _FireworkContent extends StatefulWidget {
+  @override
+  State<_FireworkContent> createState() => _FireworkContentState();
+}
+
+class _FireworkContentState extends State<_FireworkContent>
+    with TickerProviderStateMixin {
+  late final _fireworkController = FireworkController(
+    vsync: this,
+    withStars: false,
+    withSky: false,
+    rocketSpawnTimeout: Duration.zero,
+    autoLaunchDuration: const Duration(milliseconds: 100),
+  )..start();
+
+  @override
+  void dispose() {
+    _fireworkController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Future.delayed(const Duration(seconds: 3), () {
+      _fireworkController.autoLaunchDuration = Duration.zero;
+    });
+    Future.delayed(const Duration(seconds: 6), () {
+      if (context.mounted) Navigator.of(context).pop();
+    });
+
+    return Fireworks(controller: _fireworkController);
+  }
+}
+
+class _PopmojiContent extends StatefulWidget {
+  final String code;
+  const _PopmojiContent({required this.code});
+
+  @override
+  State<_PopmojiContent> createState() => _PopmojiContentState();
+}
+
+class _PopmojiContentState extends State<_PopmojiContent>
     with TickerProviderStateMixin {
   late final _animationController = AnimationController(vsync: this);
 
-  // popmojis
   static const maxSize = 200.0;
   late final _sizeAnime = TweenSequence<double>([
     TweenSequenceItem<double>(
@@ -31,111 +141,41 @@ class _PopmojiPlayerState extends State<PopmojiPlayer>
       weight: 1,
     ),
   ]).animate(_animationController);
-  String? _emojiCode;
-
-  // fireworks
-  static const skyDarkness = 0.5;
-  late final _fireworkController = FireworkController(
-    vsync: this,
-    withStars: false,
-    withSky: false,
-    rocketSpawnTimeout: Duration.zero,
-    autoLaunchDuration: Duration.zero,
-  );
-  late final _skyAnime = TweenSequence<double>(
-    [
-      TweenSequenceItem(
-        weight: 1.0,
-        tween: Tween<double>(begin: 0, end: skyDarkness)
-            .chain(CurveTween(curve: Curves.easeOutCubic)),
-      ),
-      TweenSequenceItem(
-        weight: 8.0,
-        tween: ConstantTween(skyDarkness),
-      ),
-      TweenSequenceItem(
-        weight: 1.0,
-        tween: Tween<double>(begin: skyDarkness, end: 0)
-            .chain(CurveTween(curve: Curves.easeOutCubic)),
-      ),
-    ],
-  ).animate(_animationController);
 
   @override
   void initState() {
     super.initState();
-    _fireworkController.start();
-
-    // Listen to new chat message
-    context.read<CurrentChannelMessage>().addListener(_progressMessage);
-
     _animationController.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
-        setState(() => _emojiCode = null);
+        if (context.mounted) Navigator.of(context).pop();
       }
     });
   }
 
   @override
-  dispose() {
-    _fireworkController.dispose();
+  void dispose() {
     _animationController.dispose();
-    context.read<CurrentChannelMessage>().removeListener(_progressMessage);
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    switch (_emojiCode) {
-      case null:
-        return const SizedBox.shrink();
-
-      // Fireworks
-      case '1f386':
-        _fireworkController.autoLaunchDuration =
-            const Duration(milliseconds: 100);
-        Future.delayed(const Duration(seconds: 3), () {
-          _fireworkController.autoLaunchDuration = Duration.zero;
-        });
-
-        _animationController.duration = const Duration(seconds: 6);
-        _animationController.reset();
-        _animationController.forward();
-
-        return AnimatedBuilder(
-          animation: _animationController,
-          builder: (context, child) => ColoredBox(
-            color: Colors.black.withOpacity(_skyAnime.value),
-            child: child,
-          ),
-          child: Fireworks(controller: _fireworkController),
-        );
-
-      default:
-        return AnimatedBuilder(
-          animation: _animationController,
-          builder: (context, child) => Center(
-            child: SizedBox(
-              width: _sizeAnime.value,
-              child: child,
-            ),
-          ),
-          child: Lottie.asset(
-            'assets/images/emojis/u$_emojiCode.json',
-            repeat: false,
-            onLoaded: (composition) {
-              _animationController.duration = composition.duration * 1.25;
-              _animationController.reset();
-              _animationController.forward();
-            },
-          ),
-        );
-    }
-  }
-
-  void _progressMessage() {
-    final messageText = context.read<CurrentChannelMessage>().value!.text;
-    final splits = messageText.split(' ');
-    if (splits.first == 'popmoji') setState(() => _emojiCode = splits[1]);
+    return AnimatedBuilder(
+      animation: _animationController,
+      builder: (context, child) => Center(
+        child: SizedBox(
+          width: _sizeAnime.value,
+          child: child,
+        ),
+      ),
+      child: Lottie.asset(
+        'assets/images/emojis/u${widget.code}.json',
+        repeat: false,
+        onLoaded: (composition) {
+          _animationController.duration = composition.duration * 1.25;
+          _animationController.forward();
+        },
+      ),
+    );
   }
 }
