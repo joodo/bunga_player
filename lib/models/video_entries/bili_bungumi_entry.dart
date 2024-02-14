@@ -16,7 +16,7 @@ class BiliBungumiEntry extends VideoEntry {
 
     logger.i('Bili bungumi: start fetch epid=$epid');
 
-    final getSess = getService<Bunga>().getBiliSess;
+    final getSess = getIt<Bunga>().getBiliSess;
     late final String? sess;
     await Future.wait([
       () async {

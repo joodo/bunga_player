@@ -22,7 +22,7 @@ class _HostInitWrapperState extends State<HostInitWrapper> {
   }
 
   Future<void> _init() async {
-    final preferences = getService<Preferences>();
+    final preferences = getIt<Preferences>();
     String bungaHost = preferences.get('bunga_host') ?? '';
 
     bool success = false;

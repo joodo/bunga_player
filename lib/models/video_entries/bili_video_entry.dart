@@ -21,7 +21,7 @@ class BiliVideoEntry extends VideoEntry {
 
     logger.i('Bili video: start fetch BV=$bvid, p=$p');
 
-    final getSess = getService<Bunga>().getBiliSess;
+    final getSess = getIt<Bunga>().getBiliSess;
     String? sess;
     await Future.wait([
       () async {
@@ -29,7 +29,7 @@ class BiliVideoEntry extends VideoEntry {
         sess = await getSess();
         isHD = sess != null;
         if (!isHD) {
-          getService<Toast>().show('无法获取高清视频');
+          getIt<Toast>().show('无法获取高清视频');
           logger.w('Bilibili: Cookie of serverless funtion outdated');
         }
       }(),

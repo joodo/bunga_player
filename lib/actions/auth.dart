@@ -4,7 +4,8 @@ import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/services/bunga.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/services/stream_io.dart';
+import 'package:bunga_player/services/chat.dart';
+import 'package:bunga_player/actions/dispatcher.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
@@ -25,11 +26,10 @@ class RenameCurrentUserAction extends ContextAction<RenameCurrentUserIntent> {
     if (currentUser.value != null) {
       final oldUser = currentUser.value!;
       currentUser.value = User(id: oldUser.id, name: intent.newName);
-      await getService<StreamIO>()
-          .renameUser(currentUser.value!, intent.newName);
+      await getIt<ChatService>().renameUser(currentUser.value!, intent.newName);
     }
 
-    await getService<Preferences>().set('user_name', intent.newName);
+    await getIt<Preferences>().set('user_name', intent.newName);
 
     isAwake.value = true;
   }
@@ -39,16 +39,6 @@ class RenameCurrentUserAction extends ContextAction<RenameCurrentUserIntent> {
     assert(context != null, 'Action need context to set current user provider');
     return true;
   }
-}
-
-Future<void> login(User user) async {
-  // Get token by client id from bunga
-  final bunga = getService<Bunga>();
-  final token = await bunga.userLogin(user.id);
-
-  // Login to stream server
-  final chatService = getService<StreamIO>();
-  await chatService.login(user.id, token, user.name);
 }
 
 class AutoLoginIntent extends Intent {}
@@ -61,7 +51,7 @@ class AutoLoginAction extends ContextAction<AutoLoginIntent> {
     final currentUser = context.read<CurrentUser>();
 
     // Get user name and id from preference
-    final pref = getService<Preferences>();
+    final pref = getIt<Preferences>();
     final name = pref.get<String>('user_name')!;
     String? clientId = pref.get<String>('client_id');
     if (clientId == null) {
@@ -72,7 +62,7 @@ class AutoLoginAction extends ContextAction<AutoLoginIntent> {
     final user = User(id: clientId, name: name);
     currentUser.value = user;
 
-    await login(user);
+    await _login(user);
 
     isAwake.value = true;
   }
@@ -80,7 +70,7 @@ class AutoLoginAction extends ContextAction<AutoLoginIntent> {
   @override
   bool isEnabled(AutoLoginIntent intent, [BuildContext? context]) {
     assert(context != null, 'Action need context to set current user provider');
-    final pref = getService<Preferences>();
+    final pref = getIt<Preferences>();
     final name = pref.get<String>('user_name');
     return name != null;
   }
@@ -105,10 +95,10 @@ class ChangeCurrentUserIdAction
     final newUser = User(id: intent.newId, name: currentUser.value!.name);
     currentUser.value = newUser;
 
-    final chatService = getService<StreamIO>();
+    final chatService = getIt<ChatService>();
     await chatService.logout();
 
-    await login(newUser);
+    await _login(newUser);
 
     isAwake.value = true;
   }
@@ -120,8 +110,24 @@ class ChangeCurrentUserIdAction
   }
 }
 
-final bindings = <Type, Action<Intent>>{
-  RenameCurrentUserIntent: RenameCurrentUserAction(),
-  AutoLoginIntent: AutoLoginAction(),
-  ChangeCurrentUserIdIntent: ChangeCurrentUserIdAction(),
-};
+Future<void> _login(User user) async {
+  // Get token by client id from bunga
+  final bunga = getIt<Bunga>();
+  final token = await bunga.userLogin(user.id);
+
+  // Login to stream server
+  final chatService = getIt<ChatService>();
+  await chatService.login(user.id, token, user.name);
+}
+
+class AuthActions extends Actions {
+  AuthActions({super.key, required super.child})
+      : super(
+          dispatcher: LoggingActionDispatcher(prefix: 'Auth'),
+          actions: <Type, Action<Intent>>{
+            RenameCurrentUserIntent: RenameCurrentUserAction(),
+            AutoLoginIntent: AutoLoginAction(),
+            ChangeCurrentUserIdIntent: ChangeCurrentUserIdAction(),
+          },
+        );
+}

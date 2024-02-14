@@ -20,7 +20,7 @@ class UpdateWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final packageInfo = getService<PackageInfo>();
+    final packageInfo = getIt<PackageInfo>();
     return UpdatWindowManager(
       currentVersion: packageInfo.version,
       getLatestVersion: () async {
@@ -55,7 +55,7 @@ class UpdateWrapper extends StatelessWidget {
         logger.i('Update status: $status');
         if (status == UpdatStatus.available ||
             status == UpdatStatus.availableWithChangelog) {
-          Future.microtask(() => getService<Toast>().show('检查到更新，正在下载…'));
+          Future.microtask(() => getIt<Toast>().show('检查到更新，正在下载…'));
         }
       },
       child: child,

@@ -19,6 +19,24 @@ class ReadonlyStreamValueNotifier<T> extends ChangeNotifier
   T get value => _value;
 }
 
+class ValueNotifierWithOldValue<T> extends ChangeNotifier
+    implements ValueListenable<T> {
+  ValueNotifierWithOldValue(this._value);
+
+  T _value;
+  @override
+  T get value => _value;
+  set value(T newValue) {
+    if (newValue == _value) return;
+    _oldValue = _value;
+    _value = newValue;
+    notifyListeners();
+  }
+
+  T? _oldValue;
+  T? get oldValue => _oldValue;
+}
+
 class StreamNotifier<T> extends ChangeNotifier implements ValueListenable<T> {
   StreamNotifier(this._value);
 

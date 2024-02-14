@@ -1,3 +1,7 @@
+import 'dart:async';
+
+import 'package:bunga_player/actions/channel.dart';
+import 'package:bunga_player/actions/video_playing.dart';
 import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/providers/business/business_indicator.dart';
@@ -5,9 +9,9 @@ import 'package:bunga_player/providers/chat.dart';
 import 'package:bunga_player/screens/dialogs/bilibili.dart';
 import 'package:bunga_player/screens/dialogs/local_video_entry.dart';
 import 'package:bunga_player/screens/dialogs/net_disk.dart';
-import 'package:bunga_player/providers/states/current_channel.dart';
-import 'package:bunga_player/providers/business/remote_playing.dart';
 import 'package:bunga_player/providers/business/video_player.dart';
+import 'package:bunga_player/screens/wrappers/providers.dart';
+import 'package:bunga_player/screens/wrappers/shortcuts.dart';
 import 'package:bunga_player/services/bunga.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
@@ -89,39 +93,44 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
 
   void _openVideo({required Future<VideoEntry?> Function() entryGetter}) async {
     final currentUser = context.read<CurrentUser>().value!;
-    final currentChannel = context.read<CurrentChannel>();
-    final remotePlaying = context.read<RemotePlaying>();
+
+    // Update room data only if playing correct video
+    final shouldUpdateChannelData = context.isVideoSameWithChannel;
 
     final videoEntry = await entryGetter();
     if (videoEntry == null) return;
 
-    // Update room data only if playing correct video
-    final shouldUpdateChannelData = remotePlaying.isVideoSameWithChannel;
-
     try {
-      await remotePlaying.openVideo(
-        videoEntry,
-        askPosition: !shouldUpdateChannelData,
-      );
+      // ignore: use_build_context_synchronously
+      final response = Actions.invoke(
+        Intentor.context,
+        OpenVideoIntent(
+          videoEntry: videoEntry,
+          askPosition: !shouldUpdateChannelData,
+        ),
+      ) as Future?;
+      await response;
     } catch (e) {
-      getService<Toast>().show('加载失败');
+      getIt<Toast>().show('加载失败');
       rethrow;
     }
 
     if (shouldUpdateChannelData) {
-      currentChannel.updateData(ChannelData.fromShare(currentUser, videoEntry));
+      // ignore: use_build_context_synchronously
+      Actions.invoke(
+        Intentor.context,
+        UpdateChannelDataIntent(ChannelData.fromShare(currentUser, videoEntry)),
+      );
     }
 
     _onVideoLoaded();
   }
 
   void _openNetDisk() async {
-    final currentChannel = context.read<CurrentChannel>();
     final currentUser = context.read<CurrentUser>().value!;
-    final remotePlaying = context.read<RemotePlaying>();
     final watchProgress = context.read<VideoPlayer>().watchProgress;
 
-    final shouldUpdateChannelData = remotePlaying.isVideoSameWithChannel;
+    final shouldUpdateChannelData = context.isVideoSameWithChannel;
 
     final alistPath = await showDialog(
       context: context,
@@ -131,22 +140,31 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
 
     final alistEntry = AListEntry(path: alistPath);
     try {
-      await remotePlaying.openVideo(
-        alistEntry,
-        // TODO: add path field to channel data, then remove this
-        beforeAskingPosition: () => getService<Bunga>().setStringHash(
-          text: alistPath,
-          hash: AListEntry.hashFromPath(alistPath),
+      // ignore: use_build_context_synchronously
+      final response = Actions.invoke(
+        Intentor.context,
+        OpenVideoIntent(
+          videoEntry: alistEntry,
+          // TODO: add path field to channel data, then remove this
+          beforeAskingPosition: () => getIt<Bunga>().setStringHash(
+            text: alistPath,
+            hash: AListEntry.hashFromPath(alistPath),
+          ),
+          askPosition: !shouldUpdateChannelData,
         ),
-        askPosition: !shouldUpdateChannelData,
-      );
+      ) as Future?;
+      await response;
     } catch (e) {
-      getService<Toast>().show('解析失败');
+      getIt<Toast>().show('解析失败');
       rethrow;
     }
 
     if (shouldUpdateChannelData) {
-      currentChannel.updateData(ChannelData.fromShare(currentUser, alistEntry));
+      // ignore: use_build_context_synchronously
+      Actions.invoke(
+        Intentor.context,
+        UpdateChannelDataIntent(ChannelData.fromShare(currentUser, alistEntry)),
+      );
     }
 
     _onVideoLoaded();

@@ -1,15 +1,18 @@
+import 'dart:async';
+
+import 'package:bunga_player/actions/video_playing.dart';
 import 'package:bunga_player/models/chat/channel_data.dart';
+import 'package:bunga_player/models/chat/user.dart';
+import 'package:bunga_player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/providers/business/business_indicator.dart';
 import 'package:bunga_player/providers/chat.dart';
-import 'package:bunga_player/providers/states/current_channel.dart';
-import 'package:bunga_player/providers/business/remote_playing.dart';
 import 'package:bunga_player/providers/business/video_player.dart';
 import 'package:bunga_player/screens/dialogs/local_video_entry.dart';
+import 'package:bunga_player/screens/wrappers/shortcuts.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:stream_chat_flutter_core/stream_chat_flutter_core.dart';
 
 class RoomSection extends StatefulWidget {
   const RoomSection({super.key});
@@ -21,19 +24,22 @@ class RoomSection extends StatefulWidget {
 class _RoomSectionState extends State<RoomSection> {
   @override
   Widget build(BuildContext context) {
-    final currentChannel = context.read<CurrentChannel>();
     final videoPlayer = context.read<VideoPlayer>();
 
     return Row(
       children: [
         // Watcher list
-        ValueListenableBuilder(
-          valueListenable: currentChannel.watchersNotifier,
-          builder: (context, watchers, child) {
-            final currentUserId = context.read<CurrentUser>().value?.id;
-            if (currentUserId == null) return const SizedBox.shrink();
+        Consumer2<CurrentUser, CurrentChannelWatchers>(
+          builder: (
+            BuildContext context,
+            CurrentUser currentUser,
+            CurrentChannelWatchers watchers,
+            Widget? child,
+          ) {
+            if (currentUser.value == null) return const SizedBox.shrink();
 
-            String text = _getUsersStringExceptId(watchers, currentUserId);
+            String text =
+                _getUsersStringExceptId(watchers.value, currentUser.value!.id);
             if (text.isEmpty) return const SizedBox.shrink();
 
             return Padding(
@@ -45,9 +51,11 @@ class _RoomSectionState extends State<RoomSection> {
         const Spacer(),
 
         // Unsync hint
-        ValueListenableBuilder(
-          valueListenable: currentChannel.channelDataNotifier,
-          builder: (context, channelData, child) {
+        Selector<CurrentChannelData, ChannelData?>(
+          selector: (BuildContext context, CurrentChannelData notifier) =>
+              notifier.value,
+          builder:
+              (BuildContext context, ChannelData? channelData, Widget? child) {
             if (context.watch<BusinessIndicator>().currentProgress !=
                     null || // busy, maybe loading video
                 videoPlayer.isStoppedNotifier.value || // stopped
@@ -68,23 +76,29 @@ class _RoomSectionState extends State<RoomSection> {
   }
 
   void _onOpenVideoPressed(ChannelData channelData) {
-    return channelData.videoType == VideoType.local
+    channelData.videoType == VideoType.local
         ? _openLocalVideo()
-        : context
-            .read<RemotePlaying>()
-            .followRemoteOnlineVideoHash(channelData);
+        : Actions.invoke(
+            context,
+            OpenVideoIntent(
+              videoEntry: VideoEntry.fromChannelData(channelData),
+            ),
+          );
   }
 
   void _openLocalVideo() async {
-    final remotePlaying = context.read<RemotePlaying>();
-
     final entry = await LocalVideoEntryDialog().show();
     if (entry == null) return;
 
     try {
-      await remotePlaying.openVideo(entry);
+      // ignore: use_build_context_synchronously
+      final response = Actions.invoke(
+        Intentor.context,
+        OpenVideoIntent(videoEntry: entry),
+      ) as Future?;
+      await response;
     } catch (e) {
-      getService<Toast>().show('加载失败');
+      getIt<Toast>().show('加载失败');
       rethrow;
     }
   }

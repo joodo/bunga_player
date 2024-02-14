@@ -25,20 +25,19 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
 
   // Bookmarks
   late final _alistBookmarks =
-      getService<Preferences>().get<List<String>>('alist_bookmarks') ?? [];
+      getIt<Preferences>().get<List<String>>('alist_bookmarks') ?? [];
 
   @override
   void initState() {
-    final lastPath =
-        getService<Preferences>().get<String>('alist_last_path') ?? '/';
+    final lastPath = getIt<Preferences>().get<String>('alist_last_path') ?? '/';
     Future.microtask(() => _cd(lastPath));
     super.initState();
   }
 
   @override
   void dispose() {
-    getService<Preferences>().set('alist_bookmarks', _alistBookmarks);
-    getService<Preferences>().set('alist_last_path', _currentPath);
+    getIt<Preferences>().set('alist_bookmarks', _alistBookmarks);
+    getIt<Preferences>().set('alist_last_path', _currentPath);
     super.dispose();
   }
 
@@ -288,7 +287,7 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
     });
 
     try {
-      _currentFiles = await getService<AList>().list(_currentPath);
+      _currentFiles = await getIt<AList>().list(_currentPath);
     } catch (e) {
       _currentPath = oldPath;
       rethrow;
@@ -306,7 +305,7 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
     });
 
     try {
-      _currentFiles = await getService<AList>().list(
+      _currentFiles = await getIt<AList>().list(
         _currentPath,
         refresh: true,
       );
@@ -323,7 +322,7 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
     });
 
     try {
-      _searchResults = await getService<AList>().search(keywords);
+      _searchResults = await getIt<AList>().search(keywords);
     } finally {
       setState(() {
         _pending = false;

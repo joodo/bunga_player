@@ -33,11 +33,11 @@ class AListEntry extends VideoEntry {
   @override
   Future<void> fetch() async {
     if (_isFetched) return;
+
+    _path ??= await getIt<Bunga>().getStringByHash(_pathHash!);
     logger.i('AList: start fetch video $_path');
 
-    _path ??= await getService<Bunga>().getStringByHash(_pathHash!);
-
-    final info = await getService<AList>().get(path!);
+    final info = await getIt<AList>().get(path!);
     title = info.name;
     image = info.thumb;
     sources = VideoSources(video: [info.rawUrl!]);

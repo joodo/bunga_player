@@ -1,11 +1,12 @@
+import 'package:bunga_player/actions/channel.dart';
 import 'package:bunga_player/actions/play.dart';
+import 'package:bunga_player/actions/video_playing.dart';
+import 'package:bunga_player/actions/voice_call.dart';
 import 'package:bunga_player/models/video_entries/video_entry.dart';
-import 'package:bunga_player/providers/business/remote_playing.dart';
 import 'package:bunga_player/mocks/popup_menu.dart' as mock;
 import 'package:bunga_player/mocks/slider.dart' as mock;
-import 'package:bunga_player/providers/states/current_channel.dart';
+import 'package:bunga_player/providers/chat.dart';
 import 'package:bunga_player/providers/ui.dart';
-import 'package:bunga_player/providers/states/voice_call.dart';
 import 'package:bunga_player/providers/business/video_player.dart';
 import 'package:bunga_player/utils/duration.dart';
 import 'package:flutter/material.dart';
@@ -17,9 +18,8 @@ class MainControl extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currentChannel = context.read<CurrentChannel>();
+    final currentChannelData = context.read<CurrentChannelData>();
     final videoPlayer = context.read<VideoPlayer>();
-    final remotePlaying = context.read<RemotePlaying>();
 
     return Stack(
       children: [
@@ -72,9 +72,7 @@ class MainControl extends StatelessWidget {
             const Spacer(),
 
             // Call Button
-            CallButton(
-              onPressed: () => Navigator.of(context).pushNamed('control:call'),
-            ),
+            const CallButton(),
             const SizedBox(width: 8),
 
             // Popmoji Button
@@ -98,12 +96,15 @@ class MainControl extends StatelessWidget {
                     child: ListTile(
                       leading: const Icon(Icons.refresh),
                       title: const Text('重新载入'),
-                      onTap: () async {
+                      onTap: () {
                         Navigator.of(context, rootNavigator: true).pop();
 
                         final onlineEntry = VideoEntry.fromChannelData(
-                            currentChannel.channelDataNotifier.value!);
-                        await remotePlaying.openVideo(onlineEntry);
+                            currentChannelData.value!);
+                        Actions.invoke(
+                          context,
+                          OpenVideoIntent(videoEntry: onlineEntry),
+                        );
                       },
                     ),
                   ),
@@ -153,7 +154,7 @@ class MainControl extends StatelessWidget {
 
                       final navigator = Navigator.of(context);
 
-                      currentChannel.leave();
+                      Actions.invoke(context, LeaveChannelIntent());
                       await videoPlayer.stop();
 
                       navigator.popAndPushNamed('control:welcome');
@@ -184,12 +185,7 @@ class MainControl extends StatelessWidget {
 }
 
 class CallButton extends StatefulWidget {
-  final VoidCallback? onPressed;
-
-  const CallButton({
-    super.key,
-    this.onPressed,
-  });
+  const CallButton({super.key});
 
   @override
   State<CallButton> createState() => _CallButtonState();
@@ -221,22 +217,23 @@ class _CallButtonState extends State<CallButton> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<VoiceCall>(
-      builder: (context, voiceCall, child) => switch (voiceCall.callStatus) {
+    return Selector<CurrentCallStatus, CallStatus>(
+      selector: (context, currentCallStatus) => currentCallStatus.value,
+      builder: (context, callStatus, child) => switch (callStatus) {
         CallStatus.none => IconButton(
             icon: const Icon(Icons.call),
             onPressed: () {
-              voiceCall.startAsking();
-              widget.onPressed?.call();
+              Actions.invoke(context, StartCallingRequestIntent());
+              _pushNavigate();
             },
           ),
-        CallStatus.callOut || CallStatus.calling => IconButton(
+        CallStatus.callOut || CallStatus.talking => IconButton(
             style: const ButtonStyle(
               backgroundColor: MaterialStatePropertyAll<Color>(Colors.green),
             ),
             color: Colors.white70,
             icon: const Icon(Icons.call),
-            onPressed: widget.onPressed,
+            onPressed: _pushNavigate,
           ),
         CallStatus.callIn => RotationTransition(
             turns: _animation,
@@ -246,51 +243,15 @@ class _CallButtonState extends State<CallButton> with TickerProviderStateMixin {
               ),
               color: Colors.white70,
               icon: const Icon(Icons.call),
-              onPressed: widget.onPressed,
+              onPressed: _pushNavigate,
             ),
           ),
       },
     );
-    /*
-    return ValueListenableBuilder(
-      valueListenable: VoiceCall().callStatusNotifier,
-      builder: (context, callStatus, child) {
-        switch (callStatus) {
-          case CallStatus.none:
-            return IconButton(
-              icon: const Icon(Icons.call),
-              onPressed: () {
-                VoiceCall().startAsking();
-                widget.onPressed?.call();
-              },
-            );
-          case CallStatus.callOut:
-          case CallStatus.calling:
-            return IconButton(
-              style: const ButtonStyle(
-                backgroundColor: MaterialStatePropertyAll<Color>(Colors.green),
-              ),
-              color: Colors.white70,
-              icon: const Icon(Icons.call),
-              onPressed: widget.onPressed,
-            );
-          case CallStatus.callIn:
-            return RotationTransition(
-              turns: _animation,
-              child: IconButton(
-                style: const ButtonStyle(
-                  backgroundColor:
-                      MaterialStatePropertyAll<Color>(Colors.green),
-                ),
-                color: Colors.white70,
-                icon: const Icon(Icons.call),
-                onPressed: widget.onPressed,
-              ),
-            );
-        }
-      },
-    );
-    */
+  }
+
+  void _pushNavigate() {
+    Navigator.of(context).pushNamed('control:call');
   }
 }
 

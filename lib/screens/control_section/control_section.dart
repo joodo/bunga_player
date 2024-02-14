@@ -1,5 +1,5 @@
+import 'package:bunga_player/providers/chat.dart';
 import 'package:bunga_player/providers/ui.dart';
-import 'package:bunga_player/providers/states/voice_call.dart';
 import 'package:bunga_player/screens/control_section/video_open_control.dart';
 import 'package:bunga_player/screens/control_section/call_control.dart';
 import 'package:bunga_player/screens/control_section/rename_control.dart';
@@ -29,20 +29,20 @@ class _ControlSectionState extends State<ControlSection> {
     super.initState();
 
     context.read<IsControlSectionHidden>().addListener(_onUIHiddenChanged);
-    context.read<VoiceCall>().addListener(_onCallStatusChanged);
+    context.read<CurrentCallStatus>().addListener(_onCallStatusChanged);
   }
 
   @override
   void dispose() {
     context.read<IsControlSectionHidden>().removeListener(_onUIHiddenChanged);
-    context.read<VoiceCall>().removeListener(_onCallStatusChanged);
+    context.read<CurrentCallStatus>().removeListener(_onCallStatusChanged);
 
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final pref = getService<Preferences>();
+    final pref = getIt<Preferences>();
     final name = pref.get<String>('user_name');
     final initialRouteName = 'control:${name != null ? 'welcome' : 'rename'}';
 
@@ -92,7 +92,7 @@ class _ControlSectionState extends State<ControlSection> {
 
   void _onCallStatusChanged() {
     // Route to call control when call in
-    if (context.read<VoiceCall>().callStatus == CallStatus.callIn) {
+    if (context.read<CurrentCallStatus>().value == CallStatus.callIn) {
       final navigator = _navigatorStateKey.currentState!;
       navigator.pushNamed('control:call');
     }

@@ -47,7 +47,7 @@ class VideoPlayer {
   final volume = ValueNotifier<double>(100.0);
   final isMute = ValueNotifier<bool>(false);
   void _loadSavedVolume() {
-    final savedVolume = getService<Preferences>().get<double>('video_volume');
+    final savedVolume = getIt<Preferences>().get<double>('video_volume');
     if (savedVolume != null) volume.value = savedVolume;
   }
 
@@ -75,7 +75,7 @@ class VideoPlayer {
     volume.addListener(() {
       isMute.value = false;
       _player.setVolume(volume.value);
-      getService<Preferences>().set('video_volume', volume.value);
+      getIt<Preferences>().set('video_volume', volume.value);
     });
     isMute.addListener(() {
       if (isMute.value) {
@@ -132,7 +132,8 @@ class VideoPlayer {
         // Network timeout
         Future.delayed(const Duration(seconds: 6)),
         () async {
-          await _controller.waitUntilFirstFrameRendered;
+          // wait for video loaded
+          await _player.stream.buffer.first;
           success = true;
         }(),
       ]);
@@ -140,9 +141,6 @@ class VideoPlayer {
       logger.w('Fail to open url $url, try next one');
     }
     if (!success) throw 'All source tested, no one success';
-
-    // wait for video loaded
-    await _player.stream.buffer.first;
 
     // load audio if exist
     if (entry.sources.audio != null) {
@@ -167,7 +165,7 @@ class VideoPlayer {
     _player.stop();
     _videoHashNotifier.value = null;
 
-    final appName = getService<PackageInfo>().appName;
+    final appName = getIt<PackageInfo>().appName;
     windowManager.setTitle(appName);
   }
 
@@ -217,8 +215,8 @@ class VideoPlayer {
       Duration(milliseconds: int.parse(s.split('/')[0]));
 
   void _loadSavedProgress() {
-    watchProgress = Map.castFrom(jsonDecode(
-        getService<Preferences>().get<String>('watch_progress') ?? '{}'));
+    watchProgress = Map.castFrom(
+        jsonDecode(getIt<Preferences>().get<String>('watch_progress') ?? '{}'));
 
     Timer.periodic(const Duration(seconds: 5), (timer) {
       final hash = videoHashNotifier.value;
@@ -232,7 +230,7 @@ class VideoPlayer {
     // Save watch progress on exit
     AppLifecycleListener(
       onExitRequested: () async {
-        await getService<Preferences>()
+        await getIt<Preferences>()
             .set('watch_progress', jsonEncode(watchProgress));
         return AppExitResponse.exit;
       },

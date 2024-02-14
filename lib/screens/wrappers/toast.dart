@@ -11,7 +11,7 @@ class ToastWrapper extends StatefulWidget {
 }
 
 class _ToastWrapperState extends State<ToastWrapper> {
-  late final _service = getService<Toast>();
+  late final _service = getIt<Toast>();
   @override
   void initState() {
     _service.register(show);

@@ -1,10 +1,8 @@
 import 'dart:async';
 
-import 'package:bunga_player/actions/chat.dart';
+import 'package:bunga_player/actions/auth.dart';
 import 'package:bunga_player/models/app_key/app_key.dart';
 import 'package:bunga_player/providers/chat.dart';
-import 'package:bunga_player/providers/states/current_channel.dart';
-import 'package:bunga_player/providers/states/voice_call.dart';
 import 'package:bunga_player/screens/dialogs/host.dart';
 import 'package:bunga_player/screens/wrappers/restart.dart';
 import 'package:bunga_player/services/alist.dart';
@@ -77,16 +75,16 @@ class _ConsoleWrapperState extends State<ConsoleWrapper> {
               newID = '${split.first}__${int.parse(split.last) + 1}';
             }
 
-            await (Actions.maybeInvoke(
-                context, ChangeCurrentUserIdIntent(newID)) as Future);
-            getService<Toast>().show('User ID has changed to $newID');
+            await (Actions.invoke(context, ChangeCurrentUserIdIntent(newID))
+                as Future);
+            getIt<Toast>().show('User ID has changed to $newID');
           },
           child: const Text('Change User ID'),
         ),
         const SizedBox(height: 8),
         FilledButton(
           onPressed: () async {
-            final preferences = getService<Preferences>();
+            final preferences = getIt<Preferences>();
             final newHost = await showDialog<String>(
               context: context,
               builder: (context) =>
@@ -107,7 +105,7 @@ class _ConsoleWrapperState extends State<ConsoleWrapper> {
         ),
         const SizedBox(height: 8),
         FilledButton(
-          onPressed: () => getService<Toast>().show('A new toast!'),
+          onPressed: () => getIt<Toast>().show('A new toast!'),
           child: const Text('Show a toast'),
         ),
         const SizedBox(height: 8),
@@ -209,15 +207,17 @@ class _VariablesView extends StatefulWidget {
 class _VariablesViewState extends State<_VariablesView> {
   late final _variables = <String, String? Function(BuildContext context)>{
     'App Key': (context) => context.read<AppKey>().toString(),
-    'Current verion': (context) => getService<PackageInfo>().version,
+    'Current verion': (context) => getIt<PackageInfo>().version,
     'Chat User': (context) => context.read<CurrentUser>().toString(),
-    'Chat Channel': (context) => context.read<CurrentChannel>().toString(),
+    'Chat Channel': (context) =>
+        'id: ${context.read<CurrentChannelId>().value}\ndata: ${context.read<CurrentChannelData>().value}\nwatchers:${context.read<CurrentChannelWatchers>().value}\nlast message: ${context.read<CurrentChannelMessage>().value}',
+    'Voice Call': (context) =>
+        'status: ${context.read<CurrentCallStatus>().value.name}\n talkers: ${context.read<CurrentTalkersCount>().value}',
     'Video Hash': (context) =>
         context.read<VideoPlayer>().videoHashNotifier.value ??
         'No Video Playing',
-    'Call Status': (context) => context.read<VoiceCall>().callStatus.name,
     'AList': (context) =>
-        'host: ${getService<AList>().host},\ntoken: ${getService<AList>().token}',
+        'host: ${getIt<AList>().host},\ntoken: ${getIt<AList>().token}',
   };
 
   @override
@@ -240,7 +240,7 @@ class _VariablesViewState extends State<_VariablesView> {
           .toList(),
     );
 
-    final pref = getService<Preferences>();
+    final pref = getIt<Preferences>();
     final prefs = Table(
       border: TableBorder.all(color: Theme.of(context).colorScheme.onSurface),
       columnWidths: const <int, TableColumnWidth>{

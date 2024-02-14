@@ -5,7 +5,7 @@ import 'package:bunga_player/services/services.dart';
 import 'package:http/http.dart' as http;
 
 class Bilibili {
-  final getSess = getService<Bunga>().getBiliSess;
+  final getSess = getIt<Bunga>().getBiliSess;
 
   Future<VideoEntry> getEntryFromUri(Uri uri) async {
     switch (uri.host) {

@@ -18,13 +18,13 @@ class AList {
   }
 
   Future<void> _getToken() async {
-    final response = await getService<Bunga>().getAListToken();
+    final response = await getIt<Bunga>().getAListToken();
     _host = Uri.parse(response.$1);
     _token = response.$2;
     logger.i('Alist token got successfully.');
   }
 
-  late final _header = {
+  late final _headers = {
     'Authorization': _token!,
     'content-type': 'application/json',
   };
@@ -34,7 +34,7 @@ class AList {
 
     final response = await http.post(
       _host!.resolve('fs/list'),
-      headers: _header,
+      headers: _headers,
       body: jsonEncode({
         'path': path,
         if (refresh) 'refresh': true,
@@ -65,7 +65,7 @@ class AList {
 
     final response = await http.post(
       _host!.resolve('fs/search'),
-      headers: _header,
+      headers: _headers,
       body: jsonEncode({
         "parent": "/",
         "keywords": keywords,
@@ -91,8 +91,8 @@ class AList {
 
     final response = await http.post(
       _host!.resolve('fs/get'),
-      headers: _header,
-      body: {'path': path},
+      headers: _headers,
+      body: jsonEncode({'path': path}),
     );
 
     if (!_requestSuccess(response)) {

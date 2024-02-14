@@ -1,8 +1,8 @@
 import 'package:animated_text_kit/animated_text_kit.dart';
+import 'package:bunga_player/actions/voice_call.dart';
 import 'package:bunga_player/mocks/slider.dart' as mock;
-import 'package:bunga_player/providers/states/voice_call.dart';
+import 'package:bunga_player/providers/chat.dart';
 import 'package:flutter/material.dart';
-import 'package:multi_value_listenable_builder/multi_value_listenable_builder.dart';
 import 'package:provider/provider.dart';
 
 class CallControl extends StatefulWidget {
@@ -15,8 +15,9 @@ class CallControl extends StatefulWidget {
 class _CallControlState extends State<CallControl> {
   @override
   Widget build(BuildContext context) {
-    return Consumer<VoiceCall>(
-      builder: (context, voiceCall, child) => switch (voiceCall.callStatus) {
+    return Selector<CurrentCallStatus, CallStatus>(
+      selector: (context, currentCallStatus) => currentCallStatus.value,
+      builder: (context, callStatus, child) => switch (callStatus) {
         CallStatus.callIn => Row(
             children: [
               const SizedBox(width: 8),
@@ -31,13 +32,15 @@ class _CallControlState extends State<CallControl> {
               _createCallOperateButton(
                 color: Colors.green,
                 icon: Icons.call,
-                onPressed: voiceCall.acceptAsking,
+                onPressed: () =>
+                    Actions.invoke(context, AcceptCallingRequestIntent()),
               ),
               const SizedBox(width: 16),
               _createCallOperateButton(
                 color: Colors.red,
                 icon: Icons.call_end,
-                onPressed: voiceCall.rejectAsking,
+                onPressed: () =>
+                    Actions.invoke(context, RejectCallingRequestIntent()),
               ),
               const SizedBox(width: 16),
             ],
@@ -62,44 +65,45 @@ class _CallControlState extends State<CallControl> {
               _createCallOperateButton(
                 color: Colors.red,
                 icon: Icons.call_end,
-                onPressed: voiceCall.cancelAsking,
+                onPressed: () =>
+                    Actions.invoke(context, CancelCallingRequestIntent()),
               ),
               const SizedBox(width: 16),
             ],
           ),
-        CallStatus.calling => Row(
+        CallStatus.talking => Row(
             children: [
               const SizedBox(width: 8),
               child!,
               const SizedBox(width: 16),
               const Text('语音通话中'),
               const Spacer(),
-              ValueListenableBuilder(
-                valueListenable: voiceCall.mute,
-                builder: (context, isMute, child) => IconButton(
-                  icon: isMute
+              Consumer<CallVolume>(
+                builder: (context, callVolume, child) => IconButton(
+                  icon: callVolume.isMute
                       ? const Icon(Icons.volume_mute)
                       : const Icon(Icons.volume_up),
-                  onPressed: () => voiceCall.mute.value = !isMute,
+                  onPressed: () => callVolume.isMute = !callVolume.isMute,
                 ),
               ),
               const SizedBox(width: 8),
-              MultiValueListenableBuilder(
-                valueListenables: [
-                  voiceCall.volume,
-                  voiceCall.mute,
-                ],
-                builder: (context, values, child) => SizedBox(
+              Consumer<CallVolume>(
+                builder: (context, callVolume, child) => SizedBox(
                   width: 100,
                   child: mock.MySlider(
                     useRootOverlay: true,
-                    value: values[1] ? 0 : values[0].toDouble(),
-                    max: 200,
-                    divisions: 200,
-                    label: '${values[0]}%',
+                    max: CallVolume.maxVolume.toDouble(),
+                    min: CallVolume.minVolume.toDouble(),
+                    divisions: CallVolume.maxVolume - CallVolume.minVolume,
+                    value: callVolume.isMute
+                        ? CallVolume.minVolume.toDouble()
+                        : callVolume.volume
+                            .clamp(CallVolume.minVolume, CallVolume.maxVolume)
+                            .toDouble(),
+                    label: '${callVolume.volume}%',
                     onChanged: (value) {
-                      voiceCall.mute.value = false;
-                      voiceCall.volume.value = value.toInt();
+                      callVolume.isMute = false;
+                      callVolume.volume = value.toInt();
                     },
                     focusNode: FocusNode(canRequestFocus: false),
                   ),
@@ -109,7 +113,7 @@ class _CallControlState extends State<CallControl> {
               _createCallOperateButton(
                 color: Colors.red,
                 icon: Icons.call_end,
-                onPressed: voiceCall.hangUp,
+                onPressed: () => Actions.invoke(context, HangUpIntent()),
               ),
               const SizedBox(width: 16),
             ],

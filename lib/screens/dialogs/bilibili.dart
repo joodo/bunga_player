@@ -73,7 +73,7 @@ class _BiliDialogState extends State<BiliDialog> {
 
     try {
       final uri = Uri.parse(_textController.text);
-      final entry = await getService<Bilibili>().getEntryFromUri(uri);
+      final entry = await getIt<Bilibili>().getEntryFromUri(uri);
       if (context.mounted) Navigator.pop<VideoEntry>(context, entry);
     } finally {
       setState(() {

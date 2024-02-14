@@ -1,8 +1,9 @@
 import 'dart:async';
 
-import 'package:bunga_player/actions/chat.dart';
+import 'package:bunga_player/actions/auth.dart';
+import 'package:bunga_player/actions/channel.dart';
+import 'package:bunga_player/actions/video_playing.dart';
 import 'package:bunga_player/mocks/menu_anchor.dart' as mock;
-import 'package:bunga_player/models/chat/channel.dart';
 import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/models/chat/user.dart';
 import 'package:bunga_player/models/video_entries/video_entry.dart';
@@ -12,10 +13,9 @@ import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/screens/dialogs/bilibili.dart';
 import 'package:bunga_player/screens/dialogs/local_video_entry.dart';
 import 'package:bunga_player/screens/dialogs/net_disk.dart';
-import 'package:bunga_player/providers/states/current_channel.dart';
-import 'package:bunga_player/providers/business/remote_playing.dart';
+import 'package:bunga_player/screens/wrappers/shortcuts.dart';
 import 'package:bunga_player/services/bunga.dart';
-import 'package:bunga_player/services/stream_io.dart';
+import 'package:bunga_player/services/chat.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/providers/business/video_player.dart';
 import 'package:bunga_player/services/toast.dart';
@@ -160,8 +160,6 @@ class _WelcomeControlState extends State<WelcomeControl> {
 
   void _openNetDisk() async {
     final currentUser = context.read<CurrentUser>().value!;
-    final currentChannel = context.read<CurrentChannel>();
-    final remotePlaying = context.read<RemotePlaying>();
     final watchProgress = context.read<VideoPlayer>().watchProgress;
 
     final alistPath = await showDialog(
@@ -173,23 +171,32 @@ class _WelcomeControlState extends State<WelcomeControl> {
     final alistEntry = AListEntry(path: alistPath);
     void doOpen() async {
       try {
-        await remotePlaying.openVideo(
-          alistEntry,
-          beforeAskingPosition: () async {
+        final response = Actions.invoke(
+          Intentor.context,
+          OpenVideoIntent(
+            videoEntry: alistEntry,
             // TODO: add path field to channel data, then remove this
-            // Set hash string
-            await getService<Bunga>().setStringHash(
-              text: alistPath,
-              hash: AListEntry.hashFromPath(alistPath),
-            );
+            beforeAskingPosition: () async {
+              await getIt<Bunga>().setStringHash(
+                text: alistPath,
+                hash: AListEntry.hashFromPath(alistPath),
+              );
 
-            return currentChannel
-                .createOrJoin(ChannelData.fromShare(currentUser, alistEntry));
-          },
-        );
+              // ignore: use_build_context_synchronously
+              final response = Actions.invoke(
+                Intentor.context,
+                JoinChannelIntent.byChannelData(
+                    ChannelData.fromShare(currentUser, alistEntry)),
+              ) as Future?;
+              await response;
+            },
+          ),
+        ) as Future?;
+        await response;
+
         _onVideoLoaded();
       } catch (e) {
-        getService<Toast>().show('解析失败');
+        getIt<Toast>().show('解析失败');
         Future.microtask(_initBusinessIndicator);
         rethrow;
       }
@@ -212,29 +219,42 @@ class _WelcomeControlState extends State<WelcomeControl> {
     required Future Function() entryGetter,
   }) async {
     final currentUser = context.read<CurrentUser>().value!;
-    final currentChannel = context.read<CurrentChannel>();
-    final remotePlaying = context.read<RemotePlaying>();
 
-    final response = await entryGetter();
-    if (response == null) return;
+    final result = await entryGetter();
+    if (result == null) return;
 
     void doOpen() async {
       try {
-        if (response is VideoEntry) {
-          await remotePlaying.openVideo(
-            response,
-            beforeAskingPosition: () => currentChannel
-                .createOrJoin(ChannelData.fromShare(currentUser, response)),
-          );
+        if (result is VideoEntry) {
+          final response = Actions.invoke(
+            Intentor.context,
+            OpenVideoIntent(
+              videoEntry: result,
+              beforeAskingPosition: () => Actions.invoke(
+                Intentor.context,
+                JoinChannelIntent.byChannelData(
+                  ChannelData.fromShare(currentUser, result),
+                ),
+              ) as Future<void>,
+            ),
+          ) as Future?;
+          await response;
         } else {
-          await remotePlaying.openVideo(
-            response.$2,
-            beforeAskingPosition: () => currentChannel.joinById(response.$1),
-          );
+          final response = Actions.invoke(
+            Intentor.context,
+            OpenVideoIntent(
+              videoEntry: result.$2,
+              beforeAskingPosition: () => Actions.invoke(
+                Intentor.context,
+                JoinChannelIntent.byId(result.$1),
+              ) as Future?,
+            ),
+          ) as Future<void>;
+          await response;
         }
         _onVideoLoaded();
       } catch (e) {
-        getService<Toast>().show('解析失败');
+        getIt<Toast>().show('解析失败');
         Future.microtask(_initBusinessIndicator);
         rethrow;
       }
@@ -265,7 +285,7 @@ class _OthersDialog extends StatefulWidget {
 }
 
 class _OthersDialogState extends State<_OthersDialog> {
-  List<Channel>? _channels;
+  List<(String id, ChannelData data)>? _channels;
   late final Timer _timer;
   bool _isPulling = false;
 
@@ -294,7 +314,8 @@ class _OthersDialogState extends State<_OthersDialog> {
         children: [
           const SizedBox(width: 8),
           if (_channels != null)
-            ..._channels!.map((channel) => _createVideoCard(channel)),
+            ..._channels!
+                .map((channel) => _createVideoCard(channel.$1, channel.$2)),
           const SizedBox(width: 8),
         ],
       ),
@@ -348,10 +369,10 @@ class _OthersDialogState extends State<_OthersDialog> {
     );
   }
 
-  Widget _createVideoCard(Channel channelInfo) {
+  Widget _createVideoCard(String channelId, ChannelData channelData) {
     final themeData = Theme.of(context);
     final videoImage = Image.network(
-      channelInfo.data.image!,
+      channelData.image ?? '',
       height: 125,
       width: 200,
       fit: BoxFit.cover,
@@ -370,7 +391,7 @@ class _OthersDialogState extends State<_OthersDialog> {
               children: [
                 Flexible(
                   child: Text(
-                    channelInfo.data.sharer.name,
+                    channelData.sharer.name,
                     style: themeData.textTheme.labelSmall,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -388,9 +409,9 @@ class _OthersDialogState extends State<_OthersDialog> {
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
             child: Tooltip(
-              message: channelInfo.data.name,
+              message: channelData.name,
               child: Text(
-                channelInfo.data.name,
+                channelData.name,
                 overflow: TextOverflow.ellipsis,
                 style: themeData.textTheme.titleSmall,
               ),
@@ -423,8 +444,8 @@ class _OthersDialogState extends State<_OthersDialog> {
                 onTap: () => Navigator.pop<(String, VideoEntry)>(
                   context,
                   (
-                    channelInfo.id,
-                    VideoEntry.fromChannelData(channelInfo.data),
+                    channelId,
+                    VideoEntry.fromChannelData(channelData),
                   ),
                 ),
                 child: cardContent,
@@ -450,7 +471,7 @@ class _OthersDialogState extends State<_OthersDialog> {
         _isPulling = true;
       });
 
-      final chatService = getService<StreamIO>();
+      final chatService = getIt<ChatService>();
       final channels = await chatService.queryOnlineChannels();
 
       if (!mounted) return;

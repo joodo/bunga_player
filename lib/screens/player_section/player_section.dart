@@ -19,7 +19,7 @@ class _PlayerSectionState extends State<PlayerSection> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onDoubleTap: () => Actions.maybeInvoke(
+      onDoubleTap: () => Actions.invoke(
           context, SetFullScreenIntent(!context.read<IsFullScreen>().value)),
       onTap: () => Actions.maybeInvoke(context, const TogglePlayIntent()),
       child: Stack(
