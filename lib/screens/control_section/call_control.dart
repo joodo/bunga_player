@@ -97,9 +97,7 @@ class _CallControlState extends State<CallControl> {
                     divisions: CallVolume.maxVolume - CallVolume.minVolume,
                     value: callVolume.isMute
                         ? CallVolume.minVolume.toDouble()
-                        : callVolume.volume
-                            .clamp(CallVolume.minVolume, CallVolume.maxVolume)
-                            .toDouble(),
+                        : callVolume.volume.toDouble(),
                     label: '${callVolume.volume}%',
                     onChanged: (value) {
                       callVolume.isMute = false;

@@ -102,7 +102,7 @@ class CallVolume extends ChangeNotifier {
 
   CallVolume();
 
-  int _volume = _pref<int>('call_volume', 50);
+  int _volume = (_pref<int>('call_volume', 50)).clamp(minVolume, maxVolume);
   int get volume => _volume;
   set volume(int newVolume) {
     _volume = newVolume.clamp(minVolume, maxVolume);
