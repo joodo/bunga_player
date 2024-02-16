@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bunga_player/models/alist/file_info.dart';
 import 'package:bunga_player/models/alist/search_result.dart';
 import 'package:bunga_player/models/video_entries/video_entry.dart';
@@ -15,8 +17,13 @@ class NetDiskDialog extends StatefulWidget {
   State<NetDiskDialog> createState() => _NetDiskDialogState();
 }
 
+class AbortException implements Exception {}
+
+class CancelException implements Exception {}
+
 class _NetDiskDialogState extends State<NetDiskDialog> {
-  bool _pending = false;
+  Completer? _work;
+  bool get _pending => _work != null;
   String _currentPath = '';
   List<AListFileInfo> _currentFiles = [];
 
@@ -162,7 +169,18 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
             const SizedBox(height: 16),
             Expanded(
               child: _pending
-                  ? const Center(child: CircularProgressIndicator())
+                  ? Center(
+                      child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const CircularProgressIndicator(),
+                        const SizedBox(height: 24),
+                        OutlinedButton(
+                            onPressed: () =>
+                                _work!.completeError(CancelException()),
+                            child: const Text('取消')),
+                      ],
+                    ))
                   : itemCount == 0
                       ? Center(
                           child: Text(
@@ -276,58 +294,76 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
     return split.isEmpty ? '' : split.last;
   }
 
+  late String _lastSuccessPath = _currentPath;
   void _cd(String path) async {
     final newPath = Uri.decodeFull(Uri(path: _currentPath).resolve(path).path);
     if (newPath == _currentPath) return;
-    final oldPath = _currentPath;
-
-    if (_pending) return;
-    setState(() {
-      _currentPath = newPath;
-      _pending = true;
-    });
+    _currentPath = newPath;
 
     try {
-      _currentFiles = await getIt<AList>().list(_currentPath);
+      _currentFiles = await createNewWork(getIt<AList>().list(newPath));
+      _lastSuccessPath = newPath;
     } catch (e) {
-      _currentPath = oldPath;
-      rethrow;
+      if (e is! AbortException) {
+        _currentPath = _lastSuccessPath;
+        if (e is! CancelException) rethrow;
+      }
     } finally {
       setState(() {
-        _pending = false;
+        _work = null;
       });
     }
   }
 
   void _refresh() async {
-    if (_pending) return;
-    setState(() {
-      _pending = true;
-    });
-
     try {
-      _currentFiles = await getIt<AList>().list(
-        _currentPath,
-        refresh: true,
+      _currentFiles = await createNewWork(
+        getIt<AList>().list(
+          _currentPath,
+          refresh: true,
+        ),
       );
+    } catch (e) {
+      if (![AbortException, CancelException].contains(e.runtimeType)) rethrow;
     } finally {
       setState(() {
-        _pending = false;
+        _work = null;
       });
     }
   }
 
   void _search(String keywords) async {
-    setState(() {
-      _pending = true;
-    });
-
     try {
-      _searchResults = await getIt<AList>().search(keywords);
+      _searchResults = await createNewWork(getIt<AList>().search(keywords));
+    } catch (e) {
+      if (![AbortException, CancelException].contains(e.runtimeType)) rethrow;
     } finally {
       setState(() {
-        _pending = false;
+        _work = null;
       });
     }
+  }
+
+  Future<T> createNewWork<T>(Future<T> things) async {
+    if (_pending) {
+      _work!.completeError(AbortException());
+      _work = null;
+      await Future.microtask(() {});
+    }
+
+    final completer = Completer<T>();
+    setState(() {
+      _work = completer;
+    });
+
+    things.then((value) {
+      if (!completer.isCompleted) completer.complete(value);
+    }).onError((error, stackTrace) {
+      if (!completer.isCompleted) {
+        completer.completeError(error ?? 'Unknown error');
+      }
+    });
+
+    return completer.future;
   }
 }
