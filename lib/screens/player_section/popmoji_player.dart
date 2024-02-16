@@ -108,7 +108,7 @@ class _FireworkContentState extends State<_FireworkContent>
     Future.delayed(const Duration(seconds: 3), () {
       _fireworkController.autoLaunchDuration = Duration.zero;
     });
-    Future.delayed(const Duration(seconds: 6), () {
+    Future.delayed(const Duration(seconds: 7), () {
       if (context.mounted) Navigator.of(context).pop();
     });
 
