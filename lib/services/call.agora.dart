@@ -70,6 +70,12 @@ class Agora implements CallService {
     await _engine.adjustPlaybackSignalVolume((200 * percent).toInt());
   }
 
+  // Mic
+  @override
+  Future<void> setMuteMic(bool mute) {
+    return _engine.muteLocalAudioStream(mute);
+  }
+
   // Channel
   @override
   Future<Stream<int>> joinChannel() async {

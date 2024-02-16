@@ -101,6 +101,10 @@ class CallVolume extends VolumeNotifier {
   CallVolume() : super(getIt<Preferences>().get<int>('call_volume') ?? 50);
 }
 
+class MuteMic extends ValueNotifier<bool> {
+  MuteMic() : super(false);
+}
+
 final chatProviders = MultiProvider(providers: [
   // User
   ChangeNotifierProvider(create: (context) => CurrentUser()),
@@ -115,4 +119,5 @@ final chatProviders = MultiProvider(providers: [
   ChangeNotifierProvider(create: (context) => CurrentCallStatus()),
   ChangeNotifierProvider(create: (context) => CurrentTalkersCount()),
   ChangeNotifierProvider(create: (context) => CallVolume()),
+  ChangeNotifierProvider(create: (context) => MuteMic()),
 ]);

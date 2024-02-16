@@ -79,6 +79,20 @@ class _CallControlState extends State<CallControl> {
               const SizedBox(width: 16),
               const Text('语音通话中'),
               const Spacer(),
+              Consumer<MuteMic>(
+                builder: (context, muteMic, child) => IconButton(
+                  style: muteMic.value
+                      ? const ButtonStyle(
+                          backgroundColor:
+                              MaterialStatePropertyAll<Color>(Colors.red),
+                        )
+                      : null,
+                  color: muteMic.value ? Colors.white70 : null,
+                  icon: Icon(muteMic.value ? Icons.mic_off : Icons.mic),
+                  onPressed: () =>
+                      Actions.invoke(context, MuteMicIntent(!muteMic.value)),
+                ),
+              ),
               Consumer<CallVolume>(
                 builder: (context, callVolume, child) => IconButton(
                   icon: callVolume.isMute

@@ -201,7 +201,21 @@ class HangUpAction extends ContextAction<HangUpIntent> {
     context!.read<CurrentCallStatus>().value = CallStatus.none;
     AudioPlayer().play(AssetSource('sounds/hang_up.wav'));
 
+    Actions.invoke(context, const MuteMicIntent(false));
     return callingRequestBusiness.leaveChannel();
+  }
+}
+
+class MuteMicIntent extends Intent {
+  final bool mute;
+  const MuteMicIntent(this.mute);
+}
+
+class MuteMicAction extends ContextAction<MuteMicIntent> {
+  @override
+  Future<void> invoke(MuteMicIntent intent, [BuildContext? context]) {
+    context!.read<MuteMic>().value = intent.mute;
+    return getIt<CallService>().setMuteMic(intent.mute);
   }
 }
 
@@ -255,6 +269,7 @@ class _VoiceCallActionsState extends State<VoiceCallActions> {
             callingRequestBusiness: _callingRequestBusiness),
         HangUpIntent:
             HangUpAction(callingRequestBusiness: _callingRequestBusiness),
+        MuteMicIntent: MuteMicAction(),
       },
       child: widget.child,
     );
