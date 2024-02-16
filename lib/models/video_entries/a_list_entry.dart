@@ -1,30 +1,18 @@
 part of 'video_entry.dart';
 
 class AListEntry extends VideoEntry {
-  static String hashFromPath(String path) => path.hashCode.toRadixString(36);
   static const hashPrefix = 'alist';
 
-  AListEntry({String? path, String? pathHash})
-      : _path = path,
-        _pathHash = pathHash {
-    assert(_path != null || _pathHash != null,
-        'One of "hash" and "hashPath" should not be null.');
-  }
-
-  String? _path;
-  String? get path => _path;
-
-  String? _pathHash;
-  @override
-  String get hash {
-    _pathHash ??= hashFromPath(_path!);
-    return '$hashPrefix-${_pathHash!}';
+  AListEntry(String path) {
+    this.path = path;
+    hash = '$hashPrefix-${path.hashCode.toRadixString(36)}';
   }
 
   factory AListEntry.fromChannelData(ChannelData channelData) {
     final splits = channelData.videoHash.split('-');
     assert(splits.first == hashPrefix);
-    return AListEntry(pathHash: splits[1]);
+    assert(channelData.path != null);
+    return AListEntry(channelData.path!);
   }
 
   bool _isFetched = false;
@@ -34,10 +22,10 @@ class AListEntry extends VideoEntry {
   Future<void> fetch() async {
     if (_isFetched) return;
 
-    _path ??= await getIt<Bunga>().getStringByHash(_pathHash!);
-    logger.i('AList: start fetch video $_path');
-
+    logger.i('AList: start fetch video $path');
     final info = await getIt<AList>().get(path!);
+    print(info);
+
     title = info.name;
     image = info.thumb;
     sources = VideoSources(video: [info.rawUrl!]);

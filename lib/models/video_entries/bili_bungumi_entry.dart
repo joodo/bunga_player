@@ -5,7 +5,10 @@ class BiliBungumiEntry extends VideoEntry {
 
   final int epid;
 
-  BiliBungumiEntry({required this.epid});
+  BiliBungumiEntry({required this.epid}) {
+    hash = '$hashPrefix-$epid';
+    path = null;
+  }
 
   bool _isFetched = false;
   @override
@@ -73,9 +76,6 @@ class BiliBungumiEntry extends VideoEntry {
 
     _isFetched = true;
   }
-
-  @override
-  String get hash => '$hashPrefix-$epid';
 
   factory BiliBungumiEntry.fromChannelData(ChannelData channelData) {
     final splits = channelData.videoHash.split('-');

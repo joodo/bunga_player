@@ -12,6 +12,7 @@ ChannelData _$ChannelDataFromJson(Map<String, dynamic> json) => ChannelData(
       videoHash: json['hash'] as String,
       sharer: User.fromJson(json['sharer'] as Map<String, dynamic>),
       image: json['image'] as String?,
+      path: json['path'] as String?,
     );
 
 Map<String, dynamic> _$ChannelDataToJson(ChannelData instance) =>
@@ -19,8 +20,9 @@ Map<String, dynamic> _$ChannelDataToJson(ChannelData instance) =>
       'video_type': _$VideoTypeEnumMap[instance.videoType]!,
       'name': instance.name,
       'hash': instance.videoHash,
-      'image': instance.image,
       'sharer': instance.sharer,
+      'image': instance.image,
+      'path': instance.path,
     };
 
 const _$VideoTypeEnumMap = {

@@ -10,7 +10,10 @@ class BiliVideoEntry extends VideoEntry {
   late final int totalP;
   late final bool isHD;
 
-  BiliVideoEntry({required this.bvid, this.p = 1});
+  BiliVideoEntry({required this.bvid, this.p = 1}) {
+    hash = '$hashPrefix-$bvid-$p';
+    path = null;
+  }
 
   bool _isFetched = false;
   @override
@@ -90,9 +93,6 @@ class BiliVideoEntry extends VideoEntry {
 
     _isFetched = true;
   }
-
-  @override
-  String get hash => '$hashPrefix-$bvid-$p';
 
   factory BiliVideoEntry.fromChannelData(ChannelData channelData) {
     final splits = channelData.videoHash.split('-');

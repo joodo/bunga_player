@@ -199,9 +199,11 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
                                       _searchMode = false;
                                       _cd('${result.parent}/${result.name}/');
                                     },
-                                  AListFileType.video => () => Navigator.pop(
-                                      context,
-                                      '${result.parent}/${result.name}'),
+                                  AListFileType.video => () {
+                                      final p =
+                                          '${result.parent}/${result.name}';
+                                      Navigator.pop(context, AListEntry(p));
+                                    },
                                   AListFileType.audio => null,
                                   AListFileType.text => null,
                                   AListFileType.image => null,
@@ -212,7 +214,7 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
 
                             final info = _currentFiles[index];
                             final videoHash =
-                                '${AListEntry.hashPrefix}-${AListEntry.hashFromPath('$_currentPath${info.name}')}';
+                                AListEntry('$_currentPath${info.name}').path!;
                             final percent = widget
                                 .read<PlayWatchProgresses>()
                                 .get(videoHash)
@@ -233,8 +235,10 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
                               onTap: switch (info.type) {
                                 AListFileType.folder => () =>
                                     _cd('${info.name}/'),
-                                AListFileType.video => () => Navigator.pop(
-                                    context, '$_currentPath${info.name}'),
+                                AListFileType.video => () {
+                                    final p = '$_currentPath${info.name}';
+                                    Navigator.pop(context, AListEntry(p));
+                                  },
                                 AListFileType.audio => null,
                                 AListFileType.text => null,
                                 AListFileType.image => null,

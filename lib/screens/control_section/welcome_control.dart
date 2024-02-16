@@ -14,7 +14,6 @@ import 'package:bunga_player/screens/dialogs/bilibili.dart';
 import 'package:bunga_player/screens/dialogs/local_video_entry.dart';
 import 'package:bunga_player/screens/dialogs/net_disk.dart';
 import 'package:bunga_player/screens/wrappers/shortcuts.dart';
-import 'package:bunga_player/services/bunga.dart';
 import 'package:bunga_player/services/chat.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
@@ -158,50 +157,12 @@ class _WelcomeControlState extends State<WelcomeControl> {
   }
 
   void _openNetDisk() async {
-    final currentUser = context.read<CurrentUser>().value!;
-
-    final alistPath = await showDialog(
-      context: context,
-      builder: (dialogContext) => NetDiskDialog(read: context.read),
+    _openChannel(
+      entryGetter: () => showDialog<VideoEntry?>(
+        context: context,
+        builder: (dialogContext) => NetDiskDialog(read: context.read),
+      ),
     );
-    if (alistPath == null) return;
-
-    final alistEntry = AListEntry(path: alistPath);
-    void doOpen() async {
-      try {
-        final response = Actions.invoke(
-          Intentor.context,
-          OpenVideoIntent(
-            videoEntry: alistEntry,
-            // TODO: add path field to channel data, then remove this
-            beforeAskingPosition: () async {
-              await getIt<Bunga>().setStringHash(
-                text: alistPath,
-                hash: AListEntry.hashFromPath(alistPath),
-              );
-
-              // ignore: use_build_context_synchronously
-              final response = Actions.invoke(
-                Intentor.context,
-                JoinChannelIntent.byChannelData(
-                    ChannelData.fromShare(currentUser, alistEntry)),
-              ) as Future?;
-              await response;
-            },
-          ),
-        ) as Future?;
-        await response;
-
-        _onVideoLoaded();
-      } catch (e) {
-        getIt<Toast>().show('解析失败');
-        Future.microtask(_initBusinessIndicator);
-        rethrow;
-      }
-    }
-
-    _completer?.complete();
-    Future.microtask(doOpen);
   }
 
   void _joinOthersChannel() async {
@@ -250,7 +211,10 @@ class _WelcomeControlState extends State<WelcomeControl> {
           ) as Future<void>;
           await response;
         }
-        _onVideoLoaded();
+
+        if (context.mounted) {
+          Navigator.of(context).popAndPushNamed('control:main');
+        }
       } catch (e) {
         getIt<Toast>().show('解析失败');
         Future.microtask(_initBusinessIndicator);
@@ -269,10 +233,6 @@ class _WelcomeControlState extends State<WelcomeControl> {
       'control:rename',
       arguments: {'previousName': context.read<CurrentUser>().value!.name},
     );
-  }
-
-  void _onVideoLoaded() {
-    Navigator.of(context).popAndPushNamed('control:main');
   }
 }
 

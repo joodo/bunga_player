@@ -24,9 +24,12 @@ class VideoSources {
 }
 
 sealed class VideoEntry {
+  late final String hash;
   late final String title;
-  late final String image;
   late final VideoSources sources; // DURL | Dash
+
+  late final String? image;
+  late final String? path;
 
   static final Map<String, VideoEntry Function(ChannelData hash)> _factoryMap =
       {
@@ -48,6 +51,4 @@ sealed class VideoEntry {
 
   bool get isFetched;
   Future<void> fetch();
-
-  String get hash;
 }

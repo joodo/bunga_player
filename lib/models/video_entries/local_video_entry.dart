@@ -4,12 +4,9 @@ class LocalVideoEntry extends VideoEntry {
   LocalVideoEntry.fromFile(XFile file) {
     sources = VideoSources(video: [file.path]);
     title = file.name;
-    image = '';
+    image = null;
+    path = null;
   }
-
-  late final String _hash;
-  @override
-  String get hash => _hash;
 
   bool _isFetched = false;
   @override
@@ -21,7 +18,7 @@ class LocalVideoEntry extends VideoEntry {
         .take(1000)
         .transform(Crc32Xz())
         .single;
-    _hash = 'local-${crcValue.toString()}';
+    hash = 'local-${crcValue.toString()}';
 
     _isFetched = true;
   }

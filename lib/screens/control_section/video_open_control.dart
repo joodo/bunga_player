@@ -11,7 +11,6 @@ import 'package:bunga_player/screens/dialogs/local_video_entry.dart';
 import 'package:bunga_player/screens/dialogs/net_disk.dart';
 import 'package:bunga_player/screens/wrappers/providers.dart';
 import 'package:bunga_player/screens/wrappers/shortcuts.dart';
-import 'package:bunga_player/services/bunga.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
 import 'package:flutter/material.dart';
@@ -90,6 +89,15 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
     );
   }
 
+  void _openNetDisk() async {
+    _openVideo(
+      entryGetter: () => showDialog<VideoEntry?>(
+        context: context,
+        builder: (dialogContext) => NetDiskDialog(read: context.read),
+      ),
+    );
+  }
+
   void _openVideo({required Future<VideoEntry?> Function() entryGetter}) async {
     final currentUser = context.read<CurrentUser>().value!;
 
@@ -122,53 +130,6 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
       );
     }
 
-    _onVideoLoaded();
-  }
-
-  void _openNetDisk() async {
-    final currentUser = context.read<CurrentUser>().value!;
-
-    final shouldUpdateChannelData = context.isVideoSameWithChannel;
-
-    final alistPath = await showDialog(
-      context: context,
-      builder: (dialogContext) => NetDiskDialog(read: context.read),
-    );
-    if (alistPath == null) return;
-
-    final alistEntry = AListEntry(path: alistPath);
-    try {
-      // ignore: use_build_context_synchronously
-      final response = Actions.invoke(
-        Intentor.context,
-        OpenVideoIntent(
-          videoEntry: alistEntry,
-          // TODO: add path field to channel data, then remove this
-          beforeAskingPosition: () => getIt<Bunga>().setStringHash(
-            text: alistPath,
-            hash: AListEntry.hashFromPath(alistPath),
-          ),
-          askPosition: !shouldUpdateChannelData,
-        ),
-      ) as Future?;
-      await response;
-    } catch (e) {
-      getIt<Toast>().show('解析失败');
-      rethrow;
-    }
-
-    if (shouldUpdateChannelData) {
-      // ignore: use_build_context_synchronously
-      Actions.invoke(
-        Intentor.context,
-        UpdateChannelDataIntent(ChannelData.fromShare(currentUser, alistEntry)),
-      );
-    }
-
-    _onVideoLoaded();
-  }
-
-  void _onVideoLoaded() {
-    Navigator.of(context).pop();
+    if (context.mounted) Navigator.of(context).pop();
   }
 }

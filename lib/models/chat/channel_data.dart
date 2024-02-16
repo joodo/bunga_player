@@ -19,6 +19,7 @@ class ChannelData {
     required this.videoHash,
     required this.sharer,
     this.image,
+    this.path,
   });
 
   factory ChannelData.fromShare(User sharer, VideoEntry videoEntry) =>
@@ -28,6 +29,8 @@ class ChannelData {
         name: videoEntry.title,
         videoHash: videoEntry.hash,
         sharer: sharer,
+        path: videoEntry.path,
+        image: videoEntry.image,
       );
 
   @JsonKey(name: videoTypeJsonKey)
@@ -35,8 +38,9 @@ class ChannelData {
   final String name;
   @JsonKey(name: 'hash')
   final String videoHash;
-  final String? image;
   final User sharer;
+  final String? image;
+  final String? path;
 
   @override
   bool operator ==(Object other) =>
@@ -45,7 +49,8 @@ class ChannelData {
       name == other.name &&
       videoHash == other.videoHash &&
       image == other.image &&
-      sharer.id == other.sharer.id;
+      sharer.id == other.sharer.id &&
+      path == other.path;
 
   factory ChannelData.fromJson(Map<String, dynamic> json) =>
       _$ChannelDataFromJson(json);
@@ -61,5 +66,6 @@ class ChannelData {
         videoHash,
         image,
         sharer.id,
+        path,
       );
 }
