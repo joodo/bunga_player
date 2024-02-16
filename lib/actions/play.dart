@@ -15,7 +15,7 @@ class SetVolumeIntent extends Intent {
   final bool isIncrease;
 }
 
-class SetVolumeAction extends Action<SetVolumeIntent> {
+class SetVolumeAction extends ContextAction<SetVolumeIntent> {
   @override
   Future<void> invoke(SetVolumeIntent intent, [BuildContext? context]) {
     var volume = intent.volume;
