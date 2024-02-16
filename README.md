@@ -50,3 +50,13 @@ There's a feature allows user replace video in a channel. This will cause channe
 
 To solve this problem, when user joining a channel that suppose to match a specific video hash, let's say `local-AbC123`, it will check channel `local-AbC123` is dirty or not first -- join if it's clean, or `local-AbC123__1`, `local-AbC123__2`, ... until a clean one if it's dirty.
 
+## Structure
+
+```mermaid
+flowchart TD
+    Screen -->|User Reaction| Action
+    Action --> Services
+    Services -->|Streams| Providers
+    Providers-->|States| Screen
+    Preferences -->|Init value| Providers
+```

@@ -1,14 +1,16 @@
 import 'package:bunga_player/models/alist/file_info.dart';
 import 'package:bunga_player/models/alist/search_result.dart';
 import 'package:bunga_player/models/video_entries/video_entry.dart';
+import 'package:bunga_player/providers/player.dart';
 import 'package:bunga_player/services/alist.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class NetDiskDialog extends StatefulWidget {
-  final Map<String, String> watchProgress;
-  const NetDiskDialog({super.key, required this.watchProgress});
+  final Locator read;
+  const NetDiskDialog({super.key, required this.read});
   @override
   State<NetDiskDialog> createState() => _NetDiskDialogState();
 }
@@ -211,16 +213,10 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
                             final info = _currentFiles[index];
                             final videoHash =
                                 '${AListEntry.hashPrefix}-${AListEntry.hashFromPath('$_currentPath${info.name}')}';
-                            final progressString =
-                                widget.watchProgress[videoHash];
-                            int? percent;
-                            if (progressString != null) {
-                              final split = progressString.split('/');
-                              percent = (int.parse(split[0]) *
-                                      100 /
-                                      int.parse(split[1]))
-                                  .round();
-                            }
+                            final percent = widget
+                                .read<PlayWatchProgresses>()
+                                .get(videoHash)
+                                ?.percent;
                             final tile = ListTile(
                               leading: Icon(switch (info.type) {
                                 AListFileType.folder => Icons.folder,
@@ -231,8 +227,9 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
                                 AListFileType.unknown => Icons.note,
                               }),
                               title: Text(info.name),
-                              subtitle:
-                                  percent != null ? Text('已看 $percent%') : null,
+                              subtitle: percent != null
+                                  ? Text('已看 ${(percent * 100).toInt()}%')
+                                  : null,
                               onTap: switch (info.type) {
                                 AListFileType.folder => () =>
                                     _cd('${info.name}/'),

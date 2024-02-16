@@ -4,12 +4,11 @@ import 'package:bunga_player/actions/channel.dart';
 import 'package:bunga_player/actions/video_playing.dart';
 import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/models/video_entries/video_entry.dart';
-import 'package:bunga_player/providers/business/business_indicator.dart';
+import 'package:bunga_player/providers/business_indicator.dart';
 import 'package:bunga_player/providers/chat.dart';
 import 'package:bunga_player/screens/dialogs/bilibili.dart';
 import 'package:bunga_player/screens/dialogs/local_video_entry.dart';
 import 'package:bunga_player/screens/dialogs/net_disk.dart';
-import 'package:bunga_player/providers/business/video_player.dart';
 import 'package:bunga_player/screens/wrappers/providers.dart';
 import 'package:bunga_player/screens/wrappers/shortcuts.dart';
 import 'package:bunga_player/services/bunga.dart';
@@ -128,13 +127,12 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
 
   void _openNetDisk() async {
     final currentUser = context.read<CurrentUser>().value!;
-    final watchProgress = context.read<VideoPlayer>().watchProgress;
 
     final shouldUpdateChannelData = context.isVideoSameWithChannel;
 
     final alistPath = await showDialog(
       context: context,
-      builder: (context) => NetDiskDialog(watchProgress: watchProgress),
+      builder: (dialogContext) => NetDiskDialog(read: context.read),
     );
     if (alistPath == null) return;
 

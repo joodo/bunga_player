@@ -55,7 +55,6 @@ dependencies:
   http: ^1.2.0
   shared_preferences: ^2.2.2
   async: ^2.11.0
-  multi_value_listenable_builder: ^0.0.2
   collection: ^1.18.0
   uuid: ^4.3.3  
   json_annotation: ^4.8.1

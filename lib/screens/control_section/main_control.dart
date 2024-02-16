@@ -2,15 +2,16 @@ import 'package:bunga_player/actions/channel.dart';
 import 'package:bunga_player/actions/play.dart';
 import 'package:bunga_player/actions/video_playing.dart';
 import 'package:bunga_player/actions/voice_call.dart';
+import 'package:bunga_player/models/chat/channel_data.dart';
+import 'package:bunga_player/models/playing/volume.dart';
 import 'package:bunga_player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/mocks/popup_menu.dart' as mock;
 import 'package:bunga_player/mocks/slider.dart' as mock;
 import 'package:bunga_player/providers/chat.dart';
+import 'package:bunga_player/providers/player.dart';
 import 'package:bunga_player/providers/ui.dart';
-import 'package:bunga_player/providers/business/video_player.dart';
 import 'package:bunga_player/utils/duration.dart';
 import 'package:flutter/material.dart';
-import 'package:multi_value_listenable_builder/multi_value_listenable_builder.dart';
 import 'package:provider/provider.dart';
 
 class MainControl extends StatelessWidget {
@@ -18,51 +19,51 @@ class MainControl extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currentChannelData = context.read<CurrentChannelData>();
-    final videoPlayer = context.read<VideoPlayer>();
-
+    final currentChannelData = context.read<CurrentChannelData>().value;
     return Stack(
       children: [
         Row(
           children: [
             const SizedBox(width: 8),
             // Play button
-            ValueListenableBuilder(
-              valueListenable: videoPlayer.isPlaying,
-              builder: (context, isPlaying, child) => IconButton(
-                icon: isPlaying
+            Consumer<PlayStatus>(
+              builder: (context, playStatus, child) => IconButton(
+                icon: playStatus.isPlaying
                     ? const Icon(Icons.pause)
                     : const Icon(Icons.play_arrow),
                 iconSize: 36,
-                onPressed: () =>
-                    Actions.maybeInvoke(context, const TogglePlayIntent()),
+                onPressed: () => Actions.maybeInvoke(
+                  context,
+                  const TogglePlayIntent(),
+                ),
               ),
             ),
             const SizedBox(width: 8),
 
             // Volume section
-            ValueListenableBuilder(
-              valueListenable: videoPlayer.isMute,
-              builder: (context, isMute, child) => IconButton(
-                icon: isMute
+            Consumer<PlayVolume>(
+              builder: (context, volumeData, child) => IconButton(
+                icon: volumeData.mute
                     ? const Icon(Icons.volume_mute)
                     : const Icon(Icons.volume_up),
-                onPressed: () => videoPlayer.isMute.value = !isMute,
+                onPressed: () => Actions.invoke(
+                  context,
+                  SetMuteIntent(!volumeData.mute),
+                ),
               ),
             ),
             const SizedBox(width: 8),
-            MultiValueListenableBuilder(
-              valueListenables: [
-                videoPlayer.volume,
-                videoPlayer.isMute,
-              ],
-              builder: (context, values, child) => SizedBox(
+            Consumer<PlayVolume>(
+              builder: (context, volumeData, child) => SizedBox(
                 width: 100,
                 child: mock.MySlider(
-                  value: values[1] ? 0.0 : values[0],
-                  max: 100.0,
-                  label: '${values[0].toInt()}%',
-                  onChanged: (value) => videoPlayer.volume.value = value,
+                  value: volumeData.mute ? 0.0 : volumeData.volume.toDouble(),
+                  max: Volume.max.toDouble(),
+                  label: '${volumeData.volume}%',
+                  onChanged: (value) => Actions.invoke(
+                    context,
+                    SetVolumeIntent(value.toInt()),
+                  ),
                   focusNode: FocusNode(canRequestFocus: false),
                   useRootOverlay: true,
                 ),
@@ -89,9 +90,7 @@ class MainControl extends StatelessWidget {
               useRootOverlay: true,
               itemBuilder: (context) => [
                 // Reload button
-                if (!(videoPlayer.videoHashNotifier.value
-                        ?.startsWith('local') ??
-                    true))
+                if (currentChannelData?.videoType == VideoType.online)
                   mock.PopupMenuItem(
                     child: ListTile(
                       leading: const Icon(Icons.refresh),
@@ -99,8 +98,8 @@ class MainControl extends StatelessWidget {
                       onTap: () {
                         Navigator.of(context, rootNavigator: true).pop();
 
-                        final onlineEntry = VideoEntry.fromChannelData(
-                            currentChannelData.value!);
+                        final onlineEntry =
+                            VideoEntry.fromChannelData(currentChannelData!);
                         Actions.invoke(
                           context,
                           OpenVideoIntent(videoEntry: onlineEntry),
@@ -155,7 +154,7 @@ class MainControl extends StatelessWidget {
                       final navigator = Navigator.of(context);
 
                       Actions.invoke(context, LeaveChannelIntent());
-                      await videoPlayer.stop();
+                      Actions.invoke(context, StopPlayIntent());
 
                       navigator.popAndPushNamed('control:welcome');
                     },
@@ -267,33 +266,19 @@ class _DurationButtonState extends State<DurationButton> {
 
   @override
   Widget build(BuildContext context) {
-    final videoPlayer = context.read<VideoPlayer>();
-    return TextButton(
-      child: MultiValueListenableBuilder(
-        valueListenables: [
-          videoPlayer.position,
-          videoPlayer.duration,
-        ],
-        builder: (context, values, child) {
-          final position = values[0] as Duration;
-          final duration = values[1] as Duration;
-          final String positionString = position.hhmmss;
-
-          final String displayString;
-          if (_showTotalTime) {
-            final durationString = duration.hhmmss;
-            displayString = '$positionString / $durationString';
-          } else {
-            final remainString = (duration - position).hhmmss;
-            displayString = '$positionString - $remainString';
-          }
-          return Text(
+    return Consumer2<PlayPosition, PlayDuration>(
+      builder: (context, position, duration, child) {
+        final displayString = _showTotalTime
+            ? '${position.value.hhmmss} / ${duration.value.hhmmss}'
+            : '${position.value.hhmmss} - ${(duration.value - position.value).hhmmss}';
+        return TextButton(
+          child: Text(
             displayString,
             style: Theme.of(context).textTheme.labelMedium,
-          );
-        },
-      ),
-      onPressed: () => setState(() => _showTotalTime = !_showTotalTime),
+          ),
+          onPressed: () => setState(() => _showTotalTime = !_showTotalTime),
+        );
+      },
     );
   }
 }

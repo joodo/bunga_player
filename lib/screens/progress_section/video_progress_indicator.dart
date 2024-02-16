@@ -1,8 +1,7 @@
-import 'package:bunga_player/actions/video_playing.dart';
+import 'package:bunga_player/actions/play.dart';
+import 'package:bunga_player/providers/player.dart';
 import 'package:bunga_player/utils/duration.dart';
-import 'package:bunga_player/providers/business/video_player.dart';
 import 'package:flutter/material.dart';
-import 'package:multi_value_listenable_builder/multi_value_listenable_builder.dart';
 import 'package:provider/provider.dart';
 
 class VideoProgressIndicator extends StatefulWidget {
@@ -17,12 +16,8 @@ class _VideoProgressIndicatorState extends State<VideoProgressIndicator> {
   bool _isChanging = false;
   double _slideThemeLerpT = 0;
 
-  bool _isPlayingBeforeDraggingSlider = false;
-
   @override
   Widget build(BuildContext context) {
-    final videoPlayer = context.read<VideoPlayer>();
-
     return MouseRegion(
       onEnter: (event) => setState(() {
         _isHovered = true;
@@ -47,39 +42,37 @@ class _VideoProgressIndicatorState extends State<VideoProgressIndicator> {
             child: child!,
           );
         },
-        child: MultiValueListenableBuilder(
-          valueListenables: [
-            videoPlayer.position,
-            videoPlayer.duration,
-            videoPlayer.buffer,
-          ],
-          builder: (context, values, child) {
-            final position = values[0] as Duration;
-            final duration = values[1] as Duration;
-            final buffer = values[2] as Duration;
+        child: Consumer3<PlayPosition, PlayDuration, PlayBuffer>(
+          builder: (context, position, duration, buffer, child) {
             return Slider(
-              value: position.inMilliseconds
-                  .clamp(0, duration.inMilliseconds)
+              value: position.value.inMilliseconds
+                  .clamp(0, duration.value.inMilliseconds)
                   .toDouble(),
-              secondaryTrackValue: buffer.inMilliseconds
-                  .clamp(0, duration.inMilliseconds)
+              secondaryTrackValue: buffer.value.inMilliseconds
+                  .clamp(0, duration.value.inMilliseconds)
                   .toDouble(),
-              max: duration.inMilliseconds.toDouble(),
+              max: duration.value.inMilliseconds.toDouble(),
               focusNode: FocusNode(canRequestFocus: false),
-              label: position.hhmmss,
+              label: position.value.hhmmss,
               onChangeStart: (value) {
                 setState(() {
                   _isChanging = true;
                   _slideThemeLerpT = 1.0;
                 });
-
-                _isPlayingBeforeDraggingSlider = videoPlayer.isPlaying.value;
-                videoPlayer.isPlaying.value = false;
-                videoPlayer.position.follow = false;
-                videoPlayer.position.value = value.asMilliseconds;
+                Actions.invoke(
+                  context,
+                  StartDraggingProgressIntent(
+                    Duration(milliseconds: value.toInt()),
+                  ),
+                );
               },
               onChanged: (double value) {
-                videoPlayer.position.value = value.asMilliseconds;
+                Actions.maybeInvoke(
+                  context,
+                  DraggingProgressIntent(
+                    Duration(milliseconds: value.toInt()),
+                  ),
+                );
               },
               onChangeEnd: (value) {
                 setState(() {
@@ -87,19 +80,12 @@ class _VideoProgressIndicatorState extends State<VideoProgressIndicator> {
                   if (!_isHovered) _slideThemeLerpT = 0;
                 });
 
-                videoPlayer.position.value = value.asMilliseconds;
-                videoPlayer.position.follow = true;
-                if (_isPlayingBeforeDraggingSlider) {
-                  videoPlayer.isPlaying.value = true;
-                }
                 Actions.maybeInvoke(
-                    context,
-                    SendPlayingStatusIntent(
-                      videoPlayer.isPlaying.value
-                          ? PlayingStatus.play
-                          : PlayingStatus.pause,
-                      value.toInt(),
-                    ));
+                  context,
+                  FinishDraggingProgressIntent(
+                    Duration(milliseconds: value.toInt()),
+                  ),
+                );
               },
             );
           },

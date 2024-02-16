@@ -2,6 +2,7 @@ import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:bunga_player/actions/voice_call.dart';
 import 'package:bunga_player/mocks/slider.dart' as mock;
 import 'package:bunga_player/providers/chat.dart';
+import 'package:bunga_player/utils/volume_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -92,11 +93,12 @@ class _CallControlState extends State<CallControl> {
                   width: 100,
                   child: mock.MySlider(
                     useRootOverlay: true,
-                    max: CallVolume.maxVolume.toDouble(),
-                    min: CallVolume.minVolume.toDouble(),
-                    divisions: CallVolume.maxVolume - CallVolume.minVolume,
+                    max: VolumeNotifier.maxVolume.toDouble(),
+                    min: VolumeNotifier.minVolume.toDouble(),
+                    divisions:
+                        VolumeNotifier.maxVolume - VolumeNotifier.minVolume,
                     value: callVolume.isMute
-                        ? CallVolume.minVolume.toDouble()
+                        ? VolumeNotifier.minVolume.toDouble()
                         : callVolume.volume.toDouble(),
                     label: '${callVolume.volume}%',
                     onChanged: (value) {

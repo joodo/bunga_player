@@ -7,7 +7,7 @@ import 'package:bunga_player/mocks/menu_anchor.dart' as mock;
 import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/models/chat/user.dart';
 import 'package:bunga_player/models/video_entries/video_entry.dart';
-import 'package:bunga_player/providers/business/business_indicator.dart';
+import 'package:bunga_player/providers/business_indicator.dart';
 import 'package:bunga_player/providers/chat.dart';
 import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/screens/dialogs/bilibili.dart';
@@ -17,7 +17,6 @@ import 'package:bunga_player/screens/wrappers/shortcuts.dart';
 import 'package:bunga_player/services/bunga.dart';
 import 'package:bunga_player/services/chat.dart';
 import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/providers/business/video_player.dart';
 import 'package:bunga_player/services/toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -160,11 +159,10 @@ class _WelcomeControlState extends State<WelcomeControl> {
 
   void _openNetDisk() async {
     final currentUser = context.read<CurrentUser>().value!;
-    final watchProgress = context.read<VideoPlayer>().watchProgress;
 
     final alistPath = await showDialog(
       context: context,
-      builder: (context) => NetDiskDialog(watchProgress: watchProgress),
+      builder: (dialogContext) => NetDiskDialog(read: context.read),
     );
     if (alistPath == null) return;
 

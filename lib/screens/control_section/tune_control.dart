@@ -1,11 +1,10 @@
+import 'package:bunga_player/actions/play.dart';
 import 'package:bunga_player/mocks/slider.dart' as mock;
 import 'package:bunga_player/mocks/dropdown.dart' as mock;
-import 'package:bunga_player/providers/business/video_player.dart';
+import 'package:bunga_player/providers/player.dart';
 import 'package:bunga_player/screens/control_section/card.dart';
 import 'package:bunga_player/screens/control_section/dropdown.dart';
 import 'package:flutter/material.dart';
-import 'package:media_kit/media_kit.dart';
-import 'package:multi_value_listenable_builder/multi_value_listenable_builder.dart';
 import 'package:provider/provider.dart';
 
 class TuneControl extends StatelessWidget {
@@ -13,7 +12,6 @@ class TuneControl extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final videoPlayer = context.read<VideoPlayer>();
     return Row(
       children: [
         const SizedBox(width: 8),
@@ -31,17 +29,18 @@ class TuneControl extends StatelessWidget {
               const SizedBox(width: 16),
               const Text('视频亮度'),
               const SizedBox(width: 12),
-              ValueListenableBuilder(
-                valueListenable: videoPlayer.contrast,
+              Consumer<PlayContrast>(
                 builder: (context, contrast, child) => SizedBox(
                   width: 100,
                   child: mock.MySlider(
-                    value: contrast.toDouble(),
+                    value: contrast.value.toDouble(),
                     max: 100,
                     min: -30,
-                    label: '$contrast%',
-                    onChanged: (value) =>
-                        videoPlayer.contrast.value = value.toInt(),
+                    label: '${contrast.value}%',
+                    onChanged: (value) => Actions.invoke(
+                      context,
+                      SetContrastIntent(value.toInt()),
+                    ),
                     focusNode: FocusNode(canRequestFocus: false),
                     useRootOverlay: true,
                   ),
@@ -51,7 +50,10 @@ class TuneControl extends StatelessWidget {
               IconButton(
                 icon: const Icon(Icons.restart_alt),
                 iconSize: 16.0,
-                onPressed: videoPlayer.contrast.reset,
+                onPressed: () => Actions.invoke(
+                  context,
+                  const SetContrastIntent(),
+                ),
               ),
               const SizedBox(width: 8),
             ],
@@ -61,14 +63,8 @@ class TuneControl extends StatelessWidget {
 
         // Audio tracks section
         ControlCard(
-          child: MultiValueListenableBuilder(
-            valueListenables: [
-              videoPlayer.track,
-              videoPlayer.tracks,
-            ],
-            builder: (context, values, child) {
-              var audioTracks = values[1]?.audio as List<AudioTrack>?;
-
+          child: Consumer2<PlayAudioTracks, PlayAudioTrackID>(
+            builder: (context, tracks, currentID, child) {
               return Row(
                 children: [
                   const SizedBox(width: 16),
@@ -78,27 +74,24 @@ class TuneControl extends StatelessWidget {
                     width: 200,
                     height: 36,
                     child: ControlDropdown(
-                      items: audioTracks
-                              ?.map((e) => mock.DropdownMenuItem<String>(
-                                    value: e.id,
-                                    child: Text(() {
-                                      if (e.id == 'auto') return '默认';
-                                      if (e.id == 'no') return '无声音';
-
-                                      String text = '[${e.id}]';
-                                      if (e.title != null) {
-                                        text += ' ${e.title}';
-                                      }
-                                      if (e.language != null) {
-                                        text += ' (${e.language})';
-                                      }
-                                      return text;
-                                    }()),
-                                  ))
-                              .toList() ??
-                          [],
-                      value: values[0]?.audio.id,
-                      onChanged: videoPlayer.setAudioTrack,
+                      items: tracks.value
+                          .map(
+                            (track) => mock.DropdownMenuItem<String>(
+                              value: track.id,
+                              child: Text(() {
+                                if (track.id == 'auto') return '默认';
+                                if (track.id == 'no') return '无声音';
+                                return track.toString();
+                              }()),
+                            ),
+                          )
+                          .toList(),
+                      value: currentID.value,
+                      onChanged: (value) {
+                        if (value != null) {
+                          Actions.invoke(context, SetAudioTrackIntent(value));
+                        }
+                      },
                     ),
                   ),
                   const SizedBox(width: 16),

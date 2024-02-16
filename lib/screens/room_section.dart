@@ -4,10 +4,10 @@ import 'package:bunga_player/actions/video_playing.dart';
 import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/models/chat/user.dart';
 import 'package:bunga_player/models/video_entries/video_entry.dart';
-import 'package:bunga_player/providers/business/business_indicator.dart';
+import 'package:bunga_player/providers/business_indicator.dart';
 import 'package:bunga_player/providers/chat.dart';
-import 'package:bunga_player/providers/business/video_player.dart';
 import 'package:bunga_player/screens/dialogs/local_video_entry.dart';
+import 'package:bunga_player/screens/wrappers/providers.dart';
 import 'package:bunga_player/screens/wrappers/shortcuts.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
@@ -24,8 +24,6 @@ class RoomSection extends StatefulWidget {
 class _RoomSectionState extends State<RoomSection> {
   @override
   Widget build(BuildContext context) {
-    final videoPlayer = context.read<VideoPlayer>();
-
     return Row(
       children: [
         // Watcher list
@@ -56,18 +54,19 @@ class _RoomSectionState extends State<RoomSection> {
               notifier.value,
           builder:
               (BuildContext context, ChannelData? channelData, Widget? child) {
-            if (context.watch<BusinessIndicator>().currentProgress !=
-                    null || // busy, maybe loading video
-                videoPlayer.isStoppedNotifier.value || // stopped
-                channelData == null || // no one change data
-                channelData.videoHash == videoPlayer.videoHashNotifier.value) {
+            if (!context
+                    .watch<BusinessIndicator>()
+                    .isRunning || // busy, maybe loading video
+                context.isVideoSameWithChannel) {
               return const SizedBox.shrink();
             }
 
+            assert(channelData != null,
+                'If channelData is null, then isVideoSameWithChannel should be true');
             return _VideoUnsyncNotification(
-              onAction: () => _onOpenVideoPressed(channelData),
-              otherUserName: channelData.sharer.name,
+              otherUserName: channelData!.sharer.name,
               otherVideoTitle: channelData.name,
+              onAction: () => _onOpenVideoPressed(channelData),
             );
           },
         ),

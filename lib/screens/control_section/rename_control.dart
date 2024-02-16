@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:bunga_player/actions/auth.dart';
-import 'package:bunga_player/providers/business/business_indicator.dart';
+import 'package:bunga_player/providers/business_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 

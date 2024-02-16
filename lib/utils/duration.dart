@@ -2,6 +2,10 @@ extension FormatString on Duration {
   String get hhmmss => toString().split('.').first.padLeft(8, "0");
 }
 
-extension ToDuration on double {
-  Duration get asMilliseconds => Duration(milliseconds: toInt());
+extension Clamp on Duration {
+  Duration clamp(Duration min, Duration max) => this < min
+      ? min
+      : this > max
+          ? max
+          : this;
 }

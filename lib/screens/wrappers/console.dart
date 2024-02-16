@@ -3,13 +3,13 @@ import 'dart:async';
 import 'package:bunga_player/actions/auth.dart';
 import 'package:bunga_player/models/app_key/app_key.dart';
 import 'package:bunga_player/providers/chat.dart';
+import 'package:bunga_player/providers/player.dart';
 import 'package:bunga_player/screens/dialogs/host.dart';
 import 'package:bunga_player/screens/wrappers/restart.dart';
 import 'package:bunga_player/services/alist.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/providers/business/video_player.dart';
 import 'package:bunga_player/services/toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -58,7 +58,7 @@ class _ConsoleWrapperState extends State<ConsoleWrapper> {
       readOnly: true,
     );
 
-    final watchProgress = context.read<VideoPlayer>().watchProgress;
+    final watchProgress = context.read<PlayWatchProgresses>().value;
     final actionView = Column(
       children: [
         FilledButton(
@@ -213,9 +213,7 @@ class _VariablesViewState extends State<_VariablesView> {
         'id: ${context.read<CurrentChannelId>().value}\ndata: ${context.read<CurrentChannelData>().value}\nwatchers:${context.read<CurrentChannelWatchers>().value}\nlast message: ${context.read<CurrentChannelMessage>().value}',
     'Voice Call': (context) =>
         'status: ${context.read<CurrentCallStatus>().value.name}\n talkers: ${context.read<CurrentTalkersCount>().value}',
-    'Video Hash': (context) =>
-        context.read<VideoPlayer>().videoHashNotifier.value ??
-        'No Video Playing',
+// TODO: video values
     'AList': (context) =>
         'host: ${getIt<AList>().host},\ntoken: ${getIt<AList>().token}',
   };

@@ -1,4 +1,4 @@
-import 'package:bunga_player/providers/business/business_indicator.dart';
+import 'package:bunga_player/providers/business_indicator.dart';
 import 'package:bunga_player/screens/progress_section/video_progress_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

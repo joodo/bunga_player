@@ -1,12 +1,11 @@
+import 'package:bunga_player/actions/play.dart';
 import 'package:bunga_player/mocks/slider.dart' as mock;
 import 'package:bunga_player/mocks/dropdown.dart' as mock;
-import 'package:bunga_player/providers/business/video_player.dart';
+import 'package:bunga_player/providers/player.dart';
 import 'package:bunga_player/screens/control_section/dropdown.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:media_kit/media_kit.dart';
-import 'package:multi_value_listenable_builder/multi_value_listenable_builder.dart';
 import 'package:provider/provider.dart';
 
 enum SubtitleControlUIState {
@@ -27,27 +26,59 @@ class _SubtitleControlState extends State<SubtitleControl> {
 
   @override
   Widget build(BuildContext context) {
-    final videoPlayer = context.read<VideoPlayer>();
-    final listenable = {
-      SubtitleControlUIState.delay: videoPlayer.subDelay,
-      SubtitleControlUIState.size: videoPlayer.subSize,
-      SubtitleControlUIState.position: videoPlayer.subPosition,
+    final value = <SubtitleControlUIState, double>{
+      SubtitleControlUIState.delay:
+          context.select<PlaySubDelay, double>((provider) => provider.value),
+      SubtitleControlUIState.size: context
+          .select<PlaySubSize, double>((provider) => provider.value.toDouble()),
+      SubtitleControlUIState.position: context
+          .select<PlaySubPos, double>((provider) => provider.value.toDouble()),
     }[_subtitleUIState]!;
-    final minValue = {
+    final minValue = <SubtitleControlUIState, double>{
       SubtitleControlUIState.delay: -10.0,
-      SubtitleControlUIState.size: 20.0,
-      SubtitleControlUIState.position: 0.0,
+      SubtitleControlUIState.size: 15.0,
+      SubtitleControlUIState.position: -10.0,
     }[_subtitleUIState]!;
-    final maxValue = {
+    final maxValue = <SubtitleControlUIState, double>{
       SubtitleControlUIState.delay: 10.0,
-      SubtitleControlUIState.size: 70.0,
-      SubtitleControlUIState.position: 110.0,
+      SubtitleControlUIState.size: 65.0,
+      SubtitleControlUIState.position: 100.0,
     }[_subtitleUIState]!;
-    final surfix = {
+    final surfix = <SubtitleControlUIState, String>{
       SubtitleControlUIState.delay: 's',
       SubtitleControlUIState.size: 'px',
       SubtitleControlUIState.position: '%',
     }[_subtitleUIState]!;
+    final setter = <SubtitleControlUIState, void Function(double)>{
+      SubtitleControlUIState.delay: (double value) => Actions.invoke(
+            context,
+            SetSubDelayIntent(value),
+          ),
+      SubtitleControlUIState.size: (double value) => Actions.invoke(
+            context,
+            SetSubSizeIntent(value.toInt()),
+          ),
+      SubtitleControlUIState.position: (double value) => Actions.invoke(
+            context,
+            SetSubPosIntent(value.toInt()),
+          ),
+    }[_subtitleUIState];
+    final resetter = <SubtitleControlUIState, void Function()>{
+      SubtitleControlUIState.delay: () => Actions.invoke(
+            context,
+            const SetSubDelayIntent(),
+          ),
+      SubtitleControlUIState.size: () => Actions.invoke(
+            context,
+            const SetSubSizeIntent(),
+          ),
+      SubtitleControlUIState.position: () => Actions.invoke(
+            context,
+            const SetSubPosIntent(),
+          ),
+    }[_subtitleUIState];
+
+    _textController.text = value.toStringAsFixed(1);
 
     return Row(
       children: [
@@ -60,50 +91,43 @@ class _SubtitleControlState extends State<SubtitleControl> {
         const SizedBox(width: 8),
 
         // Subtitle dropbox
-        MultiValueListenableBuilder(
-          valueListenables: [
-            videoPlayer.track,
-            videoPlayer.tracks,
-          ],
-          builder: (context, values, child) {
-            var subtitleTracks = (values[1] as Tracks?)?.subtitle;
-
+        Consumer2<PlaySubtitleTracks, PlaySubtitleTrackID>(
+          builder: (context, tracks, currentTrackID, child) {
             return SizedBox(
               width: 200,
               height: 36,
               child: ControlDropdown(
                 items: [
-                  ...subtitleTracks?.map((e) => mock.DropdownMenuItem<String>(
-                            value: e.id,
-                            child: Text(() {
-                              if (e.id == 'auto') return '默认';
-                              if (e.id == 'no') return '无字幕';
+                  ...tracks.value.map(
+                    (track) => mock.DropdownMenuItem<String>(
+                      value: track.id,
+                      child: Text(
+                        () {
+                          if (track.id == 'auto') return '默认';
+                          if (track.id == 'no') return '无字幕';
 
-                              String text = '[${e.id}]';
-                              if (e.title != null) {
-                                text += ' ${e.title}';
-                              }
-                              if (e.language != null) {
-                                text += ' (${e.language})';
-                              }
-                              return text;
-                            }()),
-                          )) ??
-                      [],
+                          return '[${track.id}] ${track.title} (${track.language})';
+                        }(),
+                      ),
+                    ),
+                  ),
                   const mock.DropdownMenuItem<String>(
                     value: 'OPEN',
                     child: Text('打开字幕……'),
                   ),
                 ],
-                value: values[0]?.subtitle.id,
+                value: currentTrackID.value,
                 onChanged: (subtitleID) async {
                   if (subtitleID != 'OPEN') {
-                    return videoPlayer.setSubtitleTrack(subtitleID);
-                  }
-
-                  final file = await openFile();
-                  if (file != null) {
-                    videoPlayer.addSubtitleTrack(file.path);
+                    Actions.invoke(context, SetSubtitleIntent.byID(subtitleID));
+                  } else {
+                    final file = await openFile();
+                    if (context.mounted && file != null) {
+                      Actions.invoke(
+                        context,
+                        SetSubtitleIntent.byPath(file.path),
+                      );
+                    }
                   }
                 },
               ),
@@ -136,90 +160,87 @@ class _SubtitleControlState extends State<SubtitleControl> {
           },
         ),
         const SizedBox(width: 16),
-        ValueListenableBuilder<double>(
-          valueListenable: listenable,
-          builder: (context, value, child) {
-            final textController =
-                TextEditingController(text: value.toStringAsFixed(1));
-            var child = Row(
-              children: [
-                Flexible(
-                  child: SizedBox(
-                    width: 200,
-                    child: mock.MySlider(
-                      value: value < minValue
-                          ? minValue
-                          : value > maxValue
-                              ? maxValue
-                              : value,
-                      max: maxValue,
-                      min: minValue,
-                      onChanged: (value) => listenable.value = value,
-                      focusNode: FocusNode(canRequestFocus: false),
-                      useRootOverlay: true,
-                    ),
+        Expanded(
+          child: Row(
+            children: [
+              Flexible(
+                child: SizedBox(
+                  width: 200,
+                  child: mock.MySlider(
+                    value: value < minValue
+                        ? minValue
+                        : value > maxValue
+                            ? maxValue
+                            : value,
+                    max: maxValue,
+                    min: minValue,
+                    onChanged: setter,
+                    focusNode: FocusNode(canRequestFocus: false),
+                    useRootOverlay: true,
                   ),
                 ),
-                const SizedBox(width: 16),
-                SizedBox(
-                  width: 64,
-                  height: 32,
-                  child: TextField(
-                    cursorHeight: 16,
-                    style: Theme.of(context).textTheme.bodySmall,
-                    controller: textController,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp('[0-9.-]')),
-                      TextInputFormatter.withFunction((oldValue, newValue) {
-                        final newValueText = newValue.text;
-                        if (newValueText == "-" ||
-                            newValueText == "-." ||
-                            newValueText == ".") {
-                          // Returning new value if text field contains only "." or "-." or ".".
+              ),
+              const SizedBox(width: 16),
+              SizedBox(
+                width: 64,
+                height: 32,
+                child: TextField(
+                  cursorHeight: 16,
+                  style: Theme.of(context).textTheme.bodySmall,
+                  controller: _textController,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp('[0-9.-]')),
+                    TextInputFormatter.withFunction((oldValue, newValue) {
+                      final newValueText = newValue.text;
+                      if (newValueText == "-" ||
+                          newValueText == "-." ||
+                          newValueText == ".") {
+                        // Returning new value if text field contains only "." or "-." or ".".
+                        return newValue;
+                      } else if (newValueText.isNotEmpty) {
+                        // If text filed not empty and value updated then trying to parse it as a double.
+                        try {
+                          double.parse(newValueText);
+                          // Here double parsing succeeds so returning that new value.
                           return newValue;
-                        } else if (newValueText.isNotEmpty) {
-                          // If text filed not empty and value updated then trying to parse it as a double.
-                          try {
-                            double.parse(newValueText);
-                            // Here double parsing succeeds so returning that new value.
-                            return newValue;
-                          } catch (e) {
-                            // Here double parsing failed so returning that old value.
-                            return oldValue;
-                          }
-                        } else {
-                          // Returning new value if text field was empty.
-                          return newValue;
+                        } catch (e) {
+                          // Here double parsing failed so returning that old value.
+                          return oldValue;
                         }
-                      }),
-                    ],
-                    onTap: () {
-                      textController.selection = TextSelection(
-                        baseOffset: 0,
-                        extentOffset: textController.text.length,
-                      );
-                    },
-                    onEditingComplete: () =>
-                        listenable.value = double.parse(textController.text),
-                    decoration: InputDecoration(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                      border: const OutlineInputBorder(),
-                      suffix: Text(surfix),
-                    ),
+                      } else {
+                        // Returning new value if text field was empty.
+                        return newValue;
+                      }
+                    }),
+                  ],
+                  onTap: () {
+                    _textController.selection = TextSelection(
+                      baseOffset: 0,
+                      extentOffset: _textController.text.length,
+                    );
+                  },
+                  onEditingComplete: () => setter?.call(
+                    double.parse(_textController.text),
+                  ),
+                  decoration: InputDecoration(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                    border: const OutlineInputBorder(),
+                    suffix: Text(surfix),
                   ),
                 ),
-                const SizedBox(width: 8),
-                IconButton(
-                  icon: const Icon(Icons.restart_alt),
-                  iconSize: 16.0,
-                  onPressed: listenable.reset,
-                ),
-              ],
-            );
-            return Expanded(child: child);
-          },
+              ),
+              const SizedBox(width: 8),
+              IconButton(
+                icon: const Icon(Icons.restart_alt),
+                iconSize: 16.0,
+                onPressed: resetter,
+              ),
+            ],
+          ),
         ),
       ],
     );
   }
+
+  final _textController = TextEditingController();
 }

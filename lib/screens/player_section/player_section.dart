@@ -1,9 +1,12 @@
 import 'package:bunga_player/actions/play.dart';
-import 'package:bunga_player/providers/business/business_indicator.dart';
+import 'package:bunga_player/providers/business_indicator.dart';
+import 'package:bunga_player/providers/player.dart';
 import 'package:bunga_player/providers/ui.dart';
-import 'package:bunga_player/providers/business/video_player.dart';
 import 'package:bunga_player/screens/player_section/placeholder.dart';
 import 'package:bunga_player/screens/player_section/popmoji_player.dart';
+import 'package:bunga_player/services/player.dart';
+import 'package:bunga_player/services/player.media_kit.dart';
+import 'package:bunga_player/services/services.dart';
 import 'package:flutter/material.dart';
 import 'package:media_kit_video/media_kit_video.dart' as media_kit;
 import 'package:provider/provider.dart';
@@ -26,7 +29,11 @@ class _PlayerSectionState extends State<PlayerSection> {
         fit: StackFit.expand,
         children: [
           media_kit.Video(
-            controller: context.read<VideoPlayer>().controller,
+            controller: (getIt<Player>() as MediaKitPlayer).controller,
+            subtitleViewConfiguration:
+                const media_kit.SubtitleViewConfiguration(
+              textScaleFactor: 1.0,
+            ),
             wakelock: true,
           ),
           AnimatedOpacity(

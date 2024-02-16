@@ -7,6 +7,7 @@ class BusinessIndicator extends ChangeNotifier {
   int? currentProgress, totalProgress;
 
   bool _isRunning = false;
+  bool get isRunning => _isRunning;
   Future<void> run({
     required List<Task> tasks,
     bool showProgress = true,

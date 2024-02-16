@@ -51,10 +51,6 @@ class JoinChannelAction extends ContextAction<JoinChannelIntent> {
     channelSubscriptions.addAll([
       dataStream.listen((channelData) {
         final current = Intentor.context.read<CurrentChannelData>();
-        // HACK: stream io sdk trigger bugly even when changed nothing,
-        //  cause annoying logs
-        if (current.value == channelData) return;
-
         current.value = channelData;
         logger.i('Channel data changed: $channelData');
       }),
@@ -95,12 +91,12 @@ class LeaveChannelAction extends ContextAction<LeaveChannelIntent> {
     }
     channelSubscriptions.clear();
 
-    final chatService = getIt<ChatService>();
-    await chatService.leaveChannel();
-
     read<CurrentChannelId>().value = null;
     read<CurrentChannelData>().value = null;
     read<CurrentChannelWatchers>().clear();
+
+    final chatService = getIt<ChatService>();
+    await chatService.leaveChannel();
   }
 }
 

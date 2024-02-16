@@ -1,12 +1,9 @@
 import 'package:bunga_player/actions/auth.dart';
-import 'package:bunga_player/actions/bindings.dart';
 import 'package:bunga_player/actions/channel.dart';
-import 'package:bunga_player/actions/play.dart' as play;
+import 'package:bunga_player/actions/play.dart';
 import 'package:bunga_player/actions/video_playing.dart';
-import 'package:bunga_player/actions/dispatcher.dart';
 import 'package:bunga_player/actions/voice_call.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 class Intentor extends StatefulWidget {
   static final _globalKey = GlobalKey<State<Intentor>>();
@@ -45,26 +42,8 @@ class ShortcutsWrapper extends StatelessWidget {
     child = ChannelActions(child: child);
     child = VideoPlayingActions(child: child);
     child = AuthActions(child: child);
+    child = PlayActions(child: child);
 
-    return Shortcuts(
-      shortcuts: const <ShortcutActivator, Intent>{
-        SingleActivator(LogicalKeyboardKey.arrowUp):
-            play.SetVolumeIntent(10, isIncrease: true),
-        SingleActivator(LogicalKeyboardKey.arrowDown):
-            play.SetVolumeIntent(-10, isIncrease: true),
-        SingleActivator(LogicalKeyboardKey.arrowLeft):
-            play.SetPositionIntent(Duration(seconds: -5), isIncrease: true),
-        SingleActivator(LogicalKeyboardKey.arrowRight):
-            play.SetPositionIntent(Duration(seconds: 5), isIncrease: true),
-        SingleActivator(LogicalKeyboardKey.space): play.TogglePlayIntent(),
-        SingleActivator(LogicalKeyboardKey.escape):
-            play.SetFullScreenIntent(false),
-      },
-      child: Actions(
-        dispatcher: LoggingActionDispatcher(),
-        actions: actionBindings,
-        child: child,
-      ),
-    );
+    return child;
   }
 }

@@ -105,7 +105,8 @@ class StreamIO implements ChatService {
       channel.cid!,
       watchers.map(userFromStreamUser),
       channel.extraDataStream
-          .map<ChannelData>((data) => ChannelData.fromJson(data)),
+          .map<ChannelData>((data) => ChannelData.fromJson(data))
+          .distinct(),
       channel.on('user.watching.start').asyncMap<User>(_getUpdatedEventUser),
       channel.on('user.watching.stop').asyncMap<User>(_getUpdatedEventUser),
       channel.on('message.new').map<Message>(

@@ -5,13 +5,14 @@ import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/models/chat/message.dart';
 import 'package:bunga_player/models/chat/user.dart';
 import 'package:bunga_player/models/video_entries/video_entry.dart';
-import 'package:bunga_player/providers/business/business_indicator.dart';
-import 'package:bunga_player/providers/business/video_player.dart';
+import 'package:bunga_player/providers/business_indicator.dart';
 import 'package:bunga_player/providers/chat.dart';
+import 'package:bunga_player/providers/player.dart';
 import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/screens/wrappers/providers.dart';
 import 'package:bunga_player/screens/wrappers/shortcuts.dart';
 import 'package:bunga_player/services/logger.dart';
+import 'package:bunga_player/services/player.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
 import 'package:bunga_player/actions/dispatcher.dart';
@@ -43,7 +44,7 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
     assert(context != null);
 
     final bi = context!.read<BusinessIndicator>();
-    final videoPlayer = context.read<VideoPlayer>();
+    final videoPlayer = getIt<Player>();
 
     await bi.run(
       tasks: [
@@ -53,7 +54,7 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
           await intent.videoEntry.fetch();
         },
         bi.setTitle('正在收拾客厅……'),
-        (data) => videoPlayer.loadVideo(intent.videoEntry),
+        (data) => videoPlayer.open(intent.videoEntry),
         bi.setTitle('正在发送请柬……'),
         (data) async {
           await intent.beforeAskingPosition?.call();
@@ -81,10 +82,8 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
   }
 }
 
-enum PlayingStatus { play, pause }
-
 class ApplyRemotePlayingStatusIntent extends Intent {
-  final PlayingStatus status;
+  final PlayStatusType status;
   final int position;
   final User sender;
   final String? answerId;
@@ -107,39 +106,38 @@ class ApplyRemotePlayingStatusAction
     ApplyRemotePlayingStatusIntent intent, [
     BuildContext? context,
   ]) async {
+    final read = context!.read;
+
     positionAskingBusiness.askingMessageId = null;
 
-    final videoPlayer = context!.read<VideoPlayer>();
-
-    final toast = getIt<Toast>();
     bool canShowToast = true;
     // If apply status is because asking where, then don't show snack bar
     if (intent.answerId != null) canShowToast = false;
 
-    final isPlaying = videoPlayer.isPlaying.value;
-    if (intent.status == PlayingStatus.pause && isPlaying) {
-      videoPlayer.isPlaying.value = false;
+    final isPlaying = read<PlayStatus>().isPlaying;
+    if (intent.status == PlayStatusType.pause && isPlaying) {
+      getIt<Player>().pause();
       if (canShowToast) {
-        toast.show('${intent.sender.name} 暂停了视频');
+        getIt<Toast>().show('${intent.sender.name} 暂停了视频');
         canShowToast = false;
         context.read<JustToggleByRemote>().mark();
       }
     }
-    if (intent.status == PlayingStatus.play && !isPlaying) {
-      videoPlayer.isPlaying.value = true;
+    if (intent.status == PlayStatusType.play && !isPlaying) {
+      getIt<Player>().play();
       if (canShowToast) {
-        toast.show('${intent.sender.name} 播放了视频');
+        getIt<Toast>().show('${intent.sender.name} 播放了视频');
         canShowToast = false;
         context.read<JustToggleByRemote>().mark();
       }
     }
 
-    final position = videoPlayer.position.value;
+    final position = read<PlayPosition>().value;
     final remotePosition = Duration(milliseconds: intent.position);
     if ((position - remotePosition).inMilliseconds.abs() > 1000) {
-      videoPlayer.position.value = remotePosition;
+      getIt<Player>().seek(remotePosition);
       if (canShowToast) {
-        toast.show('${intent.sender.name} 调整了进度');
+        getIt<Toast>().show('${intent.sender.name} 调整了进度');
         canShowToast = false;
       }
     }
@@ -161,7 +159,7 @@ class ApplyRemotePlayingStatusAction
 }
 
 class SendPlayingStatusIntent extends Intent {
-  final PlayingStatus playingStatus;
+  final PlayStatusType playingStatus;
   final int position;
   final String? answerId;
 
@@ -178,17 +176,15 @@ class SendPlayingStatusAction extends ContextAction<SendPlayingStatusIntent> {
   SendPlayingStatusAction({required this.positionAskingBusiness});
 
   @override
-  Future<void>? invoke(SendPlayingStatusIntent intent,
-      [BuildContext? context]) {
+  Future<void> invoke(SendPlayingStatusIntent intent, [BuildContext? context]) {
     final messageText = '${intent.playingStatus.name} at ${intent.position}';
 
-    assert(context != null);
     return Actions.invoke(
         context!,
         SendMessageIntent(
           messageText,
           quoteId: intent.answerId,
-        )) as Future?;
+        )) as Future<void>;
   }
 
   @override
@@ -278,7 +274,6 @@ class _VideoPlayingActionsState extends State<VideoPlayingActions> {
 
   void _dealChannelMessage() {
     final read = Intentor.context.read;
-    final videoPlayer = read<VideoPlayer>();
 
     final message = read<CurrentChannelMessage>().value!;
     final splits = message.text.split(' ');
@@ -288,7 +283,9 @@ class _VideoPlayingActionsState extends State<VideoPlayingActions> {
         Actions.maybeInvoke(
           Intentor.context,
           ApplyRemotePlayingStatusIntent(
-            splits.first == 'pause' ? PlayingStatus.pause : PlayingStatus.play,
+            splits.first == 'pause'
+                ? PlayStatusType.pause
+                : PlayStatusType.play,
             int.parse(splits.last),
             message.sender,
             message.quoteId,
@@ -298,10 +295,8 @@ class _VideoPlayingActionsState extends State<VideoPlayingActions> {
         Actions.maybeInvoke(
           Intentor.context,
           SendPlayingStatusIntent(
-            videoPlayer.isPlaying.value
-                ? PlayingStatus.play
-                : PlayingStatus.pause,
-            videoPlayer.position.value.inMilliseconds,
+            read<PlayStatus>().value,
+            read<PlayPosition>().value.inMilliseconds,
             answerId: message.id,
           ),
         );

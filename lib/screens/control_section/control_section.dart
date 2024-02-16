@@ -1,4 +1,5 @@
 import 'package:bunga_player/providers/chat.dart';
+import 'package:bunga_player/providers/player.dart';
 import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/screens/control_section/video_open_control.dart';
 import 'package:bunga_player/screens/control_section/call_control.dart';
@@ -9,7 +10,6 @@ import 'package:bunga_player/screens/control_section/subtitle_control.dart';
 import 'package:bunga_player/screens/control_section/tune_control.dart';
 import 'package:bunga_player/screens/control_section/welcome_control.dart';
 import 'package:bunga_player/screens/progress_section/video_progress_indicator.dart';
-import 'package:bunga_player/providers/business/video_player.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:flutter/material.dart';
@@ -102,7 +102,7 @@ class _ControlSectionState extends State<ControlSection> {
     // When show again during fullscreen, route to main control
     if (context.read<IsControlSectionHidden>().value == false &&
         // Avoid change login control to main control
-        !context.read<VideoPlayer>().isStoppedNotifier.value) {
+        context.read<PlayStatus>().value != PlayStatusType.stop) {
       final navigator = _navigatorStateKey.currentState!;
       navigator.popUntil((route) =>
           route.settings.name == 'control:main' ||

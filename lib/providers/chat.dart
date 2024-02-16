@@ -3,6 +3,7 @@ import 'package:bunga_player/models/chat/message.dart';
 import 'package:bunga_player/models/chat/user.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
+import 'package:bunga_player/utils/volume_notifier.dart';
 import 'package:bunga_player/utils/value_listenable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
@@ -89,44 +90,18 @@ enum CallStatus {
 }
 
 class CurrentCallStatus extends ValueNotifier<CallStatus> {
-  CurrentCallStatus(super.value);
+  CurrentCallStatus() : super(CallStatus.none);
 }
 
 class CurrentTalkersCount extends ValueNotifier<int> {
   CurrentTalkersCount() : super(0);
 }
 
-class CallVolume extends ChangeNotifier {
-  static const int maxVolume = 100;
-  static const int minVolume = 0;
-
-  CallVolume();
-
-  int _volume = (_pref<int>('call_volume', 50)).clamp(minVolume, maxVolume);
-  int get volume => _volume;
-  set volume(int newVolume) {
-    _volume = newVolume.clamp(minVolume, maxVolume);
-    notifyListeners();
-  }
-
-  bool _isMute = false;
-  bool get isMute => _isMute;
-  set isMute(bool mute) {
-    _isMute = mute;
-    notifyListeners();
-  }
-
-  double get percent => volume / (maxVolume - minVolume);
+class CallVolume extends VolumeNotifier {
+  CallVolume() : super(getIt<Preferences>().get<int>('call_volume') ?? 50);
 }
 
-class CallMute extends ValueNotifier<bool> {
-  CallMute(super.value);
-}
-
-T _pref<T>(String key, T defaultValue) =>
-    getIt<Preferences>().get<T>(key) ?? defaultValue;
-
-final providers = MultiProvider(providers: [
+final chatProviders = MultiProvider(providers: [
   // User
   ChangeNotifierProvider(create: (context) => CurrentUser()),
 
@@ -137,8 +112,7 @@ final providers = MultiProvider(providers: [
   ChangeNotifierProvider(create: (context) => CurrentChannelMessage()),
 
   // Voice call
-  ChangeNotifierProvider(
-      create: (context) => CurrentCallStatus(CallStatus.none)),
+  ChangeNotifierProvider(create: (context) => CurrentCallStatus()),
   ChangeNotifierProvider(create: (context) => CurrentTalkersCount()),
   ChangeNotifierProvider(create: (context) => CallVolume()),
 ]);

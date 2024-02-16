@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 
 class LoggingActionDispatcher extends ActionDispatcher {
   final String? prefix;
-  LoggingActionDispatcher({this.prefix});
+  LoggingActionDispatcher({this.prefix, this.mute});
+
+  final Set<Type>? mute;
 
   @override
   Object? invokeAction(
@@ -11,7 +13,9 @@ class LoggingActionDispatcher extends ActionDispatcher {
     covariant Intent intent, [
     BuildContext? context,
   ]) {
-    logger.i('Action: invoke $action($intent)');
+    if (mute?.contains(intent.runtimeType) != true) {
+      logger.i('Action: invoke $action($intent)');
+    }
     return super.invokeAction(action, intent, context);
   }
 
@@ -21,7 +25,9 @@ class LoggingActionDispatcher extends ActionDispatcher {
     covariant Intent intent, [
     BuildContext? context,
   ]) {
-    logger.i('Action: invoke $action($intent)');
+    if (mute?.contains(intent.runtimeType) != true) {
+      logger.i('Action: invoke $action($intent)');
+    }
     return super.invokeActionIfEnabled(action, intent, context);
   }
 }
