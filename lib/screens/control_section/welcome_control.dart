@@ -334,6 +334,13 @@ class _OthersDialogState extends State<_OthersDialog> {
       height: 125,
       width: 200,
       fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) => const SizedBox(
+        width: 200,
+        height: 125,
+        child: Center(
+          child: Icon(Icons.broken_image, size: 64),
+        ),
+      ),
     );
 
     final cardContent = Column(
