@@ -37,22 +37,22 @@ class Agora implements CallService {
     _engine.registerEventHandler(
       RtcEngineEventHandler(
         onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
-          logger.i("Voice call: Local user uid:${connection.localUid} joined.");
+          logger.i('Voice call: Local user uid:${connection.localUid} joined.');
         },
         onUserJoined: (RtcConnection connection, int remoteUid, int elapsed) {
           if (connection.localUid == remoteUid) return;
           _talkersID.add(remoteUid);
           _talkersCountStreamController.add(_talkersID.length);
-          logger.i("Voice call: Remote user uid:$remoteUid joined.");
+          logger.i(
+              'Voice call: Remote user uid:$remoteUid joined.\nCurrent Talkers: $_talkersID');
         },
         onUserOffline: (RtcConnection connection, int remoteUid,
             UserOfflineReasonType reason) {
           if (connection.localUid == remoteUid) return;
           _talkersID.remove(remoteUid);
           _talkersCountStreamController.add(_talkersID.length);
-          logger.i("Voice call: Remote user uid:$remoteUid joined.");
           logger.i(
-              "Voice call: Remote user uid:$remoteUid left. Reason: $reason");
+              'Voice call: Remote user uid:$remoteUid left. Reason: $reason.\nCurrent Talkers: $_talkersID');
         },
       ),
     );
