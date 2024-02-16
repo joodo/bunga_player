@@ -56,7 +56,7 @@ class TogglePlayAction extends ContextAction<TogglePlayIntent> {
     return Actions.maybeInvoke(
       context,
       SendPlayingStatusIntent(
-        playStatus.value,
+        willPlay ? PlayStatusType.play : PlayStatusType.pause,
         position.value.inMilliseconds,
       ),
     ) as Future<void>?;
