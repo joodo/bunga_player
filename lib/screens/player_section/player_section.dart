@@ -20,34 +20,33 @@ class PlayerSection extends StatefulWidget {
 class _PlayerSectionState extends State<PlayerSection> {
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onDoubleTap: () => Actions.invoke(
-          context, SetFullScreenIntent(!context.read<IsFullScreen>().value)),
-      onTap: () => Actions.maybeInvoke(context, const TogglePlayIntent()),
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          media_kit.Video(
-            controller: (getIt<Player>() as MediaKitPlayer).controller,
-            subtitleViewConfiguration:
-                const media_kit.SubtitleViewConfiguration(
-              textScaleFactor: 1.0,
-            ),
-            wakelock: true,
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        media_kit.Video(
+          controller: (getIt<Player>() as MediaKitPlayer).controller,
+          subtitleViewConfiguration: const media_kit.SubtitleViewConfiguration(
+            textScaleFactor: 1.0,
           ),
-          AnimatedOpacity(
-            opacity: context.select<BusinessIndicator, double>(
-                (bi) => bi.currentMissionName == null ? 0.0 : 1.0),
-            duration: const Duration(milliseconds: 250),
-            child: const PlayerPlaceholder(),
+          wakelock: true,
+        ),
+        AnimatedOpacity(
+          opacity: context.select<BusinessIndicator, double>(
+              (bi) => bi.currentMissionName == null ? 0.0 : 1.0),
+          duration: const Duration(milliseconds: 250),
+          child: const PlayerPlaceholder(),
+        ),
+        Navigator(
+          onGenerateRoute: (settings) => MaterialPageRoute<void>(
+            builder: (context) => const PopmojiPlayer(),
           ),
-          Navigator(
-            onGenerateRoute: (settings) => MaterialPageRoute<void>(
-              builder: (context) => const PopmojiPlayer(),
-            ),
-          ),
-        ],
-      ),
+        ),
+        GestureDetector(
+          onDoubleTap: () => Actions.invoke(context,
+              SetFullScreenIntent(!context.read<IsFullScreen>().value)),
+          onTap: () => Actions.maybeInvoke(context, const TogglePlayIntent()),
+        ),
+      ],
     );
   }
 }
