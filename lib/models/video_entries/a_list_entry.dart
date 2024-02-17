@@ -24,7 +24,6 @@ class AListEntry extends VideoEntry {
 
     logger.i('AList: start fetch video $path');
     final info = await getIt<AList>().get(path!);
-    print(info);
 
     title = info.name;
     image = info.thumb;

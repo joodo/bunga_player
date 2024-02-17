@@ -210,10 +210,15 @@ class _VariablesViewState extends State<_VariablesView> {
     'Current verion': (context) => getIt<PackageInfo>().version,
     'Chat User': (context) => context.read<CurrentUser>().toString(),
     'Chat Channel': (context) =>
-        'id: ${context.read<CurrentChannelId>().value}\ndata: ${context.read<CurrentChannelData>().value}\nwatchers:${context.read<CurrentChannelWatchers>().value}\nlast message: ${context.read<CurrentChannelMessage>().value}',
+        '''id: ${context.read<CurrentChannelId>().value}
+data: ${context.read<CurrentChannelData>().value}
+watchers:${context.read<CurrentChannelWatchers>().value}
+last message: ${context.read<CurrentChannelMessage>().value}''',
     'Voice Call': (context) =>
-        'status: ${context.read<CurrentCallStatus>().value.name}\n talkers: ${context.read<CurrentTalkersCount>().value}',
-// TODO: video values
+        '''status: ${context.read<CurrentCallStatus>().value.name}
+talkers: ${context.read<CurrentTalkersCount>().value}''',
+    'Player': (context) => '''Video Hash: ${context.read<PlayVideoHash>().value}
+Status: ${context.read<PlayStatus>().value}''',
     'AList': (context) =>
         'host: ${getIt<AList>().host},\ntoken: ${getIt<AList>().token}',
   };
