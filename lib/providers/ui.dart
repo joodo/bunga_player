@@ -19,9 +19,11 @@ class IsCatAwake extends ValueNotifier<bool> {
   IsCatAwake() : super(false);
 }
 
-class JustToggleByRemote extends ChangeNotifier
+class _AutoResetNotifier extends ChangeNotifier
     implements ValueListenable<bool> {
-  static const Duration cooldown = Duration(seconds: 2);
+  _AutoResetNotifier(this.cooldown);
+
+  final Duration cooldown;
 
   bool _value = false;
   @override
@@ -34,6 +36,11 @@ class JustToggleByRemote extends ChangeNotifier
       notifyListeners();
     },
   )..cancel();
+  @override
+  void dispose() {
+    _resetTimer.cancel();
+    super.dispose();
+  }
 
   void mark() {
     _value = true;
@@ -42,9 +49,18 @@ class JustToggleByRemote extends ChangeNotifier
   }
 }
 
+class JustToggleByRemote extends _AutoResetNotifier {
+  JustToggleByRemote() : super(const Duration(seconds: 2));
+}
+
+class JustAdjustedVolumeByKey extends _AutoResetNotifier {
+  JustAdjustedVolumeByKey() : super(const Duration(seconds: 2));
+}
+
 uiProviders() => [
       ChangeNotifierProvider(create: (context) => IsFullScreen(false)),
       ChangeNotifierProvider(create: (context) => IsControlSectionHidden()),
       ChangeNotifierProvider(create: (context) => IsCatAwake()),
       ChangeNotifierProvider(create: (context) => JustToggleByRemote()),
+      ChangeNotifierProvider(create: (context) => JustAdjustedVolumeByKey()),
     ];

@@ -10,16 +10,19 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 class SetVolumeIntent extends Intent {
-  const SetVolumeIntent(this.volume, {this.isIncrease = false});
+  const SetVolumeIntent(this.volume, {this.byKey = false});
   final int volume;
-  final bool isIncrease;
+  final bool byKey;
 }
 
 class SetVolumeAction extends ContextAction<SetVolumeIntent> {
   @override
   Future<void> invoke(SetVolumeIntent intent, [BuildContext? context]) {
     var volume = intent.volume;
-    if (intent.isIncrease) volume += context!.read<PlayVolume>().volume;
+    if (intent.byKey) {
+      volume += context!.read<PlayVolume>().volume;
+      context.read<JustAdjustedVolumeByKey>().mark();
+    }
     return getIt<Player>().setVolume(volume);
   }
 }
@@ -329,9 +332,9 @@ class _PlayActionsState extends State<PlayActions> {
     final shortcuts = Shortcuts(
       shortcuts: const <ShortcutActivator, Intent>{
         SingleActivator(LogicalKeyboardKey.arrowUp):
-            SetVolumeIntent(10, isIncrease: true),
+            SetVolumeIntent(10, byKey: true),
         SingleActivator(LogicalKeyboardKey.arrowDown):
-            SetVolumeIntent(-10, isIncrease: true),
+            SetVolumeIntent(-10, byKey: true),
         SingleActivator(LogicalKeyboardKey.arrowLeft):
             SeekIntent(Duration(seconds: -5), isIncrease: true),
         SingleActivator(LogicalKeyboardKey.arrowRight):
