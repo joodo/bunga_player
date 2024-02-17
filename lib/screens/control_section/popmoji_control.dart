@@ -39,15 +39,23 @@ class PopmojiControl extends StatelessWidget {
         const SizedBox(width: 8),
 
         Expanded(
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(children: [...emojiButtons]),
+          child: ScrollConfiguration(
+            behavior: _AllowAllDeviceScroll(),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(children: [...emojiButtons]),
+            ),
           ),
         ),
         const SizedBox(width: 8),
       ],
     );
   }
+}
+
+class _AllowAllDeviceScroll extends MaterialScrollBehavior {
+  @override
+  Set<PointerDeviceKind> get dragDevices => PointerDeviceKind.values.toSet();
 }
 
 class _EmojiButton extends StatelessWidget {
