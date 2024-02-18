@@ -54,7 +54,7 @@ To solve this problem, when user joining a channel that suppose to match a speci
 
 ```mermaid
 flowchart TD
-    Screen -->|User Reaction| Action
+    Screen -->|User Reaction| Actions
     Actions --> Services
     Services -->|Streams| Providers
     Providers-->|States| Screen
