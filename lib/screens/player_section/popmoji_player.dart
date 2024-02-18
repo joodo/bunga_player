@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bunga_player/providers/chat.dart';
+import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
 import 'package:fireworks/fireworks.dart';
@@ -33,15 +34,11 @@ class _PopmojiPlayerState extends State<PopmojiPlayer> {
     return const SizedBox.shrink();
   }
 
-  bool _showing = false;
   void _progressMessage() async {
-    if (_showing) return;
-
     final message = context.read<CurrentChannelMessage>().value!;
     final splits = message.text.split(' ');
 
     if (splits.first == 'popmoji') {
-      _showing = true;
       final isCurrentUser =
           message.sender.id == context.read<CurrentUser>().value!.id;
 
@@ -54,7 +51,7 @@ class _PopmojiPlayerState extends State<PopmojiPlayer> {
         await _showPopmoji(code);
       }
 
-      _showing = false;
+      logger.i('Popmoji: finish code $code');
     }
   }
 
@@ -98,6 +95,24 @@ class _FireworkContentState extends State<_FireworkContent>
   )..start();
 
   @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(const Duration(seconds: 3), () {
+        _fireworkController.autoLaunchDuration = Duration.zero;
+      });
+
+      final route = ModalRoute.of(context)!;
+      final navigator = Navigator.of(context);
+      Future.delayed(const Duration(seconds: 7), () {
+        route.didPop(null);
+        navigator.removeRoute(route);
+      });
+    });
+  }
+
+  @override
   void dispose() {
     _fireworkController.dispose();
     super.dispose();
@@ -105,13 +120,6 @@ class _FireworkContentState extends State<_FireworkContent>
 
   @override
   Widget build(BuildContext context) {
-    Future.delayed(const Duration(seconds: 3), () {
-      _fireworkController.autoLaunchDuration = Duration.zero;
-    });
-    Future.delayed(const Duration(seconds: 7), () {
-      if (context.mounted) Navigator.of(context).pop();
-    });
-
     return Fireworks(controller: _fireworkController);
   }
 }
@@ -145,10 +153,16 @@ class _PopmojiContentState extends State<_PopmojiContent>
   @override
   void initState() {
     super.initState();
-    _animationController.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        if (context.mounted) Navigator.of(context).pop();
-      }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final route = ModalRoute.of(context)!;
+      final navigator = Navigator.of(context);
+      _animationController.addStatusListener((status) {
+        if (status == AnimationStatus.completed) {
+          route.didPop(null);
+          navigator.removeRoute(route);
+        }
+      });
     });
   }
 
