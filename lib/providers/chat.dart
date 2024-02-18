@@ -1,6 +1,8 @@
 import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/models/chat/message.dart';
 import 'package:bunga_player/models/chat/user.dart';
+import 'package:bunga_player/services/call.agora.dart';
+import 'package:bunga_player/services/call.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/volume_notifier.dart';
@@ -105,6 +107,21 @@ class MuteMic extends ValueNotifier<bool> {
   MuteMic() : super(false);
 }
 
+enum NoiseSuppressionLevel {
+  none,
+  low,
+  middle,
+  high,
+}
+
+class CallNoiseSuppressionLevel extends ValueNotifier<NoiseSuppressionLevel> {
+  CallNoiseSuppressionLevel() : super(NoiseSuppressionLevel.high) {
+    addListener(() {
+      (getIt<CallService>() as Agora).setNoiseSuppression(value);
+    });
+  }
+}
+
 final chatProviders = MultiProvider(providers: [
   // User
   ChangeNotifierProvider(create: (context) => CurrentUser()),
@@ -120,4 +137,5 @@ final chatProviders = MultiProvider(providers: [
   ChangeNotifierProvider(create: (context) => CurrentTalkersCount()),
   ChangeNotifierProvider(create: (context) => CallVolume()),
   ChangeNotifierProvider(create: (context) => MuteMic()),
+  ChangeNotifierProvider(create: (context) => CallNoiseSuppressionLevel()),
 ]);

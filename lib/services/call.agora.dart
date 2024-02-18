@@ -1,19 +1,13 @@
 import 'dart:async';
 
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
+import 'package:bunga_player/providers/chat.dart';
 import 'package:bunga_player/services/chat.stream_io.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/chat.dart';
 import 'package:bunga_player/services/services.dart';
 
 import 'call.dart';
-
-enum NoiseSuppressionLevel {
-  none,
-  low,
-  middle,
-  high,
-}
 
 class Agora implements CallService {
   Agora(String appId) {
@@ -23,6 +17,7 @@ class Agora implements CallService {
   final _engine = createAgoraRtcEngine();
 
   Future<void> setNoiseSuppression(NoiseSuppressionLevel level) {
+    logger.i('Call: noise suppression set to $level');
     switch (level) {
       case NoiseSuppressionLevel.none:
         return _engine.setAINSMode(
@@ -63,6 +58,7 @@ class Agora implements CallService {
       logConfig: const LogConfig(level: LogLevel.logLevelWarn),
     ));
 
+    // Noise suppression
     setNoiseSuppression(NoiseSuppressionLevel.high);
 
     // Events
