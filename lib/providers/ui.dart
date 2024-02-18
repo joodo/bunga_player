@@ -31,7 +31,8 @@ class JustAdjustedVolumeByKey extends AutoResetNotifier {
 final uiProviders = MultiProvider(
   providers: [
     ChangeNotifierProvider(create: (context) => IsFullScreen()),
-    ChangeNotifierProvider(create: (context) => ShouldShowHUD()),
+    ChangeNotifierProvider(
+        create: (context) => ShouldShowHUD()..mark(lock: true)),
     ChangeNotifierProvider(create: (context) => IsCatAwake()),
     ChangeNotifierProvider(create: (context) => JustToggleByRemote()),
     ChangeNotifierProvider(create: (context) => JustAdjustedVolumeByKey()),
