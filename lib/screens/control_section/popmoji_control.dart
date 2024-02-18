@@ -4,6 +4,8 @@ import 'package:bunga_player/actions/channel.dart';
 import 'package:bunga_player/constants/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:bunga_player/mocks/tooltip.dart' as mock;
+import 'package:lottie/lottie.dart';
 
 class PopmojiControl extends StatelessWidget {
   static Future<void> cacheSvgs() async {
@@ -90,7 +92,7 @@ class _EmojiButton extends StatelessWidget {
       height: 24,
     );
 
-    return IconButton(
+    final button = IconButton(
       icon: svg,
       onPressed: () {
         // send popmoji
@@ -98,6 +100,25 @@ class _EmojiButton extends StatelessWidget {
         _showThrowEmojiAnimation(context);
         Navigator.of(context).pop();
       },
+    );
+
+    return mock.Tooltip(
+      decoration: BoxDecoration(
+        color: Theme.of(context).shadowColor.withOpacity(0.7),
+        borderRadius: const BorderRadius.all(Radius.circular(12)),
+      ),
+      richMessage: WidgetSpan(
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Lottie.asset(
+            'assets/images/emojis/u$code.json',
+            repeat: true,
+            height: 64,
+          ),
+        ),
+      ),
+      rootOverlay: true,
+      child: button,
     );
   }
 
