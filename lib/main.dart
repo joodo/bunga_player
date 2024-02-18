@@ -21,7 +21,7 @@ void main() {
       if (const LocalPlatform().isWindows) sslWalkthrough();
 
       await windowManager.ensureInitialized();
-      windowManager.setMinimumSize(const Size(800, 600));
+      windowManager.setMinimumSize(const Size(900, 720));
 
       await services.init();
 

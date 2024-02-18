@@ -8,12 +8,44 @@ import 'package:bunga_player/services/services.dart';
 
 import 'call.dart';
 
+enum NoiseSuppressionLevel {
+  none,
+  low,
+  middle,
+  high,
+}
+
 class Agora implements CallService {
   Agora(String appId) {
     _asyncInit(appId);
   }
 
   final _engine = createAgoraRtcEngine();
+
+  Future<void> setNoiseSuppression(NoiseSuppressionLevel level) {
+    switch (level) {
+      case NoiseSuppressionLevel.none:
+        return _engine.setAINSMode(
+          enabled: false,
+          mode: AudioAinsMode.ainsModeAggressive,
+        );
+      case NoiseSuppressionLevel.low:
+        return _engine.setAINSMode(
+          enabled: true,
+          mode: AudioAinsMode.ainsModeUltralowlatency,
+        );
+      case NoiseSuppressionLevel.middle:
+        return _engine.setAINSMode(
+          enabled: true,
+          mode: AudioAinsMode.ainsModeBalanced,
+        );
+      case NoiseSuppressionLevel.high:
+        return _engine.setAINSMode(
+          enabled: true,
+          mode: AudioAinsMode.ainsModeAggressive,
+        );
+    }
+  }
 
   Future<void> _asyncInit(String appId) async {
     // Mic permission
@@ -30,6 +62,8 @@ class Agora implements CallService {
       appId: appId,
       logConfig: const LogConfig(level: LogLevel.logLevelWarn),
     ));
+
+    setNoiseSuppression(NoiseSuppressionLevel.high);
 
     // Events
     _engine.registerEventHandler(

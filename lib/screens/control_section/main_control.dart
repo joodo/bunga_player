@@ -56,7 +56,7 @@ class _MainControlState extends State<MainControl> {
             Consumer<PlayVolume>(
               builder: (context, volumeData, child) => IconButton(
                 icon: volumeData.mute
-                    ? const Icon(Icons.volume_mute)
+                    ? const Icon(Icons.volume_off)
                     : const Icon(Icons.volume_up),
                 onPressed: () => Actions.invoke(
                   context,

@@ -1,7 +1,12 @@
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:bunga_player/actions/voice_call.dart';
 import 'package:bunga_player/mocks/slider.dart' as mock;
+import 'package:bunga_player/mocks/dropdown.dart' as mock;
 import 'package:bunga_player/providers/chat.dart';
+import 'package:bunga_player/screens/control_section/card.dart';
+import 'package:bunga_player/services/call.agora.dart';
+import 'package:bunga_player/services/call.dart';
+import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/volume_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -93,10 +98,13 @@ class _CallControlState extends State<CallControl> {
                       Actions.invoke(context, MuteMicIntent(!muteMic.value)),
                 ),
               ),
+              const SizedBox(width: 8),
+              _NoiseSuppressWidget(),
+              const SizedBox(width: 16),
               Consumer<CallVolume>(
                 builder: (context, callVolume, child) => IconButton(
                   icon: callVolume.isMute
-                      ? const Icon(Icons.volume_mute)
+                      ? const Icon(Icons.volume_off)
                       : const Icon(Icons.volume_up),
                   onPressed: () => callVolume.isMute = !callVolume.isMute,
                 ),
@@ -159,4 +167,58 @@ class _CallControlState extends State<CallControl> {
         icon: Icon(icon),
         onPressed: onPressed,
       );
+}
+
+class _NoiseSuppressWidget extends StatefulWidget {
+  @override
+  State<_NoiseSuppressWidget> createState() => _NoiseSuppressWidgetState();
+}
+
+class _NoiseSuppressWidgetState extends State<_NoiseSuppressWidget> {
+  int _current = 4;
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<MuteMic>(
+      builder: (context, muteMic, child) => SegmentedButton<int>(
+        showSelectedIcon: false,
+        segments: const [
+          ButtonSegment(
+            value: 0,
+            label: Text('闭麦'),
+          ),
+          ButtonSegment(
+            value: 1,
+            label: Text('原声'),
+          ),
+          ButtonSegment(
+            value: 2,
+            label: Text('弱降噪'),
+          ),
+          ButtonSegment(
+            value: 3,
+            label: Text('中降噪'),
+          ),
+          ButtonSegment(
+            value: 4,
+            label: Text('强降噪'),
+          ),
+        ],
+        selected: {muteMic.value ? 0 : _current},
+        onSelectionChanged: (Set newSelection) {
+          final level = newSelection.first;
+          if (level == 0) {
+            Actions.invoke(context, const MuteMicIntent(true));
+            return;
+          }
+
+          (getIt<CallService>() as Agora)
+              .setNoiseSuppression(NoiseSuppressionLevel.values[level - 1]);
+          Actions.invoke(context, const MuteMicIntent(false));
+          setState(() {
+            _current = level;
+          });
+        },
+      ),
+    );
+  }
 }
