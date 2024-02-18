@@ -33,7 +33,7 @@ class MediaKitPlayer implements Player {
         if (_player.state.playlist.medias.isEmpty) return;
 
         final remain = _player.state.duration - _player.state.position;
-        if (remain.inMilliseconds < 50) {
+        if (remain.inMilliseconds < 500) {
           pause().then((_) => seek(Duration.zero));
         }
       },
