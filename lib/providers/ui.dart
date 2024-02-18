@@ -4,10 +4,11 @@ import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
 
 class IsFullScreen extends ValueNotifier<bool> {
-  IsFullScreen(super.value) {
+  IsFullScreen() : super(false) {
     addListener(() async {
       windowManager.setFullScreen(value);
     });
+    windowManager.isFullScreen().then((value) => this.value = value);
   }
 }
 
@@ -27,10 +28,12 @@ class JustAdjustedVolumeByKey extends AutoResetNotifier {
   JustAdjustedVolumeByKey() : super(const Duration(seconds: 2));
 }
 
-uiProviders() => [
-      ChangeNotifierProvider(create: (context) => IsFullScreen(false)),
-      ChangeNotifierProvider(create: (context) => ShouldShowHUD()),
-      ChangeNotifierProvider(create: (context) => IsCatAwake()),
-      ChangeNotifierProvider(create: (context) => JustToggleByRemote()),
-      ChangeNotifierProvider(create: (context) => JustAdjustedVolumeByKey()),
-    ];
+final uiProviders = MultiProvider(
+  providers: [
+    ChangeNotifierProvider(create: (context) => IsFullScreen()),
+    ChangeNotifierProvider(create: (context) => ShouldShowHUD()),
+    ChangeNotifierProvider(create: (context) => IsCatAwake()),
+    ChangeNotifierProvider(create: (context) => JustToggleByRemote()),
+    ChangeNotifierProvider(create: (context) => JustAdjustedVolumeByKey()),
+  ],
+);

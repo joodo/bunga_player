@@ -1,11 +1,7 @@
-import 'package:bunga_player/models/app_key/app_key.dart';
 import 'package:bunga_player/providers/business_indicator.dart';
 import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/providers/chat.dart';
 import 'package:bunga_player/providers/player.dart';
-import 'package:bunga_player/services/call.dart';
-import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/services/chat.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -23,12 +19,7 @@ class ProvidersWrapper extends StatelessWidget {
   Widget build(Object context) {
     return MultiProvider(
       providers: [
-        ...uiProviders(),
-        Provider(
-            create: (context) => AppKey(
-                  streamIO: getIt<ChatService>().appKey,
-                  agora: getIt<CallService>().appId,
-                )),
+        uiProviders,
         chatProviders,
         playerProviders,
         ChangeNotifierProvider(create: (context) => BusinessIndicator()),

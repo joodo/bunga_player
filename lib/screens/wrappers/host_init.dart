@@ -1,7 +1,9 @@
+import 'package:bunga_player/models/app_key/app_key.dart';
 import 'package:bunga_player/screens/dialogs/host.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class HostInitWrapper extends StatefulWidget {
   final Widget child;
@@ -21,6 +23,7 @@ class _HostInitWrapperState extends State<HostInitWrapper> {
     _initTask = _init();
   }
 
+  late AppKeys _appKeys;
   Future<void> _init() async {
     final preferences = getIt<Preferences>();
     String bungaHost = preferences.get('bunga_host') ?? '';
@@ -28,7 +31,7 @@ class _HostInitWrapperState extends State<HostInitWrapper> {
     bool success = false;
     do {
       try {
-        await initHost(bungaHost);
+        _appKeys = await initHost(bungaHost);
         success = true;
       } catch (e) {
         if (!context.mounted) return;
@@ -53,8 +56,11 @@ class _HostInitWrapperState extends State<HostInitWrapper> {
       future: _initTask,
       builder: (context, snapshot) =>
           snapshot.connectionState != ConnectionState.done
-              ? const SizedBox.shrink()
-              : widget.child,
+              ? const Center(child: Text('正在加载'))
+              : Provider.value(
+                  value: _appKeys,
+                  child: widget.child,
+                ),
     );
   }
 }

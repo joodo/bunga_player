@@ -23,15 +23,17 @@ Future<void> init() async {
   getIt.registerSingleton<Player>(MediaKitPlayer());
 }
 
-Future<void> initHost(String host) async {
+Future<AppKeys> initHost(String host) async {
   final bungaService = Bunga(host);
-  final appKey = AppKey.fromJson(await bungaService.getAppKey());
+  final appKey = AppKeys.fromJson(await bungaService.getAppKey());
 
   getIt.registerSingleton<Bunga>(bungaService);
   getIt.registerSingleton<ChatService>(StreamIO(appKey.streamIO));
   getIt.registerSingleton<CallService>(Agora(appKey.agora));
   getIt.registerSingleton<AList>(AList());
   getIt.registerSingleton<Bilibili>(Bilibili());
+
+  return appKey;
 }
 
 void unregisterHost() {

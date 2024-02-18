@@ -9,15 +9,13 @@ import 'package:bunga_player/services/services.dart';
 import 'call.dart';
 
 class Agora implements CallService {
-  Agora(this.appId) {
-    _asyncInit();
+  Agora(String appId) {
+    _asyncInit(appId);
   }
-  @override
-  final String appId;
 
   final _engine = createAgoraRtcEngine();
 
-  Future<void> _asyncInit() async {
+  Future<void> _asyncInit(String appId) async {
     // Mic permission
     /*
     try {

@@ -206,7 +206,7 @@ class _VariablesView extends StatefulWidget {
 
 class _VariablesViewState extends State<_VariablesView> {
   late final _variables = <String, String? Function(BuildContext context)>{
-    'App Key': (context) => context.read<AppKey>().toString(),
+    'App Keys': (context) => context.read<AppKeys>().toString(),
     'Current verion': (context) => getIt<PackageInfo>().version,
     'Chat User': (context) => context.read<CurrentUser>().toString(),
     'Chat Channel': (context) =>

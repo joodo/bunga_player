@@ -13,15 +13,12 @@ typedef AgoraChannelDataPayload = (
 );
 
 class StreamIO implements ChatService {
-  StreamIO(this.appKey)
+  StreamIO(String appKey)
       : _client = stream.StreamChatClient(
           appKey,
           logLevel: stream.Level.WARNING,
         );
   final stream.StreamChatClient _client;
-
-  @override
-  final String appKey;
 
   // User
   static User userFromStreamUser(stream.User streamUser) =>

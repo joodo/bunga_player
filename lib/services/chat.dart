@@ -12,8 +12,6 @@ typedef JoinChannelPayload = (
 );
 
 abstract class ChatService {
-  String get appKey;
-
   Future<void> login(String id, String token, String? name);
   Future<void> logout();
   Future<User> renameUser(User user, String newName);
