@@ -311,8 +311,10 @@ class SetFullScreenIntent extends Intent {
 class SetFullScreenAction extends ContextAction<SetFullScreenIntent> {
   @override
   void invoke(SetFullScreenIntent intent, [BuildContext? context]) {
-    context!.read<IsFullScreen>().value = intent.isFullScreen;
-    context.read<IsControlSectionHidden>().value = false;
+    final read = context!.read;
+
+    read<IsFullScreen>().value = intent.isFullScreen;
+    context.read<ShouldShowHUD>().mark(lock: !intent.isFullScreen);
   }
 }
 

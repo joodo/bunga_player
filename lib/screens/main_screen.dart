@@ -3,14 +3,15 @@ import 'package:bunga_player/screens/progress_section/progress_section.dart';
 import 'package:bunga_player/screens/room_section.dart';
 import 'package:bunga_player/screens/control_section/control_section.dart';
 import 'package:bunga_player/screens/player_section/player_section.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:async/async.dart';
 import 'package:provider/provider.dart';
 
-const kRoomSectionHeight = 36.0;
-const kControlSectionHeight = 64.0;
-
 class MainScreen extends StatefulWidget {
+  static const roomSectionHeight = 36.0;
+  static const controlSectionHeight = 64.0;
+  static const progressSectionHeight = 16.0;
+
   const MainScreen({super.key});
 
   @override
@@ -42,14 +43,15 @@ class MainScreenState extends State<MainScreen> {
                 bottom: 0,
                 left: 0,
                 right: 0,
-                height: kControlSectionHeight,
+                height: MainScreen.controlSectionHeight,
                 child: controlSection,
               ),
               const Positioned(
-                bottom: kControlSectionHeight - 8,
+                bottom: MainScreen.controlSectionHeight -
+                    MainScreen.progressSectionHeight / 2,
                 left: 0,
                 right: 0,
-                height: 16,
+                height: MainScreen.progressSectionHeight,
                 child: progressSection,
               ),
             ],
@@ -58,7 +60,7 @@ class MainScreenState extends State<MainScreen> {
             fit: StackFit.expand,
             children: [
               playerSection,
-              HideWrapper(child: hideableUI),
+              _HUDWrapper(child: hideableUI),
             ],
           );
         } else {
@@ -67,27 +69,28 @@ class MainScreenState extends State<MainScreen> {
             children: [
               Positioned(
                 top: 0,
-                height: kRoomSectionHeight,
+                height: MainScreen.roomSectionHeight,
                 left: 0,
                 right: 0,
                 child: roomSection,
               ),
               Positioned(
-                top: kRoomSectionHeight,
-                bottom: kControlSectionHeight,
+                top: MainScreen.roomSectionHeight,
+                bottom: MainScreen.controlSectionHeight,
                 left: 0,
                 right: 0,
                 child: playerSection,
               ),
               Positioned(
-                height: kControlSectionHeight,
+                height: MainScreen.controlSectionHeight,
                 bottom: 0,
                 left: 0,
                 right: 0,
                 child: controlSection,
               ),
               const Positioned(
-                bottom: kControlSectionHeight - 8,
+                bottom: MainScreen.controlSectionHeight -
+                    MainScreen.progressSectionHeight / 2,
                 height: 16,
                 left: 0,
                 right: 0,
@@ -106,51 +109,56 @@ class MainScreenState extends State<MainScreen> {
   }
 }
 
-class HideWrapper extends StatefulWidget {
+class _HUDWrapper extends StatelessWidget {
   final Widget child;
 
-  const HideWrapper({super.key, required this.child});
-
-  @override
-  State<HideWrapper> createState() => _HideWrapperState();
-}
-
-class _HideWrapperState extends State<HideWrapper> {
-  late final RestartableTimer _hideUITimer = RestartableTimer(
-    const Duration(seconds: 3),
-    () {
-      if (context.mounted) context.read<IsControlSectionHidden>().value = true;
-    },
-  );
-
-  @override
-  void dispose() {
-    _hideUITimer.cancel();
-    super.dispose();
-  }
+  const _HUDWrapper({required this.child});
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<IsControlSectionHidden>(
-      builder: (context, isControlSectionHidden, child) => MouseRegion(
+    return Consumer<ShouldShowHUD>(
+      builder: (context, shouldShowHUD, child) => MouseRegion(
         opaque: false,
-        cursor: isControlSectionHidden.value
-            ? SystemMouseCursors.none
-            : SystemMouseCursors.basic,
-        onEnter: (event) => _hideUITimer.reset(),
-        onExit: (event) => _hideUITimer.cancel(),
+        cursor: shouldShowHUD.value
+            ? SystemMouseCursors.basic
+            : SystemMouseCursors.none,
+        onEnter: (event) => shouldShowHUD.mark(),
+        onExit: (event) {
+          if (!_isLeaveFromEdge(context, event)) {
+            // When mouse region blocked by popup menu
+            shouldShowHUD.mark(lock: true);
+          }
+        },
         onHover: (event) {
-          _hideUITimer.reset();
-          isControlSectionHidden.value = false;
+          shouldShowHUD.mark(lock: _isInUISection(context, event));
         },
         child: AnimatedOpacity(
-          opacity: isControlSectionHidden.value ? 0.0 : 1.0,
-          curve: Curves.easeInCubic,
-          duration: const Duration(milliseconds: 200),
+          opacity: shouldShowHUD.value ? 1.0 : 0.0,
+          curve: Curves.easeOutCubic,
+          duration: const Duration(milliseconds: 250),
           child: child,
         ),
       ),
-      child: widget.child,
+      child: child,
     );
+  }
+
+  bool _isLeaveFromEdge(BuildContext context, PointerExitEvent event) {
+    final offset = event.localPosition;
+    final widgetSize = (context.findRenderObject()! as RenderBox).size;
+    return !widgetSize.contains(offset);
+  }
+
+  bool _isInUISection(BuildContext context, PointerHoverEvent event) {
+    final y = event.localPosition.dy;
+    final widgetHeight = (context.findRenderObject()! as RenderBox).size.height;
+
+    // In room section
+    if (y < MainScreen.roomSectionHeight) return true;
+
+    // In control or progress section
+    if (y > widgetHeight - MainScreen.controlSectionHeight) return true;
+
+    return false;
   }
 }

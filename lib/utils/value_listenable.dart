@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:async/async.dart';
 import 'package:flutter/foundation.dart';
 
 class ReadonlyStreamValueNotifier<T> extends ChangeNotifier
@@ -77,6 +78,36 @@ class ValueNotifierWithReset<T> extends ValueNotifier<T> {
 
   void reset() {
     value = _initValue;
+  }
+}
+
+class AutoResetNotifier extends ChangeNotifier
+    implements ValueListenable<bool> {
+  AutoResetNotifier(this.cooldown);
+
+  final Duration cooldown;
+
+  bool _value = false;
+  @override
+  bool get value => _value;
+
+  late final _resetTimer = RestartableTimer(
+    cooldown,
+    () {
+      _value = false;
+      notifyListeners();
+    },
+  )..cancel();
+  @override
+  void dispose() {
+    _resetTimer.cancel();
+    super.dispose();
+  }
+
+  void mark({bool lock = false}) {
+    _value = true;
+    notifyListeners();
+    lock ? _resetTimer.cancel() : _resetTimer.reset();
   }
 }
 

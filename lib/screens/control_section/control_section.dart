@@ -28,13 +28,13 @@ class _ControlSectionState extends State<ControlSection> {
   void initState() {
     super.initState();
 
-    context.read<IsControlSectionHidden>().addListener(_onUIHiddenChanged);
+    context.read<ShouldShowHUD>().addListener(_onUIHiddenChanged);
     context.read<CurrentCallStatus>().addListener(_onCallStatusChanged);
   }
 
   @override
   void dispose() {
-    context.read<IsControlSectionHidden>().removeListener(_onUIHiddenChanged);
+    context.read<ShouldShowHUD>().removeListener(_onUIHiddenChanged);
     context.read<CurrentCallStatus>().removeListener(_onCallStatusChanged);
 
     super.dispose();
@@ -100,7 +100,7 @@ class _ControlSectionState extends State<ControlSection> {
 
   void _onUIHiddenChanged() {
     // When show again during fullscreen, route to main control
-    if (context.read<IsControlSectionHidden>().value == false &&
+    if (context.read<ShouldShowHUD>().value == false &&
         // Avoid change login control to main control
         context.read<PlayStatus>().value != PlayStatusType.stop) {
       final navigator = _navigatorStateKey.currentState!;
