@@ -6,6 +6,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class PopmojiControl extends StatelessWidget {
+  static Future<void> cacheSvgs() async {
+    String? previousCode;
+    for (var rune in emojis.runes) {
+      var code = rune.toRadixString(16);
+      if (code.length < 5) {
+        if (previousCode == null) {
+          previousCode = code;
+          continue;
+        } else {
+          code = '${previousCode}_$code';
+          previousCode = null;
+        }
+      }
+
+      final icon = SvgAssetLoader(_assetPathByCode(code));
+      await svg.cache
+          .putIfAbsent(icon.cacheKey(null), () => icon.loadBytes(null));
+    }
+  }
+
   const PopmojiControl({super.key});
 
   @override
@@ -66,7 +86,7 @@ class _EmojiButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final svg = SvgPicture.asset(
-      'assets/images/emojis/u$code.svg',
+      _assetPathByCode(code),
       height: 24,
     );
 
@@ -194,3 +214,5 @@ class _ThrowAnimationState extends State<_ThrowAnimation>
     _position = pathMetric.getTangentForOffset(tween)!.position;
   }
 }
+
+String _assetPathByCode(String code) => 'assets/images/emojis/u$code.svg';

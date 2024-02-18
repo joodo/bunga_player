@@ -10,12 +10,24 @@ import 'package:bunga_player/mocks/slider.dart' as mock;
 import 'package:bunga_player/providers/chat.dart';
 import 'package:bunga_player/providers/player.dart';
 import 'package:bunga_player/providers/ui.dart';
+import 'package:bunga_player/screens/control_section/popmoji_control.dart';
 import 'package:bunga_player/utils/duration.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class MainControl extends StatelessWidget {
+class MainControl extends StatefulWidget {
   const MainControl({super.key});
+
+  @override
+  State<MainControl> createState() => _MainControlState();
+}
+
+class _MainControlState extends State<MainControl> {
+  @override
+  void didChangeDependencies() {
+    PopmojiControl.cacheSvgs();
+    super.didChangeDependencies();
+  }
 
   @override
   Widget build(BuildContext context) {
