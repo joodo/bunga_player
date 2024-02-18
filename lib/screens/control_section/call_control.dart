@@ -1,9 +1,7 @@
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:bunga_player/actions/voice_call.dart';
 import 'package:bunga_player/mocks/slider.dart' as mock;
-import 'package:bunga_player/mocks/dropdown.dart' as mock;
 import 'package:bunga_player/providers/chat.dart';
-import 'package:bunga_player/screens/control_section/card.dart';
 import 'package:bunga_player/services/call.agora.dart';
 import 'package:bunga_player/services/call.dart';
 import 'package:bunga_player/services/services.dart';

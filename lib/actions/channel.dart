@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:bunga_player/actions/voice_call.dart';
 import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/models/chat/message.dart';
 import 'package:bunga_player/models/chat/user.dart';
@@ -85,6 +86,8 @@ class LeaveChannelAction extends ContextAction<LeaveChannelIntent> {
     BuildContext? context,
   ]) async {
     final read = context!.read;
+
+    Actions.maybeInvoke(context, HangUpIntent());
 
     for (final subscription in channelSubscriptions) {
       await subscription.cancel();
