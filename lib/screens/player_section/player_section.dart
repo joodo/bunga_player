@@ -31,16 +31,16 @@ class _PlayerSectionState extends State<PlayerSection> {
           ),
           wakelock: true,
         ),
+        Navigator(
+          onGenerateRoute: (settings) => MaterialPageRoute<void>(
+            builder: (context) => const PopmojiPlayer(),
+          ),
+        ),
         AnimatedOpacity(
           opacity: context.select<BusinessIndicator, double>(
               (bi) => bi.currentMissionName == null ? 0.0 : 1.0),
           duration: const Duration(milliseconds: 250),
           child: const PlayerPlaceholder(),
-        ),
-        Navigator(
-          onGenerateRoute: (settings) => MaterialPageRoute<void>(
-            builder: (context) => const PopmojiPlayer(),
-          ),
         ),
         const Positioned(
           top: 24,
