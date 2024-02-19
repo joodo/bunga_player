@@ -27,52 +27,44 @@ class VideoOpenControl extends StatefulWidget {
 class _VideoOpenControlState extends State<VideoOpenControl> {
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      alignment: Alignment.centerLeft,
-      children: [
-        Row(
-          children: [
-            const SizedBox(width: 8),
-            // Back button
-            IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: Navigator.of(context).pop,
-            ),
-          ],
-        ),
-        Selector<BusinessIndicator, bool>(
-          selector: (context, bi) => bi.currentProgress != null,
-          builder: (context, isBusy, child) => Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              FilledButton.icon(
-                icon: const Icon(Icons.folder_outlined),
-                label: const Text('本地文件'),
-                onPressed: isBusy ? null : _openLocalVideo,
-              ),
-              const SizedBox(width: 16),
-              FilledButton.icon(
-                icon: SvgPicture.asset(
-                  'assets/images/bilibili.svg',
-                  colorFilter: ColorFilter.mode(
-                    Theme.of(context).colorScheme.onPrimary,
-                    BlendMode.srcIn,
-                  ),
-                  fit: BoxFit.cover,
-                ),
-                label: const Text('Bilibili'),
-                onPressed: isBusy ? null : _openBilibili,
-              ),
-              const SizedBox(width: 16),
-              FilledButton.icon(
-                icon: const Icon(Icons.cloud_outlined),
-                label: const Text('网盘'),
-                onPressed: isBusy ? null : _openNetDisk,
-              ),
-            ],
+    return Selector<BusinessIndicator, bool>(
+      selector: (context, bi) => bi.currentProgress != null,
+      builder: (context, isBusy, child) => Row(
+        children: [
+          const SizedBox(width: 8),
+          // Back button
+          IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: Navigator.of(context).pop,
           ),
-        ),
-      ],
+          const Spacer(),
+          FilledButton.icon(
+            icon: const Icon(Icons.folder_outlined),
+            label: const Text('本地文件'),
+            onPressed: isBusy ? null : _openLocalVideo,
+          ),
+          const SizedBox(width: 16),
+          FilledButton.icon(
+            icon: SvgPicture.asset(
+              'assets/images/bilibili.svg',
+              colorFilter: ColorFilter.mode(
+                Theme.of(context).colorScheme.onPrimary,
+                BlendMode.srcIn,
+              ),
+              fit: BoxFit.cover,
+            ),
+            label: const Text('Bilibili'),
+            onPressed: isBusy ? null : _openBilibili,
+          ),
+          const SizedBox(width: 16),
+          FilledButton.icon(
+            icon: const Icon(Icons.cloud_outlined),
+            label: const Text('网盘'),
+            onPressed: isBusy ? null : _openNetDisk,
+          ),
+          const Spacer(),
+        ],
+      ),
     );
   }
 
