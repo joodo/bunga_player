@@ -1,6 +1,7 @@
 import 'package:bunga_player/actions/play.dart';
 import 'package:bunga_player/providers/business_indicator.dart';
 import 'package:bunga_player/providers/ui.dart';
+import 'package:bunga_player/screens/player_section/danmaku_player.dart';
 import 'package:bunga_player/screens/player_section/placeholder.dart';
 import 'package:bunga_player/screens/player_section/popmoji_player.dart';
 import 'package:bunga_player/screens/player_section/volume_popup.dart';
@@ -31,6 +32,7 @@ class _PlayerSectionState extends State<PlayerSection> {
           ),
           wakelock: true,
         ),
+        const DanmakuPlayer(),
         Navigator(
           onGenerateRoute: (settings) => MaterialPageRoute<void>(
             builder: (context) => const PopmojiPlayer(),

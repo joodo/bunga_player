@@ -28,13 +28,37 @@ class JustAdjustedVolumeByKey extends AutoResetNotifier {
   JustAdjustedVolumeByKey() : super(const Duration(seconds: 2));
 }
 
+class DanmakuMode extends ValueNotifier<bool> {
+  DanmakuMode() : super(false);
+}
+
+class FoldLayout {
+  final bool value;
+
+  FoldLayout(this.value);
+}
+
+class ShowDanmakuHistory extends ValueNotifier<bool> {
+  ShowDanmakuHistory() : super(false);
+}
+
 final uiProviders = MultiProvider(
   providers: [
     ChangeNotifierProvider(create: (context) => IsFullScreen()),
-    ChangeNotifierProvider(
-        create: (context) => ShouldShowHUD()..mark(lock: true)),
+    ChangeNotifierProvider(create: (context) => DanmakuMode()),
+    ProxyProvider2<IsFullScreen, DanmakuMode, FoldLayout>(
+      update: (context, isFullScreen, danmakuMode, previous) =>
+          FoldLayout(isFullScreen.value && !danmakuMode.value),
+    ),
+    ListenableProxyProvider<FoldLayout, ShouldShowHUD>(
+      update: (context, foldLayout, previous) {
+        previous?.dispose();
+        return ShouldShowHUD()..mark(keep: !foldLayout.value);
+      },
+    ),
     ChangeNotifierProvider(create: (context) => IsCatAwake()),
     ChangeNotifierProvider(create: (context) => JustToggleByRemote()),
     ChangeNotifierProvider(create: (context) => JustAdjustedVolumeByKey()),
+    ChangeNotifierProvider(create: (context) => ShowDanmakuHistory()),
   ],
 );

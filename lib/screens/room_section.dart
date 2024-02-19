@@ -11,6 +11,7 @@ import 'package:bunga_player/screens/wrappers/providers.dart';
 import 'package:bunga_player/screens/wrappers/shortcuts.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
+import 'package:bunga_player/utils/color.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -27,22 +28,17 @@ class _RoomSectionState extends State<RoomSection> {
     return Row(
       children: [
         // Watcher list
-        Consumer2<CurrentUser, CurrentChannelWatchers>(
+        Consumer<CurrentChannelWatchers>(
           builder: (
             BuildContext context,
-            CurrentUser currentUser,
             CurrentChannelWatchers watchers,
             Widget? child,
           ) {
-            if (currentUser.value == null) return const SizedBox.shrink();
-
-            String text =
-                _getUsersStringExceptId(watchers.value, currentUser.value!.id);
-            if (text.isEmpty) return const SizedBox.shrink();
+            if (watchers.value.isEmpty) return const SizedBox.shrink();
 
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Text('$text 在和你一起看'),
+              child: _getUsersWidget(watchers.value),
             );
           },
         ),
@@ -102,20 +98,29 @@ class _RoomSectionState extends State<RoomSection> {
     }
   }
 
-  String _getUsersStringExceptId(List<User> userList, String id) {
-    String result = '';
-    for (var user in userList) {
-      if (user.id == id) continue;
-      result += '${user.name}, ';
-    }
+  Widget _getUsersWidget(List<User> userList) {
+    final currentUser = context.read<CurrentUser>().value!;
+    final textStyle = Theme.of(context).textTheme.bodyMedium!;
 
-    try {
-      result = result.substring(0, result.length - 2);
-    } catch (e) {
-      return '';
-    }
+    final others = List.from(userList)
+      ..removeWhere((u) => u.id == currentUser.id);
 
-    return result;
+    return Text.rich(
+      TextSpan(
+        text: '当前观看：',
+        children: [
+          TextSpan(
+            text: currentUser.name,
+            style: textStyle.copyWith(color: currentUser.getColor(0.95)),
+          ),
+          for (final user in others)
+            TextSpan(
+              text: ' ${user.name}',
+              style: textStyle.copyWith(color: user.getColor(0.95)),
+            ),
+        ],
+      ),
+    );
   }
 }
 

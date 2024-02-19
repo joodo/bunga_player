@@ -1,5 +1,6 @@
 import 'package:bunga_player/actions/auth.dart';
 import 'package:bunga_player/actions/channel.dart';
+import 'package:bunga_player/actions/danmaku.dart';
 import 'package:bunga_player/actions/play.dart';
 import 'package:bunga_player/actions/video_playing.dart';
 import 'package:bunga_player/actions/voice_call.dart';
@@ -38,6 +39,7 @@ class ShortcutsWrapper extends StatelessWidget {
       key: Intentor._globalKey,
       child: child,
     );
+    child = DanmakuActions(child: child);
     child = VoiceCallActions(child: child);
     child = ChannelActions(child: child);
     child = VideoPlayingActions(child: child);

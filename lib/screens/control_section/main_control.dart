@@ -88,6 +88,14 @@ class _MainControlState extends State<MainControl> {
             const CallButton(),
             const SizedBox(width: 8),
 
+            // Danmaku Button
+            IconButton(
+              icon: const Icon(Icons.chat),
+              onPressed: () =>
+                  Navigator.of(context).pushNamed('control:danmaku'),
+            ),
+            const SizedBox(width: 8),
+
             // Popmoji Button
             IconButton(
               icon: const Icon(Icons.mood),

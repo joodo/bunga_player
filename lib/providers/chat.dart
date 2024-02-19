@@ -122,6 +122,17 @@ class CallNoiseSuppressionLevel extends ValueNotifier<NoiseSuppressionLevel> {
   }
 }
 
+class Danmaku {
+  final User sender;
+  final String text;
+
+  Danmaku({required this.sender, required this.text});
+}
+
+class LastDanmaku extends ValueNotifier<Danmaku?> {
+  LastDanmaku() : super(null);
+}
+
 final chatProviders = MultiProvider(providers: [
   // User
   ChangeNotifierProvider(create: (context) => CurrentUser()),
@@ -138,4 +149,7 @@ final chatProviders = MultiProvider(providers: [
   ChangeNotifierProvider(create: (context) => CallVolume()),
   ChangeNotifierProvider(create: (context) => MuteMic()),
   ChangeNotifierProvider(create: (context) => CallNoiseSuppressionLevel()),
+
+  // Danmaku
+  ChangeNotifierProvider(create: (context) => LastDanmaku()),
 ]);

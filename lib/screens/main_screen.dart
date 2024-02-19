@@ -29,9 +29,9 @@ class MainScreenState extends State<MainScreen> {
     final roomSection = RoomSection(key: _roomSectionKey);
     const progressSection = ProgressSection();
 
-    final body = Consumer<IsFullScreen>(
-      builder: (context, isFullScreen, child) {
-        if (isFullScreen.value) {
+    final body = Consumer<FoldLayout>(
+      builder: (context, foldLayout, child) {
+        if (foldLayout.value) {
           final hideableUI = Stack(
             fit: StackFit.loose,
             children: [
@@ -126,11 +126,11 @@ class _HUDWrapper extends StatelessWidget {
         onExit: (event) {
           if (!_isLeaveFromEdge(context, event)) {
             // When mouse region blocked by popup menu
-            shouldShowHUD.mark(lock: true);
+            shouldShowHUD.mark(keep: true);
           }
         },
         onHover: (event) {
-          shouldShowHUD.mark(lock: _isInUISection(context, event));
+          shouldShowHUD.mark(keep: _isInUISection(context, event));
         },
         child: AnimatedOpacity(
           opacity: shouldShowHUD.value ? 1.0 : 0.0,
