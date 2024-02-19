@@ -145,6 +145,10 @@ class PlayVideoEntry extends StreamValueNotifier<VideoEntry?> {
   PlayVideoEntry() : super(_getPlayer().videoEntryStream, null);
 }
 
+class PlaySourceIndex extends StreamValueNotifier<int?> {
+  PlaySourceIndex() : super(_getPlayer().sourceIndexStream, null);
+}
+
 class PlayWatchProgresses {
   final value = getIt<Player>().watchProgresses;
   WatchProgress? get(String videoHash) => value[videoHash];
@@ -153,6 +157,7 @@ class PlayWatchProgresses {
 final playerProviders = MultiProvider(
   providers: [
     ChangeNotifierProvider(create: (context) => PlayVideoEntry(), lazy: false),
+    ChangeNotifierProvider(create: (context) => PlaySourceIndex(), lazy: false),
     ChangeNotifierProvider(create: (context) => PlayStatus(), lazy: false),
     ChangeNotifierProvider(create: (context) => PlayDuration()),
     ChangeNotifierProvider(create: (context) => PlayBuffer()),

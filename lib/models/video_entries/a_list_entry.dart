@@ -27,7 +27,7 @@ class AListEntry extends VideoEntry {
 
     title = info.name;
     image = info.thumb;
-    sources = VideoSources(video: [info.rawUrl!]);
+    sources = VideoSources(videos: [info.rawUrl!]);
 
     _isFetched = true;
   }

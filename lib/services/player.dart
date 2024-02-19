@@ -40,12 +40,13 @@ abstract class Player {
   Future<void> seek(Duration position);
 
   Stream<PlayStatusType> get statusStream;
-  Future<void> open(VideoEntry entry);
+  Future<void> open(VideoEntry entry, [int sourceIndex = 0]);
   Future<void> pause();
   Future<void> play();
   Future<void> stop();
 
   Stream<VideoEntry?> get videoEntryStream;
+  Stream<int?> get sourceIndexStream;
   Map<String, WatchProgress> get watchProgresses;
 
   Future<void> setAudioTrackID(String id);

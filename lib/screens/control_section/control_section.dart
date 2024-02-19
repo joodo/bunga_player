@@ -2,6 +2,7 @@ import 'package:bunga_player/providers/chat.dart';
 import 'package:bunga_player/providers/player.dart';
 import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/screens/control_section/danmaku_control.dart';
+import 'package:bunga_player/screens/control_section/source_selection_control.dart';
 import 'package:bunga_player/screens/control_section/video_open_control.dart';
 import 'package:bunga_player/screens/control_section/call_control.dart';
 import 'package:bunga_player/screens/control_section/rename_control.dart';
@@ -63,6 +64,7 @@ class _ControlSectionState extends State<ControlSection> {
           'control:tune': const TuneControl(),
           'control:open': const VideoOpenControl(),
           'control:danmaku': const DanmakuControl(),
+          'control:source_selection': const SourceSelectionControl(),
         };
 
         Widget? control = routes[settings.name];

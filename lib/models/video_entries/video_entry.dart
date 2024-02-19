@@ -17,10 +17,18 @@ part 'bili_bungumi_entry.dart';
 part 'bili_video_entry.dart';
 
 class VideoSources {
-  final List<String> video;
-  final List<String>? audio;
+  final List<String> videos;
+  final List<String>? audios;
 
-  VideoSources({required this.video, this.audio});
+  VideoSources({required this.videos, this.audios});
+
+  @override
+  String toString() {
+    return {
+      'videos': '...(${videos.length})',
+      'audios': '...(${audios?.length})',
+    }.toString();
+  }
 }
 
 sealed class VideoEntry {
@@ -51,4 +59,15 @@ sealed class VideoEntry {
 
   bool get isFetched;
   Future<void> fetch();
+
+  @override
+  String toString() {
+    return {
+      'hash': hash,
+      'title': title,
+      'image': image,
+      'path': path,
+      'sources': sources,
+    }.toString();
+  }
 }

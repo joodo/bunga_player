@@ -4,7 +4,6 @@ import 'package:bunga_player/actions/video_playing.dart';
 import 'package:bunga_player/actions/voice_call.dart';
 import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/models/playing/volume.dart';
-import 'package:bunga_player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/mocks/popup_menu.dart' as mock;
 import 'package:bunga_player/mocks/slider.dart' as mock;
 import 'package:bunga_player/providers/chat.dart';
@@ -112,73 +111,98 @@ class _MainControlState extends State<MainControl> {
                 // Reload button
                 if (currentChannelData?.videoType == VideoType.online)
                   mock.PopupMenuItem(
-                    child: ListTile(
-                      leading: const Icon(Icons.refresh),
-                      title: const Text('重新载入'),
-                      onTap: () {
-                        Navigator.of(context, rootNavigator: true).pop();
-
-                        final onlineEntry =
-                            VideoEntry.fromChannelData(currentChannelData!);
-                        Actions.invoke(
-                          context,
-                          OpenVideoIntent(videoEntry: onlineEntry),
-                        );
-                      },
+                    child: const Row(
+                      children: [
+                        Icon(Icons.refresh),
+                        SizedBox(width: 12),
+                        Text('重新载入'),
+                      ],
                     ),
+                    onTap: () {
+                      final onlineEntry = context.read<PlayVideoEntry>().value!;
+                      final index = context.read<PlaySourceIndex>().value!;
+                      Actions.invoke(
+                        context,
+                        OpenVideoIntent(
+                          videoEntry: onlineEntry,
+                          sourceIndex: index,
+                        ),
+                      );
+                    },
+                  ),
+
+                // Source button
+                if (currentChannelData?.videoType == VideoType.online)
+                  mock.PopupMenuItem(
+                    child: const Row(
+                      children: [
+                        Icon(Icons.rss_feed),
+                        SizedBox(width: 12),
+                        Text('更换片源'),
+                      ],
+                    ),
+                    onTap: () {
+                      Navigator.of(context)
+                          .pushNamed('control:source_selection');
+                    },
                   ),
 
                 // Tune button
                 mock.PopupMenuItem(
-                  child: ListTile(
-                    leading: const Icon(Icons.tune),
-                    title: const Text('音视频调整'),
-                    onTap: () {
-                      Navigator.of(context, rootNavigator: true).pop();
-                      Navigator.of(context).pushNamed('control:tune');
-                    },
+                  child: const Row(
+                    children: [
+                      Icon(Icons.tune),
+                      SizedBox(width: 12),
+                      Text('音视频调整'),
+                    ],
                   ),
+                  onTap: () {
+                    Navigator.of(context).pushNamed('control:tune');
+                  },
                 ),
                 // Subtitle Button
                 mock.PopupMenuItem(
-                  child: ListTile(
-                    leading: const Icon(Icons.subtitles),
-                    title: const Text('字幕调整'),
-                    onTap: () {
-                      Navigator.of(context, rootNavigator: true).pop();
-                      Navigator.of(context).pushNamed('control:subtitle');
-                    },
+                  child: const Row(
+                    children: [
+                      Icon(Icons.subtitles),
+                      SizedBox(width: 12),
+                      Text('字幕调整'),
+                    ],
                   ),
+                  onTap: () {
+                    Navigator.of(context).pushNamed('control:subtitle');
+                  },
                 ),
 
                 // Change Video Button
                 mock.PopupMenuItem(
-                  child: ListTile(
-                    leading: const Icon(Icons.movie_filter),
-                    title: const Text('换片'),
-                    onTap: () {
-                      Navigator.of(context, rootNavigator: true).pop();
-                      Navigator.of(context).pushNamed('control:open');
-                    },
+                  child: const Row(
+                    children: [
+                      Icon(Icons.movie_filter),
+                      SizedBox(width: 12),
+                      Text('换片'),
+                    ],
                   ),
+                  onTap: () {
+                    Navigator.of(context).pushNamed('control:open');
+                  },
                 ),
 
                 // Leave Button
                 mock.PopupMenuItem(
-                  child: ListTile(
-                    leading: const Icon(Icons.logout),
-                    title: const Text('离开房间'),
-                    onTap: () async {
-                      Navigator.of(context, rootNavigator: true).pop();
-
-                      final navigator = Navigator.of(context);
-
-                      Actions.invoke(context, LeaveChannelIntent());
-                      Actions.invoke(context, StopPlayIntent());
-
-                      navigator.popAndPushNamed('control:welcome');
-                    },
+                  child: const Row(
+                    children: [
+                      Icon(Icons.logout),
+                      SizedBox(width: 12),
+                      Text('离开房间'),
+                    ],
                   ),
+                  onTap: () async {
+                    Actions.invoke(context, LeaveChannelIntent());
+                    Actions.invoke(context, StopPlayIntent());
+
+                    Navigator.of(context).popAndPushNamed('control:welcome');
+                  },
                 ),
               ],
             ),

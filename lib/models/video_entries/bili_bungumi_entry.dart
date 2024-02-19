@@ -69,7 +69,7 @@ class BiliBungumiEntry extends VideoEntry {
     if (responseData['code'] != 0) throw 'Failed to fetch durls';
 
     final durl = responseData['result']['durl'][0];
-    sources = VideoSources(video: [
+    sources = VideoSources(videos: [
       durl['url'],
       ...durl['backup_url'] ?? [],
     ]);

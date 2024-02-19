@@ -2,7 +2,7 @@ part of 'video_entry.dart';
 
 class LocalVideoEntry extends VideoEntry {
   LocalVideoEntry.fromFile(XFile file) {
-    sources = VideoSources(video: [file.path]);
+    sources = VideoSources(videos: [file.path]);
     title = file.name;
     image = null;
     path = null;
@@ -13,7 +13,7 @@ class LocalVideoEntry extends VideoEntry {
   bool get isFetched => _isFetched;
   @override
   Future<void> fetch() async {
-    final crcValue = await File(sources.video.first)
+    final crcValue = await File(sources.videos.first)
         .openRead()
         .take(1000)
         .transform(Crc32Xz())

@@ -65,7 +65,7 @@ class BiliVideoEntry extends VideoEntry {
     final responseData = jsonDecode(response.body);
     if (responseData['code'] == 0) {
       final durl = responseData['data']['durl'][0];
-      sources = VideoSources(video: [
+      sources = VideoSources(videos: [
         durl['url'],
         ...durl['backup_url'] ?? [],
       ]);
@@ -86,8 +86,8 @@ class BiliVideoEntry extends VideoEntry {
       final videoinfo = playinfo['data']['dash']['video'] as List;
       final autioinfo = playinfo['data']['dash']['audio'] as List;
       sources = VideoSources(
-        video: videoinfo.map((e) => e['baseUrl'] as String).toList(),
-        audio: autioinfo.map((e) => e['baseUrl'] as String).toList(),
+        videos: videoinfo.map((e) => e['baseUrl'] as String).toList(),
+        audios: autioinfo.map((e) => e['baseUrl'] as String).toList(),
       );
     }
 

@@ -23,11 +23,13 @@ class OpenVideoIntent extends Intent {
   final VideoEntry videoEntry;
   final Future<void>? Function()? beforeAskingPosition;
   final bool askPosition;
+  final int sourceIndex;
 
   const OpenVideoIntent({
     required this.videoEntry,
     this.beforeAskingPosition,
     this.askPosition = true,
+    this.sourceIndex = 0,
   });
 }
 
@@ -54,7 +56,7 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
           await intent.videoEntry.fetch();
         },
         bi.setTitle('正在收拾客厅……'),
-        (data) => videoPlayer.open(intent.videoEntry),
+        (data) => videoPlayer.open(intent.videoEntry, intent.sourceIndex),
         bi.setTitle('正在发送请柬……'),
         (data) async {
           await intent.beforeAskingPosition?.call();

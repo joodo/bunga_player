@@ -10,6 +10,7 @@ import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/player.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
+import 'package:bunga_player/services/toast.dart';
 import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart' as media_kit;
@@ -96,12 +97,18 @@ class MediaKitPlayer implements Player {
   }
 
   // Video loading
+  final _sourceIndexController = StreamController<int?>.broadcast();
+  @override
+  Stream<int?> get sourceIndexStream => _sourceIndexController.stream;
+
   final _videoEntryController = StreamController<VideoEntry?>.broadcast();
   VideoEntry? _videoEntry;
   @override
   Stream<VideoEntry?> get videoEntryStream => _videoEntryController.stream;
   @override
-  Future<void> open(VideoEntry entry) async {
+  Future<void> open(VideoEntry entry, [int sourceIndex = 0]) async {
+    assert(entry.sources.videos.length > sourceIndex);
+
     final httpHeaders = switch (entry.runtimeType) {
       const (BiliVideoEntry) || const (BiliBungumiEntry) => {
           'Referer': 'https://www.bilibili.com/'
@@ -110,36 +117,39 @@ class MediaKitPlayer implements Player {
       Type() => null,
     };
 
-    // try every url
-    bool success = false;
-    for (var url in entry.sources.video) {
-      await _player.open(
-        media_kit.Media(url, httpHeaders: httpHeaders),
-        play: false,
-      );
+    // try  url
+    final videoUrl = entry.sources.videos[sourceIndex];
+    await _player.open(
+      media_kit.Media(videoUrl, httpHeaders: httpHeaders),
+      play: false,
+    );
 
-      await Future.any([
-        // Network timeout
-        Future.delayed(const Duration(seconds: 6)),
-        () async {
-          // HACK: wait for video loaded
-          // https://github.com/media-kit/media-kit/issues/228
-          //await _player.stream.buffer.first;
-          success = true;
-        }(),
-      ]);
-      if (success) break;
-      logger.w('Fail to open url $url, try next one');
-    }
-    if (!success) throw 'All source tested, no one success';
+    bool loadSuccess = false;
+    await Future.any([
+      // Network timeout
+      Future.delayed(const Duration(seconds: 6)),
+      () async {
+        // HACK: wait for video loaded
+        // https://github.com/media-kit/media-kit/issues/228
+        await _player.stream.duration.first;
+        loadSuccess = true;
+      }(),
+    ]);
+    if (!loadSuccess) getIt<Toast>().show('视频加载失败，更换片源试试');
 
     // load audio if exist
-    if (entry.sources.audio != null) {
-      _mpvCommand('audio-add ${entry.sources.audio![0]} select audio');
+    if (entry.sources.audios != null) {
+      _mpvCommand('audio-add ${entry.sources.audios![0]} select audio');
     }
 
+    // Update stream
     _videoEntry = entry;
     _videoEntryController.add(_videoEntry);
+    _sourceIndexController.add(sourceIndex);
+    _statusController.add(PlayStatusType.pause);
+
+    // Set window title
+    windowManager.setTitle(entry.title);
 
     // load history watching progress
     if (_watchProgress.containsKey(entry.hash)) {
@@ -149,10 +159,6 @@ class MediaKitPlayer implements Player {
     } else {
       seek(Duration.zero);
     }
-
-    windowManager.setTitle(entry.title);
-
-    _statusController.add(PlayStatusType.pause);
   }
 
   // Play status
@@ -180,7 +186,8 @@ class MediaKitPlayer implements Player {
     _statusController.add(PlayStatusType.stop);
 
     _videoEntry = null;
-    _videoEntryController.add(_videoEntry);
+    _videoEntryController.add(null);
+    _sourceIndexController.add(null);
 
     return _player.stop();
   }
