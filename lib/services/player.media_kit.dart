@@ -122,7 +122,7 @@ class MediaKitPlayer implements Player {
         // Network timeout
         Future.delayed(const Duration(seconds: 6)),
         () async {
-          // TODO: wait for video loaded
+          // HACK: wait for video loaded
           // https://github.com/media-kit/media-kit/issues/228
           //await _player.stream.buffer.first;
           success = true;
