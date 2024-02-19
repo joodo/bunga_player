@@ -60,14 +60,12 @@ Future<void> initWindow() async {
     windowOptions = WindowOptions(
       size: Size(windowInfo['width'], windowInfo['height']),
       minimumSize: minSize,
-      fullScreen: windowInfo['fullscreen'],
     );
   } catch (e) {
     windowOptions = const WindowOptions(
       size: minSize,
       minimumSize: minSize,
       center: true,
-      fullScreen: false,
     );
   }
 
@@ -78,18 +76,13 @@ Future<void> initWindow() async {
 
   AppLifecycleListener(
     onExitRequested: () async {
-      final position = await windowManager.getPosition();
       final size = await windowManager.getSize();
-      final fullscreen = await windowManager.isFullScreen();
 
       await getIt<Preferences>().set(
         'window_info',
         jsonEncode({
-          'x': position.dx,
-          'y': position.dy,
           'width': size.width,
           'height': size.height,
-          'fullscreen': fullscreen,
         }),
       );
       return AppExitResponse.exit;
