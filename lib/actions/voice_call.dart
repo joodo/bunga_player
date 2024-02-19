@@ -204,6 +204,11 @@ class HangUpAction extends ContextAction<HangUpIntent> {
     Actions.invoke(context, const MuteMicIntent(false));
     return callingRequestBusiness.leaveChannel();
   }
+
+  @override
+  bool isEnabled(HangUpIntent intent, [BuildContext? context]) {
+    return context!.read<CurrentCallStatus>().value != CallStatus.none;
+  }
 }
 
 class MuteMicIntent extends Intent {
