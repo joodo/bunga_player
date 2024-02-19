@@ -79,8 +79,8 @@ class _DanmakuControlState extends State<DanmakuControl> {
         const SizedBox(width: 8),
 
         // Popmoji Button
-        // FIXME: popmoji finish will cause textField lose focus, see
-        // https://github.com/flutter/flutter/issues/112367
+        // FIXME: popmoji finish will cause textField lose focus
+        // See https://github.com/flutter/flutter/issues/112367
         IconButton(
           icon: const Icon(Icons.mood),
           onPressed: () => Navigator.of(context).pushNamed('control:popmoji'),
