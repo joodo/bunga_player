@@ -96,10 +96,10 @@ class MediaKitPlayer implements Player {
   }
 
   // Video loading
-  final _videoHashController = StreamController<String?>.broadcast();
-  String? _videoHash;
+  final _videoEntryController = StreamController<VideoEntry?>.broadcast();
+  VideoEntry? _videoEntry;
   @override
-  Stream<String?> get videoHashStream => _videoHashController.stream;
+  Stream<VideoEntry?> get videoEntryStream => _videoEntryController.stream;
   @override
   Future<void> open(VideoEntry entry) async {
     final httpHeaders = switch (entry.runtimeType) {
@@ -138,13 +138,13 @@ class MediaKitPlayer implements Player {
       _mpvCommand('audio-add ${entry.sources.audio![0]} select audio');
     }
 
-    _videoHash = entry.hash;
-    _videoHashController.add(_videoHash);
+    _videoEntry = entry;
+    _videoEntryController.add(_videoEntry);
 
     // load history watching progress
-    if (_watchProgress.containsKey(_videoHash)) {
+    if (_watchProgress.containsKey(entry.hash)) {
       seek(
-        Duration(milliseconds: _watchProgress[_videoHash]!.progress),
+        Duration(milliseconds: _watchProgress[entry.hash]!.progress),
       );
     } else {
       seek(Duration.zero);
@@ -179,8 +179,8 @@ class MediaKitPlayer implements Player {
 
     _statusController.add(PlayStatusType.stop);
 
-    _videoHash = null;
-    _videoHashController.add(_videoHash);
+    _videoEntry = null;
+    _videoEntryController.add(_videoEntry);
 
     return _player.stop();
   }
@@ -303,8 +303,8 @@ class MediaKitPlayer implements Player {
     }
 
     Timer.periodic(const Duration(seconds: 5), (timer) {
-      if (_videoHash != null) {
-        _watchProgress[_videoHash!] = WatchProgress(
+      if (_videoEntry != null) {
+        _watchProgress[_videoEntry!.hash] = WatchProgress(
           progress: _player.state.position.inMilliseconds,
           duration: _player.state.duration.inMilliseconds,
         );
@@ -327,7 +327,7 @@ class MediaKitPlayer implements Player {
     statusStream.listen((status) {
       logger.i('Player: status hash changed to $status');
     });
-    videoHashStream.listen((videoHash) {
+    videoEntryStream.listen((videoHash) {
       logger.i('Player: video hash changed to $videoHash');
     });
     audioTracksStream.listen((tracks) {

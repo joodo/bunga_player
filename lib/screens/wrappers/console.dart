@@ -217,7 +217,8 @@ last message: ${context.read<CurrentChannelMessage>().value}''',
     'Voice Call': (context) =>
         '''status: ${context.read<CurrentCallStatus>().value.name}
 talkers: ${context.read<CurrentTalkersCount>().value}''',
-    'Player': (context) => '''Video Hash: ${context.read<PlayVideoHash>().value}
+    'Player': (context) =>
+        '''Video Entry: ${context.read<PlayVideoEntry>().value}
 Status: ${context.read<PlayStatus>().value}''',
     'AList': (context) =>
         'host: ${getIt<AList>().host},\ntoken: ${getIt<AList>().token}',

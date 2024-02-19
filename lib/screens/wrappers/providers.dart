@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 extension IsVideoSameWithChannel on BuildContext {
   bool get isVideoSameWithChannel =>
       read<CurrentChannelData>().value?.videoHash ==
-      read<PlayVideoHash>().value;
+      read<PlayVideoEntry>().value;
 }
 
 class ProvidersWrapper extends StatelessWidget {

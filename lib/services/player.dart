@@ -45,7 +45,7 @@ abstract class Player {
   Future<void> play();
   Future<void> stop();
 
-  Stream<String?> get videoHashStream;
+  Stream<VideoEntry?> get videoEntryStream;
   Map<String, WatchProgress> get watchProgresses;
 
   Future<void> setAudioTrackID(String id);

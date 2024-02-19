@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:bunga_player/models/playing/volume.dart';
 import 'package:bunga_player/models/playing/watch_progress.dart';
+import 'package:bunga_player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/services/player.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
@@ -140,8 +141,8 @@ class PlaySubPos extends StreamValueNotifier<int> {
   PlaySubPos() : super(_getPlayer().subPosStream, 0);
 }
 
-class PlayVideoHash extends StreamValueNotifier<String?> {
-  PlayVideoHash() : super(_getPlayer().videoHashStream, null);
+class PlayVideoEntry extends StreamValueNotifier<VideoEntry?> {
+  PlayVideoEntry() : super(_getPlayer().videoEntryStream, null);
 }
 
 class PlayWatchProgresses {
@@ -151,7 +152,7 @@ class PlayWatchProgresses {
 
 final playerProviders = MultiProvider(
   providers: [
-    ChangeNotifierProvider(create: (context) => PlayVideoHash(), lazy: false),
+    ChangeNotifierProvider(create: (context) => PlayVideoEntry(), lazy: false),
     ChangeNotifierProvider(create: (context) => PlayStatus(), lazy: false),
     ChangeNotifierProvider(create: (context) => PlayDuration()),
     ChangeNotifierProvider(create: (context) => PlayBuffer()),
