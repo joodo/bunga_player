@@ -166,8 +166,8 @@ class _ConsoleWrapperState extends State<ConsoleWrapper> {
 
     return FocusScope(
       autofocus: true,
-      onKey: (node, event) {
-        if (event is RawKeyDownEvent &&
+      onKeyEvent: (node, event) {
+        if (event is KeyDownEvent &&
             event.logicalKey == LogicalKeyboardKey.f12) {
           setState(() {
             _show = !_show;
