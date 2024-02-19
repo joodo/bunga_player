@@ -52,7 +52,6 @@ Future<void> initWindow() async {
   const minSize = Size(900, 720);
 
   late WindowOptions windowOptions;
-  Offset? position;
 
   try {
     final windowInfo =
@@ -63,7 +62,6 @@ Future<void> initWindow() async {
       minimumSize: minSize,
       fullScreen: windowInfo['fullscreen'],
     );
-    position = Offset(windowInfo['x'], windowInfo['y']);
   } catch (e) {
     windowOptions = const WindowOptions(
       size: minSize,
@@ -74,7 +72,6 @@ Future<void> initWindow() async {
   }
 
   await windowManager.waitUntilReadyToShow(windowOptions, () async {
-    if (position != null) await windowManager.setPosition(position);
     await windowManager.show();
     await windowManager.focus();
   });
