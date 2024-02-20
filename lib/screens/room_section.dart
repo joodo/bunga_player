@@ -4,7 +4,6 @@ import 'package:bunga_player/actions/video_playing.dart';
 import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/models/chat/user.dart';
 import 'package:bunga_player/models/video_entries/video_entry.dart';
-import 'package:bunga_player/providers/business_indicator.dart';
 import 'package:bunga_player/providers/chat.dart';
 import 'package:bunga_player/providers/player.dart';
 import 'package:bunga_player/screens/dialogs/local_video_entry.dart';
@@ -47,16 +46,11 @@ class _RoomSectionState extends State<RoomSection> {
         // Unsync hint
         Consumer2<CurrentChannelData, PlayVideoEntry>(
           builder: (context, channelData, videoEntry, child) {
-            if (!context
-                    .watch<BusinessIndicator>()
-                    .isRunning || // busy, maybe loading video
+            if (channelData.value == null ||
+                videoEntry.value == null ||
                 context.isVideoSameWithChannel) {
               return const SizedBox.shrink();
             }
-
-            assert(channelData.value != null,
-                'If channelData is null, then isVideoSameWithChannel should be true');
-
             return _VideoUnsyncNotification(
               otherUserName: channelData.value!.sharer.name,
               otherVideoTitle: channelData.value!.name,
