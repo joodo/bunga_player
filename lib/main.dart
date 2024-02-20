@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:ui';
 
+import 'package:bunga_player/constants/constants.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart' as services;
@@ -73,6 +74,8 @@ Future<void> initWindow() async {
     await windowManager.show();
     await windowManager.focus();
   });
+
+  windowManager.setTitle(windowTitle);
 
   AppLifecycleListener(
     onExitRequested: () async {

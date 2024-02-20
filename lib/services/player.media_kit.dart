@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:ui';
 
+import 'package:bunga_player/constants/constants.dart';
 import 'package:bunga_player/models/playing/volume.dart';
 import 'package:bunga_player/models/playing/watch_progress.dart';
 import 'package:bunga_player/models/video_entries/video_entry.dart';
@@ -14,7 +15,6 @@ import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart' as media_kit;
 import 'package:media_kit_video/media_kit_video.dart' as media_kit;
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:window_manager/window_manager.dart';
 
 class MediaKitPlayer implements Player {
@@ -170,8 +170,7 @@ class MediaKitPlayer implements Player {
 
   @override
   Future<void> stop() {
-    final appName = getIt<PackageInfo>().appName;
-    windowManager.setTitle(appName);
+    windowManager.setTitle(windowTitle);
 
     _statusController.add(PlayStatusType.stop);
 
