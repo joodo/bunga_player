@@ -48,7 +48,7 @@ class _ControlSectionState extends State<ControlSection> {
     final name = pref.get<String>('user_name');
     final initialRouteName = 'control:${name != null ? 'welcome' : 'rename'}';
 
-    final body = Navigator(
+    Widget body = Navigator(
       initialRoute: initialRouteName,
       key: _navigatorStateKey,
       onGenerateRoute: (settings) {
@@ -81,7 +81,7 @@ class _ControlSectionState extends State<ControlSection> {
       },
     );
 
-    return SliderTheme(
+    body = SliderTheme(
       data: SliderThemeData(
         activeTrackColor: Theme.of(context).colorScheme.secondary,
         thumbColor: Theme.of(context).colorScheme.secondary,
@@ -90,6 +90,12 @@ class _ControlSectionState extends State<ControlSection> {
         trackShape: SliderCustomTrackShape(),
         showValueIndicator: ShowValueIndicator.always,
       ),
+      child: body,
+    );
+
+    return GestureDetector(
+      onTap: () {},
+      onDoubleTap: () {},
       child: body,
     );
   }
