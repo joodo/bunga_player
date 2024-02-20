@@ -6,12 +6,12 @@ import 'package:bunga_player/models/chat/user.dart';
 import 'package:bunga_player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/providers/business_indicator.dart';
 import 'package:bunga_player/providers/chat.dart';
+import 'package:bunga_player/providers/player.dart';
 import 'package:bunga_player/screens/dialogs/local_video_entry.dart';
 import 'package:bunga_player/screens/wrappers/providers.dart';
 import 'package:bunga_player/screens/wrappers/shortcuts.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
-import 'package:bunga_player/utils/color.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -45,11 +45,8 @@ class _RoomSectionState extends State<RoomSection> {
         const Spacer(),
 
         // Unsync hint
-        Selector<CurrentChannelData, ChannelData?>(
-          selector: (BuildContext context, CurrentChannelData notifier) =>
-              notifier.value,
-          builder:
-              (BuildContext context, ChannelData? channelData, Widget? child) {
+        Consumer2<CurrentChannelData, PlayVideoEntry>(
+          builder: (context, channelData, videoEntry, child) {
             if (!context
                     .watch<BusinessIndicator>()
                     .isRunning || // busy, maybe loading video
@@ -57,12 +54,13 @@ class _RoomSectionState extends State<RoomSection> {
               return const SizedBox.shrink();
             }
 
-            assert(channelData != null,
+            assert(channelData.value != null,
                 'If channelData is null, then isVideoSameWithChannel should be true');
+
             return _VideoUnsyncNotification(
-              otherUserName: channelData!.sharer.name,
-              otherVideoTitle: channelData.name,
-              onAction: () => _onOpenVideoPressed(channelData),
+              otherUserName: channelData.value!.sharer.name,
+              otherVideoTitle: channelData.value!.name,
+              onAction: () => _onOpenVideoPressed(channelData.value!),
             );
           },
         ),
