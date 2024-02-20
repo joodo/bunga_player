@@ -34,7 +34,7 @@ class _HostInitWrapperState extends State<HostInitWrapper> {
         _appKeys = await initHost(bungaHost);
         success = true;
       } catch (e) {
-        if (!context.mounted) return;
+        if (!mounted) return;
         bungaHost = await showDialog<String>(
               context: context,
               builder: (context) => HostDialog(

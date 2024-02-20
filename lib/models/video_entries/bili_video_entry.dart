@@ -24,45 +24,37 @@ class BiliVideoEntry extends VideoEntry {
 
     logger.i('Bili video: start fetch BV=$bvid, p=$p');
 
-    final getSess = getIt<Bunga>().getBiliSess;
-    String? sess;
-    await Future.wait([
-      () async {
-        // fetch cookie
-        sess = await getSess();
-        isHD = sess != null;
-        if (!isHD) {
-          getIt<Toast>().show('无法获取高清视频');
-          logger.w('Bilibili: Cookie of serverless funtion outdated');
-        }
-      }(),
-      () async {
-        // fetch video info
-        final response = await http.get(Uri.parse(
-            'https://api.bilibili.com/x/web-interface/view?bvid=$bvid'));
-        final responseData = jsonDecode(response.body);
-        if (responseData['code'] != 0) {
-          throw 'Cannot get video info';
-        }
+    // fetch sess
+    final sess = getIt<OnlineVideoService>().biliSess;
+    isHD = sess != null;
+    if (!isHD) {
+      getIt<Toast>().show('无法获取高清视频');
+    }
 
-        image = responseData['data']['pic'];
+    // fetch video info
+    var response = await http.get(
+        Uri.parse('https://api.bilibili.com/x/web-interface/view?bvid=$bvid'));
+    var responseData = jsonDecode(response.body);
+    if (responseData['code'] != 0) {
+      throw 'Cannot get video info';
+    }
 
-        final List pages = responseData['data']['pages'];
-        totalP = pages.length;
-        title = totalP > 1
-            ? '${responseData['data']['title']} [$p/$totalP]'
-            : responseData['data']['title'];
-        cid = pages[p - 1]['cid'].toString();
-      }(),
-    ]);
+    image = responseData['data']['pic'];
+
+    final List pages = responseData['data']['pages'];
+    totalP = pages.length;
+    title = totalP > 1
+        ? '${responseData['data']['title']} [$p/$totalP]'
+        : responseData['data']['title'];
+    cid = pages[p - 1]['cid'].toString();
 
     // fetch video url with cookie and video info
-    final response = await http.get(
+    response = await http.get(
       Uri.parse(
           'https://api.bilibili.com/x/player/playurl?bvid=$bvid&cid=$cid&qn=112'),
       headers: sess == null ? null : {"Cookie": 'SESSDATA=$sess'},
     );
-    final responseData = jsonDecode(response.body);
+    responseData = jsonDecode(response.body);
     if (responseData['code'] == 0) {
       final durl = responseData['data']['durl'][0];
       sources = VideoSources(videos: [

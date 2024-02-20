@@ -117,9 +117,9 @@ class MediaKitPlayer implements Player {
       Type() => null,
     };
 
-    // try  url
+    // open video
     final videoUrl = entry.sources.videos[sourceIndex];
-    await _player.open(
+    _player.open(
       media_kit.Media(videoUrl, httpHeaders: httpHeaders),
       play: false,
     );
@@ -127,15 +127,17 @@ class MediaKitPlayer implements Player {
     bool loadSuccess = false;
     await Future.any([
       // Network timeout
-      Future.delayed(const Duration(seconds: 6)),
+      Future.delayed(const Duration(seconds: 10)),
       () async {
         // HACK: wait for video loaded
         // https://github.com/media-kit/media-kit/issues/228
-        await _player.stream.duration.first;
+        await for (final duration in _player.stream.duration) {
+          if (duration > Duration.zero) break;
+        }
         loadSuccess = true;
       }(),
     ]);
-    if (!loadSuccess) getIt<Toast>().show('视频加载失败，更换片源试试');
+    if (!loadSuccess) getIt<Toast>().show('视频加载超时，更换片源试试');
 
     // load audio if exist
     if (entry.sources.audios != null) {

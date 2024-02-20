@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:bunga_player/services/online_video.dart';
 import 'package:bunga_player/utils/http_response.dart';
 import 'package:http/http.dart' as http;
 
@@ -39,27 +40,41 @@ class Bunga {
       _host.resolve('bilibili/sess'),
       headers: {'Authorization': _userToken ?? ''},
     );
-    return response.statusCode == 200 ? response.body : null;
+    if (!response.isSuccess) {
+      throw Exception('Bilibili sess fetched failed: ${response.body}');
+    }
+    return response.body;
   }
 
-  Future<String> getStringByHash(String hash) async {
-    final response = await http.get(
-      _host.resolve('utils/hash-string?hash=$hash'),
+  Future<Map> parseVideoUrl(String url) async {
+    final response = await http.post(
+      _host.resolve('video-parse'),
       headers: {'Authorization': _userToken ?? ''},
+      body: {'url': url},
     );
     if (!response.isSuccess) {
-      throw Exception('Fail to get string of hash $hash: ${response.body}');
+      throw Exception('Parse video failed: ${response.body}');
     }
-
-    final data = jsonDecode(response.body);
-    return data['data']['text'];
+    return jsonDecode(response.body);
   }
 
-  Future<void> setStringHash({required String text, required String hash}) {
-    return http.post(
-      _host.resolve('utils/hash-string'),
-      headers: {'Authorization': _userToken ?? ''},
-      body: {'hash': hash, 'text': text},
+  Future<Iterable<SupportSite>> getSupportSites() async {
+    final request = http.Request(
+      'OPTIONS',
+      _host.resolve('video-parse'),
+    );
+    final streamedResponse = await http.Client().send(request);
+    final response = await http.Response.fromStream(streamedResponse);
+    if (!response.isSuccess) {
+      throw Exception('Parse support sites failed: ${response.body}');
+    }
+
+    final list = jsonDecode(response.body)['supports'] as Iterable;
+    return list.map(
+      (result) => SupportSite(
+        name: result['name'],
+        url: result['url'],
+      ),
     );
   }
 }

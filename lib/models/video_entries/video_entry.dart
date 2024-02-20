@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:bunga_player/models/chat/channel_data.dart';
+import 'package:bunga_player/services/online_video.dart';
 import 'package:crclib/catalog.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:http/http.dart' as http;
@@ -15,6 +16,7 @@ part 'local_video_entry.dart';
 part 'a_list_entry.dart';
 part 'bili_bungumi_entry.dart';
 part 'bili_video_entry.dart';
+part 'm3u8_entry.dart';
 
 class VideoSources {
   final List<String> videos;
@@ -44,6 +46,7 @@ sealed class VideoEntry {
     AListEntry.hashPrefix: AListEntry.fromChannelData,
     BiliBungumiEntry.hashPrefix: BiliBungumiEntry.fromChannelData,
     BiliVideoEntry.hashPrefix: BiliVideoEntry.fromChannelData,
+    M3u8Entry.hashPrefix: M3u8Entry.fromChannelData,
   };
 
   VideoEntry();

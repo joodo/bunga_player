@@ -3,7 +3,7 @@ import 'package:get_it/get_it.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import 'alist.dart';
-import 'bilibili.dart';
+import 'online_video.dart';
 import 'bunga.dart';
 import 'chat.dart';
 import 'chat.stream_io.dart';
@@ -31,7 +31,7 @@ Future<AppKeys> initHost(String host) async {
   getIt.registerSingleton<ChatService>(StreamIO(appKey.streamIO));
   getIt.registerSingleton<CallService>(Agora(appKey.agora));
   getIt.registerSingleton<AList>(AList());
-  getIt.registerSingleton<Bilibili>(Bilibili());
+  getIt.registerSingleton<OnlineVideoService>(OnlineVideoService());
 
   return appKey;
 }
@@ -41,5 +41,5 @@ void unregisterHost() {
   getIt.unregister<ChatService>();
   getIt.unregister<CallService>();
   getIt.unregister<AList>();
-  getIt.unregister<Bilibili>();
+  getIt.unregister<OnlineVideoService>();
 }

@@ -10,7 +10,7 @@ import 'package:bunga_player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/providers/business_indicator.dart';
 import 'package:bunga_player/providers/chat.dart';
 import 'package:bunga_player/providers/ui.dart';
-import 'package:bunga_player/screens/dialogs/bilibili.dart';
+import 'package:bunga_player/screens/dialogs/online_video_dialog.dart';
 import 'package:bunga_player/screens/dialogs/local_video_entry.dart';
 import 'package:bunga_player/screens/dialogs/net_disk.dart';
 import 'package:bunga_player/screens/wrappers/shortcuts.dart';
@@ -70,16 +70,6 @@ class _WelcomeControlState extends State<WelcomeControl> {
   }
 
   @override
-  void didChangeDependencies() {
-    // Precache svg icon
-    const biliIcon = SvgAssetLoader('assets/images/bilibili.svg');
-    svg.cache
-        .putIfAbsent(biliIcon.cacheKey(null), () => biliIcon.loadBytes(null));
-
-    super.didChangeDependencies();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Selector<BusinessIndicator, bool>(
       selector: (context, bi) => bi.currentProgress != null,
@@ -115,16 +105,9 @@ class _WelcomeControlState extends State<WelcomeControl> {
                 child: const Text('网盘'),
               ),
               mock.MenuItemButton(
-                leadingIcon: SvgPicture.asset(
-                  'assets/images/bilibili.svg',
-                  colorFilter: ColorFilter.mode(
-                    Theme.of(context).indicatorColor,
-                    BlendMode.srcIn,
-                  ),
-                  fit: BoxFit.cover,
-                ),
-                onPressed: _openBilibili,
-                child: const Text('Bilibili'),
+                leadingIcon: const Icon(Icons.language_outlined),
+                onPressed: _openOnline,
+                child: const Text('在线视频'),
               ),
               mock.MenuItemButton(
                 leadingIcon: const Icon(Icons.folder_outlined),
@@ -147,11 +130,11 @@ class _WelcomeControlState extends State<WelcomeControl> {
     _openChannel(entryGetter: LocalVideoEntryDialog().show);
   }
 
-  void _openBilibili() {
+  void _openOnline() {
     _openChannel(
       entryGetter: () => showDialog<VideoEntry?>(
         context: context,
-        builder: (context) => const BiliDialog(),
+        builder: (context) => const OnlineVideoDialog(),
       ),
     );
   }
@@ -212,9 +195,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
           await response;
         }
 
-        if (context.mounted) {
-          Navigator.of(context).popAndPushNamed('control:main');
-        }
+        if (mounted) Navigator.of(context).popAndPushNamed('control:main');
       } catch (e) {
         getIt<Toast>().show('解析失败');
         Future.microtask(_initBusinessIndicator);

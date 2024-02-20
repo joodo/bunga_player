@@ -6,7 +6,7 @@ import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/providers/business_indicator.dart';
 import 'package:bunga_player/providers/chat.dart';
-import 'package:bunga_player/screens/dialogs/bilibili.dart';
+import 'package:bunga_player/screens/dialogs/online_video_dialog.dart';
 import 'package:bunga_player/screens/dialogs/local_video_entry.dart';
 import 'package:bunga_player/screens/dialogs/net_disk.dart';
 import 'package:bunga_player/screens/wrappers/providers.dart';
@@ -45,16 +45,9 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
           ),
           const SizedBox(width: 16),
           FilledButton.icon(
-            icon: SvgPicture.asset(
-              'assets/images/bilibili.svg',
-              colorFilter: ColorFilter.mode(
-                Theme.of(context).colorScheme.onPrimary,
-                BlendMode.srcIn,
-              ),
-              fit: BoxFit.cover,
-            ),
-            label: const Text('Bilibili'),
-            onPressed: isBusy ? null : _openBilibili,
+            icon: const Icon(Icons.language_outlined),
+            label: const Text('在线视频'),
+            onPressed: isBusy ? null : _openOnline,
           ),
           const SizedBox(width: 16),
           FilledButton.icon(
@@ -72,11 +65,11 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
     _openVideo(entryGetter: LocalVideoEntryDialog().show);
   }
 
-  void _openBilibili() async {
+  void _openOnline() async {
     _openVideo(
       entryGetter: () => showDialog<VideoEntry?>(
         context: context,
-        builder: (context) => const BiliDialog(),
+        builder: (context) => const OnlineVideoDialog(),
       ),
     );
   }
@@ -100,8 +93,8 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
     if (videoEntry == null) return;
 
     try {
-      // ignore: use_build_context_synchronously
       final response = Actions.invoke(
+        // ignore: use_build_context_synchronously
         Intentor.context,
         OpenVideoIntent(
           videoEntry: videoEntry,
@@ -115,13 +108,13 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
     }
 
     if (shouldUpdateChannelData) {
-      // ignore: use_build_context_synchronously
       Actions.invoke(
+        // ignore: use_build_context_synchronously
         Intentor.context,
         UpdateChannelDataIntent(ChannelData.fromShare(currentUser, videoEntry)),
       );
     }
 
-    if (context.mounted) Navigator.of(context).pop();
+    if (mounted) Navigator.of(context).pop();
   }
 }

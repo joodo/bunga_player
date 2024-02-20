@@ -2,6 +2,7 @@ import 'package:bunga_player/models/chat/user.dart';
 import 'package:bunga_player/providers/chat.dart';
 import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/services/bunga.dart';
+import 'package:bunga_player/services/online_video.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/chat.dart';
@@ -114,6 +115,9 @@ Future<void> _login(User user) async {
   // Get token by client id from bunga
   final bunga = getIt<Bunga>();
   final token = await bunga.userLogin(user.id);
+
+  // Fetch bilibili sess
+  getIt<OnlineVideoService>().fetchSess();
 
   // Login to stream server
   final chatService = getIt<ChatService>();

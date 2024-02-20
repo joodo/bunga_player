@@ -86,8 +86,8 @@ class _RoomSectionState extends State<RoomSection> {
     if (entry == null) return;
 
     try {
-      // ignore: use_build_context_synchronously
       final response = Actions.invoke(
+        // ignore: use_build_context_synchronously
         Intentor.context,
         OpenVideoIntent(videoEntry: entry),
       ) as Future?;

@@ -4,8 +4,29 @@ import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:http/http.dart' as http;
 
-class Bilibili {
-  final getSess = getIt<Bunga>().getBiliSess;
+class SupportSite {
+  final String name;
+  final String url;
+
+  SupportSite({required this.name, required this.url});
+}
+
+class OnlineVideoService {
+  OnlineVideoService() {
+    _getSupportSites();
+  }
+
+  late final List<SupportSite> supportSites;
+  Future<void> _getSupportSites() async {
+    supportSites = (await getIt<Bunga>().getSupportSites()).toList();
+    logger.i('Support sites fetched.');
+  }
+
+  late final String? biliSess;
+  Future<void> fetchSess() async {
+    biliSess = await getIt<Bunga>().getBiliSess();
+    logger.i('Bilibili sess fetched');
+  }
 
   Future<VideoEntry> getEntryFromUri(Uri uri) async {
     switch (uri.host) {
@@ -37,7 +58,10 @@ class Bilibili {
         }
 
       default:
-        throw 'Unknown host: ${uri.host}';
+        final entry = M3u8Entry(path: uri.toString());
+        // prefetch in case site not support
+        await entry.fetch();
+        return entry;
     }
   }
 }
