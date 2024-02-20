@@ -137,7 +137,9 @@ class MediaKitPlayer implements Player {
         loadSuccess = true;
       }(),
     ]);
-    if (!loadSuccess) getIt<Toast>().show('视频加载超时，更换片源试试');
+    if (!loadSuccess) {
+      getIt<Toast>().show('视频加载超时，更换片源试试');
+    }
 
     // load audio if exist
     if (entry.sources.audios != null) {
@@ -312,7 +314,7 @@ class MediaKitPlayer implements Player {
     }
 
     Timer.periodic(const Duration(seconds: 5), (timer) {
-      if (_videoEntry != null) {
+      if (_videoEntry != null && _player.state.playing) {
         _watchProgress[_videoEntry!.hash] = WatchProgress(
           progress: _player.state.position.inMilliseconds,
           duration: _player.state.duration.inMilliseconds,

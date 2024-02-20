@@ -4,6 +4,11 @@ import 'package:bunga_player/services/online_video.dart';
 import 'package:bunga_player/utils/http_response.dart';
 import 'package:http/http.dart' as http;
 
+class NeedEpisodeIndexException implements Exception {
+  final Iterable<String> episodeNames;
+  NeedEpisodeIndexException(this.episodeNames);
+}
+
 class Bunga {
   final Uri _host;
   Bunga(String host) : _host = Uri.parse(host);
@@ -53,7 +58,12 @@ class Bunga {
       body: {'url': url},
     );
     if (!response.isSuccess) {
-      throw Exception('Parse video failed: ${response.body}');
+      if (response.statusCode == 418) {
+        final list = jsonDecode(response.body)['episodes'] as List;
+        throw NeedEpisodeIndexException(list.map((e) => e as String));
+      } else {
+        throw Exception('Parse video failed: ${response.body}');
+      }
     }
     return jsonDecode(response.body);
   }
@@ -69,7 +79,7 @@ class Bunga {
       throw Exception('Parse support sites failed: ${response.body}');
     }
 
-    final list = jsonDecode(response.body)['supports'] as Iterable;
+    final list = jsonDecode(response.body)['supports'] as List;
     return list.map(
       (result) => SupportSite(
         name: result['name'],
