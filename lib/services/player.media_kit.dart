@@ -10,7 +10,6 @@ import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/player.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/services/toast.dart';
 import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart' as media_kit;
@@ -51,6 +50,20 @@ class MediaKitPlayer implements Player {
     );
 
     _loadWatchProgress();
+    _player.stream.duration.listen((duration) {
+      if (duration <= Duration.zero) return;
+      // When video finish loaded
+
+      // load history watching progress
+      if (_watchProgress.containsKey(_videoEntry!.hash)) {
+        seek(
+          Duration(milliseconds: _watchProgress[_videoEntry!.hash]!.progress),
+        );
+      }
+
+      // Set play status
+      _statusController.add(PlayStatusType.pause);
+    });
 
     _setUpLogs();
   }
@@ -107,6 +120,14 @@ class MediaKitPlayer implements Player {
   Stream<VideoEntry?> get videoEntryStream => _videoEntryController.stream;
   @override
   Future<void> open(VideoEntry entry, [int sourceIndex = 0]) async {
+    // Update stream
+    _videoEntry = entry;
+    _videoEntryController.add(_videoEntry);
+    _sourceIndexController.add(sourceIndex);
+
+    // Set window title
+    windowManager.setTitle(entry.title);
+
     assert(entry.sources.videos.length > sourceIndex);
 
     final httpHeaders = switch (entry.runtimeType) {
@@ -119,49 +140,14 @@ class MediaKitPlayer implements Player {
 
     // open video
     final videoUrl = entry.sources.videos[sourceIndex];
-    _player.open(
+    await _player.open(
       media_kit.Media(videoUrl, httpHeaders: httpHeaders),
       play: false,
     );
 
-    bool loadSuccess = false;
-    await Future.any([
-      // Network timeout
-      Future.delayed(const Duration(seconds: 10)),
-      () async {
-        // HACK: wait for video loaded
-        // https://github.com/media-kit/media-kit/issues/228
-        await for (final duration in _player.stream.duration) {
-          if (duration > Duration.zero) break;
-        }
-        loadSuccess = true;
-      }(),
-    ]);
-    if (!loadSuccess) {
-      getIt<Toast>().show('视频加载超时，更换片源试试');
-    }
-
     // load audio if exist
     if (entry.sources.audios != null) {
       _mpvCommand('audio-add ${entry.sources.audios![0]} select audio');
-    }
-
-    // Update stream
-    _videoEntry = entry;
-    _videoEntryController.add(_videoEntry);
-    _sourceIndexController.add(sourceIndex);
-    _statusController.add(PlayStatusType.pause);
-
-    // Set window title
-    windowManager.setTitle(entry.title);
-
-    // load history watching progress
-    if (_watchProgress.containsKey(entry.hash)) {
-      seek(
-        Duration(milliseconds: _watchProgress[entry.hash]!.progress),
-      );
-    } else {
-      seek(Duration.zero);
     }
   }
 

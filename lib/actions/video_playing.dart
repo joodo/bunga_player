@@ -56,7 +56,7 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
           await intent.videoEntry.fetch();
         },
         bi.setTitle('正在收拾客厅……'),
-        (data) => videoPlayer.open(intent.videoEntry, intent.sourceIndex),
+        (data) async => videoPlayer.open(intent.videoEntry, intent.sourceIndex),
         bi.setTitle('正在发送请柬……'),
         (data) async {
           await intent.beforeAskingPosition?.call();
