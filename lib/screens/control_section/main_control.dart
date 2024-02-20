@@ -138,7 +138,7 @@ class _MainControlState extends State<MainControl> {
                       children: [
                         Icon(Icons.rss_feed),
                         SizedBox(width: 12),
-                        Text('更换片源'),
+                        Text('片源'),
                       ],
                     ),
                     onTap: () {
@@ -166,7 +166,7 @@ class _MainControlState extends State<MainControl> {
                     children: [
                       Icon(Icons.subtitles),
                       SizedBox(width: 12),
-                      Text('字幕调整'),
+                      Text('字幕'),
                     ],
                   ),
                   onTap: () {
