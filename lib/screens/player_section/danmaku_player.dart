@@ -33,7 +33,6 @@ class _DanmakuPlayerState extends State<DanmakuPlayer>
   @override
   Widget build(BuildContext context) {
     const topPadding = 48.0;
-    // TODO: danmaku list
     return Stack(
       children: [
         for (final (line, danmakuPoses) in _danmakuLines.indexed)

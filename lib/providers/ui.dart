@@ -38,10 +38,6 @@ class FoldLayout {
   FoldLayout(this.value);
 }
 
-class ShowDanmakuHistory extends ValueNotifier<bool> {
-  ShowDanmakuHistory() : super(false);
-}
-
 final uiProviders = MultiProvider(
   providers: [
     ChangeNotifierProvider(create: (context) => IsFullScreen()),
@@ -59,6 +55,5 @@ final uiProviders = MultiProvider(
     ChangeNotifierProvider(create: (context) => IsCatAwake()),
     ChangeNotifierProvider(create: (context) => JustToggleByRemote()),
     ChangeNotifierProvider(create: (context) => JustAdjustedVolumeByKey()),
-    ChangeNotifierProvider(create: (context) => ShowDanmakuHistory()),
   ],
 );

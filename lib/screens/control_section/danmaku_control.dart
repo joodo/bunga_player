@@ -12,11 +12,9 @@ class DanmakuControl extends StatefulWidget {
 }
 
 class _DanmakuControlState extends State<DanmakuControl> {
-  final _controller = TextEditingController();
-
   late final _danmakuMode = context.read<DanmakuMode>();
-  // late final _showDanmakuHistory = context.read<ShowDanmakuHistory>();
 
+  final _controller = TextEditingController();
   final _focusNode = FocusNode();
 
   @override
@@ -31,7 +29,6 @@ class _DanmakuControlState extends State<DanmakuControl> {
   void dispose() {
     Future.microtask(() {
       _danmakuMode.value = false;
-      // _showDanmakuHistory.value = false;
     });
     super.dispose();
   }
@@ -86,19 +83,6 @@ class _DanmakuControlState extends State<DanmakuControl> {
           onPressed: () => Navigator.of(context).pushNamed('control:popmoji'),
         ),
         const SizedBox(width: 8),
-
-        // TODO: History button
-        /*
-        ValueListenableBuilder(
-          valueListenable: _showDanmakuHistory,
-          builder: (context, showHistory, child) => IconButton(
-            icon: const Icon(Icons.history),
-            isSelected: showHistory,
-            onPressed: () => _showDanmakuHistory.value = !showHistory,
-          ),
-        ),
-        const SizedBox(width: 8),
-        */
       ],
     );
   }
