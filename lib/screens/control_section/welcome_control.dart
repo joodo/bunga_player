@@ -309,6 +309,8 @@ class _OthersDialogState extends State<_OthersDialog> {
 
   Widget _createVideoCard(String channelId, ChannelData channelData) {
     final themeData = Theme.of(context);
+    // FIXME: Unhandle exception when image url not usable
+    // see https://github.com/flutter/flutter/issues/129967
     final videoImage = Image.network(
       channelData.image ?? '',
       height: 125,
