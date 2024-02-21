@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:bunga_player/constants/constants.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart' as services;
 import 'package:bunga_player/screens/main_screen.dart';
@@ -23,7 +22,8 @@ void main() {
 
       await services.init();
 
-      await initWindow();
+      await windowManager.ensureInitialized();
+      windowManager.setMinimumSize(const Size(800, 600));
 
       final home = wrap(const MainScreen());
       final app = MaterialApp(
@@ -41,10 +41,4 @@ void main() {
       throw error;
     },
   );
-}
-
-Future<void> initWindow() async {
-  await windowManager.ensureInitialized();
-  windowManager.setMinimumSize(const Size(800, 600));
-  windowManager.setTitle(windowTitle);
 }

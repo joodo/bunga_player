@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:ui';
 
-import 'package:bunga_player/constants/constants.dart';
 import 'package:bunga_player/models/playing/volume.dart';
 import 'package:bunga_player/models/playing/watch_progress.dart';
 import 'package:bunga_player/models/video_entries/video_entry.dart';
@@ -15,7 +14,6 @@ import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart' as media_kit;
 import 'package:media_kit_video/media_kit_video.dart' as media_kit;
-import 'package:window_manager/window_manager.dart';
 
 class MediaKitPlayer implements Player {
   MediaKitPlayer() {
@@ -120,16 +118,14 @@ class MediaKitPlayer implements Player {
   Stream<VideoEntry?> get videoEntryStream => _videoEntryController.stream;
   @override
   Future<void> open(VideoEntry entry, [int sourceIndex = 0]) async {
+    assert(entry.sources.videos.length > sourceIndex);
+
     // Update stream
     _videoEntry = entry;
     _videoEntryController.add(_videoEntry);
     _sourceIndexController.add(sourceIndex);
 
-    // Set window title
-    windowManager.setTitle(entry.title);
-
-    assert(entry.sources.videos.length > sourceIndex);
-
+    // Set headers
     final httpHeaders = switch (entry.runtimeType) {
       const (BiliVideoEntry) || const (BiliBungumiEntry) => {
           'Referer': 'https://www.bilibili.com/'
@@ -170,8 +166,6 @@ class MediaKitPlayer implements Player {
 
   @override
   Future<void> stop() {
-    windowManager.setTitle(windowTitle);
-
     _statusController.add(PlayStatusType.stop);
 
     _videoEntry = null;

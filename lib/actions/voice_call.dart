@@ -7,7 +7,7 @@ import 'package:bunga_player/actions/dispatcher.dart';
 import 'package:bunga_player/models/chat/message.dart';
 import 'package:bunga_player/models/chat/user.dart';
 import 'package:bunga_player/providers/chat.dart';
-import 'package:bunga_player/screens/wrappers/shortcuts.dart';
+import 'package:bunga_player/screens/wrappers/actions.dart';
 import 'package:bunga_player/services/call.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/preferences.dart';

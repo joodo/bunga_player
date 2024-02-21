@@ -13,7 +13,7 @@ import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/screens/dialogs/online_video_dialog.dart';
 import 'package:bunga_player/screens/dialogs/local_video_entry.dart';
 import 'package:bunga_player/screens/dialogs/net_disk.dart';
-import 'package:bunga_player/screens/wrappers/shortcuts.dart';
+import 'package:bunga_player/screens/wrappers/actions.dart';
 import 'package:bunga_player/services/chat.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';

@@ -1,7 +1,7 @@
 import 'package:bunga_player/actions/channel.dart';
 import 'package:bunga_player/actions/dispatcher.dart';
 import 'package:bunga_player/providers/chat.dart';
-import 'package:bunga_player/screens/wrappers/shortcuts.dart';
+import 'package:bunga_player/screens/wrappers/actions.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 

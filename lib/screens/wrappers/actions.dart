@@ -2,6 +2,7 @@ import 'package:bunga_player/actions/auth.dart';
 import 'package:bunga_player/actions/channel.dart';
 import 'package:bunga_player/actions/danmaku.dart';
 import 'package:bunga_player/actions/play.dart';
+import 'package:bunga_player/actions/ui.dart';
 import 'package:bunga_player/actions/video_playing.dart';
 import 'package:bunga_player/actions/voice_call.dart';
 import 'package:flutter/material.dart';
@@ -27,10 +28,10 @@ class _IntentorState extends State<Intentor> {
   }
 }
 
-class ShortcutsWrapper extends StatelessWidget {
+class ActionsWrapper extends StatelessWidget {
   final Widget child;
 
-  const ShortcutsWrapper({super.key, required this.child});
+  const ActionsWrapper({super.key, required this.child});
 
   @override
   Widget build(BuildContext context) {
@@ -45,6 +46,7 @@ class ShortcutsWrapper extends StatelessWidget {
     child = VideoPlayingActions(child: child);
     child = AuthActions(child: child);
     child = PlayActions(child: child);
+    child = UIActions(child: child);
 
     return child;
   }

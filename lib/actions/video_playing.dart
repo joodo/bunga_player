@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bunga_player/actions/channel.dart';
+import 'package:bunga_player/actions/ui.dart';
 import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/models/chat/message.dart';
 import 'package:bunga_player/models/chat/user.dart';
@@ -10,7 +11,7 @@ import 'package:bunga_player/providers/chat.dart';
 import 'package:bunga_player/providers/player.dart';
 import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/screens/wrappers/providers.dart';
-import 'package:bunga_player/screens/wrappers/shortcuts.dart';
+import 'package:bunga_player/screens/wrappers/actions.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/player.dart';
 import 'package:bunga_player/services/services.dart';
@@ -56,7 +57,11 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
           await intent.videoEntry.fetch();
         },
         bi.setTitle('正在收拾客厅……'),
-        (data) async => videoPlayer.open(intent.videoEntry, intent.sourceIndex),
+        (data) async {
+          Actions.invoke(
+              context, SetWindowTitleIntent(intent.videoEntry.title));
+          return videoPlayer.open(intent.videoEntry, intent.sourceIndex);
+        },
         bi.setTitle('正在发送请柬……'),
         (data) async {
           await intent.beforeAskingPosition?.call();

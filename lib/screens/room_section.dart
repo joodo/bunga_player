@@ -8,7 +8,7 @@ import 'package:bunga_player/providers/chat.dart';
 import 'package:bunga_player/providers/player.dart';
 import 'package:bunga_player/screens/dialogs/local_video_entry.dart';
 import 'package:bunga_player/screens/wrappers/providers.dart';
-import 'package:bunga_player/screens/wrappers/shortcuts.dart';
+import 'package:bunga_player/screens/wrappers/actions.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
 import 'package:flutter/material.dart';

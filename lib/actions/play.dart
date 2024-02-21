@@ -1,4 +1,5 @@
 import 'package:bunga_player/actions/dispatcher.dart';
+import 'package:bunga_player/actions/ui.dart';
 import 'package:bunga_player/actions/video_playing.dart';
 import 'package:bunga_player/providers/player.dart';
 import 'package:bunga_player/providers/ui.dart';
@@ -77,9 +78,10 @@ class TogglePlayAction extends ContextAction<TogglePlayIntent> {
 
 class StopPlayIntent extends Intent {}
 
-class StopPlayAction extends Action<StopPlayIntent> {
+class StopPlayAction extends ContextAction<StopPlayIntent> {
   @override
-  Future<void> invoke(StopPlayIntent intent) {
+  Future<void> invoke(StopPlayIntent intent, [BuildContext? context]) {
+    Actions.invoke(context!, const SetWindowTitleIntent());
     return getIt<Player>().stop();
   }
 }
@@ -303,21 +305,6 @@ class SetContrastAction extends Action<SetContrastIntent> {
       : getIt<Player>().resetContrast();
 }
 
-class SetFullScreenIntent extends Intent {
-  const SetFullScreenIntent(this.isFullScreen);
-  final bool isFullScreen;
-}
-
-class SetFullScreenAction extends ContextAction<SetFullScreenIntent> {
-  @override
-  void invoke(SetFullScreenIntent intent, [BuildContext? context]) {
-    final read = context!.read;
-
-    read<IsFullScreen>().value = intent.isFullScreen;
-    context.read<ShouldShowHUD>().mark(keep: !intent.isFullScreen);
-  }
-}
-
 class PlayActions extends StatefulWidget {
   final Widget child;
   const PlayActions({super.key, required this.child});
@@ -342,7 +329,6 @@ class _PlayActionsState extends State<PlayActions> {
         SingleActivator(LogicalKeyboardKey.arrowRight):
             SeekIntent(Duration(seconds: 5), isIncrease: true),
         SingleActivator(LogicalKeyboardKey.space): TogglePlayIntent(),
-        SingleActivator(LogicalKeyboardKey.escape): SetFullScreenIntent(false),
       },
       child: widget.child,
     );
@@ -377,7 +363,6 @@ class _PlayActionsState extends State<PlayActions> {
         SetSubSizeIntent: SetSubSizeAction(),
         SetSubPosIntent: SetSubPosAction(),
         SetContrastIntent: SetContrastAction(),
-        SetFullScreenIntent: SetFullScreenAction(),
       },
       child: shortcuts,
     );
