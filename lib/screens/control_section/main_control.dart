@@ -107,9 +107,9 @@ class _MainControlState extends State<MainControl> {
               icon: const Icon(Icons.more_horiz),
               tooltip: '',
               useRootOverlay: true,
-              itemBuilder: (context) => [
-                // Reload button
-                if (currentChannelData?.videoType == VideoType.online)
+              itemBuilder: (context) => <mock.PopupMenuEntry>[
+                if (currentChannelData?.videoType == VideoType.online) ...[
+                  // Reload button
                   mock.PopupMenuItem(
                     child: const Row(
                       children: [
@@ -131,8 +131,7 @@ class _MainControlState extends State<MainControl> {
                     },
                   ),
 
-                // Source button
-                if (currentChannelData?.videoType == VideoType.online)
+                  // Source button
                   mock.PopupMenuItem(
                     child: const Row(
                       children: [
@@ -146,6 +145,9 @@ class _MainControlState extends State<MainControl> {
                           .pushNamed('control:source_selection');
                     },
                   ),
+
+                  const mock.PopupMenuDivider(),
+                ],
 
                 // Tune button
                 mock.PopupMenuItem(
