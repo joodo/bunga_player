@@ -5,6 +5,7 @@ import 'package:bunga_player/models/alist/search_result.dart';
 import 'package:bunga_player/services/bunga.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart';
+import 'package:bunga_player/utils/auto_retry.dart';
 import 'package:http/http.dart' as http;
 
 class AList {
@@ -18,7 +19,10 @@ class AList {
   }
 
   Future<void> _getToken() async {
-    final response = await getIt<Bunga>().getAListToken();
+    final response = await autoRetry(
+      getIt<Bunga>().getAListToken,
+      jobName: 'alist',
+    );
     _host = Uri.parse(response.$1);
     _token = response.$2;
     logger.i('Alist token got successfully.');
