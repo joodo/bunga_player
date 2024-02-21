@@ -29,7 +29,7 @@ class SetWindowTitleIntent extends Intent {
 class SetWindowTitleAction extends Action<SetWindowTitleIntent> {
   @override
   Future<void> invoke(SetWindowTitleIntent intent) {
-    return windowManager.setTitle(intent.title ?? '棒嘎大影院，你我来相见');
+    return windowManager.setTitle(intent.title ?? '👍 棒嘎大影院，你我来相见');
   }
 }
 
