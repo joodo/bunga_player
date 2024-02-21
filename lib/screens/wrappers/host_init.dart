@@ -56,7 +56,7 @@ class _HostInitWrapperState extends State<HostInitWrapper> {
       future: _initTask,
       builder: (context, snapshot) =>
           snapshot.connectionState != ConnectionState.done
-              ? const Center(child: Text('正在加载'))
+              ? const Center(child: Text('正在炼金'))
               : Provider.value(
                   value: _appKeys,
                   child: widget.child,

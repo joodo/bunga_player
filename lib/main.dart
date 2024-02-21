@@ -1,14 +1,10 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:ui';
 
 import 'package:bunga_player/constants/constants.dart';
 import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart' as services;
 import 'package:bunga_player/screens/main_screen.dart';
 import 'package:bunga_player/screens/wrappers/wrap.dart';
-import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/ssl_walkthrough.dart';
 import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
@@ -49,46 +45,6 @@ void main() {
 
 Future<void> initWindow() async {
   await windowManager.ensureInitialized();
-
-  const minSize = Size(900, 720);
-
-  late WindowOptions windowOptions;
-
-  try {
-    final windowInfo =
-        jsonDecode(getIt<Preferences>().get<String>('window_info')!);
-
-    windowOptions = WindowOptions(
-      size: Size(windowInfo['width'], windowInfo['height']),
-      minimumSize: minSize,
-    );
-  } catch (e) {
-    windowOptions = const WindowOptions(
-      size: minSize,
-      minimumSize: minSize,
-      center: true,
-    );
-  }
-
-  await windowManager.waitUntilReadyToShow(windowOptions, () async {
-    await windowManager.show();
-    await windowManager.focus();
-  });
-
+  windowManager.setMinimumSize(const Size(800, 600));
   windowManager.setTitle(windowTitle);
-
-  AppLifecycleListener(
-    onExitRequested: () async {
-      final size = await windowManager.getSize();
-
-      await getIt<Preferences>().set(
-        'window_info',
-        jsonEncode({
-          'width': size.width,
-          'height': size.height,
-        }),
-      );
-      return AppExitResponse.exit;
-    },
-  );
 }

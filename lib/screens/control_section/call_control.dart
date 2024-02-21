@@ -2,6 +2,7 @@ import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:bunga_player/actions/voice_call.dart';
 import 'package:bunga_player/mocks/slider.dart' as mock;
 import 'package:bunga_player/providers/chat.dart';
+import 'package:bunga_player/screens/control_section/card.dart';
 import 'package:bunga_player/utils/volume_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -36,68 +37,86 @@ class _CallControlState extends State<CallControl> {
     );
   }
 
-  Row _createTalkingWidget(Widget? child, BuildContext context) {
-    return Row(
-      children: [
-        const SizedBox(width: 8),
-        child!,
-        const SizedBox(width: 16),
-        const Text('语音通话中'),
-        const Spacer(),
-        Consumer<MuteMic>(
-          builder: (context, muteMic, child) => IconButton(
-            style: muteMic.value
-                ? const ButtonStyle(
-                    backgroundColor:
-                        MaterialStatePropertyAll<Color>(Colors.red),
-                  )
-                : null,
-            color: muteMic.value ? Colors.white70 : null,
-            icon: Icon(muteMic.value ? Icons.mic_off : Icons.mic),
-            onPressed: () =>
-                Actions.invoke(context, MuteMicIntent(!muteMic.value)),
-          ),
-        ),
-        const SizedBox(width: 8),
-        _NoiseSuppressWidget(),
-        const SizedBox(width: 16),
-        Consumer<CallVolume>(
-          builder: (context, callVolume, child) => IconButton(
-            icon: callVolume.isMute
-                ? const Icon(Icons.volume_off)
-                : const Icon(Icons.volume_up),
-            onPressed: () => callVolume.isMute = !callVolume.isMute,
-          ),
-        ),
-        const SizedBox(width: 8),
-        Consumer<CallVolume>(
-          builder: (context, callVolume, child) => SizedBox(
-            width: 100,
-            child: mock.MySlider(
-              useRootOverlay: true,
-              max: VolumeNotifier.maxVolume.toDouble(),
-              min: VolumeNotifier.minVolume.toDouble(),
-              divisions: VolumeNotifier.maxVolume - VolumeNotifier.minVolume,
-              value: callVolume.isMute
-                  ? VolumeNotifier.minVolume.toDouble()
-                  : callVolume.volume.toDouble(),
-              label: '${callVolume.volume}%',
-              onChanged: (value) {
-                callVolume.isMute = false;
-                callVolume.volume = value.toInt();
-              },
-              focusNode: FocusNode(canRequestFocus: false),
+  Widget _createTalkingWidget(Widget? child, BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) => Row(
+        children: [
+          const SizedBox(width: 8),
+          child!,
+          const SizedBox(width: 16),
+          if (constraints.minWidth > 820) const Text('语音通话中'),
+          const Spacer(),
+          ControlCard(
+            child: Row(
+              children: [
+                const SizedBox(width: 8),
+                Consumer<MuteMic>(
+                  builder: (context, muteMic, child) => IconButton(
+                    style: muteMic.value
+                        ? const ButtonStyle(
+                            backgroundColor:
+                                MaterialStatePropertyAll<Color>(Colors.red),
+                          )
+                        : null,
+                    color: muteMic.value ? Colors.white70 : null,
+                    icon: Icon(muteMic.value ? Icons.mic_off : Icons.mic),
+                    onPressed: () =>
+                        Actions.invoke(context, MuteMicIntent(!muteMic.value)),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                _NoiseSuppressWidget(),
+                const SizedBox(width: 8),
+              ],
             ),
           ),
-        ),
-        const SizedBox(width: 20),
-        _createCallOperateButton(
-          color: Colors.red,
-          icon: Icons.call_end,
-          onPressed: () => Actions.invoke(context, HangUpIntent()),
-        ),
-        const SizedBox(width: 16),
-      ],
+          const SizedBox(width: 16),
+          ControlCard(
+              child: Row(
+            children: [
+              const SizedBox(width: 8),
+              Consumer<CallVolume>(
+                builder: (context, callVolume, child) => IconButton(
+                  icon: callVolume.isMute
+                      ? const Icon(Icons.headset_off)
+                      : const Icon(Icons.headset_mic),
+                  onPressed: () => callVolume.isMute = !callVolume.isMute,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Consumer<CallVolume>(
+                builder: (context, callVolume, child) => SizedBox(
+                  width: 100,
+                  child: mock.MySlider(
+                    useRootOverlay: true,
+                    max: VolumeNotifier.maxVolume.toDouble(),
+                    min: VolumeNotifier.minVolume.toDouble(),
+                    divisions:
+                        VolumeNotifier.maxVolume - VolumeNotifier.minVolume,
+                    value: callVolume.isMute
+                        ? VolumeNotifier.minVolume.toDouble()
+                        : callVolume.volume.toDouble(),
+                    label: '${callVolume.volume}%',
+                    onChanged: (value) {
+                      callVolume.isMute = false;
+                      callVolume.volume = value.toInt();
+                    },
+                    focusNode: FocusNode(canRequestFocus: false),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 32),
+            ],
+          )),
+          const SizedBox(width: 16),
+          _createCallOperateButton(
+            color: Colors.red,
+            icon: Icons.call_end,
+            onPressed: () => Actions.invoke(context, HangUpIntent()),
+          ),
+          const SizedBox(width: 16),
+        ],
+      ),
     );
   }
 

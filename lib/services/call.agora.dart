@@ -95,7 +95,7 @@ class Agora implements CallService {
   Future<void> setVolume(double percent) async {
     assert(percent >= 0 && percent <= 1);
 
-    await _engine.adjustPlaybackSignalVolume((200 * percent).toInt());
+    await _engine.adjustPlaybackSignalVolume((300 * percent).toInt());
   }
 
   // Mic
