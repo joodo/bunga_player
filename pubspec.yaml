@@ -52,7 +52,7 @@ dependencies:
   logger: ^2.0.2+1
   file_selector: ^1.0.3
   window_manager: ^0.3.8
-  http: ^1.2.1
+  http: ^1.2.0
   shared_preferences: ^2.2.2
   async: ^2.11.0
   collection: ^1.18.0
