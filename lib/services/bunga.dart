@@ -4,6 +4,7 @@ import 'package:bunga_player/services/online_video.dart';
 import 'package:bunga_player/utils/http_response.dart';
 import 'package:dart_ping/dart_ping.dart';
 import 'package:http/http.dart' as http;
+import 'package:platform/platform.dart';
 
 class NeedEpisodeIndexException implements Exception {
   final Iterable<String> episodeNames;
@@ -92,7 +93,11 @@ class Bunga {
   Future<(String location, Duration latency)> fetchSourcesInfo(
       String source) async {
     final uri = Uri.parse(source);
-    final ping = Ping(uri.host, count: 5);
+    final ping = Ping(
+      uri.host,
+      count: 5,
+      forceCodepage: const LocalPlatform().isWindows,
+    );
     final result = await ping.stream.first;
     final latency = result.response!.time!;
 
