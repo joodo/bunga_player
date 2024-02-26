@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:bunga_player/services/online_video.dart';
 import 'package:bunga_player/utils/http_response.dart';
+import 'package:dart_ping/dart_ping.dart';
 import 'package:http/http.dart' as http;
 
 class NeedEpisodeIndexException implements Exception {
@@ -86,5 +87,22 @@ class Bunga {
         url: result['url'],
       ),
     );
+  }
+
+  Future<(String location, Duration latency)> fetchSourcesInfo(
+      String source) async {
+    final uri = Uri.parse(source);
+    final ping = Ping(uri.host, count: 5);
+    final result = await ping.stream.first;
+    final latency = result.response!.time!;
+
+    final ip = result.response!.ip!;
+    final response = await http.get(
+      Uri.parse(
+          'https://opendata.baidu.com/api.php?query=$ip&co=&resource_id=6006&oe=utf8'),
+    );
+    final location = jsonDecode(response.body)['data'][0]['location'] as String;
+
+    return (location, latency);
   }
 }
