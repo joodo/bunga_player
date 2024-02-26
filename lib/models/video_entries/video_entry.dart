@@ -27,8 +27,8 @@ class VideoSources {
   @override
   String toString() {
     return {
-      'videos': '...(${videos.length})',
-      'audios': '...(${audios?.length})',
+      'videos': videos.toString(),
+      'audios': audios.toString(),
     }.toString();
   }
 }
