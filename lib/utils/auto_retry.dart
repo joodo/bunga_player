@@ -1,5 +1,7 @@
 import 'package:bunga_player/services/logger.dart';
 
+// TODO: use RetryClient
+// see https://pub.dev/documentation/http/latest/retry/RetryClient-class.html
 Future<T> autoRetry<T>(
   Future<T> Function() job, {
   String jobName = '',
