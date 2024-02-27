@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:bunga_player/services/online_video.dart';
 import 'package:bunga_player/utils/http_response.dart';
 import 'package:http/http.dart' as http;
-import 'package:platform/platform.dart';
 
 class NeedEpisodeIndexException implements Exception {
   final Iterable<String> episodeNames;
