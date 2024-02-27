@@ -2,7 +2,7 @@ import 'package:bunga_player/actions/video_playing.dart';
 import 'package:bunga_player/providers/player.dart';
 import 'package:bunga_player/screens/control_section/dropdown.dart';
 import 'package:bunga_player/mocks/dropdown.dart' as mock;
-import 'package:bunga_player/services/bunga.dart';
+import 'package:bunga_player/services/network.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -20,11 +20,11 @@ class _SourceSelectionControlState extends State<SourceSelectionControl> {
   @override
   void initState() {
     super.initState();
-    final bunga = getIt<Bunga>();
+    final network = getIt<NetworkService>();
 
     final entry = context.read<PlayVideoEntry>().value!;
     for (final (index, source) in entry.sources.videos.indexed) {
-      bunga.fetchSourcesInfo(source).then((result) {
+      network.ipInfo(source).then((result) {
         if (mounted) {
           setState(
             () => _sourceInfo[index] = result,

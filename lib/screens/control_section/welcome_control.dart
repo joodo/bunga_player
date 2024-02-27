@@ -13,6 +13,7 @@ import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/screens/dialogs/online_video_dialog.dart';
 import 'package:bunga_player/screens/dialogs/local_video_entry.dart';
 import 'package:bunga_player/screens/dialogs/net_disk.dart';
+import 'package:bunga_player/screens/dialogs/settings.dart';
 import 'package:bunga_player/screens/wrappers/actions.dart';
 import 'package:bunga_player/services/chat.dart';
 import 'package:bunga_player/services/services.dart';
@@ -70,7 +71,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
 
   @override
   Widget build(BuildContext context) {
-    return Selector<BusinessIndicator, bool>(
+    final actions = Selector<BusinessIndicator, bool>(
       selector: (context, bi) => bi.currentProgress != null,
       builder: (context, isBusy, child) => Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -122,6 +123,23 @@ class _WelcomeControlState extends State<WelcomeControl> {
           ),
         ],
       ),
+    );
+
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        actions,
+        Positioned(
+          right: 16,
+          child: IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () => showDialog(
+              context: context,
+              builder: (dialogContext) => SettingsDialog(context.read),
+            ),
+          ),
+        ),
+      ],
     );
   }
 

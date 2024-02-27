@@ -13,19 +13,16 @@ class Preferences {
     switch (value.runtimeType) {
       case const (bool):
         result = _pref.setBool(key, value);
-        break;
       case const (double):
         result = _pref.setDouble(key, value);
-        break;
       case const (int):
         result = _pref.setInt(key, value);
-        break;
       case const (String):
         result = _pref.setString(key, value);
-        break;
       case const (List<String>):
         result = _pref.setStringList(key, value);
-        break;
+      case const (Null):
+        result = _pref.remove(key);
       default:
         throw 'Unsupport value type: ${value.runtimeType}';
     }

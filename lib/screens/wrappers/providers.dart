@@ -1,4 +1,5 @@
 import 'package:bunga_player/providers/business_indicator.dart';
+import 'package:bunga_player/providers/settings.dart';
 import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/providers/chat.dart';
 import 'package:bunga_player/providers/player.dart';
@@ -19,6 +20,7 @@ class ProvidersWrapper extends StatelessWidget {
   Widget build(Object context) {
     return MultiProvider(
       providers: [
+        settingProviders,
         uiProviders,
         chatProviders,
         playerProviders,
