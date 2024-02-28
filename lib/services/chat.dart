@@ -14,7 +14,6 @@ typedef JoinChannelPayload = (
 abstract class ChatService {
   Future<void> login(String id, String token, String? name);
   Future<void> logout();
-  Future<User> renameUser(User user, String newName);
 
   Future<List<(String id, ChannelData data)>> queryOnlineChannels();
   Future<JoinChannelPayload> createOrJoinChannelByData(ChannelData data);

@@ -12,10 +12,6 @@ class IsFullScreen extends ValueNotifier<bool> {
   }
 }
 
-class IsCatAwake extends ValueNotifier<bool> {
-  IsCatAwake() : super(false);
-}
-
 class ShouldShowHUD extends AutoResetNotifier {
   ShouldShowHUD() : super(const Duration(seconds: 3));
 }
@@ -52,7 +48,6 @@ final uiProviders = MultiProvider(
         return ShouldShowHUD()..mark(keep: !foldLayout.value);
       },
     ),
-    ChangeNotifierProvider(create: (context) => IsCatAwake()),
     ChangeNotifierProvider(create: (context) => JustToggleByRemote()),
     ChangeNotifierProvider(create: (context) => JustAdjustedVolumeByKey()),
   ],

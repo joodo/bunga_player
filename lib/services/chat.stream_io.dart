@@ -38,14 +38,6 @@ class StreamIO implements ChatService {
   @override
   Future<void> logout() => _client.disconnectUser();
 
-  @override
-  Future<User> renameUser(User user, String newName) async {
-    if (user.name == newName) return user;
-
-    await _client.updateUser(stream.User(id: user.id, name: newName));
-    return User(id: user.id, name: newName);
-  }
-
   // Channel
   stream.Channel? _currentChannel;
 

@@ -1,6 +1,5 @@
 import 'package:bunga_player/models/chat/user.dart';
 import 'package:bunga_player/providers/chat.dart';
-import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/services/bunga.dart';
 import 'package:bunga_player/services/online_video.dart';
 import 'package:bunga_player/services/preferences.dart';
@@ -9,63 +8,18 @@ import 'package:bunga_player/services/chat.dart';
 import 'package:bunga_player/actions/dispatcher.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:uuid/uuid.dart';
-
-class RenameCurrentUserIntent extends Intent {
-  final String newName;
-
-  const RenameCurrentUserIntent(this.newName);
-}
-
-class RenameCurrentUserAction extends ContextAction<RenameCurrentUserIntent> {
-  @override
-  Future<void> invoke(RenameCurrentUserIntent intent,
-      [BuildContext? context]) async {
-    final currentUser = context!.read<CurrentUser>();
-    final isAwake = context.read<IsCatAwake>();
-
-    if (currentUser.value != null) {
-      final oldUser = currentUser.value!;
-      currentUser.value = User(id: oldUser.id, name: intent.newName);
-      await getIt<ChatService>().renameUser(currentUser.value!, intent.newName);
-    }
-
-    await getIt<Preferences>().set('user_name', intent.newName);
-
-    isAwake.value = true;
-  }
-
-  @override
-  bool isEnabled(RenameCurrentUserIntent intent, [BuildContext? context]) {
-    assert(context != null, 'Action need context to set current user provider');
-    return true;
-  }
-}
 
 class AutoLoginIntent extends Intent {}
 
 class AutoLoginAction extends ContextAction<AutoLoginIntent> {
   @override
   Future<void> invoke(AutoLoginIntent intent, [BuildContext? context]) async {
-    final isAwake = context!.read<IsCatAwake>();
+    final result =
+        Actions.invoke(context!, LoginIntent(User.fromPref())) as Future;
+    await result;
 
-    final currentUser = context.read<CurrentUser>();
-
-    // Get user name and id from preference
-    final pref = getIt<Preferences>();
-    final name = pref.get<String>('user_name')!;
-    String? clientId = pref.get<String>('client_id');
-    if (clientId == null) {
-      clientId = const Uuid().v4();
-      pref.set('client_id', clientId);
-    }
-
-    final user = User(id: clientId, name: name);
-    currentUser.value = user;
-
-    await _login(user);
-
-    isAwake.value = true;
+    // Fetch bilibili sess
+    getIt<OnlineVideoService>().fetchSess();
   }
 
   @override
@@ -89,19 +43,16 @@ class ChangeCurrentUserIdAction
     ChangeCurrentUserIdIntent intent, [
     BuildContext? context,
   ]) async {
-    final isAwake = context!.read<IsCatAwake>();
-    isAwake.value = false;
+    final currentUserName = context!.read<CurrentUser>().value!.name;
 
-    final currentUser = context.read<CurrentUser>();
-    final newUser = User(id: intent.newId, name: currentUser.value!.name);
-    currentUser.value = newUser;
+    var result = Actions.invoke(context, LogoutIntent()) as Future;
+    await result;
 
-    final chatService = getIt<ChatService>();
-    await chatService.logout();
+    final newUser = User(id: intent.newId, name: currentUserName);
 
-    await _login(newUser);
-
-    isAwake.value = true;
+    if (!context.mounted) throw Exception();
+    result = Actions.invoke(context, LoginIntent(newUser)) as Future;
+    await result;
   }
 
   @override
@@ -111,27 +62,58 @@ class ChangeCurrentUserIdAction
   }
 }
 
-Future<void> _login(User user) async {
-  // Get token by client id from bunga
-  final bunga = getIt<Bunga>();
-  final token = await bunga.userLogin(user.id);
-
-  // Fetch bilibili sess
-  getIt<OnlineVideoService>().fetchSess();
-
-  // Login to stream server
-  final chatService = getIt<ChatService>();
-  await chatService.login(user.id, token, user.name);
+class LoginIntent extends Intent {
+  final User user;
+  const LoginIntent(this.user);
 }
 
-class AuthActions extends Actions {
-  AuthActions({super.key, required super.child})
-      : super(
-          dispatcher: LoggingActionDispatcher(prefix: 'Auth'),
-          actions: <Type, Action<Intent>>{
-            RenameCurrentUserIntent: RenameCurrentUserAction(),
-            AutoLoginIntent: AutoLoginAction(),
-            ChangeCurrentUserIdIntent: ChangeCurrentUserIdAction(),
-          },
-        );
+class LoginAction extends ContextAction<LoginIntent> {
+  @override
+  Future<void> invoke(LoginIntent intent, [BuildContext? context]) async {
+    final currentUser = context!.read<CurrentUser>();
+
+    // Get token by client id from bunga
+    final bunga = getIt<Bunga>();
+    final token = await bunga.userLogin(intent.user.id);
+
+    // Login to stream server
+    final chatService = getIt<ChatService>();
+    await chatService.login(intent.user.id, token, intent.user.name);
+
+    currentUser.value = intent.user;
+  }
+}
+
+class LogoutIntent extends Intent {}
+
+class LogoutAction extends ContextAction<LogoutIntent> {
+  @override
+  Future<void> invoke(LogoutIntent intent, [BuildContext? context]) async {
+    final currentUser = context!.read<CurrentUser>();
+
+    final chatService = getIt<ChatService>();
+    await chatService.logout();
+
+    currentUser.value = null;
+  }
+}
+
+class AuthActions extends StatelessWidget {
+  final Widget child;
+
+  const AuthActions({super.key, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Actions(
+      dispatcher: LoggingActionDispatcher(prefix: 'Auth'),
+      actions: <Type, Action<Intent>>{
+        AutoLoginIntent: AutoLoginAction(),
+        ChangeCurrentUserIdIntent: ChangeCurrentUserIdAction(),
+        LoginIntent: LoginAction(),
+        LogoutIntent: LogoutAction(),
+      },
+      child: child,
+    );
+  }
 }

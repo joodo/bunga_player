@@ -22,8 +22,9 @@ class OnlineVideoService {
     logger.i('Support sites fetched.');
   }
 
-  late final String? biliSess;
+  late String? biliSess;
   Future<void> fetchSess() async {
+    if (biliSess != null) return;
     biliSess = await getIt<Bunga>().getBiliSess();
     logger.i('Bilibili sess fetched');
   }

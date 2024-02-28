@@ -1,7 +1,8 @@
 import 'dart:async';
 
-import 'package:bunga_player/actions/auth.dart';
 import 'package:bunga_player/providers/business_indicator.dart';
+import 'package:bunga_player/services/preferences.dart';
+import 'package:bunga_player/services/services.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -84,7 +85,7 @@ class _RenameControlState extends State<RenameControl> {
   }
 
   void _onSubmit(String userName) {
-    Actions.maybeInvoke(context, RenameCurrentUserIntent(userName));
+    getIt<Preferences>().set('user_name', userName);
 
     _completer?.complete();
     Navigator.of(context).popAndPushNamed('control:welcome');
