@@ -7,7 +7,7 @@ import 'package:bunga_player/services/services.dart';
 import 'package:flutter/material.dart';
 
 class OthersDialog extends StatefulWidget {
-  const OthersDialog();
+  const OthersDialog({super.key});
   @override
   State<OthersDialog> createState() => OthersDialogState();
 }
