@@ -52,10 +52,8 @@ class _ControlSectionState extends State<ControlSection> {
       initialRoute: initialRouteName,
       key: _navigatorStateKey,
       onGenerateRoute: (settings) {
-        final arguments = settings.arguments as Map<String, Object?>?;
         final routes = {
-          'control:rename': RenameControl(
-              previousName: arguments?['previousName'] as String?),
+          'control:rename': const RenameControl(),
           'control:welcome': const WelcomeControl(),
           'control:main': const MainControl(),
           'control:call': const CallControl(),
@@ -114,9 +112,15 @@ class _ControlSectionState extends State<ControlSection> {
         // Avoid change login control to main control
         context.read<PlayStatus>().value != PlayStatusType.stop) {
       final navigator = _navigatorStateKey.currentState!;
-      navigator.popUntil((route) =>
-          route.settings.name == 'control:main' ||
-          route.settings.name == 'control:welcome');
+      Future.delayed(
+        const Duration(milliseconds: 500),
+        () {
+          if (mounted) {
+            navigator
+                .popUntil((route) => route.settings.name == 'control:main');
+          }
+        },
+      );
     }
   }
 }

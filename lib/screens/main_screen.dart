@@ -122,15 +122,20 @@ class _HUDWrapper extends StatelessWidget {
         cursor: shouldShowHUD.value
             ? SystemMouseCursors.basic
             : SystemMouseCursors.none,
-        onEnter: (event) => shouldShowHUD.mark(),
+        onEnter: (event) => shouldShowHUD.unlock('interactive'),
         onExit: (event) {
           if (!_isLeaveFromEdge(context, event)) {
             // When mouse region blocked by popup menu
-            shouldShowHUD.mark(keep: true);
+            shouldShowHUD.lock('interactive');
           }
         },
         onHover: (event) {
-          shouldShowHUD.mark(keep: _isInUISection(context, event));
+          if (_isInUISection(context, event)) {
+            shouldShowHUD.lock('interactive');
+          } else {
+            shouldShowHUD.unlock('interactive');
+            shouldShowHUD.mark();
+          }
         },
         child: AnimatedOpacity(
           opacity: shouldShowHUD.value ? 1.0 : 0.0,

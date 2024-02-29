@@ -88,18 +88,29 @@ class AutoResetNotifier extends ChangeNotifier
   final Duration cooldown;
 
   bool __value = false;
+  @override
+  bool get value => __value;
   set _value(bool newValue) {
     if (__value == newValue) return;
     __value = newValue;
     notifyListeners();
   }
 
-  @override
-  bool get value => __value;
+  final _locks = <String>{};
+  bool get locked => _locks.isNotEmpty;
+  void lock(String locker) {
+    _locks.add(locker);
+    _resetTimer.cancel();
+  }
 
-  void mark({bool keep = false}) {
+  void unlock(String locker) {
+    _locks.remove(locker);
+    if (_locks.isEmpty) _resetTimer.reset();
+  }
+
+  void mark() {
     _value = true;
-    keep ? _resetTimer.cancel() : _resetTimer.reset();
+    if (_locks.isEmpty) _resetTimer.reset();
   }
 
   late final _resetTimer = RestartableTimer(

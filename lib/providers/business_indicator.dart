@@ -22,6 +22,8 @@ class BusinessIndicator extends ChangeNotifier {
 
     if (showProgress) currentProgress = 0;
 
+    notifyListeners();
+
     dynamic result;
     try {
       for (final task in tasks) {
@@ -35,9 +37,9 @@ class BusinessIndicator extends ChangeNotifier {
       totalProgress = null;
       currentProgress = null;
       currentMissionName = null;
-      notifyListeners();
 
       _isRunning = false;
+      notifyListeners();
     }
   }
 

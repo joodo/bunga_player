@@ -16,7 +16,6 @@ class SetFullScreenAction extends ContextAction<SetFullScreenIntent> {
     final read = context!.read;
 
     read<IsFullScreen>().value = intent.isFullScreen;
-    context.read<ShouldShowHUD>().mark(keep: !intent.isFullScreen);
   }
 }
 

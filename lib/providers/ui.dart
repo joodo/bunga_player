@@ -1,3 +1,4 @@
+import 'package:bunga_player/providers/business_indicator.dart';
 import 'package:bunga_player/utils/value_listenable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
@@ -36,16 +37,36 @@ class FoldLayout {
 
 final uiProviders = MultiProvider(
   providers: [
+    ChangeNotifierProvider(create: (context) => BusinessIndicator()),
     ChangeNotifierProvider(create: (context) => IsFullScreen()),
     ChangeNotifierProvider(create: (context) => DanmakuMode()),
     ProxyProvider2<IsFullScreen, DanmakuMode, FoldLayout>(
       update: (context, isFullScreen, danmakuMode, previous) =>
           FoldLayout(isFullScreen.value && !danmakuMode.value),
     ),
-    ListenableProxyProvider<FoldLayout, ShouldShowHUD>(
-      update: (context, foldLayout, previous) {
-        previous?.dispose();
-        return ShouldShowHUD()..mark(keep: !foldLayout.value);
+    ChangeNotifierProxyProvider2<FoldLayout, BusinessIndicator, ShouldShowHUD>(
+      create: (context) {
+        final result = ShouldShowHUD();
+
+        if (!context.read<FoldLayout>().value) result.lock('fold');
+        if (!context.read<BusinessIndicator>().isRunning) result.lock('busy');
+
+        return result..mark();
+      },
+      update: (context, foldLayout, businessIndicator, previous) {
+        if (!foldLayout.value) {
+          previous!.lock('fold');
+        } else {
+          previous!.unlock('fold');
+        }
+
+        if (businessIndicator.isRunning) {
+          previous.lock('busy');
+        } else {
+          previous.unlock('busy');
+        }
+
+        return previous;
       },
     ),
     ChangeNotifierProvider(create: (context) => JustToggleByRemote()),

@@ -17,6 +17,7 @@ import 'package:bunga_player/screens/dialogs/settings.dart';
 import 'package:bunga_player/screens/wrappers/actions.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
+import 'package:bunga_player/utils/auto_retry.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -38,7 +39,10 @@ class _WelcomeControlState extends State<WelcomeControl> {
         tasks: [
           bi.setTitle('登录中……'),
           (data) async {
-            final result = Actions.invoke(context, AutoLoginIntent()) as Future;
+            final result = autoRetry(
+              () => Actions.invoke(context, AutoLoginIntent()) as Future,
+              jobName: 'auto login',
+            );
             await result;
             return getCurrentUser()!.name;
           },
@@ -228,9 +232,6 @@ class _WelcomeControlState extends State<WelcomeControl> {
   void _onChangeName() async {
     _completer?.complete();
     Actions.invoke(context, LogoutIntent());
-    Navigator.of(context).popAndPushNamed(
-      'control:rename',
-      arguments: {'previousName': context.read<CurrentUser>().value!.name},
-    );
+    Navigator.of(context).popAndPushNamed('control:rename');
   }
 }

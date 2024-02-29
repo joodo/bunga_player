@@ -7,8 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class RenameControl extends StatefulWidget {
-  final String? previousName;
-  const RenameControl({super.key, required this.previousName});
+  const RenameControl({super.key});
 
   @override
   State<RenameControl> createState() => _RenameControlState();
@@ -38,13 +37,11 @@ class _RenameControlState extends State<RenameControl> {
 
     Future.microtask(_initBusinessIndicator);
 
-    if (widget.previousName != null) {
-      _textController.text = widget.previousName!;
-      _textController.selection = TextSelection(
-        baseOffset: 0,
-        extentOffset: _textController.text.length,
-      );
-    }
+    _textController.text = getIt<Preferences>().get<String>('user_name') ?? '';
+    _textController.selection = TextSelection(
+      baseOffset: 0,
+      extentOffset: _textController.text.length,
+    );
   }
 
   @override
