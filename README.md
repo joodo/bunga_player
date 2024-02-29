@@ -18,6 +18,11 @@ Run:
 flutter run
 ```
 
+Deploy:
+```
+dart run bunga_player:deploy
+```
+
 
 ## Update assets
 
