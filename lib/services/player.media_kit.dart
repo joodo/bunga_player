@@ -321,10 +321,10 @@ class MediaKitPlayer implements Player {
       logger.i('Player: video hash changed to $videoHash');
     });
     audioTracksStream.listen((tracks) {
-      logger.i('Player: audio tracks changed:\n  ${tracks.join('\n  ')}');
+      logger.i('Player: audio tracks changed: ${tracks.join(', ')}');
     });
     subtitleTracksStream.listen((tracks) {
-      logger.i('Player: subtitle tracks changed:\n  ${tracks.join('\n  ')}');
+      logger.i('Player: subtitle tracks changed: ${tracks.join(', ')}');
     });
   }
 
