@@ -24,8 +24,14 @@ class VolumePopup extends StatelessWidget {
                 quarterTurns: -1,
                 child: Selector<PlayVolume, double>(
                   selector: (context, volume) => volume.volume / 100,
-                  builder: (context, value, child) => LinearProgressIndicator(
-                    value: value,
+                  builder: (context, value, child) =>
+                      TweenAnimationBuilder<double>(
+                    tween: Tween(end: value),
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeOutCubic,
+                    builder: (context, value, child) => LinearProgressIndicator(
+                      value: value,
+                    ),
                   ),
                 ),
               ),
