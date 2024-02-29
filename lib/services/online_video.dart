@@ -22,11 +22,11 @@ class OnlineVideoService {
     logger.i('Support sites fetched.');
   }
 
-  late String? biliSess;
+  String? biliSess;
   Future<void> fetchSess() async {
     if (biliSess != null) return;
     biliSess = await getIt<Bunga>().getBiliSess();
-    logger.i('Bilibili sess fetched');
+    logger.i('Bilibili sess fetched: $biliSess');
   }
 
   Future<VideoEntry> getEntryFromUri(Uri uri) async {
@@ -51,9 +51,16 @@ class OnlineVideoService {
             final p = int.parse(uri.queryParameters['p'] ?? '1');
             return BiliVideoEntry(bvid: bvid, p: p);
           case 'bangumi':
-            final epString = uri.pathSegments[2].substring(2);
-            final epid = int.parse(epString);
-            return BiliBungumiEntry(epid: epid);
+            final idString = uri.pathSegments[2];
+            if (idString.startsWith('ep')) {
+              final epid = int.parse(idString.substring(2));
+              return BiliBungumiEntry(epid: epid);
+            } else if (idString.startsWith('ss')) {
+              final sessionId = idString.substring(2);
+              return await BiliBungumiEntry.parseSessionId(sessionId);
+            } else {
+              throw Exception('Bilibili: unknown bangumi id: $idString');
+            }
           default:
             throw 'Unknown url path: ${uri.path}';
         }

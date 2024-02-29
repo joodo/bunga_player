@@ -10,6 +10,19 @@ class BiliBungumiEntry extends VideoEntry {
     path = null;
   }
 
+  static Future<BiliBungumiEntry> parseSessionId(String sessionId) async {
+    final response = await http.get(Uri.parse(
+        'https://api.bilibili.com/pgc/view/web/season?season_id=$sessionId'));
+    final responseData = jsonDecode(utf8.decoder.convert(response.bodyBytes));
+    if (responseData['code'] != 0) {
+      throw Exception(
+          'Bilibili: cannot get video info by session id $sessionId.');
+    }
+
+    final epid = responseData['result']['new_ep']['id'] as int;
+    return BiliBungumiEntry(epid: epid);
+  }
+
   bool _isFetched = false;
   @override
   bool get isFetched => _isFetched;
@@ -30,7 +43,7 @@ class BiliBungumiEntry extends VideoEntry {
         Uri.parse('https://api.bilibili.com/pgc/view/web/season?ep_id=$epid'));
     var responseData = jsonDecode(utf8.decoder.convert(response.bodyBytes));
     if (responseData['code'] != 0) {
-      throw 'Cannot get video info';
+      throw Exception('Bilibili: cannot get video info by epid: $epid');
     }
 
     final episodes = responseData['result']['episodes'] as List;
