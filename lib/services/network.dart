@@ -25,6 +25,7 @@ class NetworkService {
     final uri = Uri.parse(source);
     final ping = Ping(uri.host, count: 5);
     final result = await ping.stream.first;
+    // TODO: deal with ping timeout, which time is null
     final latency = result.response!.time!;
 
     final ip = result.response!.ip!;

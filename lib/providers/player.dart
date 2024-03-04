@@ -42,6 +42,10 @@ class PlayBuffer extends StreamValueNotifier<Duration> {
   PlayBuffer() : super(_getPlayer().bufferStream, Duration.zero);
 }
 
+class PlayIsBuffering extends StreamValueNotifier<bool> {
+  PlayIsBuffering() : super(_getPlayer().isBufferingStream, true);
+}
+
 class PlayPosition extends ChangeNotifier implements ValueListenable<Duration> {
   PlayPosition() {
     _subscription = _getPlayer().positionStream.listen((position) {
@@ -161,6 +165,7 @@ final playerProviders = MultiProvider(
     ChangeNotifierProvider(create: (context) => PlayStatus(), lazy: false),
     ChangeNotifierProvider(create: (context) => PlayDuration()),
     ChangeNotifierProvider(create: (context) => PlayBuffer()),
+    ChangeNotifierProvider(create: (context) => PlayIsBuffering()),
     ChangeNotifierProvider(create: (context) => PlayPosition()),
     ChangeNotifierProvider(create: (context) => PlayAudioTracks(), lazy: false),
     ChangeNotifierProvider(

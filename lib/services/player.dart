@@ -37,6 +37,7 @@ abstract class Player {
   Stream<Duration> get durationStream;
   Stream<Duration> get bufferStream;
   Stream<Duration> get positionStream;
+  Stream<bool> get isBufferingStream;
   Future<void> seek(Duration position);
 
   Stream<PlayStatusType> get statusStream;
@@ -44,6 +45,7 @@ abstract class Player {
   Future<void> pause();
   Future<void> play();
   Future<void> stop();
+  Future<void> toggle();
 
   Stream<VideoEntry?> get videoEntryStream;
   Stream<int?> get sourceIndexStream;

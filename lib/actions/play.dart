@@ -42,37 +42,33 @@ class SetMuteAction extends Action<SetMuteIntent> {
 }
 
 class TogglePlayIntent extends Intent {
-  final bool? playing;
-  const TogglePlayIntent([this.playing]);
+  const TogglePlayIntent();
 }
 
 class TogglePlayAction extends ContextAction<TogglePlayIntent> {
   @override
-  Future<void>? invoke(TogglePlayIntent intent, [BuildContext? context]) async {
+  Future<void>? invoke(TogglePlayIntent intent, [BuildContext? context]) {
     final read = context!.read;
 
     final playStatus = read<PlayStatus>();
-
-    final willPlay = intent.playing ?? !playStatus.isPlaying;
-    willPlay ? getIt<Player>().play() : getIt<Player>().pause();
-
     final position = read<PlayPosition>();
-    return Actions.maybeInvoke(
+    Actions.maybeInvoke(
       context,
       SendPlayingStatusIntent(
-        willPlay ? PlayStatusType.play : PlayStatusType.pause,
+        !playStatus.isPlaying ? PlayStatusType.play : PlayStatusType.pause,
         position.value.inMilliseconds,
       ),
-    ) as Future<void>?;
+    );
+
+    return getIt<Player>().toggle();
   }
 
   @override
   bool isEnabled(TogglePlayIntent intent, [BuildContext? context]) {
     final read = context!.read;
     final isStopped = read<PlayStatus>().value == PlayStatusType.stop;
-    final isSame = read<PlayStatus>().isPlaying == intent.playing;
     final isToggledByRemote = read<JustToggleByRemote>().value;
-    return !isStopped && !isSame && !isToggledByRemote;
+    return !isStopped && !isToggledByRemote;
   }
 }
 
@@ -193,25 +189,26 @@ class FinishDraggingProgressAction
 
   @override
   Future<void>? invoke(FinishDraggingProgressIntent intent,
-      [BuildContext? context]) {
+      [BuildContext? context]) async {
     final read = context!.read;
+    Actions.maybeInvoke(
+      context,
+      SendPlayingStatusIntent(
+        dragBusiness.isPlayingBeforeDraggingSlider
+            ? PlayStatusType.play
+            : PlayStatusType.pause,
+        intent.position.inMilliseconds,
+      ),
+    );
 
     final position = read<PlayPosition>();
     position.seekTo(intent.position);
     position.stopListenStream = false;
 
-    getIt<Player>().seek(intent.position);
+    await getIt<Player>().seek(intent.position);
     if (dragBusiness.isPlayingBeforeDraggingSlider) {
-      getIt<Player>().play();
+      await getIt<Player>().play();
     }
-
-    return Actions.maybeInvoke(
-      context,
-      SendPlayingStatusIntent(
-        read<PlayStatus>().value,
-        position.value.inMilliseconds,
-      ),
-    ) as Future<void>?;
   }
 
   @override

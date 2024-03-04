@@ -37,16 +37,22 @@ class _MainControlState extends State<MainControl> {
           children: [
             const SizedBox(width: 8),
             // Play button
-            Consumer<PlayStatus>(
-              builder: (context, playStatus, child) => IconButton(
-                icon: playStatus.isPlaying
-                    ? const Icon(Icons.pause)
-                    : const Icon(Icons.play_arrow),
+            Consumer2<PlayStatus, PlayIsBuffering>(
+              builder: (context, playStatus, isBuffering, child) => IconButton(
+                icon: isBuffering.value
+                    ? CircularProgressIndicator(
+                        color: Theme.of(context).iconTheme.color,
+                      )
+                    : playStatus.isPlaying
+                        ? const Icon(Icons.pause)
+                        : const Icon(Icons.play_arrow),
                 iconSize: 36,
-                onPressed: () => Actions.maybeInvoke(
-                  context,
-                  const TogglePlayIntent(),
-                ),
+                onPressed: isBuffering.value
+                    ? null
+                    : () => Actions.maybeInvoke(
+                          context,
+                          const TogglePlayIntent(),
+                        ),
               ),
             ),
             const SizedBox(width: 8),

@@ -26,14 +26,13 @@ class MediaKitPlayer implements Player {
     _setProperty('stream-lavf-o-append', 'reconnect_streamed=yes');
 
     // Things when video finish
+    _setProperty('keep-open', 'yes');
     _player.stream.playing.listen(
       (isPlay) {
+        print('isPlay: $isPlay');
         if (_player.state.playlist.medias.isEmpty) return;
-
-        final remain = _player.state.duration - _player.state.position;
-        if (remain.inMilliseconds < 500) {
-          pause().then((_) => seek(Duration.zero));
-        }
+        _statusController
+            .add(isPlay ? PlayStatusType.play : PlayStatusType.pause);
       },
     );
 
@@ -103,6 +102,8 @@ class MediaKitPlayer implements Player {
   @override
   Stream<Duration> get positionStream => _player.stream.position;
   @override
+  Stream<bool> get isBufferingStream => _player.stream.buffering;
+  @override
   Future<void> seek(Duration position) {
     return _player.seek(position);
   }
@@ -153,16 +154,11 @@ class MediaKitPlayer implements Player {
   Stream<PlayStatusType> get statusStream =>
       _statusController.stream.distinct();
   @override
-  Future<void> play() {
-    _statusController.add(PlayStatusType.play);
-    return _player.play();
-  }
-
+  Future<void> play() => _player.play();
   @override
-  Future<void> pause() {
-    _statusController.add(PlayStatusType.pause);
-    return _player.pause();
-  }
+  Future<void> pause() => _player.pause();
+  @override
+  Future<void> toggle() => _player.playOrPause();
 
   @override
   Future<void> stop() {
