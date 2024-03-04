@@ -29,7 +29,6 @@ class MediaKitPlayer implements Player {
     _setProperty('keep-open', 'yes');
     _player.stream.playing.listen(
       (isPlay) {
-        print('isPlay: $isPlay');
         if (_player.state.playlist.medias.isEmpty) return;
         _statusController
             .add(isPlay ? PlayStatusType.play : PlayStatusType.pause);
