@@ -36,13 +36,13 @@ class _SubtitleControlState extends State<SubtitleControl> {
     }[_subtitleUIState]!;
     final minValue = <SubtitleControlUIState, double>{
       SubtitleControlUIState.delay: -10.0,
-      SubtitleControlUIState.size: 15.0,
-      SubtitleControlUIState.position: -10.0,
+      SubtitleControlUIState.size: 30.0,
+      SubtitleControlUIState.position: 0.0,
     }[_subtitleUIState]!;
     final maxValue = <SubtitleControlUIState, double>{
       SubtitleControlUIState.delay: 10.0,
-      SubtitleControlUIState.size: 65.0,
-      SubtitleControlUIState.position: 100.0,
+      SubtitleControlUIState.size: 80.0,
+      SubtitleControlUIState.position: 30.0,
     }[_subtitleUIState]!;
     final surfix = <SubtitleControlUIState, String>{
       SubtitleControlUIState.delay: 's',
@@ -138,6 +138,7 @@ class _SubtitleControlState extends State<SubtitleControl> {
 
         // Subtitle adjust
         SegmentedButton<SubtitleControlUIState>(
+          showSelectedIcon: false,
           segments: const [
             ButtonSegment<SubtitleControlUIState>(
                 value: SubtitleControlUIState.delay,
@@ -167,11 +168,7 @@ class _SubtitleControlState extends State<SubtitleControl> {
                 child: SizedBox(
                   width: 200,
                   child: mock.MySlider(
-                    value: value < minValue
-                        ? minValue
-                        : value > maxValue
-                            ? maxValue
-                            : value,
+                    value: value.clamp(minValue, maxValue),
                     max: maxValue,
                     min: minValue,
                     onChanged: setter,

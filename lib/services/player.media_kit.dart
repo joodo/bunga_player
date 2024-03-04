@@ -239,10 +239,8 @@ class MediaKitPlayer implements Player {
   @override
   Future<void> resetSubPos() => setSubPos(0);
   @override
-  Future<void> setSubPos(int pos) {
+  Future<void> setSubPos(int pos) async {
     _subPosController.add(pos);
-    pos = 100 - pos;
-    return _setProperty('sub-pos', pos.toString());
   }
 
   final _subSizeController = StreamController<int>.broadcast();
@@ -251,11 +249,8 @@ class MediaKitPlayer implements Player {
   @override
   Future<void> resetSubSize() => setSubSize(Player.defaultSubSize);
   @override
-  // FIXME: sub size and pos not work
-  Future<void> setSubSize(int size) {
+  Future<void> setSubSize(int size) async {
     _subSizeController.add(size);
-    size += 5;
-    return _setProperty('sub-font-size', size.toString());
   }
 
   // Contrast

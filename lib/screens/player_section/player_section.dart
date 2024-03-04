@@ -1,6 +1,7 @@
 import 'package:bunga_player/actions/play.dart';
 import 'package:bunga_player/actions/ui.dart';
 import 'package:bunga_player/providers/business_indicator.dart';
+import 'package:bunga_player/providers/player.dart';
 import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/screens/player_section/danmaku_player.dart';
 import 'package:bunga_player/screens/player_section/placeholder.dart';
@@ -26,14 +27,24 @@ class _PlayerSectionState extends State<PlayerSection> {
     return Stack(
       fit: StackFit.expand,
       children: [
-        media_kit.Video(
-          controller: (getIt<Player>() as MediaKitPlayer).controller,
-          subtitleViewConfiguration: const media_kit.SubtitleViewConfiguration(
-            textScaleFactor: 1.0,
+        Consumer2<PlaySubSize, PlaySubPos>(
+          builder: (context, subSize, subPos, child) => LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) {
+              final factor = subSize.value / 50.0 / 800 * constraints.maxHeight;
+              return media_kit.Video(
+                // HACK: force update
+                key: UniqueKey(),
+                controller: (getIt<Player>() as MediaKitPlayer).controller,
+                subtitleViewConfiguration: media_kit.SubtitleViewConfiguration(
+                  textScaleFactor: factor,
+                  padding: EdgeInsets.only(
+                      bottom: subPos.value / 100.0 * constraints.maxHeight),
+                ),
+                wakelock: true,
+                controls: media_kit.NoVideoControls,
+              );
+            },
           ),
-          wakelock: true,
-          // TODO: show indicator when buffering
-          controls: media_kit.NoVideoControls,
         ),
         const DanmakuPlayer(),
         Navigator(
