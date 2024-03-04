@@ -17,11 +17,9 @@ dependencies:
     sdk: flutter
 
   # video play
-  media_kit: ^1.1.10+1
-  media_kit_native_event_loop: ^1.0.8
+  media_kit: ^1.1.10
   media_kit_video: ^1.2.4
-  media_kit_libs_macos_video: ^1.1.4
-  media_kit_libs_windows_video: ^1.0.9
+  media_kit_libs_video: ^1.0.4
   ffi: ^2.1.0
 
   # Communication
