@@ -32,6 +32,8 @@ class _PlayerSectionState extends State<PlayerSection> {
             textScaleFactor: 1.0,
           ),
           wakelock: true,
+          // TODO: show indicator when buffering
+          controls: media_kit.NoVideoControls,
         ),
         const DanmakuPlayer(),
         Navigator(
