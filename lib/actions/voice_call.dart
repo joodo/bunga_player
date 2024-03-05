@@ -24,7 +24,7 @@ class CallingRequestBusiness {
   final List<String> myHopeList = [];
 
   late final requestTimeOutTimer = RestartableTimer(
-    const Duration(seconds: 10),
+    const Duration(seconds: 20),
     () {
       getIt<Toast>().show('无人接听');
       Actions.maybeInvoke(
