@@ -74,6 +74,9 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
   }
 
   Future<void> _askPosition(BuildContext context) async {
+    // If I'm the only one, don't ask
+    if (context.read<CurrentChannelWatchers>().value.length == 1) return;
+
     final message = await (Actions.invoke(
       context,
       const SendMessageIntent('where'),

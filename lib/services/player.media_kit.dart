@@ -47,6 +47,21 @@ class MediaKitPlayer implements Player {
       },
     );
 
+    // Position
+    _player.stream.position.listen(
+      (position) => _positionStreamController.add(position),
+    );
+
+    // When video loaded
+    _player.stream.duration.listen((duration) {
+      if (duration <= Duration.zero) return;
+
+      if (_seekCache != null) {
+        _player.seek(_seekCache!);
+        _seekCache = null;
+      }
+    });
+
     _loadWatchProgress();
 
     _setUpLogs();
@@ -81,18 +96,29 @@ class MediaKitPlayer implements Player {
     return _player.setVolume(volume.toDouble());
   }
 
-  // Buffer, Duration, Position
+  // Buffer, Duration
   @override
   Stream<Duration> get bufferStream => _player.stream.buffer;
   @override
   Stream<Duration> get durationStream => _player.stream.duration;
-  @override
-  Stream<Duration> get positionStream => _player.stream.position;
+  final _positionStreamController = StreamController<Duration>.broadcast();
   @override
   Stream<bool> get isBufferingStream => _player.stream.buffering;
+
+  // Position
   @override
-  Future<void> seek(Duration position) {
-    return _player.seek(position);
+  Stream<Duration> get positionStream => _positionStreamController.stream;
+  Duration? _seekCache; // For seek before video loaded
+  @override
+  Future<void> seek(Duration position) async {
+    _positionStreamController.add(position);
+
+    // whether video is loading
+    if (_player.state.duration <= Duration.zero) {
+      _seekCache = position;
+    } else {
+      return _player.seek(position);
+    }
   }
 
   // Video loading
@@ -122,20 +148,17 @@ class MediaKitPlayer implements Player {
       Type() => null,
     };
 
-    // load history watching progress
-    final savedProgress =
-        Duration(milliseconds: _watchProgress[entry.hash]?.progress ?? 0);
-
     // open video
     final videoUrl = entry.sources.videos[sourceIndex];
     await _player.open(
-      media_kit.Media(
-        videoUrl,
-        httpHeaders: httpHeaders,
-        start: savedProgress,
-      ),
+      media_kit.Media(videoUrl, httpHeaders: httpHeaders),
       play: false,
     );
+
+    // load saved progress
+    if (_watchProgress.containsKey(entry.hash)) {
+      seek(Duration(milliseconds: _watchProgress[entry.hash]!.progress));
+    }
 
     // load audio if exist
     if (entry.sources.audios != null) {
