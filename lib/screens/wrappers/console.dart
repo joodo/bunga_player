@@ -4,6 +4,7 @@ import 'package:bunga_player/actions/auth.dart';
 import 'package:bunga_player/models/app_key/app_key.dart';
 import 'package:bunga_player/providers/chat.dart';
 import 'package:bunga_player/providers/player.dart';
+import 'package:bunga_player/providers/settings.dart';
 import 'package:bunga_player/screens/dialogs/host.dart';
 import 'package:bunga_player/screens/wrappers/restart.dart';
 import 'package:bunga_player/services/alist.dart';
@@ -87,8 +88,10 @@ class _ConsoleWrapperState extends State<ConsoleWrapper> {
             final preferences = getIt<Preferences>();
             final newHost = await showDialog<String>(
               context: context,
-              builder: (context) =>
-                  HostDialog(host: preferences.get('bunga_host')),
+              builder: (dialogContext) => HostDialog(
+                host: preferences.get('bunga_host'),
+                proxy: context.read<SettingProxy>(),
+              ),
             );
 
             if (newHost == null || !context.mounted) return;

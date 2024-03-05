@@ -1,4 +1,5 @@
 import 'package:bunga_player/models/app_key/app_key.dart';
+import 'package:bunga_player/providers/settings.dart';
 import 'package:bunga_player/screens/dialogs/host.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
@@ -37,9 +38,10 @@ class _HostInitWrapperState extends State<HostInitWrapper> {
         if (!mounted) return;
         bungaHost = await showDialog<String>(
               context: context,
-              builder: (context) => HostDialog(
+              builder: (dialogContext) => HostDialog(
                 host: bungaHost,
                 error: e.toString(),
+                proxy: context.read<SettingProxy>(),
               ),
               barrierDismissible: false,
             ) ??

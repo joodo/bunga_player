@@ -12,8 +12,8 @@ Widget wrap(Widget child) {
   child = ConsoleWrapper(child: child);
   child = UpdateWrapper(child: child);
   child = ActionsWrapper(child: child);
-  child = ProvidersWrapper(child: child);
   child = HostInitWrapper(child: child);
+  child = ProvidersWrapper(child: child);
   child = ToastWrapper(child: child);
   child = RestartWrapper(child: child);
   return child;

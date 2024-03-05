@@ -1,10 +1,12 @@
+import 'package:bunga_player/providers/settings.dart';
 import 'package:flutter/material.dart';
 
 class HostDialog extends StatefulWidget {
   final String? host;
   final String? error;
+  final SettingProxy proxy;
 
-  const HostDialog({super.key, this.host, this.error});
+  const HostDialog({super.key, this.host, this.error, required this.proxy});
 
   @override
   State<HostDialog> createState() => _HostDialogState();
@@ -45,6 +47,14 @@ class _HostDialogState extends State<HostDialog> {
         ],
       ),
       actions: <Widget>[
+        if (widget.proxy.value?.isNotEmpty ?? false)
+          TextButton(
+            onPressed: () {
+              widget.proxy.value = null;
+              Navigator.pop(context, _controller.text);
+            },
+            child: const Text('关闭代理'),
+          ),
         TextButton(
           onPressed: () => Navigator.pop(context, _controller.text),
           child: const Text('重试'),
