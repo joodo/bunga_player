@@ -16,6 +16,10 @@ dependencies:
   flutter:
     sdk: flutter
 
+  # Videos
+  media_kit: any
+  media_kit_video: any
+  media_kit_libs_video: any
   ffi: ^2.1.0
 
   # Communication

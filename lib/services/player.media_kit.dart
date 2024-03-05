@@ -35,10 +35,12 @@ class MediaKitPlayer implements Player {
       },
     );
 
-    // When new sub loaded
+    // Subtitles
+    _setProperty('sub-visibility', 'yes'); // use mpv subtitle
     _player.stream.tracks.listen(
       (tracks) {
         if (_waitingNewSub) {
+          // When new sub loaded
           setSubtitleTrackID(tracks.subtitle.last.id);
           _waitingNewSub = false;
         }
@@ -235,8 +237,10 @@ class MediaKitPlayer implements Player {
   @override
   Future<void> resetSubPos() => setSubPos(0);
   @override
-  Future<void> setSubPos(int pos) async {
+  Future<void> setSubPos(int pos) {
     _subPosController.add(pos);
+    pos = 100 - pos;
+    return _setProperty('sub-pos', pos.toString());
   }
 
   final _subSizeController = StreamController<int>.broadcast();
@@ -245,8 +249,10 @@ class MediaKitPlayer implements Player {
   @override
   Future<void> resetSubSize() => setSubSize(Player.defaultSubSize);
   @override
-  Future<void> setSubSize(int size) async {
+  Future<void> setSubSize(int size) {
     _subSizeController.add(size);
+    size += 5;
+    return _setProperty('sub-font-size', size.toString());
   }
 
   // Contrast

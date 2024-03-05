@@ -36,13 +36,13 @@ class _SubtitleControlState extends State<SubtitleControl> {
     }[_subtitleUIState]!;
     final minValue = <SubtitleControlUIState, double>{
       SubtitleControlUIState.delay: -10.0,
-      SubtitleControlUIState.size: 30.0,
-      SubtitleControlUIState.position: 0.0,
+      SubtitleControlUIState.size: 15.0,
+      SubtitleControlUIState.position: -10.0,
     }[_subtitleUIState]!;
     final maxValue = <SubtitleControlUIState, double>{
       SubtitleControlUIState.delay: 10.0,
-      SubtitleControlUIState.size: 80.0,
-      SubtitleControlUIState.position: 30.0,
+      SubtitleControlUIState.size: 65.0,
+      SubtitleControlUIState.position: 100.0,
     }[_subtitleUIState]!;
     final surfix = <SubtitleControlUIState, String>{
       SubtitleControlUIState.delay: 's',
