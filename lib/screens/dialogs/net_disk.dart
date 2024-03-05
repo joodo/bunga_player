@@ -232,7 +232,7 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
 
                             final info = _currentFiles[index];
                             final videoHash =
-                                AListEntry('$_currentPath${info.name}').path!;
+                                AListEntry('$_currentPath${info.name}').hash;
                             final percent = widget
                                 .read<PlayWatchProgresses>()
                                 .get(videoHash)
