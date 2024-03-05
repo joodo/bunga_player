@@ -46,20 +46,6 @@ class MediaKitPlayer implements Player {
     );
 
     _loadWatchProgress();
-    _player.stream.duration.listen((duration) {
-      if (duration <= Duration.zero) return;
-      // When video finish loaded
-
-      // load history watching progress
-      if (_watchProgress.containsKey(_videoEntry!.hash)) {
-        seek(
-          Duration(milliseconds: _watchProgress[_videoEntry!.hash]!.progress),
-        );
-      }
-
-      // Set play status
-      _statusController.add(PlayStatusType.pause);
-    });
 
     _setUpLogs();
   }
@@ -134,10 +120,18 @@ class MediaKitPlayer implements Player {
       Type() => null,
     };
 
+    // load history watching progress
+    final savedProgress =
+        Duration(milliseconds: _watchProgress[entry.hash]?.progress ?? 0);
+
     // open video
     final videoUrl = entry.sources.videos[sourceIndex];
     await _player.open(
-      media_kit.Media(videoUrl, httpHeaders: httpHeaders),
+      media_kit.Media(
+        videoUrl,
+        httpHeaders: httpHeaders,
+        start: savedProgress,
+      ),
       play: false,
     );
 
@@ -145,6 +139,9 @@ class MediaKitPlayer implements Player {
     if (entry.sources.audios != null) {
       _mpvCommand('audio-add ${entry.sources.audios![0]} select audio');
     }
+
+    // update play status
+    _statusController.add(PlayStatusType.pause);
   }
 
   // Play status
