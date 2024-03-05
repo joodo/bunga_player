@@ -39,6 +39,7 @@ class _PlayerSectionState extends State<PlayerSection> {
           onGenerateRoute: (settings) => MaterialPageRoute<void>(
             builder: (context) => const PopmojiPlayer(),
           ),
+          requestFocus: false,
         ),
         AnimatedOpacity(
           opacity: context.select<BusinessIndicator, double>(
