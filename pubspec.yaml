@@ -36,7 +36,8 @@ dependencies:
   # UI
   rive: ^0.12.4
   animated_text_kit: ^4.2.2
-  audioplayers: ^5.2.1 
+  audioplayers: ^5.2.1
+  animations: ^2.0.11
 
   # Popmoji
   flutter_svg: ^2.0.10+1

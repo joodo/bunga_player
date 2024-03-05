@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:animations/animations.dart';
 import 'package:bunga_player/actions/auth.dart';
 import 'package:bunga_player/actions/channel.dart';
 import 'package:bunga_player/actions/video_playing.dart';
@@ -136,13 +137,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
         actions,
         Positioned(
           right: 16,
-          child: IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () => showDialog(
-              context: context,
-              builder: (dialogContext) => SettingsDialog(context.read),
-            ),
-          ),
+          child: _SettingButtonWrapper(),
         ),
       ],
     );
@@ -233,5 +228,24 @@ class _WelcomeControlState extends State<WelcomeControl> {
     _completer?.complete();
     Actions.invoke(context, LogoutIntent());
     Navigator.of(context).popAndPushNamed('control:rename');
+  }
+}
+
+class _SettingButtonWrapper extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return OpenContainer(
+      useRootNavigator: true,
+      closedBuilder: (context, openContainer) => IconButton(
+        icon: const Icon(Icons.settings),
+        onPressed: openContainer,
+      ),
+      closedColor: theme.primaryColor,
+      closedShape: const CircleBorder(),
+      openBuilder: (dialogContext, closeContainer) =>
+          SettingsDialog(context.read),
+      openColor: theme.primaryColor,
+    );
   }
 }
