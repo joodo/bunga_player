@@ -167,7 +167,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
 
   void _joinOthersChannel() async {
     _openChannel(
-      entryGetter: () => showDialog<(String, VideoEntry)?>(
+      entryGetter: () => showModal(
         context: context,
         builder: (context) => const OthersDialog(),
       ),
