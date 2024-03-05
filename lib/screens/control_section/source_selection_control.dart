@@ -2,6 +2,7 @@ import 'package:bunga_player/actions/video_playing.dart';
 import 'package:bunga_player/providers/player.dart';
 import 'package:bunga_player/screens/control_section/dropdown.dart';
 import 'package:bunga_player/mocks/dropdown.dart' as mock;
+import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/network.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:flutter/material.dart';
@@ -30,6 +31,8 @@ class _SourceSelectionControlState extends State<SourceSelectionControl> {
             () => _sourceInfo[index] = result,
           );
         }
+      }).catchError((e) {
+        logger.w('[Network] Get ip info failed: $source');
       });
     }
   }
