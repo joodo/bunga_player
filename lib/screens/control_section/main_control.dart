@@ -39,13 +39,9 @@ class _MainControlState extends State<MainControl> {
             // Play button
             Consumer2<PlayStatus, PlayIsBuffering>(
               builder: (context, playStatus, isBuffering, child) => IconButton(
-                icon: isBuffering.value
-                    ? CircularProgressIndicator(
-                        color: Theme.of(context).iconTheme.color,
-                      )
-                    : playStatus.isPlaying
-                        ? const Icon(Icons.pause)
-                        : const Icon(Icons.play_arrow),
+                icon: playStatus.isPlaying
+                    ? const Icon(Icons.pause)
+                    : const Icon(Icons.play_arrow),
                 iconSize: 36,
                 onPressed: isBuffering.value
                     ? null
