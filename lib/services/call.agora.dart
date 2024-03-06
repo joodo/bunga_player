@@ -58,6 +58,12 @@ class Agora implements CallService {
       logConfig: const LogConfig(level: LogLevel.logLevelWarn),
     ));
 
+    // Profile
+    _engine.setAudioProfile(
+      profile: AudioProfileType.audioProfileSpeechStandard,
+      scenario: AudioScenarioType.audioScenarioChatroom,
+    );
+
     // Noise suppression
     setNoiseSuppression(NoiseSuppressionLevel.high);
 
