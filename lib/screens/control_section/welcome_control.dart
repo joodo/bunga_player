@@ -173,7 +173,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
   Future<void> _openChannel({
     required Future Function() entryGetter,
   }) async {
-    final currentUser = context.read<CurrentUser>().value!;
+    final currentUser = context.read<CurrentUser>();
 
     final result = await entryGetter();
     if (result == null) return;
@@ -188,7 +188,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
               beforeAskingPosition: () => Actions.invoke(
                 Intentor.context,
                 JoinChannelIntent.byChannelData(
-                  ChannelData.fromShare(currentUser, result),
+                  ChannelData.fromShare(currentUser.value!, result),
                 ),
               ) as Future<void>,
             ),
