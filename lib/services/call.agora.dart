@@ -2,10 +2,12 @@ import 'dart:async';
 
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:bunga_player/providers/chat.dart';
+import 'package:bunga_player/screens/wrappers/actions.dart';
 import 'package:bunga_player/services/chat.stream_io.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/chat.dart';
 import 'package:bunga_player/services/services.dart';
+import 'package:provider/provider.dart';
 
 import 'call.dart';
 
@@ -58,15 +60,6 @@ class Agora implements CallService {
       logConfig: const LogConfig(level: LogLevel.logLevelWarn),
     ));
 
-    // Profile
-    _engine.setAudioProfile(
-      profile: AudioProfileType.audioProfileSpeechStandard,
-      scenario: AudioScenarioType.audioScenarioChatroom,
-    );
-
-    // Noise suppression
-    setNoiseSuppression(NoiseSuppressionLevel.high);
-
     // Events
     _engine.registerEventHandler(
       RtcEngineEventHandler(
@@ -90,6 +83,22 @@ class Agora implements CallService {
         },
       ),
     );
+
+    // Profile
+    await _engine.setAudioProfile(
+      profile: AudioProfileType.audioProfileSpeechStandard,
+      scenario: AudioScenarioType.audioScenarioChatroom,
+    );
+
+    final context = Intentor.context;
+    if (context.mounted) {
+      // Noise suppression
+      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+      Intentor.context.read<CallNoiseSuppressionLevel>().notifyListeners();
+      // Volume
+      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+      Intentor.context.read<CallVolume>().notifyListeners();
+    }
   }
 
   // Talkers
