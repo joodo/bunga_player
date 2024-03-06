@@ -63,8 +63,6 @@ class MediaKitPlayer implements Player {
     });
 
     _loadWatchProgress();
-
-    _setUpLogs();
   }
 
   late final _player = media_kit.Player(
@@ -327,21 +325,6 @@ class MediaKitPlayer implements Player {
         return AppExitResponse.exit;
       },
     );
-  }
-
-  void _setUpLogs() {
-    statusStream.listen((status) {
-      logger.i('Player: status hash changed to $status');
-    });
-    videoEntryStream.listen((videoHash) {
-      logger.i('Player: video hash changed to $videoHash');
-    });
-    audioTracksStream.listen((tracks) {
-      logger.i('Player: audio tracks changed: ${tracks.join(', ')}');
-    });
-    subtitleTracksStream.listen((tracks) {
-      logger.i('Player: subtitle tracks changed: ${tracks.join(', ')}');
-    });
   }
 
   Future<void> _setProperty(String key, String value) {

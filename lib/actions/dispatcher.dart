@@ -1,4 +1,3 @@
-import 'package:bunga_player/services/logger.dart';
 import 'package:flutter/material.dart';
 
 class LoggingActionDispatcher extends ActionDispatcher {
@@ -14,7 +13,7 @@ class LoggingActionDispatcher extends ActionDispatcher {
     BuildContext? context,
   ]) {
     if (mute?.contains(intent.runtimeType) != true) {
-      logger.i('Action: invoke $action($intent)');
+      // logger.i('Action: invoke $action($intent)');
     }
     return super.invokeAction(action, intent, context);
   }
@@ -26,7 +25,7 @@ class LoggingActionDispatcher extends ActionDispatcher {
     BuildContext? context,
   ]) {
     if (mute?.contains(intent.runtimeType) != true) {
-      logger.i('Action: invoke $action($intent)');
+      // logger.i('Action: invoke $action($intent)');
     }
     return super.invokeActionIfEnabled(action, intent, context);
   }
