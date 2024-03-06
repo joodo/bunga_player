@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:animations/animations.dart';
 import 'package:bunga_player/actions/video_playing.dart';
 import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/models/chat/user.dart';
@@ -169,7 +170,7 @@ class _VideoUnsyncNotification extends StatelessWidget {
     );
 
     return TextButton.icon(
-      onPressed: () => showDialog(
+      onPressed: () => showModal(
         context: context,
         builder: (context) => Dialog(
           alignment: Alignment.topRight,

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:animations/animations.dart';
 import 'package:bunga_player/actions/channel.dart';
 import 'package:bunga_player/actions/video_playing.dart';
 import 'package:bunga_player/models/chat/channel_data.dart';
@@ -66,7 +67,7 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
 
   void _openOnline() async {
     _openVideo(
-      entryGetter: () => showDialog<VideoEntry?>(
+      entryGetter: () => showModal<VideoEntry?>(
         context: context,
         builder: (context) => const OnlineVideoDialog(),
       ),
@@ -75,7 +76,7 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
 
   void _openNetDisk() async {
     _openVideo(
-      entryGetter: () => showDialog<VideoEntry?>(
+      entryGetter: () => showModal<VideoEntry?>(
         context: context,
         builder: (dialogContext) => NetDiskDialog(read: context.read),
       ),

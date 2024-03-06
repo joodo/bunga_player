@@ -97,11 +97,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
             alignmentOffset: const Offset(0, 8),
             anchorTapClosesMenu: true,
             builder: (context, controller, child) => FilledButton(
-              onPressed: isBusy
-                  ? null
-                  : controller.isOpen
-                      ? controller.close
-                      : controller.open,
+              onPressed: isBusy ? null : controller.open,
               child: const Text('打开视频'),
             ),
             menuChildren: [
@@ -149,7 +145,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
 
   void _openOnline() {
     _openChannel(
-      entryGetter: () => showDialog<VideoEntry?>(
+      entryGetter: () => showModal<VideoEntry?>(
         context: context,
         builder: (context) => const OnlineVideoDialog(),
       ),
@@ -158,7 +154,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
 
   void _openNetDisk() async {
     _openChannel(
-      entryGetter: () => showDialog<VideoEntry?>(
+      entryGetter: () => showModal<VideoEntry?>(
         context: context,
         builder: (dialogContext) => NetDiskDialog(read: context.read),
       ),
@@ -167,7 +163,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
 
   void _joinOthersChannel() async {
     _openChannel(
-      entryGetter: () => showModal(
+      entryGetter: () => showModal<(String, VideoEntry)?>(
         context: context,
         builder: (context) => const OthersDialog(),
       ),

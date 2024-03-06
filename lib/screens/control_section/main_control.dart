@@ -105,10 +105,13 @@ class _MainControlState extends State<MainControl> {
             ),
             const SizedBox(width: 8),
 
+            // FIXME: wait bug fixed then use PopupMenuButton
+            // see https://github.com/flutter/flutter/issues/144669
+            // TODO: change animation to none
             mock.MyPopupMenuButton(
               icon: const Icon(Icons.more_horiz),
               tooltip: '',
-              useRootOverlay: true,
+              useRootNavigator: true,
               itemBuilder: (context) => <mock.PopupMenuEntry>[
                 if (currentChannelData?.videoType == VideoType.online) ...[
                   // Reload button

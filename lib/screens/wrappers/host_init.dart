@@ -1,3 +1,4 @@
+import 'package:animations/animations.dart';
 import 'package:bunga_player/models/app_key/app_key.dart';
 import 'package:bunga_player/providers/settings.dart';
 import 'package:bunga_player/screens/dialogs/host.dart';
@@ -36,14 +37,15 @@ class _HostInitWrapperState extends State<HostInitWrapper> {
         success = true;
       } catch (e) {
         if (!mounted) return;
-        bungaHost = await showDialog<String>(
+        bungaHost = await showModal<String>(
               context: context,
+              configuration: const FadeScaleTransitionConfiguration(
+                  barrierDismissible: false),
               builder: (dialogContext) => HostDialog(
                 host: bungaHost,
                 error: e.toString(),
                 proxy: context.read<SettingProxy>(),
               ),
-              barrierDismissible: false,
             ) ??
             '';
       }

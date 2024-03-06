@@ -1,10 +1,3 @@
 {
-    "configurations": [
-        {
-            "name": "Flutter (lib/screens/dialogs/bili_dialog.dart)",
-            "type": "dart",
-            "request": "launch",
-            "program": "lib/screens/dialogs/bili_dialog.dart"
-        }
-    ]
+    "configurations": []
 }

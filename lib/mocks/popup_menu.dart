@@ -1054,7 +1054,7 @@ typedef PopupMenuItemBuilder<T> = List<PopupMenuEntry<T>> Function(
 ///  * [showMenu], a method to dynamically show a popup menu at a given location.
 class MyPopupMenuButton<T> extends StatefulWidget {
   // MOCK
-  final bool useRootOverlay;
+  final bool useRootNavigator;
 
   /// Creates a button that shows a popup menu.
   ///
@@ -1083,7 +1083,7 @@ class MyPopupMenuButton<T> extends StatefulWidget {
     this.constraints,
     this.position,
     this.clipBehavior = Clip.none,
-    this.useRootOverlay = false,
+    this.useRootNavigator = false,
   }) : assert(
           !(child != null && icon != null),
           'You can only pass [child] or [icon], not both.',
@@ -1263,7 +1263,7 @@ class MyPopupMenuButtonState<T> extends State<MyPopupMenuButton<T>> {
     final RenderBox button = context.findRenderObject()! as RenderBox;
     final RenderBox overlay = Navigator.of(
       context,
-      rootNavigator: widget.useRootOverlay,
+      rootNavigator: widget.useRootNavigator,
     ).overlay!.context.findRenderObject()! as RenderBox;
     final PopupMenuPosition popupMenuPosition =
         widget.position ?? popupMenuTheme.position ?? PopupMenuPosition.over;
@@ -1302,7 +1302,7 @@ class MyPopupMenuButtonState<T> extends State<MyPopupMenuButton<T>> {
         color: widget.color ?? popupMenuTheme.color,
         constraints: widget.constraints,
         clipBehavior: widget.clipBehavior,
-        useRootNavigator: widget.useRootOverlay,
+        useRootNavigator: widget.useRootNavigator,
       ).then<void>((T? newValue) {
         if (!mounted) {
           return null;

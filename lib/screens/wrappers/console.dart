@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:animations/animations.dart';
 import 'package:bunga_player/actions/auth.dart';
 import 'package:bunga_player/models/app_key/app_key.dart';
 import 'package:bunga_player/providers/chat.dart';
@@ -86,7 +87,7 @@ class _ConsoleWrapperState extends State<ConsoleWrapper> {
         FilledButton(
           onPressed: () async {
             final preferences = getIt<Preferences>();
-            final newHost = await showDialog<String>(
+            final newHost = await showModal<String>(
               context: context,
               builder: (dialogContext) => HostDialog(
                 host: preferences.get('bunga_host'),
