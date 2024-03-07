@@ -106,6 +106,8 @@ Source: "C:\Users\wyatt\workplace\bunga_player\build\windows\x64\runner\Release\
 Source: "C:\Users\wyatt\workplace\bunga_player\build\windows\x64\runner\Release\libagora_content_inspect_extension.dll.lib"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Users\wyatt\workplace\bunga_player\build\windows\x64\runner\Release\libagora_drm_loader_extension.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Users\wyatt\workplace\bunga_player\build\windows\x64\runner\Release\libagora_drm_loader_extension.dll.lib"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\wyatt\workplace\bunga_player\build\windows\x64\runner\Release\libagora_face_capture_extension.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\wyatt\workplace\bunga_player\build\windows\x64\runner\Release\libagora_face_capture_extension.dll.lib"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Users\wyatt\workplace\bunga_player\build\windows\x64\runner\Release\libagora_face_detection_extension.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Users\wyatt\workplace\bunga_player\build\windows\x64\runner\Release\libagora_face_detection_extension.dll.lib"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Users\wyatt\workplace\bunga_player\build\windows\x64\runner\Release\libagora_screen_capture_extension.dll"; DestDir: "{app}"; Flags: ignoreversion
@@ -116,6 +118,8 @@ Source: "C:\Users\wyatt\workplace\bunga_player\build\windows\x64\runner\Release\
 Source: "C:\Users\wyatt\workplace\bunga_player\build\windows\x64\runner\Release\libagora_spatial_audio_extension.dll.lib"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Users\wyatt\workplace\bunga_player\build\windows\x64\runner\Release\libagora_udrm3_extension.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Users\wyatt\workplace\bunga_player\build\windows\x64\runner\Release\libagora_udrm3_extension.lib"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\wyatt\workplace\bunga_player\build\windows\x64\runner\Release\libagora_video_av1_decoder_extension.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\wyatt\workplace\bunga_player\build\windows\x64\runner\Release\libagora_video_av1_decoder_extension.dll.lib"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Users\wyatt\workplace\bunga_player\build\windows\x64\runner\Release\libagora_video_decoder_extension.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Users\wyatt\workplace\bunga_player\build\windows\x64\runner\Release\libagora_video_decoder_extension.dll.lib"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Users\wyatt\workplace\bunga_player\build\windows\x64\runner\Release\libagora_video_encoder_extension.dll"; DestDir: "{app}"; Flags: ignoreversion
@@ -130,6 +134,7 @@ Source: "C:\Users\wyatt\workplace\bunga_player\build\windows\x64\runner\Release\
 Source: "C:\Users\wyatt\workplace\bunga_player\build\windows\x64\runner\Release\libagora-soundtouch.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Users\wyatt\workplace\bunga_player\build\windows\x64\runner\Release\libagora-soundtouch.dll.lib"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Users\wyatt\workplace\bunga_player\build\windows\x64\runner\Release\libagora-wgc.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\wyatt\workplace\bunga_player\build\windows\x64\runner\Release\libaosl.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Users\wyatt\workplace\bunga_player\build\windows\x64\runner\Release\libc++.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Users\wyatt\workplace\bunga_player\build\windows\x64\runner\Release\libEGL.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Users\wyatt\workplace\bunga_player\build\windows\x64\runner\Release\libGLESv2.dll"; DestDir: "{app}"; Flags: ignoreversion
@@ -162,7 +167,6 @@ Source: "C:\Users\wyatt\workplace\bunga_player\build\windows\x64\runner\Release\
 Source: "C:\Users\wyatt\workplace\bunga_player\build\windows\x64\runner\Release\vulkan-1.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Users\wyatt\workplace\bunga_player\build\windows\x64\runner\Release\window_manager_plugin.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Users\wyatt\workplace\bunga_player\build\windows\x64\runner\Release\zlib.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\wyatt\workplace\bunga_player\build\windows\x64\runner\Release\data\*"; DestDir: "{app}\data"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
