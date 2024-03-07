@@ -3,16 +3,16 @@ import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
 import 'package:bunga_player/utils/value_listenable.dart';
 import 'package:flutter/material.dart';
+import 'package:nested/nested.dart';
 
-class ToastWrapper extends StatefulWidget {
-  const ToastWrapper({super.key, required this.child});
-  final Widget child;
+class ToastWrapper extends SingleChildStatefulWidget {
+  const ToastWrapper({super.key, super.child});
 
   @override
   State<ToastWrapper> createState() => _ToastWrapperState();
 }
 
-class _ToastWrapperState extends State<ToastWrapper>
+class _ToastWrapperState extends SingleChildState<ToastWrapper>
     with SingleTickerProviderStateMixin {
   late final _service = getIt<Toast>();
 
@@ -55,7 +55,7 @@ class _ToastWrapperState extends State<ToastWrapper>
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget buildWithChild(BuildContext context, Widget? child) {
     final card = Theme(
       data: ThemeData.light(),
       child: Card(
@@ -85,7 +85,7 @@ class _ToastWrapperState extends State<ToastWrapper>
     return Stack(
       alignment: Alignment.center,
       children: [
-        widget.child,
+        if (child != null) child,
         Positioned(
           bottom: 80,
           child: Visibility(

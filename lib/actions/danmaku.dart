@@ -3,6 +3,7 @@ import 'package:bunga_player/actions/dispatcher.dart';
 import 'package:bunga_player/providers/chat.dart';
 import 'package:bunga_player/screens/wrappers/actions.dart';
 import 'package:flutter/material.dart';
+import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 
 class SendDanmakuIntent extends Intent {
@@ -21,15 +22,14 @@ class SendDanmakuAction extends ContextAction<SendDanmakuIntent> {
   }
 }
 
-class DanmakuActions extends StatefulWidget {
-  final Widget child;
-  const DanmakuActions({super.key, required this.child});
+class DanmakuActions extends SingleChildStatefulWidget {
+  const DanmakuActions({super.key, super.child});
 
   @override
   State<DanmakuActions> createState() => _DanmakuActionsState();
 }
 
-class _DanmakuActionsState extends State<DanmakuActions> {
+class _DanmakuActionsState extends SingleChildState<DanmakuActions> {
   @override
   void initState() {
     context.read<CurrentChannelMessage>().addListener(_dealChannelMessage);
@@ -43,13 +43,13 @@ class _DanmakuActionsState extends State<DanmakuActions> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget buildWithChild(BuildContext context, Widget? child) {
     return Actions(
       dispatcher: LoggingActionDispatcher(prefix: 'Danmaku'),
       actions: <Type, Action<Intent>>{
         SendDanmakuIntent: SendDanmakuAction(),
       },
-      child: widget.child,
+      child: child!,
     );
   }
 

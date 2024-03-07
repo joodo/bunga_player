@@ -14,6 +14,7 @@ import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
 import 'package:flutter/widgets.dart';
+import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 
 class CallingRequestBusiness {
@@ -224,15 +225,14 @@ class MuteMicAction extends ContextAction<MuteMicIntent> {
   }
 }
 
-class VoiceCallActions extends StatefulWidget {
-  final Widget child;
-  const VoiceCallActions({super.key, required this.child});
+class VoiceCallActions extends SingleChildStatefulWidget {
+  const VoiceCallActions({super.key, super.child});
 
   @override
   State<VoiceCallActions> createState() => _VoiceCallActionsState();
 }
 
-class _VoiceCallActionsState extends State<VoiceCallActions> {
+class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
   late final _callingRequestBusiness = CallingRequestBusiness(context.read);
 
   @override
@@ -260,7 +260,7 @@ class _VoiceCallActionsState extends State<VoiceCallActions> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget buildWithChild(BuildContext context, Widget? child) {
     return Actions(
       dispatcher: LoggingActionDispatcher(prefix: 'Voice call'),
       actions: <Type, Action<Intent>>{
@@ -276,7 +276,7 @@ class _VoiceCallActionsState extends State<VoiceCallActions> {
             HangUpAction(callingRequestBusiness: _callingRequestBusiness),
         MuteMicIntent: MuteMicAction(),
       },
-      child: widget.child,
+      child: child!,
     );
   }
 

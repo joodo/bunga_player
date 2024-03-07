@@ -6,48 +6,35 @@ import 'package:bunga_player/actions/ui.dart';
 import 'package:bunga_player/actions/video_playing.dart';
 import 'package:bunga_player/actions/voice_call.dart';
 import 'package:flutter/material.dart';
+import 'package:nested/nested.dart';
 
-class Intentor extends StatefulWidget {
+class Intentor extends SingleChildStatefulWidget {
   static final _globalKey = GlobalKey<State<Intentor>>();
+
+  const Intentor({super.key});
   static BuildContext get context => _globalKey.currentContext!;
-
-  final Widget child;
-
-  const Intentor({super.key, required this.child});
 
   @override
   State<Intentor> createState() => _IntentorState();
 }
 
-class _IntentorState extends State<Intentor> {
+class _IntentorState extends SingleChildState<Intentor> {
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      child: widget.child,
-    );
+  Widget buildWithChild(BuildContext context, Widget? child) {
+    return Container(child: child);
   }
 }
 
-class ActionsWrapper extends StatelessWidget {
-  final Widget child;
-
-  const ActionsWrapper({super.key, required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    Widget child = this.child;
-    child = Intentor(
-      key: Intentor._globalKey,
-      child: child,
-    );
-    child = DanmakuActions(child: child);
-    child = VoiceCallActions(child: child);
-    child = ChannelActions(child: child);
-    child = VideoPlayingActions(child: child);
-    child = AuthActions(child: child);
-    child = PlayActions(child: child);
-    child = UIActions(child: child);
-
-    return child;
-  }
+class ActionsWrapper extends Nested {
+  ActionsWrapper({super.key, super.child})
+      : super(children: [
+          const UIActions(),
+          const PlayActions(),
+          const AuthActions(),
+          const VideoPlayingActions(),
+          const ChannelActions(),
+          const VoiceCallActions(),
+          const DanmakuActions(),
+          Intentor(key: Intentor._globalKey),
+        ]);
 }

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:bunga_player/mocks/tooltip.dart' as mock;
 import 'package:lottie/lottie.dart';
+import 'package:nested/nested.dart';
 
 class PopmojiControl extends StatelessWidget {
   static Future<void> cacheSvgs() async {
@@ -154,21 +155,20 @@ class _EmojiButton extends StatelessWidget {
   }
 }
 
-class _ThrowAnimation extends StatefulWidget {
+class _ThrowAnimation extends SingleChildStatefulWidget {
   final Rect startRect, endRect;
   final OverlayEntry overlay;
-  final Widget child;
   const _ThrowAnimation({
     required this.startRect,
     required this.endRect,
-    required this.child,
     required this.overlay,
+    super.child,
   });
   @override
   State<_ThrowAnimation> createState() => _ThrowAnimationState();
 }
 
-class _ThrowAnimationState extends State<_ThrowAnimation>
+class _ThrowAnimationState extends SingleChildState<_ThrowAnimation>
     with SingleTickerProviderStateMixin {
   late final _path = Path()
     ..moveTo(widget.startRect.left, widget.startRect.top)
@@ -213,7 +213,7 @@ class _ThrowAnimationState extends State<_ThrowAnimation>
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget buildWithChild(BuildContext context, Widget? child) {
     final rect = Rect.lerp(widget.startRect, widget.endRect, _sizeTween.value)!;
     return Stack(
       children: [
@@ -222,7 +222,7 @@ class _ThrowAnimationState extends State<_ThrowAnimation>
           top: _position.dy,
           width: rect.width,
           height: rect.height,
-          child: widget.child,
+          child: child!,
         ),
       ],
     );

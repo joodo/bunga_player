@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:nested/nested.dart';
 
-class RestartWrapper extends StatefulWidget {
-  const RestartWrapper({super.key, required this.child});
-
-  final Widget child;
+class RestartWrapper extends SingleChildStatefulWidget {
+  const RestartWrapper({super.key, super.child});
 
   static void restartApp(BuildContext context) {
     context.findAncestorStateOfType<_RestartWrapperState>()!.restartApp();
@@ -13,7 +12,7 @@ class RestartWrapper extends StatefulWidget {
   State<RestartWrapper> createState() => _RestartWrapperState();
 }
 
-class _RestartWrapperState extends State<RestartWrapper> {
+class _RestartWrapperState extends SingleChildState<RestartWrapper> {
   Key key = UniqueKey();
 
   void restartApp() {
@@ -23,10 +22,7 @@ class _RestartWrapperState extends State<RestartWrapper> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return KeyedSubtree(
-      key: key,
-      child: widget.child,
-    );
+  Widget buildWithChild(BuildContext context, Widget? child) {
+    return KeyedSubtree(key: key, child: child!);
   }
 }

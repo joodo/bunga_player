@@ -2,6 +2,7 @@ import 'package:bunga_player/actions/dispatcher.dart';
 import 'package:bunga_player/providers/ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -32,19 +33,27 @@ class SetWindowTitleAction extends Action<SetWindowTitleIntent> {
   }
 }
 
-class UIActions extends StatelessWidget {
-  final Widget child;
-  UIActions({super.key, required this.child}) {
+class UIActions extends SingleChildStatefulWidget {
+  const UIActions({super.key, super.child});
+
+  @override
+  State<UIActions> createState() => _UIActionsState();
+}
+
+class _UIActionsState extends SingleChildState<UIActions> {
+  @override
+  void initState() {
     SetWindowTitleAction().invoke(const SetWindowTitleIntent());
+    super.initState();
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget buildWithChild(BuildContext context, Widget? child) {
     final shortcuts = Shortcuts(
       shortcuts: const <ShortcutActivator, Intent>{
         SingleActivator(LogicalKeyboardKey.escape): SetFullScreenIntent(false),
       },
-      child: child,
+      child: child!,
     );
 
     return Actions(

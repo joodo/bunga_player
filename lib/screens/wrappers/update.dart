@@ -5,21 +5,17 @@ import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
 import 'package:flutter/material.dart';
+import 'package:nested/nested.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:updat/updat.dart';
 import 'package:updat/updat_window_manager.dart';
 import 'package:http/http.dart' as http;
 
-class UpdateWrapper extends StatelessWidget {
-  final Widget child;
-
-  const UpdateWrapper({
-    super.key,
-    required this.child,
-  });
+class UpdateWrapper extends SingleChildStatelessWidget {
+  const UpdateWrapper({super.key, super.child});
 
   @override
-  Widget build(BuildContext context) {
+  Widget buildWithChild(BuildContext context, Widget? child) {
     final packageInfo = getIt<PackageInfo>();
     return UpdatWindowManager(
       currentVersion: packageInfo.version,
@@ -58,7 +54,7 @@ class UpdateWrapper extends StatelessWidget {
           Future.microtask(() => getIt<Toast>().show('检查到更新，正在下载…'));
         }
       },
-      child: child,
+      child: child!,
     );
   }
 }

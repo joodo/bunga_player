@@ -7,6 +7,7 @@ import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/chat.dart';
 import 'package:bunga_player/actions/dispatcher.dart';
 import 'package:flutter/material.dart';
+import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 
 class AutoLoginIntent extends Intent {}
@@ -98,13 +99,11 @@ class LogoutAction extends ContextAction<LogoutIntent> {
   }
 }
 
-class AuthActions extends StatelessWidget {
-  final Widget child;
-
-  const AuthActions({super.key, required this.child});
+class AuthActions extends SingleChildStatelessWidget {
+  const AuthActions({super.key, super.child});
 
   @override
-  Widget build(BuildContext context) {
+  Widget buildWithChild(BuildContext context, Widget? child) {
     return Actions(
       dispatcher: LoggingActionDispatcher(prefix: 'Auth'),
       actions: <Type, Action<Intent>>{
@@ -113,7 +112,7 @@ class AuthActions extends StatelessWidget {
         LoginIntent: LoginAction(),
         LogoutIntent: LogoutAction(),
       },
-      child: child,
+      child: child!,
     );
   }
 }

@@ -13,6 +13,7 @@ import 'package:bunga_player/services/chat.dart';
 import 'package:bunga_player/services/toast.dart';
 import 'package:bunga_player/actions/dispatcher.dart';
 import 'package:flutter/material.dart';
+import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 
 class JoinChannelIntent extends Intent {
@@ -132,14 +133,13 @@ class SendMessageAction extends Action<SendMessageIntent> {
   }
 }
 
-class ChannelActions extends StatefulWidget {
-  final Widget child;
-  const ChannelActions({super.key, required this.child});
+class ChannelActions extends SingleChildStatefulWidget {
+  const ChannelActions({super.key, super.child});
   @override
   State<ChannelActions> createState() => _ChannelActionsState();
 }
 
-class _ChannelActionsState extends State<ChannelActions> {
+class _ChannelActionsState extends SingleChildState<ChannelActions> {
   final List<StreamSubscription> _channelSubscriptions = [];
 
   @override
@@ -161,7 +161,7 @@ class _ChannelActionsState extends State<ChannelActions> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget buildWithChild(BuildContext context, Widget? child) {
     return Actions(
       dispatcher: LoggingActionDispatcher(prefix: 'Channel'),
       actions: <Type, Action<Intent>>{
@@ -172,7 +172,7 @@ class _ChannelActionsState extends State<ChannelActions> {
         UpdateChannelDataIntent: UpdateChannelDataAction(),
         SendMessageIntent: SendMessageAction(),
       },
-      child: widget.child,
+      child: child!,
     );
   }
 

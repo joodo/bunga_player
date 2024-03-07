@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:nested/nested.dart';
 
-class ControlCard extends StatefulWidget {
-  final Widget child;
-
-  const ControlCard({super.key, required this.child});
+class ControlCard extends SingleChildStatefulWidget {
+  const ControlCard({super.key, super.child});
 
   @override
   State<ControlCard> createState() => _ControlCardState();
 }
 
-class _ControlCardState extends State<ControlCard> {
+class _ControlCardState extends SingleChildState<ControlCard> {
   bool _hovered = false;
 
   @override
-  Widget build(BuildContext context) {
+  Widget buildWithChild(BuildContext context, Widget? child) {
     return SizedBox(
       height: 48,
       child: MouseRegion(
@@ -33,7 +32,7 @@ class _ControlCardState extends State<ControlCard> {
           ),
           duration: const Duration(milliseconds: 250),
           curve: Curves.easeOutCubic,
-          child: widget.child,
+          child: child,
         ),
       ),
     );

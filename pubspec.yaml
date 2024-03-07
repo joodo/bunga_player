@@ -38,6 +38,8 @@ dependencies:
   animated_text_kit: ^4.2.2
   audioplayers: ^5.2.1
   animations: ^2.0.11
+  file_selector: ^1.0.3
+  window_manager: ^0.3.8
 
   # Popmoji
   flutter_svg: ^2.0.10+1
@@ -47,11 +49,13 @@ dependencies:
       url: https://github.com/joodo/fireworks
       path: fireworks
 
+  # Network
+  url_launcher: ^6.2.5
+  dart_ping: ^9.0.1
+  http: ^1.2.0
+
   # Utils
   logger: ^2.0.2+1
-  file_selector: ^1.0.3
-  window_manager: ^0.3.8
-  http: ^1.2.0
   shared_preferences: ^2.2.2
   async: ^2.11.0
   collection: ^1.18.0
@@ -60,8 +64,7 @@ dependencies:
   get_it: ^7.6.7
   provider: ^6.1.1
   platform: ^3.1.4
-  url_launcher: ^6.2.5
-  dart_ping: ^9.0.1
+  nested: ^1.0.0
 
 
 dev_dependencies:

@@ -8,6 +8,7 @@ import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/duration.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 
 class SetVolumeIntent extends Intent {
@@ -302,19 +303,18 @@ class SetContrastAction extends Action<SetContrastIntent> {
       : getIt<Player>().resetContrast();
 }
 
-class PlayActions extends StatefulWidget {
-  final Widget child;
-  const PlayActions({super.key, required this.child});
+class PlayActions extends SingleChildStatefulWidget {
+  const PlayActions({super.key, super.child});
 
   @override
   State<PlayActions> createState() => _PlayActionsState();
 }
 
-class _PlayActionsState extends State<PlayActions> {
+class _PlayActionsState extends SingleChildState<PlayActions> {
   final _dragBusiness = DragBusiness();
 
   @override
-  Widget build(BuildContext context) {
+  Widget buildWithChild(BuildContext context, Widget? child) {
     final shortcuts = Shortcuts(
       shortcuts: const <ShortcutActivator, Intent>{
         SingleActivator(LogicalKeyboardKey.arrowUp):
@@ -327,7 +327,7 @@ class _PlayActionsState extends State<PlayActions> {
             SeekIntent(Duration(seconds: 5), isIncrease: true),
         SingleActivator(LogicalKeyboardKey.space): TogglePlayIntent(),
       },
-      child: widget.child,
+      child: child!,
     );
 
     return Actions(

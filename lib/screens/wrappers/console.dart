@@ -16,18 +16,18 @@ import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:nested/nested.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 
-class ConsoleWrapper extends StatefulWidget {
-  final Widget child;
-  const ConsoleWrapper({super.key, required this.child});
+class ConsoleWrapper extends SingleChildStatefulWidget {
+  const ConsoleWrapper({super.key, super.child});
 
   @override
   State<ConsoleWrapper> createState() => _ConsoleWrapperState();
 }
 
-class _ConsoleWrapperState extends State<ConsoleWrapper> {
+class _ConsoleWrapperState extends SingleChildState<ConsoleWrapper> {
   bool _show = false;
   final _logTextController = TextEditingController();
   late final StreamSubscription _subscribe;
@@ -47,7 +47,7 @@ class _ConsoleWrapperState extends State<ConsoleWrapper> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget buildWithChild(BuildContext context, Widget? child) {
     final logView = TextField(
       controller: _logTextController,
       decoration: const InputDecoration(
@@ -186,7 +186,7 @@ class _ConsoleWrapperState extends State<ConsoleWrapper> {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          widget.child,
+          if (child != null) child,
           Visibility(
             visible: _show,
             child: consoleView,

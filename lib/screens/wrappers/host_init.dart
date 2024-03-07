@@ -5,18 +5,17 @@ import 'package:bunga_player/screens/dialogs/host.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:flutter/material.dart';
+import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 
-class HostInitWrapper extends StatefulWidget {
-  final Widget child;
-
-  const HostInitWrapper({super.key, required this.child});
+class HostInitWrapper extends SingleChildStatefulWidget {
+  const HostInitWrapper({super.key, super.child});
 
   @override
   State<HostInitWrapper> createState() => _HostInitWrapperState();
 }
 
-class _HostInitWrapperState extends State<HostInitWrapper> {
+class _HostInitWrapperState extends SingleChildState<HostInitWrapper> {
   late final Future<void> _initTask;
 
   @override
@@ -55,7 +54,7 @@ class _HostInitWrapperState extends State<HostInitWrapper> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget buildWithChild(BuildContext context, Widget? child) {
     return FutureBuilder(
       future: _initTask,
       builder: (context, snapshot) =>
@@ -63,7 +62,7 @@ class _HostInitWrapperState extends State<HostInitWrapper> {
               ? const Center(child: Text('正在炼金'))
               : Provider.value(
                   value: _appKeys,
-                  child: widget.child,
+                  child: child,
                 ),
     );
   }

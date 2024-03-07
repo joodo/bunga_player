@@ -5,6 +5,8 @@ import 'package:bunga_player/screens/control_section/control_section.dart';
 import 'package:bunga_player/screens/player_section/player_section.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 
 class MainScreen extends StatefulWidget {
@@ -109,13 +111,11 @@ class MainScreenState extends State<MainScreen> {
   }
 }
 
-class _HUDWrapper extends StatelessWidget {
-  final Widget child;
-
-  const _HUDWrapper({required this.child});
+class _HUDWrapper extends SingleChildStatelessWidget {
+  const _HUDWrapper({super.child});
 
   @override
-  Widget build(BuildContext context) {
+  Widget buildWithChild(BuildContext context, Widget? child) {
     return Consumer<ShouldShowHUD>(
       builder: (context, shouldShowHUD, child) => MouseRegion(
         opaque: false,

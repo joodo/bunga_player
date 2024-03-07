@@ -18,6 +18,7 @@ import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
 import 'package:bunga_player/actions/dispatcher.dart';
 import 'package:flutter/material.dart';
+import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 
 class OpenVideoIntent extends Intent {
@@ -207,15 +208,14 @@ class SendPlayingStatusAction extends ContextAction<SendPlayingStatusIntent> {
   }
 }
 
-class VideoPlayingActions extends StatefulWidget {
-  final Widget child;
-  const VideoPlayingActions({super.key, required this.child});
+class VideoPlayingActions extends SingleChildStatefulWidget {
+  const VideoPlayingActions({super.key, super.child});
 
   @override
   State<VideoPlayingActions> createState() => _VideoPlayingActionsState();
 }
 
-class _VideoPlayingActionsState extends State<VideoPlayingActions> {
+class _VideoPlayingActionsState extends SingleChildState<VideoPlayingActions> {
   final _positionAskingBusiness = PositionAskingBusiness();
 
   @override
@@ -233,7 +233,7 @@ class _VideoPlayingActionsState extends State<VideoPlayingActions> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget buildWithChild(BuildContext context, Widget? child) {
     return Actions(
       dispatcher: LoggingActionDispatcher(prefix: 'Video Playing'),
       actions: <Type, Action<Intent>>{
@@ -247,7 +247,7 @@ class _VideoPlayingActionsState extends State<VideoPlayingActions> {
           positionAskingBusiness: _positionAskingBusiness,
         ),
       },
-      child: widget.child,
+      child: child!,
     );
   }
 
