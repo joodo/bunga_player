@@ -5,6 +5,7 @@ import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:dart_ping/dart_ping.dart';
 import 'package:http/http.dart' as http;
+import 'package:platform/platform.dart';
 
 class NetworkService {
   NetworkService() {
@@ -44,6 +45,16 @@ class _BungaHttpOverrides extends HttpOverrides {
 
   @override
   HttpClient createHttpClient(SecurityContext? context) {
-    return super.createHttpClient(context)..findProxy = _findProxy;
+    final client = super.createHttpClient(context)..findProxy = _findProxy;
+
+    // FIXME: Walkthrough for windows
+    // https://github.com/dart-lang/http/issues/627
+    // https://stackoverflow.com/questions/60587137/conveyor-with-flutter-handshake-error-when-running-net-web-app-locally/61120486#61120486
+    if (const LocalPlatform().isWindows) {
+      client.badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
+    }
+
+    return client;
   }
 }

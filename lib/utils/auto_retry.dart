@@ -13,7 +13,7 @@ Future<T> autoRetry<T>(
       times++;
       logger.w(
           'Failed job $jobName: $e.\nWait ${coolDown.inSeconds} seconds then try ${times}st time.');
-      await Future.delayed(coolDown);
+      await Future.delayed(coolDown * times);
     }
   }
 }
