@@ -119,9 +119,8 @@ class _WelcomeControlState extends State<WelcomeControl> {
             ],
           ),
           const SizedBox(width: 16),
-          FilledButton(
+          _OthersButton(
             onPressed: isBusy ? null : _joinOthersChannel,
-            child: const Text('其他人'),
           ),
         ],
       ),
@@ -224,6 +223,75 @@ class _WelcomeControlState extends State<WelcomeControl> {
     _completer?.complete();
     Actions.invoke(context, LogoutIntent());
     Navigator.of(context).popAndPushNamed('control:rename');
+  }
+}
+
+class _OthersButton extends StatefulWidget {
+  final void Function()? onPressed;
+  const _OthersButton({required this.onPressed});
+
+  @override
+  State<_OthersButton> createState() => _OthersButtonState();
+}
+
+class _OthersButtonState extends State<_OthersButton> {
+  late final CurrentUser _currentUser;
+  bool _waitingForLogin = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentUser = context.read<CurrentUser>();
+    _currentUser.addListener(_onLoginedChanged);
+  }
+
+  @override
+  void dispose() {
+    _currentUser.removeListener(_onLoginedChanged);
+    super.dispose();
+  }
+
+  void _onLoginedChanged() {
+    if (_waitingForLogin) {
+      widget.onPressed?.call();
+      setState(() {
+        _waitingForLogin = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Selector<CurrentUser, bool>(
+      selector: (context, currentUser) => currentUser.value != null,
+      builder: (context, isLogined, child) => FilledButton(
+        onPressed: isLogined
+            ? widget.onPressed
+            : () => setState(() {
+                  _waitingForLogin = true;
+                }),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Visibility.maintain(
+              visible: !_waitingForLogin,
+              child: const Text('其他人'),
+            ),
+            if (_waitingForLogin)
+              Builder(builder: (context) {
+                final textStyle = DefaultTextStyle.of(context).style;
+                return SizedBox.square(
+                  dimension: textStyle.fontSize,
+                  child: CircularProgressIndicator(
+                    color: textStyle.color,
+                    strokeWidth: 2,
+                  ),
+                );
+              }),
+          ],
+        ),
+      ),
+    );
   }
 }
 
