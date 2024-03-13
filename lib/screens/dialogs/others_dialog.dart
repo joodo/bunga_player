@@ -48,7 +48,7 @@ class OthersDialogState extends State<OthersDialog> {
         ],
       ),
     );
-    // HACK: cannot use listview because bug, same as popmoji
+    // HACK: cannot use listview because issue, same as popmoji
     // https://github.com/flutter/flutter/issues/26527
     final channelsView = Container(
       clipBehavior: Clip.hardEdge,
@@ -99,8 +99,6 @@ class OthersDialogState extends State<OthersDialog> {
 
   Widget _createVideoCard(String channelId, ChannelData channelData) {
     final themeData = Theme.of(context);
-    // FIXME: Unhandle exception when image url not usable
-    // see https://github.com/flutter/flutter/issues/129967
     final videoImage = Image.network(
       channelData.image ?? '',
       height: 125,
@@ -159,6 +157,7 @@ class OthersDialogState extends State<OthersDialog> {
     );
 
     final themedCard = FutureBuilder<ColorScheme>(
+      // FIXME: Unhandle exception when image videoImage not usable
       future: ColorScheme.fromImageProvider(
         brightness: themeData.brightness,
         provider: videoImage.image,
