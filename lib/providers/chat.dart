@@ -53,6 +53,7 @@ class CurrentChannelWatchers extends ChangeNotifier
   }
 
   void join(User user) {
+    if (_value.contains(user)) return;
     _value.add(user);
     notifyListeners();
     for (final listener in _joinListeners) {

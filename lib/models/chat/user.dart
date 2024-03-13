@@ -37,4 +37,16 @@ class User {
 
   @override
   String toString() => toJson().toString();
+
+  @override
+  operator ==(Object other) {
+    if (other is User) {
+      return other.id == id;
+    } else {
+      return false;
+    }
+  }
+
+  @override
+  int get hashCode => id.hashCode;
 }
