@@ -309,9 +309,11 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
         if (e is! CancelException) rethrow;
       }
     } finally {
-      setState(() {
-        _work = null;
-      });
+      if (mounted) {
+        setState(() {
+          _work = null;
+        });
+      }
     }
   }
 
