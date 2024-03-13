@@ -2,10 +2,8 @@ import 'dart:async';
 
 import 'package:animations/animations.dart';
 import 'package:bunga_player/actions/auth.dart';
-import 'package:bunga_player/actions/channel.dart';
-import 'package:bunga_player/actions/video_playing.dart';
+import 'package:bunga_player/actions/play.dart';
 import 'package:bunga_player/mocks/menu_anchor.dart' as mock;
-import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/models/chat/user.dart';
 import 'package:bunga_player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/providers/business_indicator.dart';
@@ -43,10 +41,10 @@ class _WelcomeControlState extends State<WelcomeControl> {
         tasks: [
           bi.setTitle('登录中……'),
           (data) async {
-            final result = autoRetry(
+            final result = AutoRetryJob(
               () => Actions.invoke(context, AutoLoginIntent()) as Future,
               jobName: 'auto login',
-            );
+            ).run();
             await result;
             return getCurrentUser()!.name;
           },
@@ -195,42 +193,33 @@ class _WelcomeControlState extends State<WelcomeControl> {
   Future<void> _openChannel({
     required Future Function() entryGetter,
   }) async {
-    final currentUser = context.read<CurrentUser>();
-
     final result = await entryGetter();
     if (result == null) return;
 
     void doOpen() async {
+      final navigator = Navigator.of(context);
       try {
         if (result is VideoEntry) {
           final response = Actions.invoke(
             Intentor.context,
             OpenVideoIntent(
               videoEntry: result,
-              beforeAskingPosition: () => Actions.invoke(
-                Intentor.context,
-                JoinChannelIntent.byChannelData(
-                  ChannelData.fromShare(currentUser.value!, result),
-                ),
-              ) as Future<void>,
             ),
           ) as Future?;
           await response;
+          navigator.popAndPushNamed('control:main');
         } else {
           final response = Actions.invoke(
             Intentor.context,
             OpenVideoIntent(
               videoEntry: result.$2,
-              beforeAskingPosition: () => Actions.invoke(
-                Intentor.context,
-                JoinChannelIntent.byId(result.$1),
-              ) as Future?,
             ),
           ) as Future<void>;
           await response;
+          navigator.popAndPushNamed('control:main', arguments: {
+            'channelId': result.$1,
+          });
         }
-
-        if (mounted) Navigator.of(context).popAndPushNamed('control:main');
       } catch (e) {
         getIt<Toast>().show('解析失败');
         Future.microtask(_initBusinessIndicator);

@@ -19,11 +19,11 @@ class AList {
   Future<void> initService() async {
     if (_token != null) return;
 
-    final response = await autoRetry(
+    final response = await AutoRetryJob(
       getIt<Bunga>().getAListToken,
       jobName: 'alist',
-    );
-    _host = Uri.parse(response.$1);
+    ).run();
+    _host = Uri.parse(response!.$1);
     _token = response.$2;
     logger.i('Alist token got successfully.');
   }

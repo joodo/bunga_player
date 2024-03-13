@@ -102,6 +102,11 @@ class StartCallingRequestAction
 
     callingRequestBusiness.requestTimeOutTimer.reset();
   }
+
+  @override
+  bool isEnabled(StartCallingRequestIntent intent, [BuildContext? context]) {
+    return context?.read<CurrentChannelId>().value != null;
+  }
 }
 
 class CancelCallingRequestIntent extends Intent {}

@@ -1,4 +1,4 @@
-import 'package:bunga_player/actions/video_playing.dart';
+import 'package:bunga_player/actions/play.dart';
 import 'package:bunga_player/providers/player.dart';
 import 'package:bunga_player/screens/control_section/dropdown.dart';
 import 'package:bunga_player/mocks/dropdown.dart' as mock;

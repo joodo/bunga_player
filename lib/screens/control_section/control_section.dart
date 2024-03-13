@@ -42,6 +42,22 @@ class _ControlSectionState extends State<ControlSection> {
     super.dispose();
   }
 
+  Widget buildByName(String name) {
+    return switch (name) {
+      'control:rename' => const RenameControl(),
+      'control:welcome' => const WelcomeControl(),
+      'control:main' => const MainControl(),
+      'control:call' => const CallControl(),
+      'control:popmoji' => const PopmojiControl(),
+      'control:subtitle' => const SubtitleControl(),
+      'control:tune' => const TuneControl(),
+      'control:open' => const VideoOpenControl(),
+      'control:danmaku' => const DanmakuControl(),
+      'control:source_selection' => const SourceSelectionControl(),
+      String() => throw Exception('Invalid route: $name'),
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     final pref = getIt<Preferences>();
@@ -52,27 +68,11 @@ class _ControlSectionState extends State<ControlSection> {
       initialRoute: initialRouteName,
       key: _navigatorStateKey,
       onGenerateRoute: (settings) {
-        final routes = {
-          'control:rename': const RenameControl(),
-          'control:welcome': const WelcomeControl(),
-          'control:main': const MainControl(),
-          'control:call': const CallControl(),
-          'control:popmoji': const PopmojiControl(),
-          'control:subtitle': const SubtitleControl(),
-          'control:tune': const TuneControl(),
-          'control:open': const VideoOpenControl(),
-          'control:danmaku': const DanmakuControl(),
-          'control:source_selection': const SourceSelectionControl(),
-        };
-
-        Widget? control = routes[settings.name];
-        if (control == null) throw Exception('Invalid route: ${settings.name}');
-
         //context.read<UI>().changeRoute(settings.name!);
         return _ControlRoute<void>(
           builder: (BuildContext context) => Container(
             color: Theme.of(context).colorScheme.surface,
-            child: control,
+            child: buildByName(settings.name ?? 'unknown'),
           ),
           settings: settings,
         );
@@ -141,7 +141,7 @@ class _ControlRoute<T> extends MaterialPageRoute<T> {
     Animation<double> secondaryAnimation,
     Widget child,
   ) {
-    final a = CurveTween(curve: Curves.easeInCubic).animate(animation);
+    final a = CurveTween(curve: Curves.easeOutCubic).animate(animation);
     return FadeTransition(opacity: a, child: child);
   }
 }

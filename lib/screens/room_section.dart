@@ -1,7 +1,8 @@
 import 'dart:async';
 
+import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:animations/animations.dart';
-import 'package:bunga_player/actions/video_playing.dart';
+import 'package:bunga_player/actions/play.dart';
 import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/models/chat/user.dart';
 import 'package:bunga_player/models/video_entries/video_entry.dart';
@@ -28,17 +29,34 @@ class _RoomSectionState extends State<RoomSection> {
     return Row(
       children: [
         // Watcher list
-        Consumer<CurrentChannelWatchers>(
+        Consumer2<CurrentChannelWatchers, PlayVideoEntry>(
           builder: (
             BuildContext context,
             CurrentChannelWatchers watchers,
+            PlayVideoEntry entry,
             Widget? child,
           ) {
-            if (watchers.value.isEmpty) return const SizedBox.shrink();
+            if (entry.value == null) return const SizedBox.shrink();
 
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: _getUsersWidget(watchers.value),
+              child: watchers.value.isEmpty
+                  ? Row(
+                      children: [
+                        const Text('正在创建房间'),
+                        AnimatedTextKit(
+                          animatedTexts: [
+                            TyperAnimatedText(
+                              '...',
+                              speed: const Duration(milliseconds: 500),
+                            )
+                          ],
+                          repeatForever: true,
+                          pause: const Duration(milliseconds: 500),
+                        ),
+                      ],
+                    )
+                  : _getUsersWidget(watchers.value),
             );
           },
         ),

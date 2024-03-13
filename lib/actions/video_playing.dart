@@ -1,12 +1,11 @@
 import 'dart:async';
 
 import 'package:bunga_player/actions/channel.dart';
-import 'package:bunga_player/actions/ui.dart';
+import 'package:bunga_player/actions/play.dart';
 import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/models/chat/message.dart';
 import 'package:bunga_player/models/chat/user.dart';
 import 'package:bunga_player/models/video_entries/video_entry.dart';
-import 'package:bunga_player/providers/business_indicator.dart';
 import 'package:bunga_player/providers/chat.dart';
 import 'package:bunga_player/providers/player.dart';
 import 'package:bunga_player/providers/ui.dart';
@@ -21,53 +20,8 @@ import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 
-class OpenVideoIntent extends Intent {
-  final VideoEntry videoEntry;
-  final Future<void>? Function()? beforeAskingPosition;
-  final int sourceIndex;
-
-  const OpenVideoIntent({
-    required this.videoEntry,
-    this.beforeAskingPosition,
-    this.sourceIndex = 0,
-  });
-}
-
 class PositionAskingBusiness {
   String? askingMessageId;
-}
-
-class OpenVideoAction extends ContextAction<OpenVideoIntent> {
-  final PositionAskingBusiness positionAskingBusiness;
-  OpenVideoAction({required this.positionAskingBusiness});
-
-  @override
-  Future<void> invoke(OpenVideoIntent intent, [BuildContext? context]) async {
-    assert(context != null);
-
-    final bi = context!.read<BusinessIndicator>();
-    final videoPlayer = getIt<Player>();
-
-    await bi.run(
-      tasks: [
-        bi.setTitle('正在鬼鬼祟祟……'),
-        (data) async {
-          await videoPlayer.stop();
-          await intent.videoEntry.fetch();
-        },
-        bi.setTitle('正在收拾客厅……'),
-        (data) async {
-          Actions.invoke(
-              context, SetWindowTitleIntent(intent.videoEntry.title));
-          return videoPlayer.open(intent.videoEntry, intent.sourceIndex);
-        },
-        bi.setTitle('正在发送请柬……'),
-        (data) async {
-          await intent.beforeAskingPosition?.call();
-        },
-      ],
-    );
-  }
 }
 
 class AskPositionIntent extends Intent {}
@@ -245,9 +199,6 @@ class _VideoPlayingActionsState extends SingleChildState<VideoPlayingActions> {
     return Actions(
       dispatcher: LoggingActionDispatcher(prefix: 'Video Playing'),
       actions: <Type, Action<Intent>>{
-        OpenVideoIntent: OpenVideoAction(
-          positionAskingBusiness: _positionAskingBusiness,
-        ),
         AskPositionIntent: AskPositionAction(
           positionAskingBusiness: _positionAskingBusiness,
         ),

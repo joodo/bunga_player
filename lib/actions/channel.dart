@@ -35,8 +35,6 @@ class JoinChannelAction extends ContextAction<JoinChannelIntent> {
   ]) async {
     assert(context != null, 'Action need context to set providers');
 
-    final read = context!.read;
-
     final chatService = getIt<ChatService>();
     final response = intent.channelData != null
         ? chatService.createOrJoinChannelByData(intent.channelData!)
@@ -49,6 +47,11 @@ class JoinChannelAction extends ContextAction<JoinChannelIntent> {
       leaverStream,
       messageStream,
     ) = await response;
+
+    if (!context!.mounted) {
+      logger.w('Context of joining channel was unmounted.');
+      return;
+    }
 
     channelSubscriptions.addAll([
       dataStream.listen((channelData) {
@@ -70,6 +73,7 @@ class JoinChannelAction extends ContextAction<JoinChannelIntent> {
       }),
     ]);
 
+    final read = context.read;
     read<CurrentChannelId>().value = id;
     read<CurrentChannelWatchers>().set(watchers);
   }
@@ -102,6 +106,11 @@ class LeaveChannelAction extends ContextAction<LeaveChannelIntent> {
     final chatService = getIt<ChatService>();
     await chatService.leaveChannel();
   }
+
+  @override
+  bool isEnabled(LeaveChannelIntent intent, [BuildContext? context]) {
+    return context?.read<CurrentChannelId>().value != null;
+  }
 }
 
 class UpdateChannelDataIntent extends Intent {
@@ -124,12 +133,18 @@ class SendMessageIntent extends Intent {
   const SendMessageIntent(this.text, {this.quoteId});
 }
 
-class SendMessageAction extends Action<SendMessageIntent> {
+class SendMessageAction extends ContextAction<SendMessageIntent> {
   @override
-  Future<Message> invoke(SendMessageIntent intent) async {
+  Future<Message> invoke(SendMessageIntent intent,
+      [BuildContext? context]) async {
     final chatService = getIt<ChatService>();
     logger.i('Send message: ${intent.text}, quote id: ${intent.quoteId}');
     return await chatService.sendMessage(intent.text, intent.quoteId);
+  }
+
+  @override
+  bool isEnabled(SendMessageIntent intent, [BuildContext? context]) {
+    return context?.read<CurrentChannelId>().value != null;
   }
 }
 

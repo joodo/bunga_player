@@ -10,6 +10,7 @@ import 'package:bunga_player/providers/chat.dart';
 import 'package:bunga_player/providers/player.dart';
 import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/screens/control_section/popmoji_control.dart';
+import 'package:bunga_player/utils/auto_retry.dart';
 import 'package:bunga_player/utils/duration.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -22,6 +23,42 @@ class MainControl extends StatefulWidget {
 }
 
 class _MainControlState extends State<MainControl> {
+  late final AutoRetryJob _joinChannelJob;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      final args =
+          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      final channelId = args?['channelId'];
+      if (channelId is String) {
+        _joinChannelJob = AutoRetryJob(
+          () => Actions.invoke(
+            context,
+            JoinChannelIntent.byId(channelId),
+          ) as Future,
+          jobName: 'Join Channel',
+        );
+      } else {
+        final read = context.read;
+        _joinChannelJob = AutoRetryJob(
+          () => mounted
+              ? Actions.invoke(
+                  context,
+                  JoinChannelIntent.byChannelData(ChannelData.fromShare(
+                    read<CurrentUser>().value!,
+                    read<PlayVideoEntry>().value!,
+                  )),
+                ) as Future
+              : Future.value(),
+          jobName: 'Join Channel',
+        );
+      }
+      _joinChannelJob.run();
+    });
+  }
+
   @override
   void didChangeDependencies() {
     PopmojiControl.cacheSvgs();
@@ -227,8 +264,10 @@ class _MainControlState extends State<MainControl> {
                 ],
               ),
               onTap: () async {
-                Actions.invoke(context, LeaveChannelIntent());
                 Actions.invoke(context, StopPlayIntent());
+
+                _joinChannelJob.cancelIfNotFinished();
+                Actions.maybeInvoke(context, LeaveChannelIntent());
 
                 Navigator.of(context).popAndPushNamed('control:welcome');
               },

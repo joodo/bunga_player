@@ -1,6 +1,7 @@
 import 'package:bunga_player/actions/dispatcher.dart';
 import 'package:bunga_player/actions/ui.dart';
 import 'package:bunga_player/actions/video_playing.dart';
+import 'package:bunga_player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/providers/player.dart';
 import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/services/player.dart';
@@ -80,6 +81,34 @@ class StopPlayAction extends ContextAction<StopPlayIntent> {
   Future<void> invoke(StopPlayIntent intent, [BuildContext? context]) {
     Actions.invoke(context!, const SetWindowTitleIntent());
     return getIt<Player>().stop();
+  }
+}
+
+class OpenVideoIntent extends Intent {
+  final VideoEntry videoEntry;
+  final int sourceIndex;
+
+  const OpenVideoIntent({
+    required this.videoEntry,
+    this.sourceIndex = 0,
+  });
+}
+
+class OpenVideoAction extends ContextAction<OpenVideoIntent> {
+  OpenVideoAction();
+
+  @override
+  Future<void> invoke(OpenVideoIntent intent, [BuildContext? context]) async {
+    assert(context != null);
+
+    final videoPlayer = getIt<Player>();
+    await videoPlayer.stop();
+    await intent.videoEntry.fetch();
+    await videoPlayer.open(intent.videoEntry, intent.sourceIndex);
+
+    if (context!.mounted) {
+      Actions.invoke(context, SetWindowTitleIntent(intent.videoEntry.title));
+    }
   }
 }
 
@@ -347,6 +376,7 @@ class _PlayActionsState extends SingleChildState<PlayActions> {
         SetMuteIntent: SetMuteAction(),
         TogglePlayIntent: TogglePlayAction(),
         StopPlayIntent: StopPlayAction(),
+        OpenVideoIntent: OpenVideoAction(),
         SeekIntent: SeekAction(),
         StartDraggingProgressIntent:
             StartDraggingProgressAction(dragBusiness: _dragBusiness),
