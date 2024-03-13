@@ -96,10 +96,7 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
       final response = Actions.invoke(
         // ignore: use_build_context_synchronously
         Intentor.context,
-        OpenVideoIntent(
-          videoEntry: videoEntry,
-          askPosition: !shouldUpdateChannelData,
-        ),
+        OpenVideoIntent(videoEntry: videoEntry),
       ) as Future?;
       await response;
     } catch (e) {

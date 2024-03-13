@@ -24,13 +24,11 @@ import 'package:provider/provider.dart';
 class OpenVideoIntent extends Intent {
   final VideoEntry videoEntry;
   final Future<void>? Function()? beforeAskingPosition;
-  final bool askPosition;
   final int sourceIndex;
 
   const OpenVideoIntent({
     required this.videoEntry,
     this.beforeAskingPosition,
-    this.askPosition = true,
     this.sourceIndex = 0,
   });
 }
@@ -66,30 +64,40 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
         bi.setTitle('正在发送请柬……'),
         (data) async {
           await intent.beforeAskingPosition?.call();
-          if (intent.askPosition && context.mounted) {
-            await _askPosition(context);
-          }
         },
       ],
     );
   }
+}
 
-  Future<void> _askPosition(BuildContext context) async {
-    // If I'm the only one, don't ask
-    if (context.read<CurrentChannelWatchers>().value.length == 1) return;
+class AskPositionIntent extends Intent {}
 
+class AskPositionAction extends ContextAction<AskPositionIntent> {
+  final PositionAskingBusiness positionAskingBusiness;
+  AskPositionAction({required this.positionAskingBusiness});
+
+  @override
+  Future<void> invoke(AskPositionIntent intent, [BuildContext? context]) async {
     final message = await (Actions.invoke(
-      context,
+      context!,
       const SendMessageIntent('where'),
     ) as Future<Message>);
     positionAskingBusiness.askingMessageId = message.id;
 
-    Future.delayed(const Duration(seconds: 6), () {
+    Future.delayed(const Duration(seconds: 3), () {
       if (positionAskingBusiness.askingMessageId != null) {
         logger.w('Asked position but no one answered');
         positionAskingBusiness.askingMessageId = null;
       }
     });
+  }
+
+  @override
+  bool isEnabled(AskPositionIntent intent, [BuildContext? context]) {
+    final read = context!.read;
+    return read<CurrentUser>().value != null &&
+        read<CurrentChannelId>().value != null &&
+        read<CurrentChannelWatchers>().value.length > 1;
   }
 }
 
@@ -238,6 +246,9 @@ class _VideoPlayingActionsState extends SingleChildState<VideoPlayingActions> {
       dispatcher: LoggingActionDispatcher(prefix: 'Video Playing'),
       actions: <Type, Action<Intent>>{
         OpenVideoIntent: OpenVideoAction(
+          positionAskingBusiness: _positionAskingBusiness,
+        ),
+        AskPositionIntent: AskPositionAction(
           positionAskingBusiness: _positionAskingBusiness,
         ),
         ApplyRemotePlayingStatusIntent: ApplyRemotePlayingStatusAction(
