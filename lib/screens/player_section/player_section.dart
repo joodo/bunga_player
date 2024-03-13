@@ -42,8 +42,8 @@ class _PlayerSectionState extends State<PlayerSection> {
           requestFocus: false,
         ),
         AnimatedOpacity(
-          opacity: context.select<BusinessIndicator, double>(
-              (bi) => bi.currentMissionName == null ? 0.0 : 1.0),
+          opacity: context.select<CatIndicator, double>(
+              (bi) => bi.title == null ? 0.0 : 1.0),
           duration: const Duration(milliseconds: 250),
           child: const PlayerPlaceholder(),
         ),

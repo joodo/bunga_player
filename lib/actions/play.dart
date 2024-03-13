@@ -2,6 +2,7 @@ import 'package:bunga_player/actions/dispatcher.dart';
 import 'package:bunga_player/actions/ui.dart';
 import 'package:bunga_player/actions/video_playing.dart';
 import 'package:bunga_player/models/video_entries/video_entry.dart';
+import 'package:bunga_player/providers/business_indicator.dart';
 import 'package:bunga_player/providers/player.dart';
 import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/services/player.dart';
@@ -101,14 +102,19 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
   Future<void> invoke(OpenVideoIntent intent, [BuildContext? context]) async {
     assert(context != null);
 
-    final videoPlayer = getIt<Player>();
-    await videoPlayer.stop();
-    await intent.videoEntry.fetch();
-    await videoPlayer.open(intent.videoEntry, intent.sourceIndex);
+    final cat = context!.read<CatIndicator>();
+    await cat.run(() async {
+      cat.title = '正在鬼鬼祟祟';
 
-    if (context!.mounted) {
-      Actions.invoke(context, SetWindowTitleIntent(intent.videoEntry.title));
-    }
+      final videoPlayer = getIt<Player>();
+      await videoPlayer.stop();
+      await intent.videoEntry.fetch();
+      await videoPlayer.open(intent.videoEntry, intent.sourceIndex);
+
+      if (context.mounted) {
+        Actions.invoke(context, SetWindowTitleIntent(intent.videoEntry.title));
+      }
+    });
   }
 }
 

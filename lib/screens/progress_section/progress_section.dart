@@ -9,17 +9,14 @@ class ProgressSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer2<BusinessIndicator, PlayIsBuffering>(
+    return Consumer2<CatIndicator, PlayIsBuffering>(
       builder: (context, bi, isBuffering, child) {
-        final busy = bi.currentProgress != null || isBuffering.value;
+        final busy = bi.busy || isBuffering.value;
         return busy
-            ? Center(
+            ? const Center(
                 child: SizedBox(
                   height: 4,
-                  child: LinearProgressIndicator(
-                      value: bi.totalProgress != null
-                          ? bi.currentProgress! / bi.totalProgress!
-                          : null),
+                  child: LinearProgressIndicator(),
                 ),
               )
             : const VideoProgressIndicator();

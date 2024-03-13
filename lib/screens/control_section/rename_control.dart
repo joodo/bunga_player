@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:bunga_player/providers/business_indicator.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
@@ -16,32 +14,19 @@ class RenameControl extends StatefulWidget {
 class _RenameControlState extends State<RenameControl> {
   final _textController = TextEditingController();
 
-  Completer<void>? _completer;
-  void _initBusinessIndicator() {
-    final bi = context.read<BusinessIndicator>();
-    bi.run(
-      tasks: [
-        bi.setTitle('怎样称呼你？'),
-        (data) {
-          _completer = Completer();
-          return _completer!.future;
-        },
-      ],
-      showProgress: false,
-    );
-  }
-
   @override
   void initState() {
     super.initState();
-
-    Future.microtask(_initBusinessIndicator);
 
     _textController.text = getIt<Preferences>().get<String>('user_name') ?? '';
     _textController.selection = TextSelection(
       baseOffset: 0,
       extentOffset: _textController.text.length,
     );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      context.read<CatIndicator>().title = '怎样称呼你？';
+    });
   }
 
   @override
@@ -83,8 +68,6 @@ class _RenameControlState extends State<RenameControl> {
 
   void _onSubmit(String userName) {
     getIt<Preferences>().set('user_name', userName);
-
-    _completer?.complete();
     Navigator.of(context).popAndPushNamed('control:welcome');
   }
 }

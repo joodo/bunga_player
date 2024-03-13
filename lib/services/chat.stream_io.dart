@@ -26,6 +26,7 @@ class StreamIO implements ChatService {
 
   @override
   Future<void> login(String id, String token, String? name) async {
+    if (_client.state.currentUser != null) await _client.disconnectUser();
     await _client.connectUser(
       stream.User(
         id: id,

@@ -269,7 +269,7 @@ class _MainControlState extends State<MainControl> {
                 _joinChannelJob.cancelIfNotFinished();
                 Actions.maybeInvoke(context, LeaveChannelIntent());
 
-                Navigator.of(context).popAndPushNamed('control:welcome');
+                Navigator.of(context).pop();
               },
             ),
           ],

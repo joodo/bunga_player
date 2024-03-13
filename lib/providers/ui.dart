@@ -41,19 +41,19 @@ class AListInitiated extends ValueNotifier<bool> {
 
 final uiProviders = MultiProvider(
   providers: [
-    ChangeNotifierProvider(create: (context) => BusinessIndicator()),
+    ChangeNotifierProvider(create: (context) => CatIndicator()),
     ChangeNotifierProvider(create: (context) => IsFullScreen()),
     ChangeNotifierProvider(create: (context) => DanmakuMode()),
     ProxyProvider2<IsFullScreen, DanmakuMode, FoldLayout>(
       update: (context, isFullScreen, danmakuMode, previous) =>
           FoldLayout(isFullScreen.value && !danmakuMode.value),
     ),
-    ChangeNotifierProxyProvider2<FoldLayout, BusinessIndicator, ShouldShowHUD>(
+    ChangeNotifierProxyProvider2<FoldLayout, CatIndicator, ShouldShowHUD>(
       create: (context) {
         final result = ShouldShowHUD();
 
         if (!context.read<FoldLayout>().value) result.lock('fold');
-        if (!context.read<BusinessIndicator>().isRunning) result.lock('busy');
+        if (!context.read<CatIndicator>().busy) result.lock('busy');
 
         return result..mark();
       },
@@ -64,7 +64,7 @@ final uiProviders = MultiProvider(
           previous!.unlock('fold');
         }
 
-        if (businessIndicator.isRunning) {
+        if (businessIndicator.busy) {
           previous.lock('busy');
         } else {
           previous.unlock('busy');

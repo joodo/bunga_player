@@ -11,7 +11,6 @@ import 'package:bunga_player/screens/dialogs/online_video_dialog.dart';
 import 'package:bunga_player/screens/dialogs/local_video_entry.dart';
 import 'package:bunga_player/screens/dialogs/net_disk.dart';
 import 'package:bunga_player/screens/wrappers/providers.dart';
-import 'package:bunga_player/screens/wrappers/actions.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
 import 'package:flutter/material.dart';
@@ -27,8 +26,8 @@ class VideoOpenControl extends StatefulWidget {
 class _VideoOpenControlState extends State<VideoOpenControl> {
   @override
   Widget build(BuildContext context) {
-    return Selector<BusinessIndicator, bool>(
-      selector: (context, bi) => bi.currentProgress != null,
+    return Selector<CatIndicator, bool>(
+      selector: (context, bi) => bi.busy,
       builder: (context, isBusy, child) => Row(
         children: [
           const SizedBox(width: 8),
@@ -90,12 +89,11 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
     final shouldUpdateChannelData = context.isVideoSameWithChannel;
 
     final videoEntry = await entryGetter();
-    if (videoEntry == null) return;
+    if (videoEntry == null || !mounted) return;
 
     try {
       final response = Actions.invoke(
-        // ignore: use_build_context_synchronously
-        Intentor.context,
+        context,
         OpenVideoIntent(videoEntry: videoEntry),
       ) as Future?;
       await response;
@@ -104,10 +102,10 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
       rethrow;
     }
 
+    if (!mounted) return;
     if (shouldUpdateChannelData) {
       Actions.invoke(
-        // ignore: use_build_context_synchronously
-        Intentor.context,
+        context,
         UpdateChannelDataIntent(ChannelData.fromShare(currentUser, videoEntry)),
       );
     }

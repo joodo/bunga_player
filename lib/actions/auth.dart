@@ -17,8 +17,10 @@ class AutoLoginIntent extends Intent {}
 class AutoLoginAction extends ContextAction<AutoLoginIntent> {
   @override
   Future<void> invoke(AutoLoginIntent intent, [BuildContext? context]) async {
+    if (!context!.mounted) return;
+
     final result =
-        Actions.invoke(context!, LoginIntent(User.fromPref())) as Future;
+        Actions.invoke(context, LoginIntent(User.fromPref())) as Future;
     await result;
 
     // Fetch bilibili sess
@@ -73,8 +75,6 @@ class LoginIntent extends Intent {
 class LoginAction extends ContextAction<LoginIntent> {
   @override
   Future<void> invoke(LoginIntent intent, [BuildContext? context]) async {
-    final currentUser = context!.read<CurrentUser>();
-
     // Get token by client id from bunga
     final bunga = getIt<Bunga>();
     final token = await bunga.userLogin(intent.user.id);
@@ -83,7 +83,7 @@ class LoginAction extends ContextAction<LoginIntent> {
     final chatService = getIt<ChatService>();
     await chatService.login(intent.user.id, token, intent.user.name);
 
-    currentUser.value = intent.user;
+    if (context!.mounted) context.read<CurrentUser>().value = intent.user;
   }
 }
 
@@ -98,6 +98,11 @@ class LogoutAction extends ContextAction<LogoutIntent> {
     await chatService.logout();
 
     currentUser.value = null;
+  }
+
+  @override
+  bool isEnabled(LogoutIntent intent, [BuildContext? context]) {
+    return context?.read<CurrentUser>().value != null;
   }
 }
 

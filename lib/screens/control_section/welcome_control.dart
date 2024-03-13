@@ -4,7 +4,6 @@ import 'package:animations/animations.dart';
 import 'package:bunga_player/actions/auth.dart';
 import 'package:bunga_player/actions/play.dart';
 import 'package:bunga_player/mocks/menu_anchor.dart' as mock;
-import 'package:bunga_player/models/chat/user.dart';
 import 'package:bunga_player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/providers/business_indicator.dart';
 import 'package:bunga_player/providers/chat.dart';
@@ -14,7 +13,6 @@ import 'package:bunga_player/screens/dialogs/local_video_entry.dart';
 import 'package:bunga_player/screens/dialogs/net_disk.dart';
 import 'package:bunga_player/screens/dialogs/others_dialog.dart';
 import 'package:bunga_player/screens/dialogs/settings.dart';
-import 'package:bunga_player/screens/wrappers/actions.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
 import 'package:bunga_player/utils/auto_retry.dart';
@@ -31,55 +29,33 @@ class WelcomeControl extends StatefulWidget {
 }
 
 class _WelcomeControlState extends State<WelcomeControl> {
-  Completer<void>? _completer;
-  void _initBusinessIndicator() {
-    User? getCurrentUser() => context.read<CurrentUser>().value;
-    final bi = context.read<BusinessIndicator>();
-
-    if (getCurrentUser() == null) {
-      bi.run(
-        tasks: [
-          bi.setTitle('登录中……'),
-          (data) async {
-            final result = AutoRetryJob(
-              () => Actions.invoke(context, AutoLoginIntent()) as Future,
-              jobName: 'auto login',
-            ).run();
-            await result;
-            return getCurrentUser()!.name;
-          },
-          bi.setTitleFromLastTask((lastResult) => '$lastResult, 你好！'),
-          (data) {
-            _completer = Completer();
-            return _completer!.future;
-          }
-        ],
-        showProgress: false,
-      );
-    } else {
-      bi.run(
-        tasks: [
-          bi.setTitle('${getCurrentUser()!.name}, 你好！'),
-          (data) {
-            _completer = Completer();
-            return _completer!.future;
-          }
-        ],
-        showProgress: false,
-      );
-    }
-  }
+  late final AutoRetryJob _loginJob = AutoRetryJob(
+    () => Actions.invoke(context, AutoLoginIntent()) as Future,
+    jobName: 'Auto Login',
+  );
 
   @override
   void initState() {
     super.initState();
-    Future.microtask(_initBusinessIndicator);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final currentUser = context.read<CurrentUser>();
+      final cat = context.read<CatIndicator>();
+
+      if (currentUser.value == null) {
+        cat.title = '登录中……';
+        await _loginJob.run();
+      }
+
+      if (!mounted) return;
+      cat.title = _title;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final actions = Selector<BusinessIndicator, bool>(
-      selector: (context, bi) => bi.currentProgress != null,
+    final actions = Selector<CatIndicator, bool>(
+      selector: (context, bi) => bi.busy,
       builder: (context, isBusy, child) => Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -194,48 +170,47 @@ class _WelcomeControlState extends State<WelcomeControl> {
     required Future Function() entryGetter,
   }) async {
     final result = await entryGetter();
-    if (result == null) return;
+    if (result == null || !mounted) return;
 
-    void doOpen() async {
-      final navigator = Navigator.of(context);
-      try {
-        if (result is VideoEntry) {
-          final response = Actions.invoke(
-            Intentor.context,
-            OpenVideoIntent(
-              videoEntry: result,
-            ),
-          ) as Future?;
-          await response;
-          navigator.popAndPushNamed('control:main');
-        } else {
-          final response = Actions.invoke(
-            Intentor.context,
-            OpenVideoIntent(
-              videoEntry: result.$2,
-            ),
-          ) as Future<void>;
-          await response;
-          navigator.popAndPushNamed('control:main', arguments: {
-            'channelId': result.$1,
-          });
-        }
-      } catch (e) {
-        getIt<Toast>().show('解析失败');
-        Future.microtask(_initBusinessIndicator);
-        rethrow;
+    final navigator = Navigator.of(context);
+    final cat = context.read<CatIndicator>();
+    try {
+      if (result is VideoEntry) {
+        final response = Actions.invoke(
+          context,
+          OpenVideoIntent(videoEntry: result),
+        ) as Future?;
+        await response;
+
+        cat.title = null;
+        await navigator.pushNamed('control:main');
+        cat.title = _title;
+      } else {
+        final response = Actions.invoke(
+          context,
+          OpenVideoIntent(videoEntry: result.$2),
+        ) as Future<void>;
+        await response;
+
+        cat.title = null;
+        await navigator.pushNamed('control:main', arguments: {
+          'channelId': result.$1,
+        });
+        cat.title = _title;
       }
+    } catch (e) {
+      getIt<Toast>().show('解析失败');
+      rethrow;
     }
-
-    _completer?.complete();
-    Future.microtask(doOpen);
   }
 
   void _onChangeName() async {
-    _completer?.complete();
-    Actions.invoke(context, LogoutIntent());
+    _loginJob.cancelIfNotFinished();
+    Actions.maybeInvoke(context, LogoutIntent());
     Navigator.of(context).popAndPushNamed('control:rename');
   }
+
+  String get _title => '${context.read<CurrentUser>().value!.name}, 你好！';
 }
 
 class _DelayedCallbackButtonWrapper<T> extends SingleChildStatefulWidget {

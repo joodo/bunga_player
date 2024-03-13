@@ -57,9 +57,7 @@ class _PlayerPlaceholderState extends State<PlayerPlaceholder> {
             Positioned(
               top: 340,
               child: Text(
-                context.select<BusinessIndicator, String?>(
-                        (bi) => bi.currentMissionName) ??
-                    '',
+                context.select<CatIndicator, String?>((bi) => bi.title) ?? '',
                 style: Theme.of(context).textTheme.titleLarge,
               ),
             ),
