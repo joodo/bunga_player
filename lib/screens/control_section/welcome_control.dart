@@ -10,6 +10,7 @@ import 'package:bunga_player/models/chat/user.dart';
 import 'package:bunga_player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/providers/business_indicator.dart';
 import 'package:bunga_player/providers/chat.dart';
+import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/screens/dialogs/online_video_dialog.dart';
 import 'package:bunga_player/screens/dialogs/local_video_entry.dart';
 import 'package:bunga_player/screens/dialogs/net_disk.dart';
@@ -19,7 +20,10 @@ import 'package:bunga_player/screens/wrappers/actions.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
 import 'package:bunga_player/utils/auto_retry.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 
 class WelcomeControl extends StatefulWidget {
@@ -101,10 +105,23 @@ class _WelcomeControlState extends State<WelcomeControl> {
               child: const Text('打开视频'),
             ),
             menuChildren: [
-              mock.MenuItemButton(
-                leadingIcon: const Icon(Icons.cloud_outlined),
-                onPressed: _openNetDisk,
-                child: const Text('网盘'),
+              ValueListenableBuilder(
+                valueListenable: context.read<AListInitiated>(),
+                builder: (context, initiated, child) => mock.MenuItemButton(
+                  onPressed: initiated ? _openNetDisk : null,
+                  leadingIcon: initiated
+                      ? const Icon(Icons.cloud_outlined)
+                      : SizedBox.square(
+                          dimension: IconTheme.of(context).size,
+                          child: const Padding(
+                            padding: EdgeInsets.all(4),
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                            ),
+                          ),
+                        ),
+                  child: const Text('网盘'),
+                ),
               ),
               mock.MenuItemButton(
                 leadingIcon: const Icon(Icons.language_outlined),
@@ -119,8 +136,15 @@ class _WelcomeControlState extends State<WelcomeControl> {
             ],
           ),
           const SizedBox(width: 16),
-          _OthersButton(
+          _DelayedCallbackButtonWrapper(
+            listenable: context.read<CurrentUser>(),
+            delaySelector: (value) => value == null,
+            builder: (context, buttonChild, onButtonPressed) => FilledButton(
+              onPressed: onButtonPressed,
+              child: buttonChild,
+            ),
             onPressed: isBusy ? null : _joinOthersChannel,
+            child: const Text('其他人'),
           ),
         ],
       ),
@@ -226,71 +250,93 @@ class _WelcomeControlState extends State<WelcomeControl> {
   }
 }
 
-class _OthersButton extends StatefulWidget {
+class _DelayedCallbackButtonWrapper<T> extends SingleChildStatefulWidget {
   final void Function()? onPressed;
-  const _OthersButton({required this.onPressed});
+  final Widget Function(
+    BuildContext context,
+    Widget buttonChild,
+    Function()? onButtonPressed,
+  ) builder;
+
+  final ValueListenable<T> listenable;
+  final bool Function(T value) delaySelector;
+
+  const _DelayedCallbackButtonWrapper({
+    required this.onPressed,
+    required this.listenable,
+    required this.builder,
+    required this.delaySelector,
+    required super.child,
+  });
 
   @override
-  State<_OthersButton> createState() => _OthersButtonState();
+  State<_DelayedCallbackButtonWrapper> createState() =>
+      _DelayedCallbackButtonWrapperState<T>();
 }
 
-class _OthersButtonState extends State<_OthersButton> {
-  late final CurrentUser _currentUser;
-  bool _waitingForLogin = false;
+class _DelayedCallbackButtonWrapperState<T>
+    extends SingleChildState<_DelayedCallbackButtonWrapper<T>> {
+  bool _waiting = false;
 
   @override
   void initState() {
     super.initState();
-    _currentUser = context.read<CurrentUser>();
-    _currentUser.addListener(_onLoginedChanged);
+    widget.listenable.addListener(_onChanged);
   }
 
   @override
   void dispose() {
-    _currentUser.removeListener(_onLoginedChanged);
+    widget.listenable.removeListener(_onChanged);
     super.dispose();
   }
 
-  void _onLoginedChanged() {
-    if (_waitingForLogin) {
+  void _onChanged() {
+    if (_waiting) {
       widget.onPressed?.call();
       setState(() {
-        _waitingForLogin = false;
+        _waiting = false;
       });
     }
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Selector<CurrentUser, bool>(
-      selector: (context, currentUser) => currentUser.value != null,
-      builder: (context, isLogined, child) => FilledButton(
-        onPressed: isLogined
-            ? widget.onPressed
-            : () => setState(() {
-                  _waitingForLogin = true;
-                }),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Visibility.maintain(
-              visible: !_waitingForLogin,
-              child: const Text('其他人'),
-            ),
-            if (_waitingForLogin)
-              Builder(builder: (context) {
-                final textStyle = DefaultTextStyle.of(context).style;
-                return SizedBox.square(
-                  dimension: textStyle.fontSize,
-                  child: CircularProgressIndicator(
-                    color: textStyle.color,
-                    strokeWidth: 2,
-                  ),
-                );
-              }),
-          ],
+  Widget buildWithChild(BuildContext context, Widget? child) {
+    final content = Stack(
+      alignment: Alignment.center,
+      children: [
+        Visibility.maintain(
+          visible: !_waiting,
+          child: child!,
         ),
-      ),
+        if (_waiting)
+          Builder(builder: (context) {
+            final textStyle = DefaultTextStyle.of(context).style;
+            return SizedBox.square(
+              dimension: textStyle.fontSize,
+              child: CircularProgressIndicator(
+                color: textStyle.color,
+                strokeWidth: 2,
+              ),
+            );
+          }),
+      ],
+    );
+
+    return ValueListenableBuilder<T>(
+      valueListenable: widget.listenable,
+      builder: (context, value, child) {
+        final delayed = widget.delaySelector(value);
+        final onPressed = delayed
+            ? () {
+                if (mounted) {
+                  setState(() {
+                    _waiting = true;
+                  });
+                }
+              }
+            : widget.onPressed;
+        return widget.builder(context, content, onPressed);
+      },
     );
   }
 }

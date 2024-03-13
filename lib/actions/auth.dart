@@ -1,5 +1,7 @@
 import 'package:bunga_player/models/chat/user.dart';
 import 'package:bunga_player/providers/chat.dart';
+import 'package:bunga_player/providers/ui.dart';
+import 'package:bunga_player/services/alist.dart';
 import 'package:bunga_player/services/bunga.dart';
 import 'package:bunga_player/services/online_video.dart';
 import 'package:bunga_player/services/preferences.dart';
@@ -99,8 +101,22 @@ class LogoutAction extends ContextAction<LogoutIntent> {
   }
 }
 
-class AuthActions extends SingleChildStatelessWidget {
+class AuthActions extends SingleChildStatefulWidget {
   const AuthActions({super.key, super.child});
+
+  @override
+  State<AuthActions> createState() => _AuthActionsState();
+}
+
+class _AuthActionsState extends SingleChildState<AuthActions> {
+  @override
+  void initState() {
+    super.initState();
+
+    getIt<AList>()
+        .initService()
+        .then((_) => context.read<AListInitiated>().value = true);
+  }
 
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {

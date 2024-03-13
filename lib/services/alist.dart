@@ -14,11 +14,11 @@ class AList {
   String? _token;
   get token => _token;
 
-  AList() {
-    _getToken();
-  }
+  AList();
 
-  Future<void> _getToken() async {
+  Future<void> initService() async {
+    if (_token != null) return;
+
     final response = await autoRetry(
       getIt<Bunga>().getAListToken,
       jobName: 'alist',

@@ -35,6 +35,10 @@ class FoldLayout {
   FoldLayout(this.value);
 }
 
+class AListInitiated extends ValueNotifier<bool> {
+  AListInitiated() : super(false);
+}
+
 final uiProviders = MultiProvider(
   providers: [
     ChangeNotifierProvider(create: (context) => BusinessIndicator()),
@@ -71,5 +75,6 @@ final uiProviders = MultiProvider(
     ),
     ChangeNotifierProvider(create: (context) => JustToggleByRemote()),
     ChangeNotifierProvider(create: (context) => JustAdjustedVolumeByKey()),
+    ChangeNotifierProvider(create: (context) => AListInitiated(), lazy: false),
   ],
 );

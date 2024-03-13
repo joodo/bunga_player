@@ -3,7 +3,7 @@ import 'package:bunga_player/services/logger.dart';
 Future<T> autoRetry<T>(
   Future<T> Function() job, {
   String jobName = '',
-  Duration coolDown = const Duration(seconds: 1),
+  Duration coolDown = const Duration(seconds: 2),
 }) async {
   int times = 0;
   while (true) {
