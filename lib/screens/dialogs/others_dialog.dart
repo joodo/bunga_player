@@ -172,7 +172,7 @@ class OthersDialogState extends State<OthersDialog> {
               margin: const EdgeInsets.symmetric(horizontal: 8),
               clipBehavior: Clip.hardEdge,
               color: ElevationOverlay.applySurfaceTint(
-                themeData.colorScheme.surfaceContainerHighest,
+                themeData.colorScheme.surfaceVariant,
                 themeData.colorScheme.surfaceTint,
                 0,
               ),
