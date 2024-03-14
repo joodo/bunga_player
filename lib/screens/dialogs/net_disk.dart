@@ -8,6 +8,7 @@ import 'package:bunga_player/services/alist.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 
 class NetDiskDialog extends StatefulWidget {
@@ -127,7 +128,7 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
         ],
       ),
       content: SizedBox(
-        width: 600,
+        width: 640,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
@@ -166,116 +167,131 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
                 separatorBuilder: (context, index) => const SizedBox(width: 8),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
             Expanded(
-              child: _pending
-                  ? Center(
-                      child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const CircularProgressIndicator(),
-                        const SizedBox(height: 24),
-                        OutlinedButton(
-                            onPressed: () =>
-                                _work!.completeError(CancelException()),
-                            child: const Text('取消')),
-                      ],
-                    ))
-                  : itemCount == 0
-                      ? Center(
-                          child: Text(
-                          '无结果',
-                          style: themeData.textTheme.labelMedium,
-                        ))
-                      : ListView.separated(
-                          itemCount: itemCount,
-                          itemBuilder: (context, index) {
-                            if (_searchMode) {
-                              final result = _searchResults[index];
-                              return ListTile(
-                                leading: Icon(switch (result.type) {
-                                  AListFileType.folder => Icons.folder,
-                                  AListFileType.video => Icons.movie,
-                                  AListFileType.audio => Icons.music_note,
-                                  AListFileType.text => Icons.description,
-                                  AListFileType.image => Icons.image,
-                                  AListFileType.unknown => Icons.note,
-                                }),
-                                title: Row(children: [
-                                  Expanded(child: Text(result.name)),
-                                  if (result.type != AListFileType.folder)
-                                    IconButton.outlined(
-                                      onPressed: () {
-                                        _searchMode = false;
-                                        _cd('${result.parent}/');
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                clipBehavior: Clip.hardEdge,
+                child: Ink(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    color: themeData.colorScheme.surface,
+                  ),
+                  child: _pending
+                      ? Column(
+                          children: [
+                            const LinearProgressIndicator(),
+                            Expanded(
+                              child: Center(
+                                child: OutlinedButton(
+                                    onPressed: () =>
+                                        _work!.completeError(CancelException()),
+                                    child: const Text('取消')),
+                              ),
+                            ),
+                          ],
+                        )
+                      : itemCount == 0
+                          ? Center(
+                              child: Text(
+                              '无结果',
+                              style: themeData.textTheme.labelMedium,
+                            ))
+                          : ListView.separated(
+                              itemCount: itemCount,
+                              itemBuilder: (context, index) {
+                                if (_searchMode) {
+                                  final result = _searchResults[index];
+                                  return ListTile(
+                                    leading: Icon(switch (result.type) {
+                                      AListFileType.folder => Icons.folder,
+                                      AListFileType.video => Icons.movie,
+                                      AListFileType.audio => Icons.music_note,
+                                      AListFileType.text => Icons.description,
+                                      AListFileType.image => Icons.image,
+                                      AListFileType.unknown => Icons.note,
+                                    }),
+                                    title: Row(children: [
+                                      Expanded(child: Text(result.name)),
+                                      if (result.type != AListFileType.folder)
+                                        IconButton.outlined(
+                                          onPressed: () {
+                                            _searchMode = false;
+                                            _cd('${result.parent}/');
+                                          },
+                                          icon:
+                                              const Icon(Icons.drive_file_move),
+                                        )
+                                    ]),
+                                    onTap: switch (result.type) {
+                                      AListFileType.folder => () {
+                                          _searchMode = false;
+                                          _cd('${result.parent}/${result.name}/');
+                                        },
+                                      AListFileType.video => () {
+                                          final p =
+                                              '${result.parent}/${result.name}';
+                                          Navigator.pop(context, AListEntry(p));
+                                        },
+                                      AListFileType.audio => null,
+                                      AListFileType.text => null,
+                                      AListFileType.image => null,
+                                      AListFileType.unknown => null,
+                                    },
+                                  );
+                                }
+
+                                final info = _currentFiles[index];
+                                final videoHash =
+                                    AListEntry('$_currentPath${info.name}')
+                                        .hash;
+                                final percent = widget
+                                    .read<PlayWatchProgresses>()
+                                    .get(videoHash)
+                                    ?.percent;
+                                final tile = ListTile(
+                                  leading: Icon(switch (info.type) {
+                                    AListFileType.folder => Icons.folder,
+                                    AListFileType.video => Icons.movie,
+                                    AListFileType.audio => Icons.music_note,
+                                    AListFileType.text => Icons.description,
+                                    AListFileType.image => Icons.image,
+                                    AListFileType.unknown => Icons.note,
+                                  }),
+                                  title: Text(info.name),
+                                  subtitle: percent != null
+                                      ? Text('已看 ${(percent * 100).toInt()}%')
+                                      : null,
+                                  onTap: switch (info.type) {
+                                    AListFileType.folder => () =>
+                                        _cd('${info.name}/'),
+                                    AListFileType.video => () {
+                                        final p = '$_currentPath${info.name}';
+                                        Navigator.pop(context, AListEntry(p));
                                       },
-                                      icon: const Icon(Icons.drive_file_move),
-                                    )
-                                ]),
-                                onTap: switch (result.type) {
-                                  AListFileType.folder => () {
-                                      _searchMode = false;
-                                      _cd('${result.parent}/${result.name}/');
-                                    },
-                                  AListFileType.video => () {
-                                      final p =
-                                          '${result.parent}/${result.name}';
-                                      Navigator.pop(context, AListEntry(p));
-                                    },
-                                  AListFileType.audio => null,
-                                  AListFileType.text => null,
-                                  AListFileType.image => null,
-                                  AListFileType.unknown => null,
-                                },
-                              );
-                            }
-
-                            final info = _currentFiles[index];
-                            final videoHash =
-                                AListEntry('$_currentPath${info.name}').hash;
-                            final percent = widget
-                                .read<PlayWatchProgresses>()
-                                .get(videoHash)
-                                ?.percent;
-                            final tile = ListTile(
-                              leading: Icon(switch (info.type) {
-                                AListFileType.folder => Icons.folder,
-                                AListFileType.video => Icons.movie,
-                                AListFileType.audio => Icons.music_note,
-                                AListFileType.text => Icons.description,
-                                AListFileType.image => Icons.image,
-                                AListFileType.unknown => Icons.note,
-                              }),
-                              title: Text(info.name),
-                              subtitle: percent != null
-                                  ? Text('已看 ${(percent * 100).toInt()}%')
-                                  : null,
-                              onTap: switch (info.type) {
-                                AListFileType.folder => () =>
-                                    _cd('${info.name}/'),
-                                AListFileType.video => () {
-                                    final p = '$_currentPath${info.name}';
-                                    Navigator.pop(context, AListEntry(p));
+                                    AListFileType.audio => null,
+                                    AListFileType.text => null,
+                                    AListFileType.image => null,
+                                    AListFileType.unknown => null,
                                   },
-                                AListFileType.audio => null,
-                                AListFileType.text => null,
-                                AListFileType.image => null,
-                                AListFileType.unknown => null,
-                              },
-                            );
+                                );
 
-                            bool clickable = {
-                              AListFileType.folder,
-                              AListFileType.video,
-                            }.contains(info.type);
-                            return Opacity(
-                              opacity: clickable ? 1.0 : 0.7,
-                              child: tile,
-                            );
-                          },
-                          separatorBuilder: (context, index) =>
-                              const SizedBox(height: 8),
-                        ),
+                                bool clickable = {
+                                  AListFileType.folder,
+                                  AListFileType.video,
+                                }.contains(info.type);
+                                return Opacity(
+                                  opacity: clickable ? 1.0 : 0.7,
+                                  child: tile,
+                                );
+                              },
+                              separatorBuilder: (context, index) =>
+                                  const SizedBox(height: 8),
+                            ),
+                ),
+              ),
             ),
           ],
         ),
