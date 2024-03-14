@@ -10,7 +10,6 @@ import 'package:bunga_player/providers/chat.dart';
 import 'package:bunga_player/services/call.agora.dart';
 import 'package:bunga_player/services/call.dart';
 import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
 import 'package:flutter/widgets.dart';
@@ -318,13 +317,11 @@ class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
   // Volume
   void _applyCallVolume() {
     final setVolume = getIt<CallService>().setVolume;
-    if (_volume.isMute) {
+    if (_volume.value.mute) {
       setVolume(0);
     } else {
-      setVolume(_volume.percent);
+      setVolume(_volume.value.percent);
     }
-
-    getIt<Preferences>().set('call_volume', _volume.volume);
   }
 
   void _applyNoiceSuppress() {

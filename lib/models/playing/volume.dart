@@ -9,4 +9,6 @@ class Volume {
   final bool mute;
 
   double get percent => volume / (max - min);
+
+  Volume copyWithToggleMute() => Volume(volume: volume, mute: !mute);
 }

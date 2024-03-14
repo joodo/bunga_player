@@ -1,10 +1,10 @@
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:bunga_player/actions/voice_call.dart';
 import 'package:bunga_player/mocks/slider.dart' as mock;
+import 'package:bunga_player/models/playing/volume.dart';
 import 'package:bunga_player/providers/chat.dart';
 import 'package:bunga_player/screens/control_section/card.dart';
 import 'package:bunga_player/screens/widgets/loading_text.dart';
-import 'package:bunga_player/utils/volume_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -78,10 +78,11 @@ class _CallControlState extends State<CallControl> {
               const SizedBox(width: 8),
               Consumer<CallVolume>(
                 builder: (context, callVolume, child) => IconButton(
-                  icon: callVolume.isMute
+                  icon: callVolume.value.mute
                       ? const Icon(Icons.headset_off)
                       : const Icon(Icons.headset_mic),
-                  onPressed: () => callVolume.isMute = !callVolume.isMute,
+                  onPressed: () =>
+                      callVolume.value = callVolume.value.copyWithToggleMute(),
                 ),
               ),
               const SizedBox(width: 8),
@@ -90,17 +91,18 @@ class _CallControlState extends State<CallControl> {
                   width: 100,
                   child: mock.MySlider(
                     useRootOverlay: true,
-                    max: VolumeNotifier.maxVolume.toDouble(),
-                    min: VolumeNotifier.minVolume.toDouble(),
-                    divisions:
-                        VolumeNotifier.maxVolume - VolumeNotifier.minVolume,
-                    value: callVolume.isMute
-                        ? VolumeNotifier.minVolume.toDouble()
-                        : callVolume.volume.toDouble(),
-                    label: '${callVolume.volume}%',
+                    max: Volume.max.toDouble(),
+                    min: Volume.min.toDouble(),
+                    divisions: Volume.max - Volume.min,
+                    value: callVolume.value.mute
+                        ? Volume.min.toDouble()
+                        : callVolume.value.volume.toDouble(),
+                    label: '${callVolume.value.volume}%',
                     onChanged: (value) {
-                      callVolume.isMute = false;
-                      callVolume.volume = value.toInt();
+                      callVolume.value = Volume(
+                        volume: value.toInt(),
+                        mute: true,
+                      );
                     },
                     focusNode: FocusNode(canRequestFocus: false),
                   ),

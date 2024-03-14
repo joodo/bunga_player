@@ -1,9 +1,9 @@
 import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/models/chat/message.dart';
 import 'package:bunga_player/models/chat/user.dart';
+import 'package:bunga_player/models/playing/volume.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/utils/volume_notifier.dart';
 import 'package:bunga_player/utils/value_listenable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
@@ -98,9 +98,16 @@ class CurrentTalkersCount extends ValueNotifier<int> {
   CurrentTalkersCount() : super(0);
 }
 
-// TODO: change to ValueNotifier<Volume>
-class CallVolume extends VolumeNotifier {
-  CallVolume() : super(getIt<Preferences>().get<int>('call_volume') ?? 50);
+class CallVolume extends ValueNotifier<Volume> {
+  CallVolume()
+      : super(Volume(
+          volume: getIt<Preferences>().get<int>('call_volume') ?? 50,
+          mute: false,
+        )) {
+    addListener(() {
+      getIt<Preferences>().set('call_volume', value.volume);
+    });
+  }
 }
 
 class MuteMic extends ValueNotifier<bool> {
