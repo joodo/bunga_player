@@ -290,9 +290,14 @@ class MediaKitPlayer implements Player {
 
   // Watch progress
   late final Map<String, WatchProgress> _watchProgress;
+
   @override
   Map<String, WatchProgress> get watchProgresses =>
       Map.unmodifiable(_watchProgress);
+
+  @override
+  void clearAllWatchProgress() => _watchProgress.clear();
+
   void _loadWatchProgress() {
     final rawData = getIt<Preferences>().get<String>('watch_progress');
 

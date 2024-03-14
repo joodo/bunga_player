@@ -154,7 +154,7 @@ class PlaySourceIndex extends StreamValueNotifier<int?> {
 }
 
 class PlayWatchProgresses {
-  final value = getIt<Player>().watchProgresses;
+  get value => getIt<Player>().watchProgresses;
   WatchProgress? get(String videoHash) => value[videoHash];
 }
 

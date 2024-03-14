@@ -11,6 +11,7 @@ import 'package:bunga_player/screens/dialogs/host.dart';
 import 'package:bunga_player/screens/wrappers/restart.dart';
 import 'package:bunga_player/services/alist.dart';
 import 'package:bunga_player/services/logger.dart';
+import 'package:bunga_player/services/player.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
@@ -61,7 +62,6 @@ class _ConsoleWrapperState extends SingleChildState<ConsoleWrapper> {
       readOnly: true,
     );
 
-    final watchProgress = context.read<PlayWatchProgresses>().value;
     final actionView = Column(
       children: [
         FilledButton(
@@ -116,12 +116,11 @@ class _ConsoleWrapperState extends SingleChildState<ConsoleWrapper> {
         ),
         const SizedBox(height: 8),
         FilledButton(
-          onPressed: () {
-            setState(() {
-              watchProgress.clear();
-            });
-          },
-          child: Text('Clear all watch progress (${watchProgress.length})'),
+          onPressed: () => setState(() {
+            getIt<Player>().clearAllWatchProgress();
+          }),
+          child: Text(
+              'Clear all watch progress (${context.read<PlayWatchProgresses>().value.length})'),
         ),
       ],
     );

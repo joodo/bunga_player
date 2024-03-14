@@ -50,6 +50,7 @@ abstract class Player {
   Stream<VideoEntry?> get videoEntryStream;
   Stream<int?> get sourceIndexStream;
   Map<String, WatchProgress> get watchProgresses;
+  void clearAllWatchProgress();
 
   Future<void> setAudioTrackID(String id);
   Stream<Iterable<AudioTrack>> get audioTracksStream;
