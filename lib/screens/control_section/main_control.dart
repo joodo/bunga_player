@@ -133,12 +133,14 @@ class _MainControlState extends State<MainControl> {
           ),
           onPressed: () => Navigator.of(context).pushNamed('control:danmaku'),
         ),
-
         const SizedBox(width: 8),
 
         // Popmoji Button
-        IconButton(
-          icon: const Icon(Icons.mood),
+        _channelButtonBuilder(
+          build: (onPressed) => IconButton(
+            icon: const Icon(Icons.mood),
+            onPressed: onPressed,
+          ),
           onPressed: () => Navigator.of(context).pushNamed('control:popmoji'),
         ),
         const SizedBox(width: 8),
