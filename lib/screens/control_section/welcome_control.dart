@@ -39,15 +39,16 @@ class _WelcomeControlState extends State<WelcomeControl> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      const hint = '登录中……';
       final currentUser = context.read<CurrentUser>();
       final cat = context.read<CatIndicator>();
 
       if (currentUser.value == null) {
-        cat.title = '登录中……';
+        cat.title = hint;
         await _loginJob.run();
       }
 
-      if (!mounted) return;
+      if (!mounted || cat.title != hint) return;
       cat.title = _title;
     });
   }
