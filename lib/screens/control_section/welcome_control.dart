@@ -29,27 +29,12 @@ class WelcomeControl extends StatefulWidget {
 }
 
 class _WelcomeControlState extends State<WelcomeControl> {
-  late final AutoRetryJob _loginJob = AutoRetryJob(
-    () => Actions.invoke(context, AutoLoginIntent()) as Future,
-    jobName: 'Auto Login',
-  );
-
   @override
   void initState() {
     super.initState();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      const hint = '登录中……';
-      final currentUser = context.read<CurrentUser>();
-      final cat = context.read<CatIndicator>();
-
-      if (currentUser.value == null) {
-        cat.title = hint;
-        await _loginJob.run();
-      }
-
-      if (!mounted || cat.title != hint) return;
-      cat.title = _title;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _showWelcomeTitle();
     });
   }
 
@@ -212,6 +197,22 @@ class _WelcomeControlState extends State<WelcomeControl> {
   }
 
   String get _title => '${context.read<CurrentUser>().value!.name}, 你好！';
+
+  late final AutoRetryJob _loginJob = AutoRetryJob(
+    () => Actions.invoke(context, AutoLoginIntent()) as Future,
+    jobName: 'Auto Login',
+  );
+
+  void _showWelcomeTitle() async {
+    const hint = '登录中……';
+    final cat = context.read<CatIndicator>();
+
+    cat.title = hint;
+    await _loginJob.run();
+
+    if (!mounted || cat.title != hint) return;
+    cat.title = _title;
+  }
 }
 
 class _DelayedCallbackButtonWrapper<T> extends SingleChildStatefulWidget {

@@ -30,33 +30,7 @@ class _MainControlState extends State<MainControl> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final args =
-          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-      final channelId = args?['channelId'];
-      if (channelId is String) {
-        _joinChannelJob = AutoRetryJob(
-          () => Actions.invoke(
-            context,
-            JoinChannelIntent.byId(channelId),
-          ) as Future,
-          jobName: 'Join Channel',
-        );
-      } else {
-        final read = context.read;
-        _joinChannelJob = AutoRetryJob(
-          () => mounted
-              ? Actions.invoke(
-                  context,
-                  JoinChannelIntent.byChannelData(ChannelData.fromShare(
-                    read<CurrentUser>().value!,
-                    read<PlayVideoEntry>().value!,
-                  )),
-                ) as Future
-              : Future.value(),
-          jobName: 'Join Channel',
-        );
-      }
-      _joinChannelJob.run();
+      _joinChannel();
     });
   }
 
@@ -303,6 +277,36 @@ class _MainControlState extends State<MainControl> {
       selector: (context, channelId) => channelId.value != null,
       builder: (context, joined, child) => build(joined ? onPressed : null),
     );
+  }
+
+  void _joinChannel() {
+    final args =
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    final channelId = args?['channelId'];
+    if (channelId is String) {
+      _joinChannelJob = AutoRetryJob(
+        () => Actions.invoke(
+          context,
+          JoinChannelIntent.byId(channelId),
+        ) as Future,
+        jobName: 'Join Channel',
+      );
+    } else {
+      final read = context.read;
+      _joinChannelJob = AutoRetryJob(
+        () => mounted
+            ? Actions.invoke(
+                context,
+                JoinChannelIntent.byChannelData(ChannelData.fromShare(
+                  read<CurrentUser>().value!,
+                  read<PlayVideoEntry>().value!,
+                )),
+              ) as Future
+            : Future.value(),
+        jobName: 'Join Channel',
+      );
+    }
+    _joinChannelJob.run();
   }
 }
 
