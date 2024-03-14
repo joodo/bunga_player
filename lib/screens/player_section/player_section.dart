@@ -44,7 +44,8 @@ class _PlayerSectionState extends State<PlayerSection> {
         AnimatedOpacity(
           opacity: context.select<CatIndicator, double>(
               (bi) => bi.title == null ? 0.0 : 1.0),
-          duration: const Duration(milliseconds: 250),
+          duration: const Duration(milliseconds: 350),
+          curve: Curves.easeOutCubic,
           child: const PlayerPlaceholder(),
         ),
         const Positioned(
