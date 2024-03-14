@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:bunga_player/models/playing/volume.dart';
 import 'package:bunga_player/models/playing/watch_progress.dart';
 import 'package:bunga_player/models/video_entries/video_entry.dart';
@@ -8,153 +7,85 @@ import 'package:bunga_player/services/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 
-class StreamValueNotifier<T> extends ChangeNotifier
-    implements ValueListenable<T> {
-  StreamValueNotifier(Stream<T> stream, T defultValue) : _value = defultValue {
-    _subscription = stream.listen((value) {
-      if (_value == value) return;
-      _value = value;
-      notifyListeners();
-    });
-
-    if (defultValue != null) _value = defultValue;
-  }
-
-  T _value;
-  @override
-  T get value => _value;
-
-  late final StreamSubscription _subscription;
-  @override
-  void dispose() {
-    _subscription.cancel();
-    super.dispose();
-  }
+class PlayDuration extends ValueNotifier<Duration> {
+  PlayDuration() : super(Duration.zero);
 }
 
-final _getPlayer = getIt.call<Player>;
-
-class PlayDuration extends StreamValueNotifier<Duration> {
-  PlayDuration() : super(_getPlayer().durationStream, Duration.zero);
+class PlayBuffer extends ValueNotifier<Duration> {
+  PlayBuffer() : super(Duration.zero);
 }
 
-class PlayBuffer extends StreamValueNotifier<Duration> {
-  PlayBuffer() : super(_getPlayer().bufferStream, Duration.zero);
+class PlayIsBuffering extends ValueNotifier<bool> {
+  PlayIsBuffering() : super(false);
 }
 
-class PlayIsBuffering extends StreamValueNotifier<bool> {
-  PlayIsBuffering() : super(_getPlayer().isBufferingStream, false);
+class PlayPosition extends ValueNotifier<Duration> {
+  PlayPosition() : super(Duration.zero);
 }
 
-class PlayPosition extends ChangeNotifier implements ValueListenable<Duration> {
-  PlayPosition() {
-    _subscription = _getPlayer().positionStream.listen((position) {
-      // When dragging progress bar, do not sync stream data
-      if (!stopListenStream) _value = position;
-    });
-  }
-
-  late final StreamSubscription _subscription;
-
-  bool stopListenStream = false;
-
-  void seekTo(Duration newPosition) {
-    assert(stopListenStream);
-    _value = newPosition;
-    notifyListeners();
-  }
-
-  @override
-  void dispose() {
-    _subscription.cancel();
-    super.dispose();
-  }
-
-  Duration __value = Duration.zero;
-  @override
-  Duration get value => __value;
-  set _value(Duration p) {
-    if (p == __value) return;
-    __value = p;
-    notifyListeners();
-  }
+class PlayAudioTracks extends ValueNotifier<Iterable<AudioTrack>> {
+  PlayAudioTracks() : super([]);
 }
 
-class PlayAudioTracks extends StreamValueNotifier<Iterable<AudioTrack>> {
-  PlayAudioTracks() : super(_getPlayer().audioTracksStream, []);
+class PlayAudioTrackID extends ValueNotifier<String> {
+  PlayAudioTrackID() : super('');
 }
 
-class PlayAudioTrackID extends StreamValueNotifier<String> {
-  PlayAudioTrackID() : super(_getPlayer().currentAudioTrackID, '');
-
-  set value(String newId) {
-    if (_value == newId) return;
-    _getPlayer().setAudioTrackID(newId);
-
-    _value = newId;
-    notifyListeners();
-  }
+class PlaySubtitleTracks extends ValueNotifier<Iterable<SubtitleTrack>> {
+  PlaySubtitleTracks() : super([]);
 }
 
-class PlaySubtitleTracks extends StreamValueNotifier<Iterable<SubtitleTrack>> {
-  PlaySubtitleTracks() : super(_getPlayer().subtitleTracksStream, []);
-}
-
-class PlaySubtitleTrackID extends StreamValueNotifier<String> {
-  PlaySubtitleTrackID() : super(_getPlayer().currentSubtitleTrackID, '');
+class PlaySubtitleTrackID extends ValueNotifier<String> {
+  PlaySubtitleTrackID() : super('');
 }
 
 enum PlayStatusType { play, pause, stop }
 
-class PlayStatus extends StreamValueNotifier<PlayStatusType> {
-  PlayStatus() : super(_getPlayer().statusStream, PlayStatusType.stop);
-
+class PlayStatus extends ValueNotifier<PlayStatusType> {
+  PlayStatus() : super(PlayStatusType.stop);
   bool get isPlaying => value == PlayStatusType.play;
 }
 
-class PlayVolume extends StreamValueNotifier<Volume> {
+class PlayVolume extends ValueNotifier<Volume> {
   PlayVolume()
       : super(
-          _getPlayer().volumeStream,
-          Volume(volume: 100, mute: false),
+          Volume(
+            volume: getIt<Preferences>().get<int>('play_volume') ?? 100,
+            mute: false,
+          ),
         ) {
-    final savedVolume = getIt<Preferences>().get<int>('play_volume');
-    if (savedVolume != null) _getPlayer().setVolume(savedVolume);
-
     addListener(() {
-      getIt<Preferences>().set('play_volume', volume);
+      getIt<Preferences>().set('play_volume', value.volume);
     });
   }
-  int get volume => value.volume;
-  bool get mute => value.mute;
 }
 
-class PlayContrast extends StreamValueNotifier<int> {
-  PlayContrast() : super(_getPlayer().contrastStream, 0);
+class PlayContrast extends ValueNotifier<int> {
+  PlayContrast() : super(0);
 }
 
-class PlaySubDelay extends StreamValueNotifier<double> {
-  PlaySubDelay() : super(_getPlayer().subDelayStream, 0);
+class PlaySubDelay extends ValueNotifier<double> {
+  PlaySubDelay() : super(0);
 }
 
-class PlaySubSize extends StreamValueNotifier<int> {
-  PlaySubSize() : super(_getPlayer().subSizeStream, Player.defaultSubSize);
+class PlaySubSize extends ValueNotifier<int> {
+  PlaySubSize() : super(Player.defaultSubSize);
 }
 
-class PlaySubPos extends StreamValueNotifier<int> {
-  PlaySubPos() : super(_getPlayer().subPosStream, 0);
+class PlaySubPos extends ValueNotifier<int> {
+  PlaySubPos() : super(0);
 }
 
-class PlayVideoEntry extends StreamValueNotifier<VideoEntry?> {
-  PlayVideoEntry() : super(_getPlayer().videoEntryStream, null);
+class PlayVideoEntry extends ValueNotifier<VideoEntry?> {
+  PlayVideoEntry() : super(null);
 }
 
-class PlaySourceIndex extends StreamValueNotifier<int?> {
-  PlaySourceIndex() : super(_getPlayer().sourceIndexStream, null);
+class PlaySourceIndex extends ValueNotifier<int?> {
+  PlaySourceIndex() : super(null);
 }
 
 class PlayWatchProgresses {
-  get value => getIt<Player>().watchProgresses;
+  late final Map<String, WatchProgress> value;
   WatchProgress? get(String videoHash) => value[videoHash];
 }
 

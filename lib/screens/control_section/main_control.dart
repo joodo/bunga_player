@@ -80,12 +80,12 @@ class _MainControlState extends State<MainControl> {
         // Volume section
         Consumer<PlayVolume>(
           builder: (context, volumeData, child) => IconButton(
-            icon: volumeData.mute
+            icon: volumeData.value.mute
                 ? const Icon(Icons.volume_off)
                 : const Icon(Icons.volume_up),
             onPressed: () => Actions.invoke(
               context,
-              SetMuteIntent(!volumeData.mute),
+              SetMuteIntent(!volumeData.value.mute),
             ),
           ),
         ),
@@ -94,9 +94,11 @@ class _MainControlState extends State<MainControl> {
           builder: (context, volumeData, child) => SizedBox(
             width: 100,
             child: mock.MySlider(
-              value: volumeData.mute ? 0.0 : volumeData.volume.toDouble(),
+              value: volumeData.value.mute
+                  ? 0.0
+                  : volumeData.value.volume.toDouble(),
               max: Volume.max.toDouble(),
-              label: '${volumeData.volume}%',
+              label: '${volumeData.value.volume}%',
               onChanged: (value) => Actions.invoke(
                 context,
                 SetVolumeIntent(value.toInt()),

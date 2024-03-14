@@ -98,6 +98,7 @@ class CurrentTalkersCount extends ValueNotifier<int> {
   CurrentTalkersCount() : super(0);
 }
 
+// TODO: change to ValueNotifier<Volume>
 class CallVolume extends VolumeNotifier {
   CallVolume() : super(getIt<Preferences>().get<int>('call_volume') ?? 50);
 }

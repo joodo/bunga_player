@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bunga_player/actions/dispatcher.dart';
 import 'package:bunga_player/actions/ui.dart';
 import 'package:bunga_player/actions/video_playing.dart';
@@ -14,17 +16,18 @@ import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 
 class SetVolumeIntent extends Intent {
-  const SetVolumeIntent(this.volume, {this.byKey = false});
+  const SetVolumeIntent(this.volume) : offset = false;
+  const SetVolumeIntent.increase(this.volume) : offset = true;
   final int volume;
-  final bool byKey;
+  final bool offset;
 }
 
 class SetVolumeAction extends ContextAction<SetVolumeIntent> {
   @override
   Future<void> invoke(SetVolumeIntent intent, [BuildContext? context]) {
     var volume = intent.volume;
-    if (intent.byKey) {
-      volume += context!.read<PlayVolume>().volume;
+    if (intent.offset) {
+      volume += context!.read<PlayVolume>().value.volume;
       context.read<JustAdjustedVolumeByKey>().mark();
     }
     return getIt<Player>().setVolume(volume);
@@ -152,6 +155,7 @@ class SeekAction extends ContextAction<SeekIntent> {
 
 class DragBusiness {
   bool isPlayingBeforeDraggingSlider = false;
+  bool isDragging = false;
 }
 
 class StartDraggingProgressIntent extends Intent {
@@ -168,15 +172,15 @@ class StartDraggingProgressAction
 
   @override
   void invoke(StartDraggingProgressIntent intent, [BuildContext? context]) {
+    dragBusiness.isDragging = true;
+
     final read = context!.read;
 
     dragBusiness.isPlayingBeforeDraggingSlider = read<PlayStatus>().isPlaying;
     getIt<Player>().pause();
 
     final position = read<PlayPosition>();
-    position.stopListenStream = true;
-    position.seekTo(intent.position);
-
+    position.value = intent.position;
     getIt<Player>().seek(intent.position);
   }
 
@@ -198,16 +202,14 @@ class DraggingProgressAction extends ContextAction<DraggingProgressIntent> {
   @override
   void invoke(DraggingProgressIntent intent, [BuildContext? context]) {
     final position = context!.read<PlayPosition>();
-    position.seekTo(intent.position);
-
+    position.value = intent.position;
     getIt<Player>().seek(intent.position);
   }
 
   @override
   bool isEnabled(DraggingProgressIntent intent, [BuildContext? context]) {
-    final read = context!.read;
-    final isStopped = read<PlayStatus>().value == PlayStatusType.stop;
-    final isDragging = read<PlayPosition>().stopListenStream;
+    final isStopped = context!.read<PlayStatus>().value == PlayStatusType.stop;
+    final isDragging = dragBusiness.isDragging;
     return !isStopped && isDragging;
   }
 }
@@ -238,20 +240,20 @@ class FinishDraggingProgressAction
     );
 
     final position = read<PlayPosition>();
-    position.seekTo(intent.position);
-    position.stopListenStream = false;
-
+    position.value = intent.position;
     await getIt<Player>().seek(intent.position);
+
     if (dragBusiness.isPlayingBeforeDraggingSlider) {
       await getIt<Player>().play();
     }
+
+    dragBusiness.isDragging = false;
   }
 
   @override
   bool isEnabled(FinishDraggingProgressIntent intent, [BuildContext? context]) {
-    final read = context!.read;
-    final isStopped = read<PlayStatus>().value == PlayStatusType.stop;
-    final isDragging = read<PlayPosition>().stopListenStream;
+    final isStopped = context!.read<PlayStatus>().value == PlayStatusType.stop;
+    final isDragging = dragBusiness.isDragging;
     return !isStopped && isDragging;
   }
 }
@@ -348,14 +350,54 @@ class PlayActions extends SingleChildStatefulWidget {
 class _PlayActionsState extends SingleChildState<PlayActions> {
   final _dragBusiness = DragBusiness();
 
+  final _streamSubscriptions = <StreamSubscription>[];
+
+  @override
+  void initState() {
+    super.initState();
+
+    final player = getIt<Player>();
+    final read = context.read;
+    _streamSubscriptions.addAll(
+      <(Stream, ValueNotifier)>[
+        (player.durationStream, read<PlayDuration>()),
+        (player.bufferStream, read<PlayBuffer>()),
+        (player.isBufferingStream, read<PlayIsBuffering>()),
+        (player.audioTracksStream, read<PlayAudioTracks>()),
+        (player.subtitleTracksStream, read<PlaySubtitleTracks>()),
+        (player.currentSubtitleTrackID, read<PlaySubtitleTrackID>()),
+        (player.statusStream, read<PlayStatus>()),
+        (player.volumeStream, read<PlayVolume>()),
+        (player.contrastStream, read<PlayContrast>()),
+        (player.subDelayStream, read<PlaySubDelay>()),
+        (player.subSizeStream, read<PlaySubSize>()),
+        (player.subPosStream, read<PlaySubPos>()),
+        (player.videoEntryStream, read<PlayVideoEntry>()),
+        (player.sourceIndexStream, read<PlaySourceIndex>()),
+      ].map((e) => _bindStreamToValueNotifier(e.$1, e.$2)),
+    );
+
+    _streamSubscriptions.add(player.positionStream.listen((position) {
+      if (!_dragBusiness.isDragging) read<PlayPosition>().value = position;
+    }));
+
+    read<PlayWatchProgresses>().value = getIt<Player>().watchProgresses;
+  }
+
+  @override
+  void dispose() {
+    _streamSubscriptions.map((e) => e.cancel());
+    super.dispose();
+  }
+
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
     final shortcuts = Shortcuts(
       shortcuts: const <ShortcutActivator, Intent>{
         SingleActivator(LogicalKeyboardKey.arrowUp):
-            SetVolumeIntent(10, byKey: true),
+            SetVolumeIntent.increase(10),
         SingleActivator(LogicalKeyboardKey.arrowDown):
-            SetVolumeIntent(-10, byKey: true),
+            SetVolumeIntent.increase(-10),
         SingleActivator(LogicalKeyboardKey.arrowLeft):
             SeekIntent(Duration(seconds: -5), isIncrease: true),
         SingleActivator(LogicalKeyboardKey.arrowRight):
@@ -399,5 +441,12 @@ class _PlayActionsState extends SingleChildState<PlayActions> {
       },
       child: shortcuts,
     );
+  }
+
+  StreamSubscription _bindStreamToValueNotifier<T>(
+    Stream<T> stream,
+    ValueNotifier<T> notifier,
+  ) {
+    return stream.listen((value) => notifier.value = value);
   }
 }

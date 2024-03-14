@@ -23,7 +23,7 @@ class VolumePopup extends StatelessWidget {
               child: RotatedBox(
                 quarterTurns: -1,
                 child: Selector<PlayVolume, double>(
-                  selector: (context, volume) => volume.volume / 100,
+                  selector: (context, volume) => volume.value.volume / 100,
                   builder: (context, value, child) =>
                       TweenAnimationBuilder<double>(
                     tween: Tween(end: value),
