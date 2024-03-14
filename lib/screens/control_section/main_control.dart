@@ -29,7 +29,7 @@ class _MainControlState extends State<MainControl> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       final args =
           ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
       final channelId = args?['channelId'];
