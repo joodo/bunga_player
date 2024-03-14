@@ -1,8 +1,6 @@
 import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/models/chat/message.dart';
 import 'package:bunga_player/models/chat/user.dart';
-import 'package:bunga_player/services/call.agora.dart';
-import 'package:bunga_player/services/call.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/volume_notifier.dart';
@@ -116,11 +114,7 @@ enum NoiseSuppressionLevel {
 }
 
 class CallNoiseSuppressionLevel extends ValueNotifier<NoiseSuppressionLevel> {
-  CallNoiseSuppressionLevel() : super(NoiseSuppressionLevel.high) {
-    addListener(() {
-      (getIt<CallService>() as Agora).setNoiseSuppression(value);
-    });
-  }
+  CallNoiseSuppressionLevel() : super(NoiseSuppressionLevel.high);
 }
 
 class Danmaku {

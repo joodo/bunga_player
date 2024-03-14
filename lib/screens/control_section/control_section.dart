@@ -25,19 +25,21 @@ class ControlSection extends StatefulWidget {
 
 class _ControlSectionState extends State<ControlSection> {
   final _navigatorStateKey = GlobalKey<NavigatorState>();
+  late final _showHUD = context.read<ShouldShowHUD>();
+  late final _callStatus = context.read<CurrentCallStatus>();
 
   @override
   void initState() {
     super.initState();
 
-    context.read<ShouldShowHUD>().addListener(_onUIHiddenChanged);
-    context.read<CurrentCallStatus>().addListener(_onCallStatusChanged);
+    _showHUD.addListener(_onUIHiddenChanged);
+    _callStatus.addListener(_onCallStatusChanged);
   }
 
   @override
   void dispose() {
-    context.read<ShouldShowHUD>().removeListener(_onUIHiddenChanged);
-    context.read<CurrentCallStatus>().removeListener(_onCallStatusChanged);
+    _showHUD.removeListener(_onUIHiddenChanged);
+    _callStatus.removeListener(_onCallStatusChanged);
 
     super.dispose();
   }
@@ -68,7 +70,6 @@ class _ControlSectionState extends State<ControlSection> {
       initialRoute: initialRouteName,
       key: _navigatorStateKey,
       onGenerateRoute: (settings) {
-        //context.read<UI>().changeRoute(settings.name!);
         return _ControlRoute<void>(
           builder: (BuildContext context) => Container(
             color: Theme.of(context).colorScheme.surface,

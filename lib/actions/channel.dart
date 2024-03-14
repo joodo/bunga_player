@@ -6,7 +6,6 @@ import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/models/chat/message.dart';
 import 'package:bunga_player/models/chat/user.dart';
 import 'package:bunga_player/providers/chat.dart';
-import 'package:bunga_player/screens/wrappers/actions.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/chat.dart';
@@ -16,6 +15,14 @@ import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 
+@immutable
+class SubscriptionBusiness {
+  final subscriptions = <StreamSubscription>[];
+  final BuildContext actionContext;
+
+  SubscriptionBusiness({required this.actionContext});
+}
+
 class JoinChannelIntent extends Intent {
   final ChannelData? channelData;
   final String? channelId;
@@ -24,9 +31,9 @@ class JoinChannelIntent extends Intent {
 }
 
 class JoinChannelAction extends ContextAction<JoinChannelIntent> {
-  final List<StreamSubscription> channelSubscriptions;
+  final SubscriptionBusiness subscriptionBusiness;
 
-  JoinChannelAction({required this.channelSubscriptions});
+  JoinChannelAction({required this.subscriptionBusiness});
 
   @override
   Future<void>? invoke(
@@ -53,22 +60,23 @@ class JoinChannelAction extends ContextAction<JoinChannelIntent> {
       return;
     }
 
-    channelSubscriptions.addAll([
+    final actionRead = subscriptionBusiness.actionContext.read;
+    subscriptionBusiness.subscriptions.addAll([
       dataStream.listen((channelData) {
-        final current = Intentor.context.read<CurrentChannelData>();
+        final current = actionRead<CurrentChannelData>();
         current.value = channelData;
         logger.i('Channel data changed: $channelData');
       }),
       joinerStream.listen((user) {
-        Intentor.context.read<CurrentChannelWatchers>().join(user);
+        actionRead<CurrentChannelWatchers>().join(user);
         logger.i('User join channel: $user');
       }),
       leaverStream.listen((user) {
-        Intentor.context.read<CurrentChannelWatchers>().leave(user);
+        actionRead<CurrentChannelWatchers>().leave(user);
         logger.i('User leave channel: $user');
       }),
       messageStream.listen((message) {
-        Intentor.context.read<CurrentChannelMessage>().value = message;
+        actionRead<CurrentChannelMessage>().value = message;
         logger.i('Message received: $message');
       }),
     ]);
@@ -82,8 +90,8 @@ class JoinChannelAction extends ContextAction<JoinChannelIntent> {
 class LeaveChannelIntent extends Intent {}
 
 class LeaveChannelAction extends ContextAction<LeaveChannelIntent> {
-  final List<StreamSubscription> channelSubscriptions;
-  LeaveChannelAction({required this.channelSubscriptions});
+  final SubscriptionBusiness subscriptionBusiness;
+  LeaveChannelAction({required this.subscriptionBusiness});
 
   @override
   Future<void>? invoke(
@@ -94,10 +102,10 @@ class LeaveChannelAction extends ContextAction<LeaveChannelIntent> {
 
     Actions.maybeInvoke(context, HangUpIntent());
 
-    for (final subscription in channelSubscriptions) {
+    for (final subscription in subscriptionBusiness.subscriptions) {
       await subscription.cancel();
     }
-    channelSubscriptions.clear();
+    subscriptionBusiness.subscriptions.clear();
 
     read<CurrentChannelId>().value = null;
     read<CurrentChannelData>().value = null;
@@ -156,22 +164,23 @@ class ChannelActions extends SingleChildStatefulWidget {
 }
 
 class _ChannelActionsState extends SingleChildState<ChannelActions> {
-  final List<StreamSubscription> _channelSubscriptions = [];
+  late final _subscriptionBusiness =
+      SubscriptionBusiness(actionContext: context);
+
+  late final _currentWatchers = context.read<CurrentChannelWatchers>();
 
   @override
   void initState() {
-    final currentWatchers = context.read<CurrentChannelWatchers>();
-    currentWatchers.addJoinListener(_onUserJoin);
-    currentWatchers.addLeaveListener(_onUserLeave);
+    _currentWatchers.addJoinListener(_onUserJoin);
+    _currentWatchers.addLeaveListener(_onUserLeave);
 
     super.initState();
   }
 
   @override
   void dispose() {
-    final currentWatchers = context.read<CurrentChannelWatchers>();
-    currentWatchers.removeJoinListener(_onUserJoin);
-    currentWatchers.removeLeaveListener(_onUserLeave);
+    _currentWatchers.removeJoinListener(_onUserJoin);
+    _currentWatchers.removeLeaveListener(_onUserLeave);
 
     super.dispose();
   }
@@ -182,9 +191,9 @@ class _ChannelActionsState extends SingleChildState<ChannelActions> {
       dispatcher: LoggingActionDispatcher(prefix: 'Channel'),
       actions: <Type, Action<Intent>>{
         JoinChannelIntent:
-            JoinChannelAction(channelSubscriptions: _channelSubscriptions),
+            JoinChannelAction(subscriptionBusiness: _subscriptionBusiness),
         LeaveChannelIntent:
-            LeaveChannelAction(channelSubscriptions: _channelSubscriptions),
+            LeaveChannelAction(subscriptionBusiness: _subscriptionBusiness),
         UpdateChannelDataIntent: UpdateChannelDataAction(),
         SendMessageIntent: SendMessageAction(),
       },

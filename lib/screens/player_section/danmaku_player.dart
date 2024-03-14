@@ -14,17 +14,18 @@ class DanmakuPlayer extends StatefulWidget {
 class _DanmakuPlayerState extends State<DanmakuPlayer>
     with SingleTickerProviderStateMixin {
   final _danmakus = <Danmaku>[];
+  late final _lastDanmaku = context.read<LastDanmaku>();
 
   @override
   void initState() {
     super.initState();
-    context.read<LastDanmaku>().addListener(_processDanmaku);
+    _lastDanmaku.addListener(_processDanmaku);
     _ticker.start();
   }
 
   @override
   void dispose() {
-    context.read<LastDanmaku>().removeListener(_processDanmaku);
+    _lastDanmaku.removeListener(_processDanmaku);
     _ticker.stop();
     _ticker.dispose();
     super.dispose();

@@ -17,15 +17,17 @@ class PopmojiPlayer extends StatefulWidget {
 }
 
 class _PopmojiPlayerState extends State<PopmojiPlayer> {
+  late final _channelMessage = context.read<CurrentChannelMessage>();
+
   @override
   void initState() {
     super.initState();
-    context.read<CurrentChannelMessage>().addListener(_progressMessage);
+    _channelMessage.addListener(_progressMessage);
   }
 
   @override
   void dispose() {
-    context.read<CurrentChannelMessage>().removeListener(_progressMessage);
+    _channelMessage.removeListener(_progressMessage);
     super.dispose();
   }
 

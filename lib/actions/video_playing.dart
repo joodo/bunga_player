@@ -10,7 +10,6 @@ import 'package:bunga_player/providers/chat.dart';
 import 'package:bunga_player/providers/player.dart';
 import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/screens/wrappers/providers.dart';
-import 'package:bunga_player/screens/wrappers/actions.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/player.dart';
 import 'package:bunga_player/services/services.dart';
@@ -180,17 +179,20 @@ class VideoPlayingActions extends SingleChildStatefulWidget {
 class _VideoPlayingActionsState extends SingleChildState<VideoPlayingActions> {
   final _positionAskingBusiness = PositionAskingBusiness();
 
+  late final _channelData = context.read<CurrentChannelData>();
+  late final _channelMessage = context.read<CurrentChannelMessage>();
+
   @override
   void initState() {
-    context.read<CurrentChannelData>().addListener(_tryToFollowRemoteVideo);
-    context.read<CurrentChannelMessage>().addListener(_dealChannelMessage);
+    _channelData.addListener(_tryToFollowRemoteVideo);
+    _channelMessage.addListener(_dealChannelMessage);
     super.initState();
   }
 
   @override
   void dispose() {
-    context.read<CurrentChannelData>().removeListener(_tryToFollowRemoteVideo);
-    context.read<CurrentChannelMessage>().removeListener(_dealChannelMessage);
+    _channelData.removeListener(_tryToFollowRemoteVideo);
+    _channelData.removeListener(_dealChannelMessage);
     super.dispose();
   }
 
@@ -214,7 +216,7 @@ class _VideoPlayingActionsState extends SingleChildState<VideoPlayingActions> {
   }
 
   void _tryToFollowRemoteVideo() {
-    final read = Intentor.context.read;
+    final read = context.read;
     final currentUser = read<CurrentUser>();
     final currentChannelData = read<CurrentChannelData>();
     final currentData = currentChannelData.value;
@@ -239,13 +241,13 @@ class _VideoPlayingActionsState extends SingleChildState<VideoPlayingActions> {
 
     final videoEntry = VideoEntry.fromChannelData(currentData);
     Actions.invoke(
-      Intentor.context,
+      context,
       OpenVideoIntent(videoEntry: videoEntry),
     );
   }
 
   void _dealChannelMessage() {
-    final read = Intentor.context.read;
+    final read = context.read;
 
     final message = read<CurrentChannelMessage>().value;
     if (message == null) return;
@@ -255,7 +257,7 @@ class _VideoPlayingActionsState extends SingleChildState<VideoPlayingActions> {
       case 'pause':
       case 'play':
         Actions.maybeInvoke(
-          Intentor.context,
+          context,
           ApplyRemotePlayingStatusIntent(
             splits.first == 'pause'
                 ? PlayStatusType.pause
@@ -267,7 +269,7 @@ class _VideoPlayingActionsState extends SingleChildState<VideoPlayingActions> {
         );
       case 'where':
         Actions.maybeInvoke(
-          Intentor.context,
+          context,
           SendPlayingStatusIntent(
             read<PlayStatus>().value,
             read<PlayPosition>().value.inMilliseconds,

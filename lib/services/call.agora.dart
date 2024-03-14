@@ -2,12 +2,10 @@ import 'dart:async';
 
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:bunga_player/providers/chat.dart';
-import 'package:bunga_player/screens/wrappers/actions.dart';
 import 'package:bunga_player/services/chat.stream_io.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/chat.dart';
 import 'package:bunga_player/services/services.dart';
-import 'package:provider/provider.dart';
 
 import 'call.dart';
 
@@ -18,7 +16,13 @@ class Agora implements CallService {
 
   final _engine = createAgoraRtcEngine();
 
-  Future<void> setNoiseSuppression(NoiseSuppressionLevel level) {
+  NoiseSuppressionLevel? _noiseSuppressionLevelCache;
+  Future<void> setNoiseSuppression(NoiseSuppressionLevel level) async {
+    if (!_initiated) {
+      _noiseSuppressionLevelCache = level;
+      return;
+    }
+
     logger.i('Call: noise suppression set to $level');
     switch (level) {
       case NoiseSuppressionLevel.none:
@@ -44,6 +48,7 @@ class Agora implements CallService {
     }
   }
 
+  bool _initiated = false;
   Future<void> _asyncInit(String appId) async {
     // Mic permission
     /*
@@ -90,14 +95,14 @@ class Agora implements CallService {
       scenario: AudioScenarioType.audioScenarioChatroom,
     );
 
-    final context = Intentor.context;
-    if (context.mounted) {
-      // Noise suppression
-      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-      Intentor.context.read<CallNoiseSuppressionLevel>().notifyListeners();
-      // Volume
-      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-      Intentor.context.read<CallVolume>().notifyListeners();
+    _initiated = true;
+    if (_noiseSuppressionLevelCache != null) {
+      setNoiseSuppression(_noiseSuppressionLevelCache!);
+      _noiseSuppressionLevelCache = null;
+    }
+    if (_volumeCache != null) {
+      setVolume(_volumeCache!);
+      _volumeCache = null;
     }
   }
 
@@ -106,9 +111,15 @@ class Agora implements CallService {
   final _talkersID = <int>{};
 
   // Volume
+  double? _volumeCache;
   @override
   Future<void> setVolume(double percent) async {
     assert(percent >= 0 && percent <= 1);
+
+    if (!_initiated) {
+      _volumeCache = percent;
+      return;
+    }
 
     await _engine.adjustPlaybackSignalVolume((300 * percent).toInt());
   }

@@ -10,7 +10,6 @@ import 'package:bunga_player/providers/player.dart';
 import 'package:bunga_player/screens/dialogs/local_video_entry.dart';
 import 'package:bunga_player/screens/widgets/loading_text.dart';
 import 'package:bunga_player/screens/wrappers/providers.dart';
-import 'package:bunga_player/screens/wrappers/actions.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
 import 'package:flutter/material.dart';
@@ -80,12 +79,11 @@ class _RoomSectionState extends State<RoomSection> {
 
   void _openLocalVideo() async {
     final entry = await LocalVideoEntryDialog().show();
-    if (entry == null) return;
+    if (entry == null || !mounted) return;
 
     try {
       final response = Actions.invoke(
-        // ignore: use_build_context_synchronously
-        Intentor.context,
+        context,
         OpenVideoIntent(videoEntry: entry),
       ) as Future?;
       await response;

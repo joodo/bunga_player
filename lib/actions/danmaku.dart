@@ -1,7 +1,6 @@
 import 'package:bunga_player/actions/channel.dart';
 import 'package:bunga_player/actions/dispatcher.dart';
 import 'package:bunga_player/providers/chat.dart';
-import 'package:bunga_player/screens/wrappers/actions.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
@@ -30,15 +29,16 @@ class DanmakuActions extends SingleChildStatefulWidget {
 }
 
 class _DanmakuActionsState extends SingleChildState<DanmakuActions> {
+  late final _channelMessage = context.read<CurrentChannelMessage>();
   @override
   void initState() {
-    context.read<CurrentChannelMessage>().addListener(_dealChannelMessage);
+    _channelMessage.addListener(_dealChannelMessage);
     super.initState();
   }
 
   @override
   void dispose() {
-    context.read<CurrentChannelMessage>().removeListener(_dealChannelMessage);
+    _channelMessage.removeListener(_dealChannelMessage);
     super.dispose();
   }
 
@@ -54,7 +54,7 @@ class _DanmakuActionsState extends SingleChildState<DanmakuActions> {
   }
 
   void _dealChannelMessage() {
-    final read = Intentor.context.read;
+    final read = context.read;
 
     final message = read<CurrentChannelMessage>().value;
     if (message == null) return;
