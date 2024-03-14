@@ -108,7 +108,7 @@ class OthersDialogState extends State<OthersDialog> {
         width: 200,
         height: 125,
         child: Center(
-          child: Icon(Icons.broken_image, size: 64),
+          child: Icon(Icons.movie_creation_outlined, size: 80),
         ),
       ),
     );
