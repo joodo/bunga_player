@@ -3,6 +3,7 @@ import 'package:bunga_player/actions/voice_call.dart';
 import 'package:bunga_player/mocks/slider.dart' as mock;
 import 'package:bunga_player/providers/chat.dart';
 import 'package:bunga_player/screens/control_section/card.dart';
+import 'package:bunga_player/screens/widgets/loading_text.dart';
 import 'package:bunga_player/utils/volume_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -126,17 +127,7 @@ class _CallControlState extends State<CallControl> {
         const SizedBox(width: 8),
         child!,
         const SizedBox(width: 16),
-        const Text('正在等待接听'),
-        AnimatedTextKit(
-          animatedTexts: [
-            TyperAnimatedText(
-              '...',
-              speed: const Duration(milliseconds: 500),
-            )
-          ],
-          repeatForever: true,
-          pause: const Duration(milliseconds: 500),
-        ),
+        const LoadingText('正在等待接听'),
         const Spacer(),
         _createCallOperateButton(
           color: Colors.red,

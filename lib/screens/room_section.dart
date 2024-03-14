@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:animations/animations.dart';
 import 'package:bunga_player/actions/play.dart';
 import 'package:bunga_player/models/chat/channel_data.dart';
@@ -9,6 +8,7 @@ import 'package:bunga_player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/providers/chat.dart';
 import 'package:bunga_player/providers/player.dart';
 import 'package:bunga_player/screens/dialogs/local_video_entry.dart';
+import 'package:bunga_player/screens/widgets/loading_text.dart';
 import 'package:bunga_player/screens/wrappers/providers.dart';
 import 'package:bunga_player/screens/wrappers/actions.dart';
 import 'package:bunga_player/services/services.dart';
@@ -41,21 +41,7 @@ class _RoomSectionState extends State<RoomSection> {
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: watchers.value.isEmpty
-                  ? Row(
-                      children: [
-                        const Text('正在创建房间'),
-                        AnimatedTextKit(
-                          animatedTexts: [
-                            TyperAnimatedText(
-                              '...',
-                              speed: const Duration(milliseconds: 500),
-                            )
-                          ],
-                          repeatForever: true,
-                          pause: const Duration(milliseconds: 500),
-                        ),
-                      ],
-                    )
+                  ? const LoadingText('正在进入房间')
                   : _getUsersWidget(watchers.value),
             );
           },

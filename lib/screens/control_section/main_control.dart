@@ -13,7 +13,6 @@ import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/screens/control_section/popmoji_control.dart';
 import 'package:bunga_player/utils/auto_retry.dart';
 import 'package:bunga_player/utils/duration.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
