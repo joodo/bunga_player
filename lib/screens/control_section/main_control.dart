@@ -6,12 +6,14 @@ import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/models/playing/volume.dart';
 import 'package:bunga_player/mocks/popup_menu.dart' as mock;
 import 'package:bunga_player/mocks/slider.dart' as mock;
+import 'package:bunga_player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/providers/chat.dart';
 import 'package:bunga_player/providers/player.dart';
 import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/screens/control_section/popmoji_control.dart';
 import 'package:bunga_player/utils/auto_retry.dart';
 import 'package:bunga_player/utils/duration.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -67,7 +69,6 @@ class _MainControlState extends State<MainControl> {
 
   @override
   Widget build(BuildContext context) {
-    final currentChannelData = context.read<CurrentChannelData>().value;
     return Row(
       children: [
         const SizedBox(width: 8),
@@ -152,10 +153,14 @@ class _MainControlState extends State<MainControl> {
         const SizedBox(width: 8),
 
         // Danmaku Button
-        IconButton(
-          icon: const Icon(Icons.chat),
+        _channelButtonBuilder(
+          build: (onPressed) => IconButton(
+            icon: const Icon(Icons.chat),
+            onPressed: onPressed,
+          ),
           onPressed: () => Navigator.of(context).pushNamed('control:danmaku'),
         ),
+
         const SizedBox(width: 8),
 
         // Popmoji Button
@@ -173,7 +178,7 @@ class _MainControlState extends State<MainControl> {
           tooltip: '',
           useRootNavigator: true,
           itemBuilder: (context) => <mock.PopupMenuEntry>[
-            if (currentChannelData?.videoType == VideoType.online) ...[
+            if (context.read<PlayVideoEntry>().value is! LocalVideoEntry) ...[
               // Reload button
               mock.PopupMenuItem(
                 child: const Row(
@@ -290,6 +295,16 @@ class _MainControlState extends State<MainControl> {
       ],
     );
   }
+
+  Widget _channelButtonBuilder({
+    required Widget Function(VoidCallback? onPressed) build,
+    required VoidCallback onPressed,
+  }) {
+    return Selector<CurrentChannelId, bool>(
+      selector: (context, channelId) => channelId.value != null,
+      builder: (context, joined, child) => build(joined ? onPressed : null),
+    );
+  }
 }
 
 class CallButton extends StatefulWidget {
@@ -328,12 +343,17 @@ class _CallButtonState extends State<CallButton> with TickerProviderStateMixin {
     return Selector<CurrentCallStatus, CallStatus>(
       selector: (context, currentCallStatus) => currentCallStatus.value,
       builder: (context, callStatus, child) => switch (callStatus) {
-        CallStatus.none => IconButton(
-            icon: const Icon(Icons.call),
-            onPressed: () {
-              Actions.invoke(context, StartCallingRequestIntent());
-              _pushNavigate();
-            },
+        CallStatus.none => Selector<CurrentChannelId, bool>(
+            selector: (conext, channelId) => channelId.value != null,
+            builder: (context, loaded, child) => IconButton(
+              icon: const Icon(Icons.call),
+              onPressed: loaded
+                  ? () {
+                      Actions.invoke(context, StartCallingRequestIntent());
+                      _pushNavigate();
+                    }
+                  : null,
+            ),
           ),
         CallStatus.callOut || CallStatus.talking => IconButton(
             style: const ButtonStyle(
