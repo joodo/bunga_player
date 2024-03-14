@@ -247,7 +247,9 @@ class _VideoPlayingActionsState extends SingleChildState<VideoPlayingActions> {
   void _dealChannelMessage() {
     final read = Intentor.context.read;
 
-    final message = read<CurrentChannelMessage>().value!;
+    final message = read<CurrentChannelMessage>().value;
+    if (message == null) return;
+
     final splits = message.text.split(' ');
     switch (splits.first) {
       case 'pause':

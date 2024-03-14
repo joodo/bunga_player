@@ -35,7 +35,9 @@ class _PopmojiPlayerState extends State<PopmojiPlayer> {
   }
 
   void _progressMessage() async {
-    final message = context.read<CurrentChannelMessage>().value!;
+    final message = context.read<CurrentChannelMessage>().value;
+    if (message == null) return;
+
     final splits = message.text.split(' ');
 
     if (splits.first == 'popmoji') {

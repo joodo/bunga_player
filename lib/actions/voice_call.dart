@@ -327,7 +327,9 @@ class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
   void _dealResponse() {
     final read = context.read;
 
-    final message = read<CurrentChannelMessage>().value!;
+    final message = read<CurrentChannelMessage>().value;
+    if (message == null) return;
+
     if (message.sender.id == read<CurrentUser>().value?.id) return;
 
     final splits = message.text.split(' ');

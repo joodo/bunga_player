@@ -56,7 +56,8 @@ class _DanmakuActionsState extends SingleChildState<DanmakuActions> {
   void _dealChannelMessage() {
     final read = Intentor.context.read;
 
-    final message = read<CurrentChannelMessage>().value!;
+    final message = read<CurrentChannelMessage>().value;
+    if (message == null) return;
 
     const prefix = 'danmaku ';
     if (message.text.startsWith(prefix)) {

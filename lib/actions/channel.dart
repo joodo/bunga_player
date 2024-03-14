@@ -101,6 +101,7 @@ class LeaveChannelAction extends ContextAction<LeaveChannelIntent> {
 
     read<CurrentChannelId>().value = null;
     read<CurrentChannelData>().value = null;
+    read<CurrentChannelMessage>().value = null;
     read<CurrentChannelWatchers>().clear();
 
     final chatService = getIt<ChatService>();
