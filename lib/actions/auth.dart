@@ -1,10 +1,10 @@
 import 'package:bunga_player/models/chat/user.dart';
 import 'package:bunga_player/providers/chat.dart';
+import 'package:bunga_player/providers/settings.dart';
 import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/services/alist.dart';
 import 'package:bunga_player/services/bunga.dart';
 import 'package:bunga_player/services/online_video.dart';
-import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/chat.dart';
 import 'package:bunga_player/actions/dispatcher.dart';
@@ -19,8 +19,14 @@ class AutoLoginAction extends ContextAction<AutoLoginIntent> {
   Future<void> invoke(AutoLoginIntent intent, [BuildContext? context]) async {
     if (!context!.mounted) return;
 
-    final result =
-        Actions.invoke(context, LoginIntent(User.fromPref())) as Future;
+    final read = context.read;
+    final result = Actions.invoke(
+      context,
+      LoginIntent(User(
+        id: read<SettingClientId>().value,
+        name: read<SettingUserName>().value,
+      )),
+    ) as Future;
     await result;
 
     // Fetch bilibili sess
@@ -30,9 +36,7 @@ class AutoLoginAction extends ContextAction<AutoLoginIntent> {
   @override
   bool isEnabled(AutoLoginIntent intent, [BuildContext? context]) {
     assert(context != null, 'Action need context to set current user provider');
-    final pref = getIt<Preferences>();
-    final name = pref.get<String>('user_name');
-    return name != null;
+    return context!.read<SettingUserName>().value.isNotEmpty;
   }
 }
 

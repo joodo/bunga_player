@@ -6,6 +6,7 @@ import 'package:bunga_player/actions/play.dart';
 import 'package:bunga_player/mocks/menu_anchor.dart' as mock;
 import 'package:bunga_player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/providers/chat.dart';
+import 'package:bunga_player/providers/settings.dart';
 import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/screens/dialogs/online_video_dialog.dart';
 import 'package:bunga_player/screens/dialogs/local_video_entry.dart';
@@ -33,8 +34,10 @@ class _WelcomeControlState extends State<WelcomeControl> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _showWelcomeTitle();
+      context.read<CatIndicator>().title = _title;
     });
+
+    _loginJob.run();
   }
 
   @override
@@ -195,23 +198,12 @@ class _WelcomeControlState extends State<WelcomeControl> {
     Navigator.of(context).popAndPushNamed('control:rename');
   }
 
-  String get _title => '${context.read<CurrentUser>().value!.name}, 你好！';
+  String get _title => '${context.read<SettingUserName>().value}, 你好！';
 
   late final AutoRetryJob _loginJob = AutoRetryJob(
     () => Actions.invoke(context, AutoLoginIntent()) as Future,
     jobName: 'Auto Login',
   );
-
-  void _showWelcomeTitle() async {
-    const hint = '登录中……';
-    final cat = context.read<CatIndicator>();
-
-    cat.title = hint;
-    await _loginJob.run();
-
-    if (!mounted || cat.title != hint) return;
-    cat.title = _title;
-  }
 }
 
 class _DelayedCallbackButtonWrapper<T> extends SingleChildStatefulWidget {

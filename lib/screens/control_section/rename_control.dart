@@ -1,6 +1,5 @@
+import 'package:bunga_player/providers/settings.dart';
 import 'package:bunga_player/providers/ui.dart';
-import 'package:bunga_player/services/preferences.dart';
-import 'package:bunga_player/services/services.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -18,7 +17,7 @@ class _RenameControlState extends State<RenameControl> {
   void initState() {
     super.initState();
 
-    _textController.text = getIt<Preferences>().get<String>('user_name') ?? '';
+    _textController.text = context.read<SettingUserName>().value;
     _textController.selection = TextSelection(
       baseOffset: 0,
       extentOffset: _textController.text.length,
@@ -67,7 +66,7 @@ class _RenameControlState extends State<RenameControl> {
   }
 
   void _onSubmit(String userName) {
-    getIt<Preferences>().set('user_name', userName);
+    context.read<SettingUserName>().value = userName;
     Navigator.of(context).popAndPushNamed('control:welcome');
   }
 }

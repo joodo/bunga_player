@@ -1,5 +1,6 @@
 import 'package:bunga_player/providers/chat.dart';
 import 'package:bunga_player/providers/player.dart';
+import 'package:bunga_player/providers/settings.dart';
 import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/screens/control_section/danmaku_control.dart';
 import 'package:bunga_player/screens/control_section/source_selection_control.dart';
@@ -12,8 +13,6 @@ import 'package:bunga_player/screens/control_section/subtitle_control.dart';
 import 'package:bunga_player/screens/control_section/tune_control.dart';
 import 'package:bunga_player/screens/control_section/welcome_control.dart';
 import 'package:bunga_player/screens/progress_section/video_progress_indicator.dart';
-import 'package:bunga_player/services/preferences.dart';
-import 'package:bunga_player/services/services.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -62,9 +61,9 @@ class _ControlSectionState extends State<ControlSection> {
 
   @override
   Widget build(BuildContext context) {
-    final pref = getIt<Preferences>();
-    final name = pref.get<String>('user_name');
-    final initialRouteName = 'control:${name != null ? 'welcome' : 'rename'}';
+    final name = context.read<SettingUserName>().value;
+    final initialRouteName =
+        'control:${name.isNotEmpty ? 'welcome' : 'rename'}';
 
     Widget body = Navigator(
       initialRoute: initialRouteName,
