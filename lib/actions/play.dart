@@ -364,6 +364,7 @@ class _PlayActionsState extends SingleChildState<PlayActions> {
         (player.bufferStream, read<PlayBuffer>()),
         (player.isBufferingStream, read<PlayIsBuffering>()),
         (player.audioTracksStream, read<PlayAudioTracks>()),
+        (player.currentAudioTrackID, read<PlayAudioTrackID>()),
         (player.subtitleTracksStream, read<PlaySubtitleTracks>()),
         (player.currentSubtitleTrackID, read<PlaySubtitleTrackID>()),
         (player.statusStream, read<PlayStatus>()),
