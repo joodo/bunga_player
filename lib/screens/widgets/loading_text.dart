@@ -9,17 +9,21 @@ class LoadingText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Text(text),
-        AnimatedTextKit(
-          animatedTexts: [
-            TyperAnimatedText(
-              '...',
-              speed: const Duration(milliseconds: 500),
-            )
-          ],
-          repeatForever: true,
-          pause: const Duration(milliseconds: 500),
+        SizedBox(
+          width: 20,
+          child: AnimatedTextKit(
+            animatedTexts: [
+              TyperAnimatedText(
+                '...',
+                speed: const Duration(milliseconds: 500),
+              )
+            ],
+            repeatForever: true,
+            pause: const Duration(milliseconds: 500),
+          ),
         ),
       ],
     );

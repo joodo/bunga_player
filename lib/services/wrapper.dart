@@ -2,9 +2,11 @@ import 'package:animations/animations.dart';
 import 'package:bunga_player/models/app_key/app_key.dart';
 import 'package:bunga_player/providers/settings.dart';
 import 'package:bunga_player/screens/dialogs/host.dart';
+import 'package:bunga_player/screens/widgets/loading_text.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 
@@ -87,7 +89,22 @@ class _ServicesWrapperState extends SingleChildState<ServicesWrapper> {
       future: _getAppKeys(),
       builder: (context, snapshot) =>
           snapshot.connectionState != ConnectionState.done
-              ? const Center(child: Text('正在炼金'))
+              ? Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox.square(
+                        dimension: 200,
+                        child: Lottie.asset(
+                          'assets/images/emojis/u1f416.json',
+                          repeat: true,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      const LoadingText('正在炼金'),
+                    ],
+                  ),
+                )
               : Provider.value(
                   value: snapshot.data!,
                   child: child,
