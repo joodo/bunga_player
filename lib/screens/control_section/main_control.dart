@@ -118,12 +118,13 @@ class _MainControlState extends State<MainControl> {
         const Spacer(),
         const DurationButton(),
         const Spacer(),
+
+        // Call Button
         const VerticalDivider(
           indent: 8,
           endIndent: 8,
         ),
-
-        // Call Button
+        const SizedBox(width: 8),
         const CallButton(),
         const SizedBox(width: 8),
 
