@@ -98,7 +98,6 @@ class _ConsoleWrapperState extends SingleChildState<ConsoleWrapper> {
 
             if (newHost == null || !context.mounted) return;
             bungaHost.value = newHost;
-            unregisterHost();
             RestartWrapper.restartApp(context);
           },
           child: const Text('Change Bunga Host'),
