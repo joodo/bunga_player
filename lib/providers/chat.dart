@@ -101,8 +101,8 @@ class CurrentTalkersCount extends ValueNotifier<int> {
 class CallVolume extends ValueNotifier<Volume> {
   CallVolume()
       : super(Volume(
-          volume: getIt<Preferences>().get<int>('call_volume') ?? 50,
-          mute: false,
+          volume: getIt<Preferences>().get<int>('call_volume') ??
+              (Volume.max - Volume.min) ~/ 2,
         )) {
     addListener(() {
       getIt<Preferences>().set('call_volume', value.volume);

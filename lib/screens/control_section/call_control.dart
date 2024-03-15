@@ -101,7 +101,6 @@ class _CallControlState extends State<CallControl> {
                     onChanged: (value) {
                       callVolume.value = Volume(
                         volume: value.toInt(),
-                        mute: true,
                       );
                     },
                     focusNode: FocusNode(canRequestFocus: false),

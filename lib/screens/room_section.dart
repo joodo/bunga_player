@@ -9,7 +9,7 @@ import 'package:bunga_player/providers/chat.dart';
 import 'package:bunga_player/providers/player.dart';
 import 'package:bunga_player/screens/dialogs/local_video_entry.dart';
 import 'package:bunga_player/screens/widgets/loading_text.dart';
-import 'package:bunga_player/screens/wrappers/providers.dart';
+import 'package:bunga_player/providers/wrapper.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
 import 'package:flutter/material.dart';

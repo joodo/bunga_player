@@ -50,8 +50,7 @@ class PlayVolume extends ValueNotifier<Volume> {
   PlayVolume()
       : super(
           Volume(
-            volume: getIt<Preferences>().get<int>('play_volume') ?? 100,
-            mute: false,
+            volume: getIt<Preferences>().get<int>('play_volume') ?? Volume.max,
           ),
         ) {
     addListener(() {

@@ -73,7 +73,7 @@ class MediaKitPlayer implements Player {
   late final controller = media_kit.VideoController(_player);
 
   // Volume
-  Volume _volume = Volume(volume: 100, mute: false);
+  Volume _volume = Volume(volume: Volume.max);
   late final _volumeController = StreamController<Volume>.broadcast();
   @override
   Stream<Volume> get volumeStream => _volumeController.stream;
@@ -89,7 +89,7 @@ class MediaKitPlayer implements Player {
 
   @override
   Future<void> setVolume(int volume) {
-    _volume = Volume(volume: volume, mute: false);
+    _volume = Volume(volume: volume);
     _volumeController.add(_volume);
     return _player.setVolume(volume.toDouble());
   }

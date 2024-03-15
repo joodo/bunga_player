@@ -1,10 +1,11 @@
-import 'package:bunga_player/providers/settings.dart';
-import 'package:bunga_player/providers/ui.dart';
-import 'package:bunga_player/providers/chat.dart';
-import 'package:bunga_player/providers/player.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
+
+import 'settings.dart';
+import 'ui.dart';
+import 'chat.dart';
+import 'player.dart';
 
 extension IsVideoSameWithChannel on BuildContext {
   bool get isVideoSameWithChannel =>

@@ -10,7 +10,7 @@ import 'package:bunga_player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/providers/chat.dart';
 import 'package:bunga_player/providers/player.dart';
 import 'package:bunga_player/providers/ui.dart';
-import 'package:bunga_player/screens/wrappers/providers.dart';
+import 'package:bunga_player/providers/wrapper.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/player.dart';
 import 'package:bunga_player/services/services.dart';

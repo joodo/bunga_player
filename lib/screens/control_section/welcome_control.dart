@@ -5,7 +5,6 @@ import 'package:bunga_player/actions/auth.dart';
 import 'package:bunga_player/actions/play.dart';
 import 'package:bunga_player/mocks/menu_anchor.dart' as mock;
 import 'package:bunga_player/models/video_entries/video_entry.dart';
-import 'package:bunga_player/providers/business_indicator.dart';
 import 'package:bunga_player/providers/chat.dart';
 import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/screens/dialogs/online_video_dialog.dart';

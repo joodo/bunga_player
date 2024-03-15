@@ -54,7 +54,7 @@ sealed class VideoEntry {
   factory VideoEntry.fromChannelData(ChannelData channelData) {
     final prefix = channelData.videoHash.split('-').first;
     if (!_factoryMap.containsKey(prefix)) {
-      throw FormatException('RemoteVideoEntry: unknown hash prefix: $prefix');
+      throw FormatException('VideoEntry: unknown hash prefix: $prefix');
     }
 
     return _factoryMap[prefix]!(channelData);
