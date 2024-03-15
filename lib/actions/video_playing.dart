@@ -126,7 +126,7 @@ class ApplyRemotePlayingStatusAction
     // Answering me or just normal tell
     final isAnsweringMe =
         intent.answerId == positionAskingBusiness.askingMessageId;
-    final isFromMe = intent.sender == context!.read<CurrentUser>().value;
+    final isFromMe = intent.sender.id == context!.read<CurrentUser>().value?.id;
     return isAnsweringMe && !isFromMe && context.isVideoSameWithChannel;
   }
 }
