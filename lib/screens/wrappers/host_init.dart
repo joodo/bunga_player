@@ -2,7 +2,7 @@ import 'package:animations/animations.dart';
 import 'package:bunga_player/models/app_key/app_key.dart';
 import 'package:bunga_player/providers/settings.dart';
 import 'package:bunga_player/screens/dialogs/host.dart';
-import 'package:bunga_player/services/preferences.dart';
+import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
@@ -24,33 +24,34 @@ class _HostInitWrapperState extends SingleChildState<HostInitWrapper> {
     _initTask = _init();
   }
 
-  late AppKeys _appKeys;
+  late final AppKeys _appKeys;
   Future<void> _init() async {
-    final preferences = getIt<Preferences>();
-    String bungaHost = preferences.get('bunga_host') ?? '';
+    final bungaHost = context.read<SettingBungaHost>();
+    String hostUrl = bungaHost.value;
 
     bool success = false;
     do {
       try {
-        _appKeys = await initHost(bungaHost);
+        _appKeys = await initHost(hostUrl);
         success = true;
       } catch (e) {
         if (!mounted) return;
-        bungaHost = await showModal<String>(
+        hostUrl = await showModal<String>(
               context: context,
               configuration: const FadeScaleTransitionConfiguration(
                   barrierDismissible: false),
               builder: (dialogContext) => HostDialog(
-                host: bungaHost,
-                error: e.toString(),
+                host: hostUrl,
+                error: '连接失败',
                 proxy: context.read<SettingProxy>(),
               ),
             ) ??
             '';
+        logger.e(e);
       }
     } while (!success);
 
-    preferences.set('bunga_host', bungaHost);
+    bungaHost.value = hostUrl;
   }
 
   @override

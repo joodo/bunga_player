@@ -2,11 +2,16 @@ import 'package:bunga_player/providers/settings.dart';
 import 'package:flutter/material.dart';
 
 class HostDialog extends StatefulWidget {
-  final String? host;
+  final String host;
   final String? error;
   final SettingProxy proxy;
 
-  const HostDialog({super.key, this.host, this.error, required this.proxy});
+  const HostDialog({
+    super.key,
+    required this.host,
+    this.error,
+    required this.proxy,
+  });
 
   @override
   State<HostDialog> createState() => _HostDialogState();
@@ -30,21 +35,14 @@ class _HostDialogState extends State<HostDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      icon: const Icon(Icons.error),
-      title: const Text('服务器失效'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (widget.error != null) SelectableText(widget.error!),
-          if (widget.error != null) const SizedBox(height: 16),
-          TextField(
-            controller: _controller,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              labelText: '新的服务器地址',
-            ),
-          ),
-        ],
+      title: const Text('设置服务器'),
+      content: TextField(
+        controller: _controller,
+        decoration: InputDecoration(
+          border: const OutlineInputBorder(),
+          labelText: '新的服务器地址',
+          errorText: widget.host.isEmpty ? null : widget.error,
+        ),
       ),
       actions: <Widget>[
         if (widget.proxy.value?.isNotEmpty ?? false)

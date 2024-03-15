@@ -14,6 +14,17 @@ class SettingProxy extends ValueNotifier<String?> {
   }
 }
 
+class SettingBungaHost extends ValueNotifier<String> {
+  SettingBungaHost() : super('') {
+    bindPreference<String>(
+      preferences: getIt<Preferences>(),
+      key: 'bunga_host',
+      load: (pref) => pref,
+      update: (value) => value,
+    );
+  }
+}
+
 class SettingClientId extends ValueNotifier<String> {
   SettingClientId() : super(const Uuid().v4()) {
     bindPreference<String>(
@@ -39,6 +50,8 @@ class SettingUserName extends ValueNotifier<String> {
 final settingProviders = MultiProvider(
   providers: [
     ChangeNotifierProvider(create: (context) => SettingProxy(), lazy: false),
+    ChangeNotifierProvider(
+        create: (context) => SettingBungaHost(), lazy: false),
     ChangeNotifierProvider(create: (context) => SettingClientId(), lazy: false),
     ChangeNotifierProvider(create: (context) => SettingUserName(), lazy: false),
   ],

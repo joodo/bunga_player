@@ -87,17 +87,17 @@ class _ConsoleWrapperState extends SingleChildState<ConsoleWrapper> {
         const SizedBox(height: 8),
         FilledButton(
           onPressed: () async {
-            final preferences = getIt<Preferences>();
+            final bungaHost = context.read<SettingBungaHost>();
             final newHost = await showModal<String>(
               context: context,
               builder: (dialogContext) => HostDialog(
-                host: preferences.get('bunga_host'),
+                host: bungaHost.value,
                 proxy: context.read<SettingProxy>(),
               ),
             );
 
             if (newHost == null || !context.mounted) return;
-            preferences.set('bunga_host', newHost);
+            bungaHost.value = newHost;
             unregisterHost();
             RestartWrapper.restartApp(context);
           },
