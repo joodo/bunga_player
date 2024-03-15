@@ -6,11 +6,16 @@ import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
 class SettingProxy extends ValueNotifier<String?> {
-  SettingProxy() : super(getIt<Preferences>().get<String>('proxy')) {
+  SettingProxy() : super(null) {
     addListener(() {
       getIt<NetworkService>().setProxy(value);
-      getIt<Preferences>().set('proxy', value);
     });
+    bindPreference<String>(
+      preferences: getIt<Preferences>(),
+      key: 'proxy',
+      load: (pref) => pref,
+      update: (value) => value,
+    );
   }
 }
 

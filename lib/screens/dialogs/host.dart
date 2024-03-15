@@ -18,17 +18,19 @@ class HostDialog extends StatefulWidget {
 }
 
 class _HostDialogState extends State<HostDialog> {
-  late TextEditingController _controller;
+  late TextEditingController _hostFieldController;
+  late TextEditingController _proxyFieldController;
 
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(text: widget.host);
+    _hostFieldController = TextEditingController(text: widget.host);
+    _proxyFieldController = TextEditingController(text: widget.proxy.value);
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _hostFieldController.dispose();
     super.dispose();
   }
 
@@ -36,25 +38,34 @@ class _HostDialogState extends State<HostDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('设置服务器'),
-      content: TextField(
-        controller: _controller,
-        decoration: InputDecoration(
-          border: const OutlineInputBorder(),
-          labelText: '新的服务器地址',
-          errorText: widget.host.isEmpty ? null : widget.error,
-        ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: _hostFieldController,
+            decoration: InputDecoration(
+              border: const OutlineInputBorder(),
+              labelText: '新的服务器地址',
+              errorText: widget.host.isEmpty ? null : widget.error,
+            ),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _proxyFieldController,
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              labelText: '网络代理',
+            ),
+          ),
+        ],
       ),
       actions: <Widget>[
-        if (widget.proxy.value?.isNotEmpty ?? false)
-          TextButton(
-            onPressed: () {
-              widget.proxy.value = null;
-              Navigator.pop(context, _controller.text);
-            },
-            child: const Text('关闭代理'),
-          ),
         TextButton(
-          onPressed: () => Navigator.pop(context, _controller.text),
+          onPressed: () {
+            final newProxy = _proxyFieldController.text;
+            widget.proxy.value = newProxy.isEmpty ? null : newProxy;
+            Navigator.pop(context, _hostFieldController.text);
+          },
           child: const Text('重试'),
         ),
       ],

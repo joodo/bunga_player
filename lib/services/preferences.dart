@@ -70,7 +70,7 @@ extension BindPreference<R> on ValueNotifier<R> {
     required Preferences preferences,
     required String key,
     required R Function(T pref) load,
-    required T Function(R value) update,
+    required T? Function(R value) update,
   }) {
     addListener(() {
       preferences.set(key, update(value));
