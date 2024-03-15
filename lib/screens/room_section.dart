@@ -97,8 +97,7 @@ class _RoomSectionState extends State<RoomSection> {
     final currentUser = context.read<CurrentUser>().value!;
     final textStyle = Theme.of(context).textTheme.bodyMedium!;
 
-    final others = List.from(userList)
-      ..removeWhere((u) => u.id == currentUser.id);
+    final others = List<User>.from(userList)..removeId(currentUser.id);
 
     return Text.rich(
       TextSpan(

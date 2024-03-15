@@ -51,7 +51,7 @@ class CurrentChannelWatchers extends ChangeNotifier
   }
 
   void join(User user) {
-    if (_value.contains(user)) return;
+    if (_value.containsId(user.id)) return;
     _value.add(user);
     notifyListeners();
     for (final listener in _joinListeners) {
@@ -70,7 +70,7 @@ class CurrentChannelWatchers extends ChangeNotifier
   }
 
   void leave(User user) {
-    _value.removeWhere((u) => u.id == user.id);
+    _value.removeId(user.id);
     notifyListeners();
     for (final listener in _leaveListeners) {
       listener(user);

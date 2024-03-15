@@ -1,10 +1,25 @@
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/painting.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:uuid/uuid.dart';
 
 part 'user.g.dart';
+
+extension UserId on List<User> {
+  bool containsId(String id) {
+    if (firstWhereOrNull((user) => user.id == id) != null) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  void removeId(String id) {
+    removeWhere((user) => user.id == id);
+  }
+}
 
 @JsonSerializable()
 class User {
@@ -37,16 +52,4 @@ class User {
 
   @override
   String toString() => toJson().toString();
-
-  @override
-  operator ==(Object other) {
-    if (other is User) {
-      return other.id == id;
-    } else {
-      return false;
-    }
-  }
-
-  @override
-  int get hashCode => id.hashCode;
 }
