@@ -391,9 +391,11 @@ class _PlayActionsState extends SingleChildState<PlayActions> {
   }
 
   @override
-  void dispose() {
-    _streamSubscriptions.map((e) => e.cancel());
+  void dispose() async {
     super.dispose();
+    for (final subscription in _streamSubscriptions) {
+      await subscription.cancel();
+    }
   }
 
   @override
