@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 
 import 'console.dart';
-import 'actions.dart';
+import '../../actions/wrapper.dart';
 import 'update.dart';
 import 'host_init.dart';
 import 'restart.dart';

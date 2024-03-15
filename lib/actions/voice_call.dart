@@ -4,6 +4,7 @@ import 'package:async/async.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:bunga_player/actions/channel.dart';
 import 'package:bunga_player/actions/dispatcher.dart';
+import 'package:bunga_player/actions/wrapper.dart';
 import 'package:bunga_player/models/chat/message.dart';
 import 'package:bunga_player/models/chat/user.dart';
 import 'package:bunga_player/providers/chat.dart';
@@ -17,8 +18,8 @@ import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 
 class CallingRequestBusiness {
-  final BuildContext actionContext;
-  CallingRequestBusiness({required this.actionContext});
+  final Locator providerLocator;
+  CallingRequestBusiness({required this.providerLocator});
 
   String? requestMessageId;
   final List<String> myHopeList = [];
@@ -27,15 +28,12 @@ class CallingRequestBusiness {
     const Duration(seconds: 20),
     () {
       getIt<Toast>().show('无人接听');
-      Actions.maybeInvoke(
-        actionContext,
-        CancelCallingRequestIntent(),
-      );
+      providerLocator<ActionsLeaf>().mayBeInvoke(CancelCallingRequestIntent());
     },
   )..cancel();
 
   Future<void> myRequestHasBeenAccepted() {
-    actionContext.read<CurrentCallStatus>().value = CallStatus.talking;
+    providerLocator<CurrentCallStatus>().value = CallStatus.talking;
     requestMessageId = null;
     myHopeList.clear();
     requestTimeOutTimer.cancel();
@@ -51,10 +49,7 @@ class CallingRequestBusiness {
 
     if (myHopeList.isEmpty) {
       getIt<Toast>().show('呼叫已被拒绝');
-      Actions.invoke(
-        actionContext,
-        CancelCallingRequestIntent(),
-      );
+      providerLocator<ActionsLeaf>().mayBeInvoke(CancelCallingRequestIntent());
     }
   }
 
@@ -63,7 +58,7 @@ class CallingRequestBusiness {
     final agoraService = getIt<CallService>();
     final stream = await agoraService.joinChannel();
     _talkersCountSubscription = stream.listen(
-        (count) => actionContext.read<CurrentTalkersCount>().value = count);
+        (count) => providerLocator<CurrentTalkersCount>().value = count);
   }
 
   Future<void> leaveChannel() async {
@@ -87,9 +82,9 @@ class StartCallingRequestAction
 
     read<CurrentCallStatus>().value = CallStatus.callOut;
 
-    final message =
-        await (Actions.invoke(context, const SendMessageIntent('call ask'))
-            as Future<Message>);
+    final message = await (read<ActionsLeaf>().invoke(
+      const SendMessageIntent('call ask'),
+    ) as Future<Message>);
 
     callingRequestBusiness.requestMessageId = message.id;
     callingRequestBusiness.myHopeList
@@ -122,12 +117,12 @@ class CancelCallingRequestAction
   ]) async {
     final read = context!.read;
 
-    await (Actions.invoke(
-        context,
-        SendMessageIntent(
-          'call cancel',
-          quoteId: callingRequestBusiness.requestMessageId,
-        )) as Future<Message>);
+    await (read<ActionsLeaf>().invoke(
+      SendMessageIntent(
+        'call cancel',
+        quoteId: callingRequestBusiness.requestMessageId,
+      ),
+    ) as Future<Message>);
 
     callingRequestBusiness.myHopeList.clear();
     callingRequestBusiness.requestMessageId = null;
@@ -151,8 +146,7 @@ class RejectCallingRequestAction
   ]) async {
     final read = context!.read;
 
-    await (Actions.invoke(
-      context,
+    await (read<ActionsLeaf>().invoke(
       SendMessageIntent(
         'call no',
         quoteId: callingRequestBusiness.requestMessageId,
@@ -179,8 +173,7 @@ class AcceptCallingRequestAction
   ]) async {
     final read = context!.read;
 
-    await (Actions.invoke(
-      context,
+    await (read<ActionsLeaf>().invoke(
       SendMessageIntent(
         'call yes',
         quoteId: callingRequestBusiness.requestMessageId,
@@ -203,10 +196,12 @@ class HangUpAction extends ContextAction<HangUpIntent> {
 
   @override
   Future<void>? invoke(HangUpIntent intent, [BuildContext? context]) {
-    context!.read<CurrentCallStatus>().value = CallStatus.none;
+    final read = context!.read;
+
+    read<CurrentCallStatus>().value = CallStatus.none;
     AudioPlayer().play(AssetSource('sounds/hang_up.wav'));
 
-    Actions.invoke(context, const MuteMicIntent(false));
+    read<ActionsLeaf>().invoke(const MuteMicIntent(false));
     return callingRequestBusiness.leaveChannel();
   }
 
@@ -237,8 +232,9 @@ class VoiceCallActions extends SingleChildStatefulWidget {
 }
 
 class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
-  late final _callingRequestBusiness =
-      CallingRequestBusiness(actionContext: context);
+  late final _callingRequestBusiness = CallingRequestBusiness(
+    providerLocator: context.read,
+  );
 
   late final _callStatus = context.read<CurrentCallStatus>();
   late final _talkersCount = context.read<CurrentTalkersCount>();
@@ -310,7 +306,7 @@ class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
   void _tryAutoHangUp() {
     if (_talkersCount.value == 0) {
       getIt<Toast>().show('通话已结束');
-      Actions.maybeInvoke(context, HangUpIntent());
+      context.read<ActionsLeaf>().mayBeInvoke(HangUpIntent());
     }
   }
 
@@ -360,16 +356,14 @@ class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
 
           // Some one also want call when I'm calling out, so answer him
           case CallStatus.callOut:
-            Actions.invoke(
-              context,
+            read<ActionsLeaf>().invoke(
               SendMessageIntent('call yes', quoteId: message.id),
             );
             _callingRequestBusiness.myRequestHasBeenAccepted();
 
           // Some one want to join when we are calling, answer him
           case CallStatus.talking:
-            Actions.invoke(
-              context,
+            read<ActionsLeaf>().invoke(
               SendMessageIntent('call yes', quoteId: message.id),
             );
         }

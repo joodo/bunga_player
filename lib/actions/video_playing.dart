@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bunga_player/actions/channel.dart';
 import 'package:bunga_player/actions/play.dart';
+import 'package:bunga_player/actions/wrapper.dart';
 import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/models/chat/message.dart';
 import 'package:bunga_player/models/chat/user.dart';
@@ -125,7 +126,7 @@ class ApplyRemotePlayingStatusAction
     // Answering me or just normal tell
     final isAnsweringMe =
         intent.answerId == positionAskingBusiness.askingMessageId;
-    final isFromMe = intent.sender.id == context!.read<CurrentUser>().value!.id;
+    final isFromMe = intent.sender == context!.read<CurrentUser>().value;
     return isAnsweringMe && !isFromMe && context.isVideoSameWithChannel;
   }
 }
@@ -240,10 +241,9 @@ class _VideoPlayingActionsState extends SingleChildState<VideoPlayingActions> {
     if (currentChannelData.value!.videoType != VideoType.online) return;
 
     final videoEntry = VideoEntry.fromChannelData(currentData);
-    Actions.invoke(
-      context,
-      OpenVideoIntent(videoEntry: videoEntry),
-    );
+    context
+        .read<ActionsLeaf>()
+        .mayBeInvoke(OpenVideoIntent(videoEntry: videoEntry));
   }
 
   void _dealChannelMessage() {
@@ -256,26 +256,24 @@ class _VideoPlayingActionsState extends SingleChildState<VideoPlayingActions> {
     switch (splits.first) {
       case 'pause':
       case 'play':
-        Actions.maybeInvoke(
-          context,
-          ApplyRemotePlayingStatusIntent(
-            splits.first == 'pause'
-                ? PlayStatusType.pause
-                : PlayStatusType.play,
-            int.parse(splits.last),
-            message.sender,
-            message.quoteId,
-          ),
-        );
+        context.read<ActionsLeaf>().mayBeInvoke(
+              ApplyRemotePlayingStatusIntent(
+                splits.first == 'pause'
+                    ? PlayStatusType.pause
+                    : PlayStatusType.play,
+                int.parse(splits.last),
+                message.sender,
+                message.quoteId,
+              ),
+            );
       case 'where':
-        Actions.maybeInvoke(
-          context,
-          SendPlayingStatusIntent(
-            read<PlayStatus>().value,
-            read<PlayPosition>().value.inMilliseconds,
-            answerId: message.id,
-          ),
-        );
+        context.read<ActionsLeaf>().mayBeInvoke(
+              SendPlayingStatusIntent(
+                read<PlayStatus>().value,
+                read<PlayPosition>().value.inMilliseconds,
+                answerId: message.id,
+              ),
+            );
     }
   }
 }
