@@ -117,6 +117,8 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
       if (context.mounted) {
         Actions.invoke(context, SetWindowTitleIntent(intent.videoEntry.title));
       }
+
+      cat.title = null;
     });
   }
 }
