@@ -47,15 +47,13 @@ class PlayStatus extends ValueNotifier<PlayStatusType> {
 }
 
 class PlayVolume extends ValueNotifier<Volume> {
-  PlayVolume()
-      : super(
-          Volume(
-            volume: getIt<Preferences>().get<int>('play_volume') ?? Volume.max,
-          ),
-        ) {
-    addListener(() {
-      getIt<Preferences>().set('play_volume', value.volume);
-    });
+  PlayVolume() : super(Volume(volume: Volume.max)) {
+    bindPreference<int>(
+      preferences: getIt<Preferences>(),
+      key: 'play_volume',
+      load: (pref) => Volume(volume: pref),
+      update: (value) => value.volume,
+    );
   }
 }
 

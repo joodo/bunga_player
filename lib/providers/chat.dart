@@ -99,14 +99,13 @@ class CurrentTalkersCount extends ValueNotifier<int> {
 }
 
 class CallVolume extends ValueNotifier<Volume> {
-  CallVolume()
-      : super(Volume(
-          volume: getIt<Preferences>().get<int>('call_volume') ??
-              (Volume.max - Volume.min) ~/ 2,
-        )) {
-    addListener(() {
-      getIt<Preferences>().set('call_volume', value.volume);
-    });
+  CallVolume() : super(Volume(volume: (Volume.max - Volume.min) ~/ 2)) {
+    bindPreference<int>(
+      preferences: getIt<Preferences>(),
+      key: 'call_volume',
+      load: (pref) => Volume(volume: pref),
+      update: (value) => value.volume,
+    );
   }
 }
 

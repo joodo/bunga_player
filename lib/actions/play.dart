@@ -359,6 +359,10 @@ class _PlayActionsState extends SingleChildState<PlayActions> {
 
     final player = getIt<Player>();
     final read = context.read;
+
+    // init volume
+    player.setVolume(read<PlayVolume>().value.volume);
+
     _streamSubscriptions.addAll(
       <(Stream, ValueNotifier)>[
         (player.durationStream, read<PlayDuration>()),
