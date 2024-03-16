@@ -26,10 +26,7 @@ class ServicesWrapper extends SingleChildStatefulWidget {
 }
 
 class _ServicesWrapperState extends SingleChildState<ServicesWrapper> {
-  @override
-  void initState() {
-    super.initState();
-  }
+  late final _getAppKeysJob = _getAppKeys();
 
   Future<AppKeys> _getAppKeys() async {
     final bungaHost = context.read<SettingBungaHost>();
@@ -86,7 +83,7 @@ class _ServicesWrapperState extends SingleChildState<ServicesWrapper> {
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
     return FutureBuilder(
-      future: _getAppKeys(),
+      future: _getAppKeysJob,
       builder: (context, snapshot) =>
           snapshot.connectionState != ConnectionState.done
               ? Center(
