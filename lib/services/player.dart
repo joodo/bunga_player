@@ -57,7 +57,7 @@ abstract class Player {
   Stream<String> get currentAudioTrackID;
 
   Future<void> setSubtitleTrackID(String id);
-  Future<void> loadSubtitleTrack(String uri);
+  Future<SubtitleTrack> loadSubtitleTrack(String uri);
   Stream<Iterable<SubtitleTrack>> get subtitleTracksStream;
   Stream<String> get currentSubtitleTrackID;
 

@@ -65,6 +65,7 @@ dependencies:
   provider: ^6.1.1
   platform: ^3.1.4
   nested: ^1.0.0
+  path: ^1.9.0
 
 
 dev_dependencies:

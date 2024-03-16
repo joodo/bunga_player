@@ -106,7 +106,7 @@ class _SubtitleControlState extends State<SubtitleControl> {
                           if (track.id == 'auto') return '默认';
                           if (track.id == 'no') return '无字幕';
 
-                          return '[${track.id}] ${track.title} (${track.language})';
+                          return '${track.title ?? ''}${track.language != null ? ' (${track.language})' : ''}';
                         }(),
                       ),
                     ),

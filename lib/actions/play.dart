@@ -8,6 +8,7 @@ import 'package:bunga_player/providers/player.dart';
 import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/services/player.dart';
 import 'package:bunga_player/services/services.dart';
+import 'package:bunga_player/services/toast.dart';
 import 'package:bunga_player/utils/duration.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -280,13 +281,18 @@ class SetSubtitleIntent extends Intent {
 
 class SetSubtitleAction extends Action<SetSubtitleIntent> {
   @override
-  Future<void> invoke(SetSubtitleIntent intent) {
+  Future<void> invoke(SetSubtitleIntent intent) async {
     final player = getIt<Player>();
 
     if (intent.id != null) {
       return player.setSubtitleTrackID(intent.id!);
     } else {
-      return player.loadSubtitleTrack(intent.path!);
+      try {
+        final track = await player.loadSubtitleTrack(intent.path!);
+        return player.setSubtitleTrackID(track.id);
+      } catch (e) {
+        getIt<Toast>().show('字幕加载失败');
+      }
     }
   }
 }
