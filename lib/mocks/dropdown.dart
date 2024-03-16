@@ -717,6 +717,7 @@ class _DropdownMenuItemContainer extends StatelessWidget {
   const _DropdownMenuItemContainer({
     super.key,
     this.alignment = AlignmentDirectional.centerStart,
+    this.minHeight = 0.0,
     required this.child,
   });
 
@@ -724,6 +725,9 @@ class _DropdownMenuItemContainer extends StatelessWidget {
   ///
   /// Typically a [Text] widget.
   final Widget child;
+
+  // MOCK: For divider
+  final double minHeight;
 
   /// Defines how the item is positioned within the container.
   ///
@@ -740,7 +744,8 @@ class _DropdownMenuItemContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints: const BoxConstraints(minHeight: _kMenuItemHeight),
+      // MOCK: for Divider in dropmenu
+      constraints: BoxConstraints(minHeight: minHeight),
       alignment: alignment,
       child: child,
     );
@@ -761,6 +766,7 @@ class DropdownMenuItem<T> extends _DropdownMenuItemContainer {
     this.value,
     this.enabled = true,
     super.alignment,
+    super.minHeight = _kMenuItemHeight,
     required super.child,
   });
 
@@ -776,6 +782,16 @@ class DropdownMenuItem<T> extends _DropdownMenuItemContainer {
   ///
   /// Defaults to `true`.
   final bool enabled;
+}
+
+// MOCK
+class DropdownMenuDivider<T> extends DropdownMenuItem<T> {
+  const DropdownMenuDivider({super.key})
+      : super(
+          child: const Divider(),
+          minHeight: 0,
+          enabled: false,
+        );
 }
 
 /// An inherited widget that causes any descendant [MyDropdownButton]

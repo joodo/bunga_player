@@ -24,6 +24,8 @@ class SubtitleControl extends StatefulWidget {
 class _SubtitleControlState extends State<SubtitleControl> {
   SubtitleControlUIState _subtitleUIState = SubtitleControlUIState.delay;
 
+  bool _loading = false;
+
   @override
   Widget build(BuildContext context) {
     final value = <SubtitleControlUIState, double>{
@@ -97,7 +99,8 @@ class _SubtitleControlState extends State<SubtitleControl> {
               width: 200,
               height: 36,
               child: ControlDropdown(
-                items: [
+                enabled: !_loading,
+                items: <mock.DropdownMenuItem<String>>[
                   ...tracks.value.map(
                     (track) => mock.DropdownMenuItem<String>(
                       value: track.id,
@@ -111,6 +114,7 @@ class _SubtitleControlState extends State<SubtitleControl> {
                       ),
                     ),
                   ),
+                  const mock.DropdownMenuDivider<String>(),
                   const mock.DropdownMenuItem<String>(
                     value: 'OPEN',
                     child: Text('打开字幕……'),
@@ -123,10 +127,13 @@ class _SubtitleControlState extends State<SubtitleControl> {
                   } else {
                     final file = await openFile();
                     if (context.mounted && file != null) {
-                      Actions.invoke(
+                      setState(() => _loading = true);
+                      final response = Actions.invoke(
                         context,
                         SetSubtitleIntent.byPath(file.path),
-                      );
+                      ) as Future;
+                      await response;
+                      setState(() => _loading = false);
                     }
                   }
                 },
@@ -134,7 +141,9 @@ class _SubtitleControlState extends State<SubtitleControl> {
             );
           },
         ),
-        const SizedBox(width: 16),
+        const SizedBox(width: 8),
+        const VerticalDivider(indent: 8, endIndent: 8),
+        const SizedBox(width: 8),
 
         // Subtitle adjust
         SegmentedButton<SubtitleControlUIState>(
