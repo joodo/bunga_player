@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/models/chat/message.dart';
 import 'package:bunga_player/models/chat/user.dart';
@@ -5,6 +8,7 @@ import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/chat.dart';
 import 'package:stream_chat_flutter_core/stream_chat_flutter_core.dart'
     as stream;
+import 'package:path/path.dart' as path;
 
 typedef AgoraChannelDataPayload = (
   String channelId,
@@ -21,7 +25,7 @@ class StreamIO implements ChatService {
   final stream.StreamChatClient _client;
 
   // User
-  static User userFromStreamUser(stream.User streamUser) =>
+  static User _userFromStreamUser(stream.User streamUser) =>
       User(id: streamUser.id, name: streamUser.name);
 
   @override
@@ -43,7 +47,8 @@ class StreamIO implements ChatService {
   stream.Channel? _currentChannel;
 
   @override
-  Future<JoinChannelPayload> createOrJoinChannelByData(ChannelData data) async {
+  Future<JoinChannelResponse> createOrJoinChannelByData(
+      ChannelData data) async {
     stream.Channel channel;
 
     for (int suffix = 0; true; suffix++) {
@@ -65,11 +70,11 @@ class StreamIO implements ChatService {
     await channel.watch();
     _currentChannel = channel;
 
-    return _getReturnByStreamChannel(channel);
+    return _getResponseByStreamChannel(channel);
   }
 
   @override
-  Future<JoinChannelPayload> joinChannelById(String id) async {
+  Future<JoinChannelResponse> joinChannelById(String id) async {
     final channel = _client.channel(
       'livestream',
       id: id,
@@ -77,36 +82,92 @@ class StreamIO implements ChatService {
     await channel.watch();
     _currentChannel = channel;
 
-    return await _getReturnByStreamChannel(channel);
+    return _getResponseByStreamChannel(channel);
   }
 
-  Future<JoinChannelPayload> _getReturnByStreamChannel(
-      stream.Channel channel) async {
+  ChannelFile _fileFromStreamMessage(stream.Message message) {
+    assert(message.text!.startsWith('file '));
+    assert(message.attachments.isNotEmpty);
+    return ChannelFile(
+      id: message.id,
+      title: message.attachments[0].title!,
+      uploader: _userFromStreamUser(message.user!),
+      url: message.attachments[0].assetUrl!,
+      description: message.text!.substring(5),
+    );
+  }
+
+  JoinChannelResponse _getResponseByStreamChannel(stream.Channel channel) {
+    final joinerStreamController = StreamController<User>.broadcast();
+    final fileStreamController = StreamController<ChannelFile>.broadcast();
+
     // Watchers won't auto fetch
-    final state = await channel.query(
+    channel
+        .query(
       watch: true,
       // watchers won't query if no pagination
       watchersPagination: const stream.PaginationParams(limit: 1000),
+    )
+        .then(
+      (state) {
+        // watchers
+        _updateUsers(state.watchers!).then(
+          (watchers) {
+            // push users that already watched
+            for (final user in watchers) {
+              joinerStreamController.add(_userFromStreamUser(user));
+            }
+            // then follow stream
+            joinerStreamController.addStream(
+              channel
+                  .on('user.watching.start')
+                  .asyncMap<User>(_getUpdatedEventUser),
+            );
+          },
+        );
+
+        // files
+        final pinnedMessages = state.pinnedMessages
+          ?..sort(
+            (a, b) => a.pinnedAt!.compareTo(b.pinnedAt!),
+          );
+        // already uploaded
+        for (final message in pinnedMessages ?? []) {
+          fileStreamController.add(_fileFromStreamMessage(message));
+        }
+        // then follow stream
+        fileStreamController.addStream(
+          channel
+              .on('message.new')
+              .where(
+                  (event) => event.message?.text?.startsWith('file ') ?? false)
+              .map<ChannelFile>(
+                  (event) => _fileFromStreamMessage(event.message!)),
+        );
+      },
     );
 
-    final watchers = await _updateUsers(state.watchers!);
-
-    return (
-      channel.cid!,
-      watchers.map(userFromStreamUser),
-      channel.extraDataStream
-          .map<ChannelData>((data) => ChannelData.fromJson(data))
-          .distinct(),
-      channel.on('user.watching.start').asyncMap<User>(_getUpdatedEventUser),
-      channel.on('user.watching.stop').asyncMap<User>(_getUpdatedEventUser),
-      channel.on('message.new').map<Message>(
-            (event) => Message(
-              id: event.message!.id,
-              text: event.message!.text!,
-              sender: userFromStreamUser(event.message!.user!),
-              quoteId: event.message!.quotedMessageId,
+    return JoinChannelResponse(
+      id: channel.cid!,
+      streams: ChannelStreams(
+        channelData: channel.extraDataStream
+            .map<ChannelData>((data) => ChannelData.fromJson(data))
+            .distinct(),
+        joiner: joinerStreamController.stream.distinct(),
+        leaver: channel
+            .on('user.watching.stop')
+            .asyncMap<User>(_getUpdatedEventUser)
+            .distinct(),
+        message: channel.on('message.new').map<Message>(
+              (event) => Message(
+                id: event.message!.id,
+                text: event.message!.text!,
+                sender: _userFromStreamUser(event.message!.user!),
+                quoteId: event.message!.quotedMessageId,
+              ),
             ),
-          ),
+        file: fileStreamController.stream,
+      ),
     );
   }
 
@@ -158,8 +219,8 @@ class StreamIO implements ChatService {
   }
 
   @override
-  Future<Message> sendMessage(String text, String? quoteId) async {
-    var message = stream.Message(text: text, quotedMessageId: quoteId);
+  Future<Message> sendMessage(String text, {String? quoteId}) async {
+    final message = stream.Message(text: text, quotedMessageId: quoteId);
 
     assert(_currentChannel != null);
     // Message id was generated when message was created, so no need to await
@@ -171,9 +232,51 @@ class StreamIO implements ChatService {
     return Message(
       id: message.id,
       text: text,
-      sender: userFromStreamUser(_client.state.currentUser!),
+      sender: _userFromStreamUser(_client.state.currentUser!),
       quoteId: quoteId,
     );
+  }
+
+  @override
+  Stream<UploadProgress> uploadFile(
+    String filePath, {
+    String? title,
+    String? description,
+  }) {
+    assert(_currentChannel != null);
+
+    final progress = StreamController<UploadProgress>();
+
+    File(filePath).length().then((size) {
+      final attachmentFile = stream.AttachmentFile(
+        size: size,
+        path: filePath,
+      );
+      return _currentChannel!.sendFile(
+        attachmentFile,
+        onSendProgress: (count, total) {
+          progress.add(UploadProgress(count, total));
+        },
+      );
+    }).then((response) {
+      final message = stream.Message(
+        text: 'file $description',
+        pinned: true,
+        attachments: [
+          stream.Attachment(
+            title: title ?? path.basenameWithoutExtension(filePath),
+            assetUrl: response.file,
+          ),
+        ],
+      );
+
+      return _currentChannel!.sendMessage(
+        message,
+        skipPush: true,
+      );
+    }).then((_) => progress.close());
+
+    return progress.stream;
   }
 
   @override

@@ -19,8 +19,16 @@ class SubtitleTrack {
   final String id;
   final String? title;
   final String? language;
+  final String? uri;
 
-  SubtitleTrack(this.id, this.title, this.language);
+  SubtitleTrack({
+    required this.id,
+    this.title,
+    this.language,
+    this.uri,
+  });
+
+  bool get isExternal => uri != null;
 
   @override
   String toString() =>

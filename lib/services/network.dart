@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:dart_ping/dart_ping.dart';
@@ -36,6 +37,12 @@ class NetworkService {
     final location = jsonDecode(response.body)['data'][0]['location'] as String;
 
     return (location, latency);
+  }
+
+  Future<void> downloadFile(String url, String path) async {
+    final response = await http.get(Uri.parse(url));
+    await File(path).writeAsBytes(response.bodyBytes);
+    logger.i('Network: $path download finished from $url');
   }
 }
 

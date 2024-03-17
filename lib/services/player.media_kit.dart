@@ -7,6 +7,7 @@ import 'package:bunga_player/models/playing/watch_progress.dart';
 import 'package:bunga_player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/providers/player.dart';
 import 'package:bunga_player/services/logger.dart';
+import 'package:bunga_player/services/network.dart';
 import 'package:bunga_player/services/player.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
@@ -16,6 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart' as media_kit;
 import 'package:media_kit_video/media_kit_video.dart' as media_kit;
 import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
 
 class MediaKitPlayer implements Player {
   MediaKitPlayer() {
@@ -215,26 +217,38 @@ class MediaKitPlayer implements Player {
     return _player.setSubtitleTrack(track);
   }
 
+  int _externalSubIndex = 0;
+  final _externalSubUris = <String, String>{};
   @override
   Future<SubtitleTrack> loadSubtitleTrack(String uri) async {
-    final timestamp = DateTime.now().millisecondsSinceEpoch.toRadixString(35);
+    final eid = 'e${_externalSubIndex++}';
     final title = path.basenameWithoutExtension(uri);
+
+    _externalSubUris[eid] = uri;
+
+    // Save network resource to local
+    if (uri.startsWith('http')) {
+      final tempDir = await getApplicationCacheDirectory();
+      final localPath =
+          '${tempDir.path}/subtitle-${DateTime.now().millisecondsSinceEpoch.toRadixString(36)}';
+      await getIt<NetworkService>().downloadFile(uri, localPath);
+      uri = localPath;
+    }
+
     // See https://mpv.io/manual/master/#command-interface-sub-add
-    _mpvCommand('sub-add "$uri" auto ",$timestamp,$title"');
+    _mpvCommand('sub-add "$uri" auto ",$eid,$title"');
 
     return await Future.any([
       () async {
         while (true) {
           final tracks = await subtitleTracksStream.first;
-          final track =
-              tracks.firstWhereOrNull((track) => track.id == timestamp);
+          final track = tracks.firstWhereOrNull((track) => track.id == eid);
           if (track != null) return track;
         }
       }(),
       () async {
         while (true) {
           final log = await _player.stream.log.first;
-          print(log);
           if (log.text == 'Can not open external file $uri.') {
             throw Exception('Player: subtitle open failed: $uri');
           }
@@ -252,11 +266,20 @@ class MediaKitPlayer implements Player {
             (list) => list.map(
               (track) {
                 if (track.title?.startsWith(',') != true) {
-                  return SubtitleTrack(track.id, track.title, track.language);
+                  return SubtitleTrack(
+                    id: track.id,
+                    title: track.title,
+                    language: track.language,
+                  );
                 }
 
                 final splits = track.title!.split(',');
-                return SubtitleTrack(splits[1], splits[2], track.language);
+                return SubtitleTrack(
+                  id: splits[1],
+                  title: splits[2],
+                  uri: _externalSubUris[splits[1]],
+                  language: track.language,
+                );
               },
             ),
           )

@@ -15,10 +15,10 @@ import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 
-@immutable
 class SubscriptionBusiness {
   final subscriptions = <StreamSubscription>[];
   final BuildContext actionContext;
+  int joinChannelTimestamp = 0;
 
   SubscriptionBusiness({required this.actionContext});
 }
@@ -44,46 +44,44 @@ class JoinChannelAction extends ContextAction<JoinChannelIntent> {
 
     final chatService = getIt<ChatService>();
     final response = intent.channelData != null
-        ? chatService.createOrJoinChannelByData(intent.channelData!)
-        : chatService.joinChannelById(intent.channelId!);
-    final (
-      id,
-      watchers,
-      dataStream,
-      joinerStream,
-      leaverStream,
-      messageStream,
-    ) = await response;
+        ? await chatService.createOrJoinChannelByData(intent.channelData!)
+        : await chatService.joinChannelById(intent.channelId!);
 
     if (!context!.mounted) {
       logger.w('Context of joining channel was unmounted.');
       return;
     }
 
+    subscriptionBusiness.joinChannelTimestamp =
+        DateTime.now().millisecondsSinceEpoch;
     final actionRead = subscriptionBusiness.actionContext.read;
     subscriptionBusiness.subscriptions.addAll([
-      dataStream.listen((channelData) {
+      response.streams.channelData.listen((channelData) {
         final current = actionRead<CurrentChannelData>();
         current.value = channelData;
-        logger.i('Channel data changed: $channelData');
+        logger.i('Channel: Data changed: $channelData');
       }),
-      joinerStream.listen((user) {
+      response.streams.joiner.listen((user) {
         actionRead<CurrentChannelWatchers>().join(user);
-        logger.i('User join channel: $user');
+        logger.i('Channel: User join channel: $user');
       }),
-      leaverStream.listen((user) {
+      response.streams.leaver.listen((user) {
         actionRead<CurrentChannelWatchers>().leave(user);
-        logger.i('User leave channel: $user');
+        logger.i('Channel: User leave channel: $user');
       }),
-      messageStream.listen((message) {
+      response.streams.message.listen((message) {
         actionRead<CurrentChannelMessage>().value = message;
-        logger.i('Message received: $message');
+        logger.i('Channel: Message received: $message');
+      }),
+      response.streams.file.listen((channelFile) {
+        final files = actionRead<CurrentChannelFiles>();
+        files.value = [...files.value, channelFile];
+        logger.i('Channel: New file: $channelFile');
       }),
     ]);
 
     final read = context.read;
-    read<CurrentChannelId>().value = id;
-    read<CurrentChannelWatchers>().set(watchers);
+    read<CurrentChannelId>().value = response.id;
   }
 }
 
@@ -111,6 +109,7 @@ class LeaveChannelAction extends ContextAction<LeaveChannelIntent> {
     read<CurrentChannelData>().value = null;
     read<CurrentChannelMessage>().value = null;
     read<CurrentChannelWatchers>().clear();
+    read<CurrentChannelFiles>().value = [];
 
     final chatService = getIt<ChatService>();
     await chatService.leaveChannel();
@@ -148,7 +147,7 @@ class SendMessageAction extends ContextAction<SendMessageIntent> {
       [BuildContext? context]) async {
     final chatService = getIt<ChatService>();
     logger.i('Send message: ${intent.text}, quote id: ${intent.quoteId}');
-    return await chatService.sendMessage(intent.text, intent.quoteId);
+    return await chatService.sendMessage(intent.text, quoteId: intent.quoteId);
   }
 
   @override
@@ -205,6 +204,10 @@ class _ChannelActionsState extends SingleChildState<ChannelActions> {
     final currentId = context.read<CurrentUser>().value!.id;
     if (user.id == currentId) return;
 
+    // Mute when pulling exist channel watchers
+    if (DateTime.now().millisecondsSinceEpoch -
+            _subscriptionBusiness.joinChannelTimestamp <
+        2000) return;
     getIt<Toast>().show('${user.name} 已加入');
     AudioPlayer().play(AssetSource('sounds/user_join.wav'));
   }

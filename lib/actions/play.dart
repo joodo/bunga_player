@@ -274,25 +274,29 @@ class SetAudioTrackAction extends Action<SetAudioTrackIntent> {
 
 class SetSubtitleIntent extends Intent {
   final String? id;
-  final String? path;
-  const SetSubtitleIntent.byID(this.id) : path = null;
-  const SetSubtitleIntent.byPath(this.path) : id = null;
+  const SetSubtitleIntent(this.id);
 }
 
 class SetSubtitleAction extends Action<SetSubtitleIntent> {
   @override
   Future<void> invoke(SetSubtitleIntent intent) async {
-    final player = getIt<Player>();
+    return getIt<Player>().setSubtitleTrackID(intent.id!);
+  }
+}
 
-    if (intent.id != null) {
-      return player.setSubtitleTrackID(intent.id!);
-    } else {
-      try {
-        final track = await player.loadSubtitleTrack(intent.path!);
-        return player.setSubtitleTrackID(track.id);
-      } catch (e) {
-        getIt<Toast>().show('字幕加载失败');
-      }
+class LoadLocalSubtitleIntent extends Intent {
+  final String? path;
+  const LoadLocalSubtitleIntent(this.path);
+}
+
+class LoadLocalSubtitleAction extends Action<LoadLocalSubtitleIntent> {
+  @override
+  Future<SubtitleTrack?> invoke(LoadLocalSubtitleIntent intent) async {
+    try {
+      return await getIt<Player>().loadSubtitleTrack(intent.path!);
+    } catch (e) {
+      getIt<Toast>().show('字幕加载失败');
+      return null;
     }
   }
 }
@@ -448,6 +452,7 @@ class _PlayActionsState extends SingleChildState<PlayActions> {
             FinishDraggingProgressAction(dragBusiness: _dragBusiness),
         SetAudioTrackIntent: SetAudioTrackAction(),
         SetSubtitleIntent: SetSubtitleAction(),
+        LoadLocalSubtitleIntent: LoadLocalSubtitleAction(),
         SetSubDelayIntent: SetSubDelayAction(),
         SetSubSizeIntent: SetSubSizeAction(),
         SetSubPosIntent: SetSubPosAction(),

@@ -2,6 +2,7 @@ import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/models/chat/message.dart';
 import 'package:bunga_player/models/chat/user.dart';
 import 'package:bunga_player/models/playing/volume.dart';
+import 'package:bunga_player/services/chat.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/value_listenable.dart';
@@ -31,12 +32,6 @@ class CurrentChannelWatchers extends ChangeNotifier
   List<User> get value => _value;
   void clear() {
     _value.clear();
-    notifyListeners();
-  }
-
-  void set(Iterable<User> users) {
-    _value.clear();
-    _value.addAll(users);
     notifyListeners();
   }
 
@@ -80,6 +75,10 @@ class CurrentChannelWatchers extends ChangeNotifier
 
 class CurrentChannelMessage extends ValueNotifier<Message?> {
   CurrentChannelMessage() : super(null);
+}
+
+class CurrentChannelFiles extends ValueNotifier<Iterable<ChannelFile>> {
+  CurrentChannelFiles() : super([]);
 }
 
 // Voice call
@@ -144,6 +143,7 @@ final chatProviders = MultiProvider(providers: [
   ChangeNotifierProvider(create: (context) => CurrentChannelData()),
   ChangeNotifierProvider(create: (context) => CurrentChannelWatchers()),
   ChangeNotifierProvider(create: (context) => CurrentChannelMessage()),
+  ChangeNotifierProvider(create: (context) => CurrentChannelFiles()),
 
   // Voice call
   ChangeNotifierProvider(create: (context) => CurrentCallStatus()),

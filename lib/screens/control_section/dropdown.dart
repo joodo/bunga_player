@@ -28,7 +28,7 @@ class ControlDropdown<T> extends StatelessWidget {
         child: mock.MyDropdownButton<T>(
           items: items,
           value: value,
-          onChanged: onChanged,
+          onChanged: this.enabled ? onChanged : null,
           useRootOverlay: true,
           padding: const EdgeInsets.fromLTRB(12, 8, 4, 8),
           borderRadius: BorderRadius.circular(4),
@@ -37,16 +37,17 @@ class ControlDropdown<T> extends StatelessWidget {
           isDense: true,
           itemHeight: null,
           focusColor: Colors.transparent,
-          disabledHint: const LoadingText('载入中……'),
           selectedItemBuilder: (context) => items.map(
             (e) {
               if (e.child is! Text) return const SizedBox.shrink();
               return DropdownMenuItem<T>(
                 value: e.value,
-                child: Text(
-                  (e.child as Text).data!,
-                  overflow: TextOverflow.ellipsis,
-                ),
+                child: enabled
+                    ? Text(
+                        (e.child as Text).data!,
+                        overflow: TextOverflow.ellipsis,
+                      )
+                    : const LoadingText('载入中'),
               );
             },
           ).toList(),

@@ -38,4 +38,12 @@ class User {
 
   @override
   String toString() => toJson().toString();
+
+  @override
+  bool operator ==(other) {
+    return other is User && id == other.id && name == other.name;
+  }
+
+  @override
+  int get hashCode => Object.hash(id, name);
 }

@@ -10,7 +10,9 @@ import 'package:bunga_player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/providers/chat.dart';
 import 'package:bunga_player/providers/player.dart';
 import 'package:bunga_player/providers/ui.dart';
+import 'package:bunga_player/providers/video_playing.dart';
 import 'package:bunga_player/providers/wrapper.dart';
+import 'package:bunga_player/services/chat.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/player.dart';
 import 'package:bunga_player/services/services.dart';
@@ -19,6 +21,7 @@ import 'package:bunga_player/actions/dispatcher.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
+import 'package:path/path.dart' as path;
 
 class PositionAskingBusiness {
   String? askingMessageId;
@@ -170,6 +173,45 @@ class SendPlayingStatusAction extends ContextAction<SendPlayingStatusIntent> {
   }
 }
 
+class ShareSubtitleIntent extends Intent {
+  final String path;
+  const ShareSubtitleIntent(this.path);
+}
+
+class ShareSubtitleAction extends ContextAction<ShareSubtitleIntent> {
+  @override
+  Stream<UploadProgress> invoke(ShareSubtitleIntent intent,
+      [BuildContext? context]) async* {
+    final title = path.basenameWithoutExtension(intent.path);
+    yield* getIt<ChatService>().uploadFile(
+      intent.path,
+      description: 'subtitle $title',
+    );
+    getIt<Toast>().show('分享成功');
+  }
+
+  @override
+  bool isEnabled(ShareSubtitleIntent intent, [BuildContext? context]) {
+    return context?.read<CurrentChannelId>().value != null;
+  }
+}
+
+class FetchChannelSubtitleIntent extends Intent {
+  final ChannelSubtitle channelSubtitle;
+  const FetchChannelSubtitleIntent(this.channelSubtitle);
+}
+
+class FetchChannelSubtitleAction
+    extends ContextAction<FetchChannelSubtitleIntent> {
+  @override
+  Future<void> invoke(FetchChannelSubtitleIntent intent,
+      [BuildContext? context]) async {
+    final track =
+        await getIt<Player>().loadSubtitleTrack(intent.channelSubtitle.url);
+    intent.channelSubtitle.track = track;
+  }
+}
+
 class VideoPlayingActions extends SingleChildStatefulWidget {
   const VideoPlayingActions({super.key, super.child});
 
@@ -211,6 +253,8 @@ class _VideoPlayingActionsState extends SingleChildState<VideoPlayingActions> {
         SendPlayingStatusIntent: SendPlayingStatusAction(
           positionAskingBusiness: _positionAskingBusiness,
         ),
+        ShareSubtitleIntent: ShareSubtitleAction(),
+        FetchChannelSubtitleIntent: FetchChannelSubtitleAction(),
       },
       child: child!,
     );

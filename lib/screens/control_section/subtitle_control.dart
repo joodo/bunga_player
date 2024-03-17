@@ -1,8 +1,13 @@
 import 'package:bunga_player/actions/play.dart';
+import 'package:bunga_player/actions/video_playing.dart';
 import 'package:bunga_player/mocks/slider.dart' as mock;
 import 'package:bunga_player/mocks/dropdown.dart' as mock;
+import 'package:bunga_player/mocks/tooltip.dart' as mock;
 import 'package:bunga_player/providers/player.dart';
+import 'package:bunga_player/providers/video_playing.dart';
 import 'package:bunga_player/screens/control_section/dropdown.dart';
+import 'package:bunga_player/services/chat.dart';
+import 'package:bunga_player/services/player.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -25,6 +30,7 @@ class _SubtitleControlState extends State<SubtitleControl> {
   SubtitleControlUIState _subtitleUIState = SubtitleControlUIState.delay;
 
   bool _loading = false;
+  bool _uploading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -93,55 +99,165 @@ class _SubtitleControlState extends State<SubtitleControl> {
         const SizedBox(width: 8),
 
         // Subtitle dropbox
-        Consumer2<PlaySubtitleTracks, PlaySubtitleTrackID>(
-          builder: (context, tracks, currentTrackID, child) {
-            return SizedBox(
-              width: 200,
-              height: 36,
-              child: ControlDropdown(
-                enabled: !_loading,
-                items: <mock.DropdownMenuItem<String>>[
-                  ...tracks.value.map(
-                    (track) => mock.DropdownMenuItem<String>(
-                      value: track.id,
-                      child: Text(
-                        () {
-                          if (track.id == 'auto') return '默认';
-                          if (track.id == 'no') return '无字幕';
+        Consumer3<PlaySubtitleTracks, PlaySubtitleTrackID, ChannelSubtitles>(
+          builder: (context, tracks, currentTrackID, channelSubtitles, child) {
+            final internalEntries =
+                tracks.value.where((track) => !track.isExternal).map(
+                      (track) => mock.DropdownMenuItem<String>(
+                        value: track.id,
+                        child: Text(
+                          () {
+                            if (track.id == 'auto') return '默认';
+                            if (track.id == 'no') return '无字幕';
 
-                          return '${track.title ?? ''}${track.language != null ? ' (${track.language})' : ''}';
-                        }(),
+                            return _titleFromTrack(track);
+                          }(),
+                        ),
+                      ),
+                    );
+
+            final sharedEntries = channelSubtitles.value.values.map(
+              (channelSubtitle) {
+                final trackId = channelSubtitle.track?.id;
+                return mock.DropdownMenuItem<String>(
+                  value: trackId,
+                  onTap: trackId == null
+                      ? () async {
+                          setState(() => _loading = true);
+                          final response = Actions.invoke(
+                            context,
+                            FetchChannelSubtitleIntent(channelSubtitle),
+                          ) as Future;
+                          await response;
+
+                          if (!context.mounted) return;
+                          Actions.invoke(context,
+                              SetSubtitleIntent(channelSubtitle.track!.id));
+                          setState(() => _loading = false);
+                        }
+                      : null,
+                  child: Text(
+                      '${channelSubtitle.sharer.name} 分享：${channelSubtitle.title}'),
+                );
+              },
+            );
+
+            final localTracks = tracks.value
+                .where((track) => !(track.uri?.startsWith('http') ?? true));
+            final localEntries = localTracks.map(
+              (track) => mock.DropdownMenuItem<String>(
+                value: track.id,
+                child: Text(_titleFromTrack(track)),
+              ),
+            );
+
+            final openSubtitleEntry = mock.DropdownMenuItem<String>(
+              child: const Text('打开字幕...'),
+              onTap: () async {
+                final file = await openFile();
+                if (!context.mounted || file == null) return;
+
+                // load subtitle file from local
+                setState(() => _loading = true);
+                final response = Actions.invoke(
+                  context,
+                  LoadLocalSubtitleIntent(file.path),
+                ) as Future<SubtitleTrack?>;
+                final track = await response;
+
+                if (!context.mounted) return;
+                if (track != null) {
+                  Actions.invoke(
+                    context,
+                    SetSubtitleIntent(track.id),
+                  );
+                }
+                setState(() => _loading = false);
+              },
+            );
+
+            bool showShareButton = !_loading &&
+                localTracks.any((track) => track.id == currentTrackID.value);
+            return SizedBox(
+              width: 250,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: SizedBox(
+                      height: 36,
+                      child: ControlDropdown(
+                        enabled: !_loading,
+                        items: <mock.DropdownMenuItem<String>>[
+                          ...internalEntries,
+                          const mock.DropdownMenuDivider<String>(),
+                          ...sharedEntries,
+                          if (sharedEntries.isNotEmpty)
+                            const mock.DropdownMenuDivider<String>(),
+                          ...localEntries,
+                          if (localEntries.isNotEmpty)
+                            const mock.DropdownMenuDivider<String>(),
+                          openSubtitleEntry,
+                        ],
+                        value: currentTrackID.value,
+                        onChanged: (subtitleID) {
+                          if (subtitleID != null) {
+                            Actions.invoke(
+                                context, SetSubtitleIntent(subtitleID));
+                          }
+                        },
                       ),
                     ),
                   ),
-                  const mock.DropdownMenuDivider<String>(),
-                  const mock.DropdownMenuItem<String>(
-                    value: 'OPEN',
-                    child: Text('打开字幕……'),
+                  const SizedBox(width: 8),
+                  mock.Tooltip(
+                    message: '分享字幕',
+                    rootOverlay: true,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 250),
+                      curve: Curves.easeOutCubic,
+                      width: showShareButton ? 40 : 0,
+                      child: AnimatedScale(
+                        duration: const Duration(milliseconds: 250),
+                        curve: Curves.easeOutCubic,
+                        scale: showShareButton ? 1 : 0,
+                        child: IconButton(
+                          icon: !_uploading
+                              ? const Icon(Icons.ios_share)
+                              : SizedBox.square(
+                                  dimension: IconTheme.of(context).size,
+                                  child: const CircularProgressIndicator(),
+                                ),
+                          onPressed: !_uploading &&
+                                  Actions.maybeFind(
+                                        context,
+                                        intent: const ShareSubtitleIntent(''),
+                                      ) !=
+                                      null
+                              ? () async {
+                                  setState(() => _uploading = true);
+
+                                  final progresses = Actions.invoke(
+                                    context,
+                                    ShareSubtitleIntent(localTracks
+                                        .firstWhere((track) =>
+                                            track.id == currentTrackID.value)
+                                        .uri!),
+                                  ) as Stream<UploadProgress>;
+                                  await progresses.last;
+
+                                  if (!mounted) return;
+                                  setState(() => _uploading = false);
+                                }
+                              : null,
+                        ),
+                      ),
+                    ),
                   ),
                 ],
-                value: currentTrackID.value,
-                onChanged: (subtitleID) async {
-                  if (subtitleID != 'OPEN') {
-                    Actions.invoke(context, SetSubtitleIntent.byID(subtitleID));
-                  } else {
-                    final file = await openFile();
-                    if (context.mounted && file != null) {
-                      setState(() => _loading = true);
-                      final response = Actions.invoke(
-                        context,
-                        SetSubtitleIntent.byPath(file.path),
-                      ) as Future;
-                      await response;
-                      setState(() => _loading = false);
-                    }
-                  }
-                },
               ),
             );
           },
         ),
-        const SizedBox(width: 8),
         const VerticalDivider(indent: 8, endIndent: 8),
         const SizedBox(width: 8),
 
@@ -249,4 +365,7 @@ class _SubtitleControlState extends State<SubtitleControl> {
   }
 
   final _textController = TextEditingController();
+
+  String _titleFromTrack(SubtitleTrack track) =>
+      '${track.title ?? ''}${track.language != null ? ' (${track.language})' : ''}';
 }
