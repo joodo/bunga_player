@@ -33,7 +33,7 @@ class StreamIOClient implements ChatClient {
 
   @override
   Future<OwnUser> login(String id, String token, String? name) async {
-    await logout();
+    await _logout();
     final streamUser = stream.User(
       id: id,
       name: name,
@@ -47,13 +47,12 @@ class StreamIOClient implements ChatClient {
       name: name ?? '',
       logout: () async {
         if (id != _client.state.currentUser?.id) return;
-        return logout();
+        return _logout();
       },
     );
   }
 
-  @override
-  Future<void> logout() async {
+  Future<void> _logout() async {
     if (_client.state.currentUser == null) return;
     return _client.disconnectUser();
   }

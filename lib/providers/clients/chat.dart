@@ -73,8 +73,6 @@ class UploadProgress {
 
 abstract class ChatClient {
   Future<OwnUser> login(String id, String token, String? name);
-  Future<void> logout();
-
   Future<List<({String id, ChannelData data})>> queryOnlineChannels();
   Future<Channel> joinChannel(ChannelJoinPayload payload);
 }

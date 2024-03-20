@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:bunga_player/providers/chat.dart';
 import 'package:bunga_player/providers/clients/bunga.dart';
+import 'package:bunga_player/providers/clients/clients.dart';
 import 'package:bunga_player/providers/player.dart';
 import 'package:bunga_player/providers/settings.dart';
 import 'package:bunga_player/providers/clients/alist.dart';
@@ -62,9 +63,9 @@ class _ConsoleWrapperState extends SingleChildState<ConsoleWrapper> {
       children: [
         FilledButton(
           onPressed: () async {
-            final currentUser = context.read<CurrentUser>().value!;
+            final clientIdNotifier = context.read<SettingClientId>();
 
-            final currentID = currentUser.id;
+            final currentID = clientIdNotifier.value;
             final split = currentID.split('__');
 
             late final String newID;
@@ -74,7 +75,18 @@ class _ConsoleWrapperState extends SingleChildState<ConsoleWrapper> {
               newID = '${split.first}__${int.parse(split.last) + 1}';
             }
 
-            context.read<SettingClientId>().value = newID;
+            final bungaClientNotifier = context.read<BungaClientNotifier>();
+            final host = bungaClientNotifier.value?.host;
+            if (host == null) {
+              getIt<Toast>().show('Bunga Client not created yet');
+              return;
+            }
+
+            final bungaClient = BungaClient(host);
+            await bungaClient.register(newID);
+            bungaClientNotifier.value = bungaClient;
+            clientIdNotifier.value = newID;
+
             getIt<Toast>().show('User ID has changed to $newID');
           },
           child: const Text('Change Client ID'),

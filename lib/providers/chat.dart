@@ -174,14 +174,12 @@ class LastDanmaku extends ValueNotifier<Danmaku?> {
 
 final chatProviders = MultiProvider(providers: [
   // User
-  ChangeNotifierProxyProvider3<ChatClient?, SettingUserName, SettingClientId,
-      CurrentUser>(
+  ChangeNotifierProxyProvider2<ChatClient?, SettingUserName, CurrentUser>(
     create: (context) => CurrentUser(),
     update: (
       context,
       chatClient,
       userNameNotifier,
-      clientIdNotifier,
       previous,
     ) {
       previous!.value?.logout();
@@ -194,14 +192,12 @@ final chatProviders = MultiProvider(providers: [
 
         final job = AutoRetryJob(
           () => chatClient.login(
-            clientIdNotifier.value,
+            context.read<SettingClientId>().value,
             bungaClient!.streamIOClientInfo.userToken,
             userName,
           ),
           jobName: 'Login',
-          alive: () =>
-              context.mounted &&
-              context.read<SettingUserName>().value == userName,
+          alive: () => context.mounted && userNameNotifier.value == userName,
         );
         job.run().then(
           (user) {
