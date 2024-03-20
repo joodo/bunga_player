@@ -13,12 +13,13 @@ class SupportSite {
 class OnlineVideoClient {
   final BungaClient _bungaClient;
   OnlineVideoClient(this._bungaClient) {
-    _getSupportSites();
+    _fetchSupportSites();
   }
 
-  late final List<SupportSite> supportSites;
-  Future<void> _getSupportSites() async {
-    supportSites = (await _bungaClient.getSupportSites()).toList();
+  List<SupportSite>? _supportSites;
+  List<SupportSite>? get supportSites => _supportSites;
+  Future<void> _fetchSupportSites() async {
+    _supportSites = (await _bungaClient.getSupportSites()).toList();
     logger.i('Support sites fetched.');
   }
 

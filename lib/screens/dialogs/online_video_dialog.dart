@@ -57,7 +57,7 @@ class _OnlineVideoDialogState extends State<OnlineVideoDialog> {
                           () => launchUrlString('https://www.bilibili.com/'),
                   ),
                   for (final site
-                      in context.read<OnlineVideoClient>().supportSites)
+                      in context.read<OnlineVideoClient>().supportSites ?? [])
                     TextSpan(
                       text: ' ${site.name} ',
                       style: const TextStyle(color: Colors.blue),
