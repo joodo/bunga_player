@@ -18,10 +18,10 @@ class M3u8Entry extends VideoEntry {
 
   bool _isFetched = false;
   @override
-  Future<void> fetch() async {
+  Future<void> fetch(BuildContext context) async {
     if (_isFetched) return;
 
-    final response = await getIt<Bunga>().parseVideoUrl(path!);
+    final response = await context.read<BungaClient>().parseVideoUrl(path!);
     image = response['image'];
     title = response['title'];
 

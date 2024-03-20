@@ -2,15 +2,17 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:bunga_player/models/chat/channel_data.dart';
-import 'package:bunga_player/services/online_video.dart';
+import 'package:bunga_player/providers/clients/online_video.dart';
 import 'package:crclib/catalog.dart';
 import 'package:file_selector/file_selector.dart';
+import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
-import 'package:bunga_player/services/alist.dart';
-import 'package:bunga_player/services/bunga.dart';
+import 'package:bunga_player/providers/clients/alist.dart';
+import 'package:bunga_player/providers/clients/bunga.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
+import 'package:provider/provider.dart';
 
 part 'local_video_entry.dart';
 part 'a_list_entry.dart';
@@ -61,7 +63,7 @@ sealed class VideoEntry {
   }
 
   bool get isFetched;
-  Future<void> fetch();
+  Future<void> fetch(BuildContext context);
 
   @override
   String toString() {

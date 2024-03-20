@@ -8,8 +8,11 @@ import 'package:bunga_player/actions/wrapper.dart';
 import 'package:bunga_player/models/chat/message.dart';
 import 'package:bunga_player/models/chat/user.dart';
 import 'package:bunga_player/providers/chat.dart';
-import 'package:bunga_player/services/call.agora.dart';
-import 'package:bunga_player/services/call.dart';
+import 'package:bunga_player/providers/clients/call.agora.dart';
+import 'package:bunga_player/providers/clients/call.dart';
+import 'package:bunga_player/providers/clients/chat.dart';
+import 'package:bunga_player/providers/clients/chat.stream_io.dart';
+import 'package:bunga_player/providers/settings.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
@@ -32,15 +35,6 @@ class CallingRequestBusiness {
     },
   )..cancel();
 
-  Future<void> myRequestHasBeenAccepted() {
-    providerLocator<CurrentCallStatus>().value = CallStatus.talking;
-    requestMessageId = null;
-    myHopeList.clear();
-    requestTimeOutTimer.cancel();
-
-    return joinChannel();
-  }
-
   void myRequestIsRejectedBy(User user) {
     myHopeList.remove(user.id);
 
@@ -54,17 +48,20 @@ class CallingRequestBusiness {
   }
 
   StreamSubscription? _talkersCountSubscription;
-  Future<void> joinChannel() async {
-    final agoraService = getIt<CallService>();
-    final stream = await agoraService.joinChannel();
+  Future<void> joinChannel(BuildContext context) async {
+    final streamClient = context.read<ChatClient>() as StreamIOClient;
+    final channelId = context.read<CurrentChannel>().value!.id;
+    final channelData = await streamClient.getAgoraChannelData(channelId);
+
+    if (!context.mounted) return;
+    final stream = await context.read<CallClient>().joinChannel(channelData);
     _talkersCountSubscription = stream.listen(
         (count) => providerLocator<CurrentTalkersCount>().value = count);
   }
 
-  Future<void> leaveChannel() async {
-    final agoraService = getIt<CallService>();
+  Future<void> leaveChannel(CallClient client) async {
     await _talkersCountSubscription!.cancel();
-    return agoraService.leaveChannel();
+    return client.leaveChannel();
   }
 }
 
@@ -99,7 +96,7 @@ class StartCallingRequestAction
 
   @override
   bool isEnabled(StartCallingRequestIntent intent, [BuildContext? context]) {
-    return context?.read<CurrentChannelId>().value != null;
+    return context?.read<CurrentChannel>().value != null;
   }
 }
 
@@ -184,7 +181,8 @@ class AcceptCallingRequestAction
 
     read<CurrentCallStatus>().value = CallStatus.talking;
 
-    callingRequestBusiness.joinChannel();
+    if (!context.mounted) return;
+    callingRequestBusiness.joinChannel(context);
   }
 }
 
@@ -202,7 +200,7 @@ class HangUpAction extends ContextAction<HangUpIntent> {
     AudioPlayer().play(AssetSource('sounds/hang_up.wav'));
 
     read<ActionsLeaf>().invoke(const MuteMicIntent(false));
-    return callingRequestBusiness.leaveChannel();
+    return callingRequestBusiness.leaveChannel(read<CallClient>());
   }
 
   @override
@@ -220,7 +218,7 @@ class MuteMicAction extends ContextAction<MuteMicIntent> {
   @override
   Future<void> invoke(MuteMicIntent intent, [BuildContext? context]) {
     context!.read<MuteMic>().value = intent.mute;
-    return getIt<CallService>().setMuteMic(intent.mute);
+    return context.read<CallClient>().setMuteMic(intent.mute);
   }
 }
 
@@ -238,10 +236,10 @@ class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
 
   late final _callStatus = context.read<CurrentCallStatus>();
   late final _talkersCount = context.read<CurrentTalkersCount>();
-  late final _volume = context.read<CallVolume>();
+  late final _volume = context.read<SettingCallVolume>();
   late final _channelWatchers = context.read<CurrentChannelWatchers>();
   late final _channelMessage = context.read<CurrentChannelMessage>();
-  late final _nsLevel = context.read<CallNoiseSuppressionLevel>();
+  late final _nsLevel = context.read<SettingCallNoiseSuppressionLevel>();
 
   @override
   void initState() {
@@ -251,9 +249,6 @@ class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
     _nsLevel.addListener(_applyNoiceSuppress);
     _channelWatchers.addLeaveListener(_leaveMeansRejectBy);
     _channelMessage.addListener(_dealResponse);
-
-    _applyCallVolume();
-    _applyNoiceSuppress();
 
     super.initState();
   }
@@ -312,7 +307,7 @@ class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
 
   // Volume
   void _applyCallVolume() {
-    final setVolume = getIt<CallService>().setVolume;
+    final setVolume = context.read<CallClient>().setVolume;
     if (_volume.value.mute) {
       setVolume(0);
     } else {
@@ -321,7 +316,8 @@ class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
   }
 
   void _applyNoiceSuppress() {
-    (getIt<CallService>() as Agora).setNoiseSuppression(_nsLevel.value);
+    (context.read<CallClient>() as AgoraClient)
+        .setNoiseSuppression(_nsLevel.value);
   }
 
   void _leaveMeansRejectBy(User user) {
@@ -359,7 +355,7 @@ class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
             read<ActionsLeaf>().invoke(
               SendMessageIntent('call yes', quoteId: message.id),
             );
-            _callingRequestBusiness.myRequestHasBeenAccepted();
+            myRequestHasBeenAccepted();
 
           // Some one want to join when we are calling, answer him
           case CallStatus.talking:
@@ -380,7 +376,7 @@ class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
         // my request has been accepted!
         if (_callStatus.value == CallStatus.callOut &&
             message.quoteId == _callingRequestBusiness.requestMessageId) {
-          _callingRequestBusiness.myRequestHasBeenAccepted();
+          myRequestHasBeenAccepted();
         }
 
       case 'no':
@@ -393,5 +389,14 @@ class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
       default:
         logger.w('Unknown call message: $message');
     }
+  }
+
+  Future<void> myRequestHasBeenAccepted() {
+    context.read<CurrentCallStatus>().value = CallStatus.talking;
+    _callingRequestBusiness.requestMessageId = null;
+    _callingRequestBusiness.myHopeList.clear();
+    _callingRequestBusiness.requestTimeOutTimer.cancel();
+
+    return _callingRequestBusiness.joinChannel(context);
   }
 }

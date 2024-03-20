@@ -1,6 +1,6 @@
 import 'package:bunga_player/models/chat/user.dart';
 import 'package:bunga_player/providers/chat.dart';
-import 'package:bunga_player/services/chat.dart';
+import 'package:bunga_player/providers/clients/chat.dart';
 import 'package:bunga_player/services/player.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';

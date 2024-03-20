@@ -2,42 +2,25 @@ import 'dart:convert';
 
 import 'package:bunga_player/models/alist/file_info.dart';
 import 'package:bunga_player/models/alist/search_result.dart';
-import 'package:bunga_player/services/bunga.dart';
-import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/utils/auto_retry.dart';
 import 'package:http/http.dart' as http;
 
-class AList {
-  Uri? _host;
-  get host => _host;
-  String? _token;
-  get token => _token;
+class AListClient {
+  final Uri host;
+  final String token;
 
-  AList();
-
-  Future<void> initService() async {
-    if (_token != null) return;
-
-    final response = await AutoRetryJob(
-      getIt<Bunga>().getAListToken,
-      jobName: 'alist',
-    ).run();
-    _host = Uri.parse(response!.$1);
-    _token = response.$2;
-    logger.i('Alist token got successfully.');
-  }
+  AListClient({
+    required String host,
+    required this.token,
+  }) : host = Uri.parse(host);
 
   late final _headers = {
-    'Authorization': _token!,
+    'Authorization': token,
     'content-type': 'application/json',
   };
 
   Future<List<AListFileInfo>> list(String path, {bool refresh = false}) async {
-    assert(_host != null && _token != null);
-
     final response = await http.post(
-      _host!.resolve('fs/list'),
+      host.resolve('fs/list'),
       headers: _headers,
       body: jsonEncode({
         'path': path,
@@ -65,10 +48,8 @@ class AList {
   }
 
   Future<List<AListSearchResult>> search(String keywords) async {
-    assert(_host != null && _token != null);
-
     final response = await http.post(
-      _host!.resolve('fs/search'),
+      host.resolve('fs/search'),
       headers: _headers,
       body: jsonEncode({
         "parent": "/",
@@ -91,10 +72,8 @@ class AList {
   }
 
   Future<AListFileInfo> get(String path) async {
-    assert(_host != null && _token != null);
-
     final response = await http.post(
-      _host!.resolve('fs/get'),
+      host.resolve('fs/get'),
       headers: _headers,
       body: jsonEncode({'path': path}),
     );
@@ -110,5 +89,10 @@ class AList {
   bool _requestSuccess(http.Response response) {
     final code = jsonDecode(response.body)['code'] as int;
     return code ~/ 100 == 2;
+  }
+
+  @override
+  String toString() {
+    return 'host: $host, token: $token';
   }
 }

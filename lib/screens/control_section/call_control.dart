@@ -3,6 +3,7 @@ import 'package:bunga_player/actions/voice_call.dart';
 import 'package:bunga_player/mocks/slider.dart' as mock;
 import 'package:bunga_player/models/playing/volume.dart';
 import 'package:bunga_player/providers/chat.dart';
+import 'package:bunga_player/providers/settings.dart';
 import 'package:bunga_player/screens/control_section/card.dart';
 import 'package:bunga_player/screens/widgets/loading_text.dart';
 import 'package:flutter/material.dart';
@@ -76,7 +77,7 @@ class _CallControlState extends State<CallControl> {
               child: Row(
             children: [
               const SizedBox(width: 8),
-              Consumer<CallVolume>(
+              Consumer<SettingCallVolume>(
                 builder: (context, callVolume, child) => IconButton(
                   icon: callVolume.value.mute
                       ? const Icon(Icons.headset_off)
@@ -86,7 +87,7 @@ class _CallControlState extends State<CallControl> {
                 ),
               ),
               const SizedBox(width: 8),
-              Consumer<CallVolume>(
+              Consumer<SettingCallVolume>(
                 builder: (context, callVolume, child) => SizedBox(
                   width: 100,
                   child: mock.MySlider(
@@ -189,7 +190,7 @@ class _CallControlState extends State<CallControl> {
 class _NoiseSuppressWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Consumer2<MuteMic, CallNoiseSuppressionLevel>(
+    return Consumer2<MuteMic, SettingCallNoiseSuppressionLevel>(
       builder: (context, muteMic, suppressLevel, child) => SegmentedButton<int>(
         showSelectedIcon: false,
         segments: const [

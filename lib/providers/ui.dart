@@ -34,10 +34,6 @@ class FoldLayout {
   FoldLayout(this.value);
 }
 
-class AListInitiated extends ValueNotifier<bool> {
-  AListInitiated() : super(false);
-}
-
 class CatIndicator extends ChangeNotifier {
   String? _title;
   String? get title => _title;
@@ -67,6 +63,10 @@ class CatIndicator extends ChangeNotifier {
       _busy = false;
     }
   }
+}
+
+class PendingBungaHost extends ValueNotifier<bool> {
+  PendingBungaHost() : super(false);
 }
 
 final uiProviders = MultiProvider(
@@ -105,6 +105,6 @@ final uiProviders = MultiProvider(
     ),
     ChangeNotifierProvider(create: (context) => JustToggleByRemote()),
     ChangeNotifierProvider(create: (context) => JustAdjustedVolumeByKey()),
-    ChangeNotifierProvider(create: (context) => AListInitiated(), lazy: false),
+    ChangeNotifierProvider(create: (context) => PendingBungaHost()),
   ],
 );

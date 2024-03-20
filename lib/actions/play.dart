@@ -110,8 +110,8 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
       cat.title = '正在鬼鬼祟祟';
 
       final videoPlayer = getIt<Player>();
+      await intent.videoEntry.fetch(context);
       await videoPlayer.stop();
-      await intent.videoEntry.fetch();
       await videoPlayer.open(intent.videoEntry, intent.sourceIndex);
 
       if (context.mounted) {

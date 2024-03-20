@@ -3,21 +3,22 @@ import 'dart:async';
 import 'package:async/async.dart';
 import 'package:flutter/foundation.dart';
 
-class ReadonlyStreamValueNotifier<T> extends ChangeNotifier
-    implements ValueListenable<T> {
-  T _value;
-  ReadonlyStreamValueNotifier(this._value);
+mixin StreamBinding<T> on ValueNotifier<T> {
+  StreamSubscription<T>? _subscription;
 
-  StreamSubscription<T> bind(Stream<T> stream) {
-    return stream.listen((value) {
-      if (_value == value) return;
-      _value = value;
-      notifyListeners();
+  void bind(Stream<T> stream) {
+    assert(!isBinded);
+    _subscription = stream.listen((value) {
+      this.value = value;
     });
   }
 
-  @override
-  T get value => _value;
+  Future<void> unbind() async {
+    await _subscription?.cancel();
+    _subscription = null;
+  }
+
+  bool get isBinded => _subscription != null;
 }
 
 class ValueNotifierWithOldValue<T> extends ChangeNotifier
@@ -36,39 +37,6 @@ class ValueNotifierWithOldValue<T> extends ChangeNotifier
 
   T? _oldValue;
   T? get oldValue => _oldValue;
-}
-
-class StreamNotifier<T> extends ChangeNotifier implements ValueListenable<T> {
-  StreamNotifier(this._value);
-
-  bool _isBinded = false;
-  bool follow = true;
-  late final ValueSetter<T> _streamSetter;
-  void bind(Stream<T> stream, ValueSetter<T> streamSetter) {
-    if (_isBinded) throw Exception('Notifier already binded');
-    _isBinded = true;
-
-    _streamSetter = streamSetter;
-    stream.listen((value) {
-      if (!follow || _value == value) {
-        return;
-      }
-      _value = value;
-      notifyListeners();
-    });
-  }
-
-  T _value;
-  @override
-  T get value => _value;
-  set value(T newValue) {
-    if (_value == newValue) {
-      return;
-    }
-    _value = newValue;
-    _streamSetter(newValue);
-    notifyListeners();
-  }
 }
 
 class ValueNotifierWithReset<T> extends ValueNotifier<T> {

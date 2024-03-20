@@ -1,15 +1,11 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:animations/animations.dart';
-import 'package:bunga_player/actions/auth.dart';
-import 'package:bunga_player/models/app_key/app_key.dart';
 import 'package:bunga_player/providers/chat.dart';
+import 'package:bunga_player/providers/clients/bunga.dart';
 import 'package:bunga_player/providers/player.dart';
 import 'package:bunga_player/providers/settings.dart';
-import 'package:bunga_player/screens/dialogs/host.dart';
-import 'package:bunga_player/screens/wrappers/restart.dart';
-import 'package:bunga_player/services/alist.dart';
+import 'package:bunga_player/providers/clients/alist.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/player.dart';
 import 'package:bunga_player/services/preferences.dart';
@@ -78,29 +74,10 @@ class _ConsoleWrapperState extends SingleChildState<ConsoleWrapper> {
               newID = '${split.first}__${int.parse(split.last) + 1}';
             }
 
-            await (Actions.invoke(context, ChangeCurrentUserIdIntent(newID))
-                as Future);
+            context.read<SettingClientId>().value = newID;
             getIt<Toast>().show('User ID has changed to $newID');
           },
-          child: const Text('Change User ID'),
-        ),
-        const SizedBox(height: 8),
-        FilledButton(
-          onPressed: () async {
-            final bungaHost = context.read<SettingBungaHost>();
-            final newHost = await showModal<String>(
-              context: context,
-              builder: (dialogContext) => HostDialog(
-                host: bungaHost.value,
-                proxy: context.read<SettingProxy>(),
-              ),
-            );
-
-            if (newHost == null || !context.mounted) return;
-            bungaHost.value = newHost;
-            RestartWrapper.restartApp(context);
-          },
-          child: const Text('Change Bunga Host'),
+          child: const Text('Change Client ID'),
         ),
         const SizedBox(height: 8),
         FilledButton(
@@ -218,11 +195,16 @@ class _VariablesView extends StatefulWidget {
 
 class _VariablesViewState extends State<_VariablesView> {
   late final _variables = <String, String? Function(BuildContext context)>{
-    'App Keys': (context) => context.read<AppKeys>().toString(),
+    'Client id': (context) => context.read<SettingClientId>().value,
+    'App Keys': (context) {
+      final bunga = context.read<BungaClient?>();
+      if (bunga == null) return 'null';
+      return 'StreamIO: ${bunga.streamIOClientInfo.appKey}, Agora: ${bunga.agoraClientAppKey}';
+    },
     'Current verion': (context) => getIt<PackageInfo>().version,
     'Chat User': (context) => context.read<CurrentUser>().toString(),
     'Chat Channel': (context) =>
-        '''id: ${context.read<CurrentChannelId>().value}
+        '''id: ${context.read<CurrentChannel>().value?.id}
 data: ${context.read<CurrentChannelData>().value}
 watchers:${context.read<CurrentChannelWatchers>().value}
 last message: ${context.read<CurrentChannelMessage>().value}''',
@@ -232,8 +214,7 @@ talkers: ${context.read<CurrentTalkersCount>().value}''',
     'Player': (context) =>
         '''Video Entry: ${context.read<PlayVideoEntry>().value}
 Status: ${context.read<PlayStatus>().value}''',
-    'AList': (context) =>
-        'host: ${getIt<AList>().host},\ntoken: ${getIt<AList>().token}',
+    'AList': (context) => '${context.read<AListClient?>()}',
   };
 
   @override

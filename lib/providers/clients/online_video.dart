@@ -1,7 +1,6 @@
 import 'package:bunga_player/models/video_entries/video_entry.dart';
-import 'package:bunga_player/services/bunga.dart';
+import 'package:bunga_player/providers/clients/bunga.dart';
 import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/services/services.dart';
 import 'package:http/http.dart' as http;
 
 class SupportSite {
@@ -11,23 +10,19 @@ class SupportSite {
   SupportSite({required this.name, required this.url});
 }
 
-class OnlineVideoService {
-  OnlineVideoService() {
+class OnlineVideoClient {
+  final BungaClient _bungaClient;
+  OnlineVideoClient(this._bungaClient) {
     _getSupportSites();
   }
 
   late final List<SupportSite> supportSites;
   Future<void> _getSupportSites() async {
-    supportSites = (await getIt<Bunga>().getSupportSites()).toList();
+    supportSites = (await _bungaClient.getSupportSites()).toList();
     logger.i('Support sites fetched.');
   }
 
-  String? biliSess;
-  Future<void> fetchSess() async {
-    if (biliSess != null) return;
-    biliSess = await getIt<Bunga>().getBiliSess();
-    logger.i('Bilibili sess fetched: $biliSess');
-  }
+  late final String? biliSess = _bungaClient.biliSess;
 
   Future<VideoEntry> getEntryFromUri(Uri uri) async {
     switch (uri.host) {
@@ -39,6 +34,7 @@ class OnlineVideoService {
         logger.i('Bili video: redirect to $redirectUri');
         return getEntryFromUri(redirectUri);
 
+      // TODO: deal with m.bilibili.tv
       case 'www.bilibili.com':
         switch (uri.pathSegments[0]) {
           case 'video':
@@ -67,8 +63,6 @@ class OnlineVideoService {
 
       default:
         final entry = M3u8Entry(path: uri.toString());
-        // prefetch in case site not support
-        await entry.fetch();
         return entry;
     }
   }

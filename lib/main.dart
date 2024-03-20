@@ -5,6 +5,7 @@ import 'package:bunga_player/services/services.dart' as services;
 import 'package:bunga_player/screens/main_screen.dart';
 import 'package:bunga_player/screens/wrappers/wrap.dart';
 import 'package:flutter/material.dart';
+import 'package:nested/nested.dart';
 import 'package:window_manager/window_manager.dart';
 
 void main() {
@@ -21,16 +22,17 @@ void main() {
       await windowManager.ensureInitialized();
       windowManager.setMinimumSize(const Size(800, 600));
 
-      final home = wrap(const MainScreen());
-      final app = MaterialApp(
-        theme: ThemeData(
-          brightness: Brightness.dark,
-          useMaterial3: true,
-          colorSchemeSeed: const Color(0xFFF5C253),
+      final app = SingleChildBuilder(
+        builder: (context, child) => MaterialApp(
+          theme: ThemeData(
+            brightness: Brightness.dark,
+            useMaterial3: true,
+            colorSchemeSeed: const Color(0xFFF5C253),
+          ),
+          home: Material(child: child),
         ),
-        home: Scaffold(body: home),
       );
-      runApp(app);
+      runApp(wrap(app, const MainScreen()));
     },
     (error, stackTrace) {
       logger.e(error, stackTrace: stackTrace);

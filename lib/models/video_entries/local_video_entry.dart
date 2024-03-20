@@ -12,7 +12,7 @@ class LocalVideoEntry extends VideoEntry {
   @override
   bool get isFetched => _isFetched;
   @override
-  Future<void> fetch() async {
+  Future<void> fetch(BuildContext context) async {
     final crcValue = await File(sources.videos.first)
         .openRead()
         .take(1000)

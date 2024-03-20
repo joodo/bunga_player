@@ -7,6 +7,7 @@ import 'ui.dart';
 import 'chat.dart';
 import 'player.dart';
 import 'video_playing.dart';
+import 'clients/clients.dart';
 
 extension IsVideoSameWithChannel on BuildContext {
   bool get isVideoSameWithChannel =>
@@ -23,6 +24,7 @@ class ProvidersWrapper extends SingleChildStatelessWidget {
       providers: [
         settingProviders,
         uiProviders,
+        clientProviders,
         chatProviders,
         playerProviders,
         videoPlayingProvider,

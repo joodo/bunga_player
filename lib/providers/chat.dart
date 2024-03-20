@@ -1,25 +1,45 @@
+import 'dart:async';
+
 import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/models/chat/message.dart';
 import 'package:bunga_player/models/chat/user.dart';
-import 'package:bunga_player/models/playing/volume.dart';
-import 'package:bunga_player/services/chat.dart';
-import 'package:bunga_player/services/preferences.dart';
-import 'package:bunga_player/services/services.dart';
+import 'package:bunga_player/providers/clients/chat.dart';
+import 'package:bunga_player/providers/settings.dart';
+import 'package:bunga_player/utils/auto_retry.dart';
 import 'package:bunga_player/utils/value_listenable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 
+import 'clients/bunga.dart';
+
 // User
-class CurrentUser extends ValueNotifier<User?> {
+class CurrentUser extends ValueNotifier<OwnUser?> {
   CurrentUser() : super(null);
 }
 
 // Channel
-class CurrentChannelId extends ValueNotifier<String?> {
-  CurrentChannelId() : super(null);
+sealed class ChannelJoinPayload {}
+
+class ChannelJoinByIdPayload extends ChannelJoinPayload {
+  final String id;
+  ChannelJoinByIdPayload(this.id);
 }
 
-class CurrentChannelData extends ValueNotifierWithOldValue<ChannelData?> {
+class ChannelJoinByDataPayload extends ChannelJoinPayload {
+  final ChannelData data;
+  ChannelJoinByDataPayload(this.data);
+}
+
+class CurrentChannelJoinPayload extends ValueNotifier<ChannelJoinPayload?> {
+  CurrentChannelJoinPayload() : super(null);
+}
+
+class CurrentChannel extends ValueNotifier<Channel?> with StreamBinding {
+  CurrentChannel() : super(null);
+}
+
+class CurrentChannelData extends ValueNotifier<ChannelData?>
+    with StreamBinding {
   CurrentChannelData() : super(null);
 }
 
@@ -71,14 +91,47 @@ class CurrentChannelWatchers extends ChangeNotifier
       listener(user);
     }
   }
+
+  final _subscriptions = <StreamSubscription>[];
+  bool get isBinded => _subscriptions.isNotEmpty;
+
+  void bind(Stream<User> joinStream, Stream<User> leaveStream) {
+    assert(!isBinded);
+    _subscriptions.addAll([
+      joinStream.listen(join),
+      leaveStream.listen(leave),
+    ]);
+  }
+
+  Future<void> unbind() async {
+    for (final subscription in _subscriptions) {
+      await subscription.cancel();
+    }
+    _subscriptions.clear();
+  }
 }
 
-class CurrentChannelMessage extends ValueNotifier<Message?> {
+class CurrentChannelMessage extends ValueNotifier<Message?> with StreamBinding {
   CurrentChannelMessage() : super(null);
 }
 
 class CurrentChannelFiles extends ValueNotifier<Iterable<ChannelFile>> {
   CurrentChannelFiles() : super([]);
+
+  StreamSubscription? _subscription;
+  bool get isBinded => _subscription != null;
+
+  void bind(Stream<ChannelFile> stream) {
+    assert(!isBinded);
+    _subscription = stream.listen((file) {
+      value = [...value, file];
+    });
+  }
+
+  Future<void> unbind() async {
+    await _subscription?.cancel();
+    _subscription = null;
+  }
 }
 
 // Voice call
@@ -97,17 +150,6 @@ class CurrentTalkersCount extends ValueNotifier<int> {
   CurrentTalkersCount() : super(0);
 }
 
-class CallVolume extends ValueNotifier<Volume> {
-  CallVolume() : super(Volume(volume: (Volume.max - Volume.min) ~/ 2)) {
-    bindPreference<int>(
-      preferences: getIt<Preferences>(),
-      key: 'call_volume',
-      load: (pref) => Volume(volume: pref),
-      update: (value) => value.volume,
-    );
-  }
-}
-
 class MuteMic extends ValueNotifier<bool> {
   MuteMic() : super(false);
 }
@@ -117,10 +159,6 @@ enum NoiseSuppressionLevel {
   low,
   middle,
   high,
-}
-
-class CallNoiseSuppressionLevel extends ValueNotifier<NoiseSuppressionLevel> {
-  CallNoiseSuppressionLevel() : super(NoiseSuppressionLevel.high);
 }
 
 class Danmaku {
@@ -136,21 +174,135 @@ class LastDanmaku extends ValueNotifier<Danmaku?> {
 
 final chatProviders = MultiProvider(providers: [
   // User
-  ChangeNotifierProvider(create: (context) => CurrentUser()),
+  ChangeNotifierProxyProvider3<ChatClient?, SettingUserName, SettingClientId,
+      CurrentUser>(
+    create: (context) => CurrentUser(),
+    update: (
+      context,
+      chatClient,
+      userNameNotifier,
+      clientIdNotifier,
+      previous,
+    ) {
+      previous!.value?.logout();
+      previous.value = null;
+
+      final userName = userNameNotifier.value;
+      if (chatClient != null && userName.isNotEmpty) {
+        final bungaClient = context.read<BungaClient?>();
+        assert(bungaClient != null);
+
+        final job = AutoRetryJob(
+          () => chatClient.login(
+            clientIdNotifier.value,
+            bungaClient!.streamIOClientInfo.userToken,
+            userName,
+          ),
+          jobName: 'Login',
+          alive: () =>
+              context.mounted &&
+              context.read<SettingUserName>().value == userName,
+        );
+        job.run().then(
+          (user) {
+            previous.value = user;
+          },
+        ).onError((error, stackTrace) => null);
+      }
+
+      return previous;
+    },
+  ),
 
   // Channel
-  ChangeNotifierProvider(create: (context) => CurrentChannelId()),
-  ChangeNotifierProvider(create: (context) => CurrentChannelData()),
-  ChangeNotifierProvider(create: (context) => CurrentChannelWatchers()),
-  ChangeNotifierProvider(create: (context) => CurrentChannelMessage()),
-  ChangeNotifierProvider(create: (context) => CurrentChannelFiles()),
+  ChangeNotifierProvider(create: (context) => CurrentChannelJoinPayload()),
+  ChangeNotifierProxyProvider2<ChatClient?, CurrentChannelJoinPayload,
+      CurrentChannel>(
+    create: (context) => CurrentChannel(),
+    update: (context, chatClient, channelJoinPayload, previous) {
+      previous!.value?.leave();
+      previous.value = null;
+
+      if (chatClient != null && channelJoinPayload.value != null) {
+        final payload = channelJoinPayload.value!;
+        final job = AutoRetryJob<Channel>(
+          () => chatClient.joinChannel(payload),
+          jobName: 'Join Channel',
+          alive: () => context.mounted && channelJoinPayload.value == payload,
+        );
+        job.run().then(
+          (channel) {
+            previous.value = channel;
+          },
+        ).onError((error, stackTrace) {
+          if (error is JobExpired<Channel>) {
+            // if job expired, leave the channel just joined
+            error.result?.leave();
+          }
+        });
+      }
+
+      return previous;
+    },
+  ),
+
+  ChangeNotifierProxyProvider<CurrentChannel, CurrentChannelData>(
+    create: (context) => CurrentChannelData(),
+    update: (context, currentChannel, previous) {
+      final channel = currentChannel.value;
+      if (channel == null) {
+        previous!.value = null;
+        previous.unbind();
+      } else {
+        previous!.bind(channel.streams.data);
+      }
+      return previous;
+    },
+  ),
+  ChangeNotifierProxyProvider<CurrentChannel, CurrentChannelMessage>(
+    create: (context) => CurrentChannelMessage(),
+    update: (context, currentChannel, previous) {
+      final channel = currentChannel.value;
+      if (channel == null) {
+        previous!.value = null;
+        previous.unbind();
+      } else {
+        previous!.bind(channel.streams.message);
+      }
+      return previous;
+    },
+  ),
+  ChangeNotifierProxyProvider<CurrentChannel, CurrentChannelFiles>(
+    create: (context) => CurrentChannelFiles(),
+    update: (context, currentChannel, previous) {
+      final channel = currentChannel.value;
+      if (channel == null) {
+        previous!.value = [];
+        previous.unbind();
+      } else {
+        previous!.bind(channel.streams.file);
+      }
+      return previous;
+    },
+  ),
+  ChangeNotifierProxyProvider<CurrentChannel, CurrentChannelWatchers>(
+    create: (context) => CurrentChannelWatchers(),
+    update: (context, currentChannel, previous) {
+      final channel = currentChannel.value;
+      if (channel == null) {
+        previous!.clear();
+        previous.unbind();
+      } else {
+        previous!.bind(channel.streams.joiner, channel.streams.leaver);
+      }
+      return previous;
+    },
+  ),
 
   // Voice call
   ChangeNotifierProvider(create: (context) => CurrentCallStatus()),
   ChangeNotifierProvider(create: (context) => CurrentTalkersCount()),
-  ChangeNotifierProvider(create: (context) => CallVolume()),
   ChangeNotifierProvider(create: (context) => MuteMic()),
-  ChangeNotifierProvider(create: (context) => CallNoiseSuppressionLevel()),
 
   // Danmaku
   ChangeNotifierProvider(create: (context) => LastDanmaku()),

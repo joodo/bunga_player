@@ -4,20 +4,21 @@ import 'dart:io';
 import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/models/chat/message.dart';
 import 'package:bunga_player/models/chat/user.dart';
+import 'package:bunga_player/providers/chat.dart';
 import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/services/chat.dart';
+import 'package:bunga_player/providers/clients/chat.dart';
 import 'package:stream_chat_flutter_core/stream_chat_flutter_core.dart'
     as stream;
 import 'package:path/path.dart' as path;
 
-typedef AgoraChannelDataPayload = (
+typedef AgoraChannelDataPayload = ({
   String channelId,
   int userId,
   String token,
-);
+});
 
-class StreamIO implements ChatService {
-  StreamIO(String appKey)
+class StreamIOClient implements ChatClient {
+  StreamIOClient(String appKey)
       : _client = stream.StreamChatClient(
           appKey,
           logLevel: stream.Level.WARNING,
@@ -25,30 +26,50 @@ class StreamIO implements ChatService {
   final stream.StreamChatClient _client;
 
   // User
-  static User _userFromStreamUser(stream.User streamUser) =>
-      User(id: streamUser.id, name: streamUser.name);
+  User _userFromStreamUser(stream.User streamUser) => User(
+        id: streamUser.id,
+        name: streamUser.name,
+      );
 
   @override
-  Future<void> login(String id, String token, String? name) async {
-    if (_client.state.currentUser != null) await _client.disconnectUser();
+  Future<OwnUser> login(String id, String token, String? name) async {
+    await logout();
+    final streamUser = stream.User(
+      id: id,
+      name: name,
+    );
     await _client.connectUser(
-      stream.User(
-        id: id,
-        name: name,
-      ),
+      streamUser,
       token,
+    );
+    return OwnUser(
+      id: id,
+      name: name ?? '',
+      logout: () async {
+        if (id != _client.state.currentUser?.id) return;
+        return logout();
+      },
     );
   }
 
   @override
-  Future<void> logout() => _client.disconnectUser();
+  Future<void> logout() async {
+    if (_client.state.currentUser == null) return;
+    return _client.disconnectUser();
+  }
 
   // Channel
-  stream.Channel? _currentChannel;
-
   @override
-  Future<JoinChannelResponse> createOrJoinChannelByData(
-      ChannelData data) async {
+  Future<Channel> joinChannel(ChannelJoinPayload payload) {
+    switch (payload) {
+      case ChannelJoinByIdPayload():
+        return _joinChannelById(payload.id);
+      case ChannelJoinByDataPayload():
+        return _createOrJoinChannelByData(payload.data);
+    }
+  }
+
+  Future<Channel> _createOrJoinChannelByData(ChannelData data) async {
     stream.Channel channel;
 
     for (int suffix = 0; true; suffix++) {
@@ -68,19 +89,16 @@ class StreamIO implements ChatService {
     }
 
     await channel.watch();
-    _currentChannel = channel;
 
     return _getResponseByStreamChannel(channel);
   }
 
-  @override
-  Future<JoinChannelResponse> joinChannelById(String id) async {
+  Future<Channel> _joinChannelById(String id) async {
     final channel = _client.channel(
       'livestream',
       id: id,
     );
     await channel.watch();
-    _currentChannel = channel;
 
     return _getResponseByStreamChannel(channel);
   }
@@ -97,7 +115,7 @@ class StreamIO implements ChatService {
     );
   }
 
-  JoinChannelResponse _getResponseByStreamChannel(stream.Channel channel) {
+  Channel _getResponseByStreamChannel(stream.Channel channel) {
     final joinerStreamController = StreamController<User>.broadcast();
     final fileStreamController = StreamController<ChannelFile>.broadcast();
 
@@ -111,7 +129,7 @@ class StreamIO implements ChatService {
         .then(
       (state) {
         // watchers
-        _updateUsers(state.watchers!).then(
+        _updateUsers(state.watchers ?? []).then(
           (watchers) {
             // push users that already watched
             for (final user in watchers) {
@@ -147,10 +165,10 @@ class StreamIO implements ChatService {
       },
     );
 
-    return JoinChannelResponse(
+    return Channel(
       id: channel.cid!,
-      streams: ChannelStreams(
-        channelData: channel.extraDataStream
+      streams: (
+        data: channel.extraDataStream
             .map<ChannelData>((data) => ChannelData.fromJson(data))
             .distinct(),
         joiner: joinerStreamController.stream.distinct(),
@@ -168,6 +186,19 @@ class StreamIO implements ChatService {
             ),
         file: fileStreamController.stream,
       ),
+      sendMessage: (text, {quoteId}) => _sendMessage(
+        channel,
+        text,
+        quoteId: quoteId,
+      ),
+      updateData: (data) => _updateChannelData(channel, data),
+      uploadFile: (filePath, {description, title}) => _uploadFile(
+        channel,
+        filePath,
+        description: description,
+        title: title,
+      ),
+      leave: channel.stopWatching,
     );
   }
 
@@ -182,7 +213,7 @@ class StreamIO implements ChatService {
   }
 
   @override
-  Future<List<(String id, ChannelData data)>> queryOnlineChannels() async {
+  Future<List<({String id, ChannelData data})>> queryOnlineChannels() async {
     final filter = stream.Filter.equal(
         ChannelData.videoTypeJsonKey, VideoType.online.name);
     final channels = await _client
@@ -197,12 +228,15 @@ class StreamIO implements ChatService {
         )
         .last;
     return channels
-        .map(
-            (channel) => (channel.id!, ChannelData.fromJson(channel.extraData)))
+        .map((channel) => (
+              id: channel.id!,
+              data: ChannelData.fromJson(channel.extraData),
+            ))
         .toList();
   }
 
   Future<List<stream.User>> _updateUsers(Iterable<stream.User> users) async {
+    if (users.isEmpty) return [];
     final response = await _client.queryUsers(
         filter: stream.Filter.in_(
       'id',
@@ -211,20 +245,15 @@ class StreamIO implements ChatService {
     return response.users;
   }
 
-  @override
-  Future<void> leaveChannel() async {
-    assert(_currentChannel != null);
-    await _currentChannel!.stopWatching();
-    _currentChannel = null;
-  }
-
-  @override
-  Future<Message> sendMessage(String text, {String? quoteId}) async {
+  Future<Message> _sendMessage(
+    stream.Channel streamChannel,
+    String text, {
+    String? quoteId,
+  }) async {
     final message = stream.Message(text: text, quotedMessageId: quoteId);
 
-    assert(_currentChannel != null);
     // Message id was generated when message was created, so no need to await
-    _currentChannel!.sendMessage(
+    streamChannel.sendMessage(
       message,
       skipPush: true,
     );
@@ -237,14 +266,12 @@ class StreamIO implements ChatService {
     );
   }
 
-  @override
-  Stream<UploadProgress> uploadFile(
+  Stream<UploadProgress> _uploadFile(
+    stream.Channel channel,
     String filePath, {
     String? title,
     String? description,
   }) {
-    assert(_currentChannel != null);
-
     final progress = StreamController<UploadProgress>();
 
     File(filePath).length().then((size) {
@@ -252,7 +279,7 @@ class StreamIO implements ChatService {
         size: size,
         path: filePath,
       );
-      return _currentChannel!.sendFile(
+      return channel.sendFile(
         attachmentFile,
         onSendProgress: (count, total) {
           progress.add(UploadProgress(count, total));
@@ -270,7 +297,7 @@ class StreamIO implements ChatService {
         ],
       );
 
-      return _currentChannel!.sendMessage(
+      return channel.sendMessage(
         message,
         skipPush: true,
       );
@@ -279,29 +306,26 @@ class StreamIO implements ChatService {
     return progress.stream;
   }
 
-  @override
-  Future<void> updateChannelData(ChannelData data) async {
-    assert(_currentChannel != null);
-    await _currentChannel!.updatePartial(set: data.toJson());
+  Future<void> _updateChannelData(
+      stream.Channel channel, ChannelData data) async {
+    await channel.updatePartial(set: data.toJson());
   }
 
-  Future<AgoraChannelDataPayload> getAgoraChannelData() async {
-    assert(_currentChannel?.id != null);
-
+  Future<AgoraChannelDataPayload> getAgoraChannelData(String channelId) async {
     final callResponse = await _client.createCall(
-      callId: _currentChannel!.id!,
+      callId: channelId,
       callType: 'audio',
       channelType: 'livestream',
-      channelId: _currentChannel!.id!,
+      channelId: channelId,
     );
     final call = callResponse.call!;
 
     final tokenResponse = await _client.getCallToken(call.id);
 
     return (
-      call.agora!.channel,
-      tokenResponse.agoraUid!,
-      tokenResponse.token!,
+      channelId: call.agora!.channel,
+      userId: tokenResponse.agoraUid!,
+      token: tokenResponse.token!,
     );
   }
 }

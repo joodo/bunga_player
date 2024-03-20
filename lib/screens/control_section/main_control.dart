@@ -1,8 +1,6 @@
-import 'package:bunga_player/actions/channel.dart';
 import 'package:bunga_player/actions/play.dart';
 import 'package:bunga_player/actions/video_playing.dart';
 import 'package:bunga_player/actions/voice_call.dart';
-import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/models/playing/volume.dart';
 import 'package:bunga_player/mocks/popup_menu.dart' as mock;
 import 'package:bunga_player/mocks/slider.dart' as mock;
@@ -11,7 +9,6 @@ import 'package:bunga_player/providers/chat.dart';
 import 'package:bunga_player/providers/player.dart';
 import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/screens/control_section/popmoji_control.dart';
-import 'package:bunga_player/utils/auto_retry.dart';
 import 'package:bunga_player/utils/duration.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -24,16 +21,6 @@ class MainControl extends StatefulWidget {
 }
 
 class _MainControlState extends State<MainControl> {
-  late final AutoRetryJob _joinChannelJob;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _joinChannel();
-    });
-  }
-
   @override
   void didChangeDependencies() {
     PopmojiControl.cacheSvgs();
@@ -64,7 +51,7 @@ class _MainControlState extends State<MainControl> {
         const SizedBox(width: 8),
 
         // Ask position button
-        Consumer3<CurrentUser, CurrentChannelId, CurrentChannelWatchers>(
+        Consumer3<CurrentUser, CurrentChannel, CurrentChannelWatchers>(
           builder: (context, _, __, ___, child) => IconButton(
             onPressed: Actions.handler(context, AskPositionIntent()),
             icon: child!,
@@ -239,6 +226,7 @@ class _MainControlState extends State<MainControl> {
 
             // Leave Button
             mock.PopupMenuItem(
+              onTap: _leaveChannel,
               child: const Row(
                 children: [
                   Icon(Icons.logout),
@@ -246,14 +234,6 @@ class _MainControlState extends State<MainControl> {
                   Text('离开房间'),
                 ],
               ),
-              onTap: () async {
-                Actions.invoke(context, StopPlayIntent());
-
-                _joinChannelJob.cancelIfNotFinished();
-                Actions.maybeInvoke(context, LeaveChannelIntent());
-
-                Navigator.of(context).pop();
-              },
             ),
           ],
         ),
@@ -278,40 +258,16 @@ class _MainControlState extends State<MainControl> {
     required Widget Function(VoidCallback? onPressed) build,
     required VoidCallback onPressed,
   }) {
-    return Selector<CurrentChannelId, bool>(
+    return Selector<CurrentChannel, bool>(
       selector: (context, channelId) => channelId.value != null,
       builder: (context, joined, child) => build(joined ? onPressed : null),
     );
   }
 
-  void _joinChannel() {
-    final args =
-        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-    final channelId = args?['channelId'];
-    if (channelId is String) {
-      _joinChannelJob = AutoRetryJob(
-        () => Actions.invoke(
-          context,
-          JoinChannelIntent.byId(channelId),
-        ) as Future,
-        jobName: 'Join Channel',
-      );
-    } else {
-      final read = context.read;
-      _joinChannelJob = AutoRetryJob(
-        () => mounted
-            ? Actions.invoke(
-                context,
-                JoinChannelIntent.byChannelData(ChannelData.fromShare(
-                  read<CurrentUser>().value!,
-                  read<PlayVideoEntry>().value!,
-                )),
-              ) as Future
-            : Future.value(),
-        jobName: 'Join Channel',
-      );
-    }
-    _joinChannelJob.run();
+  void _leaveChannel() async {
+    Actions.invoke(context, StopPlayIntent());
+    context.read<CurrentChannelJoinPayload>().value = null;
+    Navigator.of(context).popAndPushNamed('control:welcome');
   }
 }
 
@@ -351,7 +307,7 @@ class _CallButtonState extends State<CallButton> with TickerProviderStateMixin {
     return Selector<CurrentCallStatus, CallStatus>(
       selector: (context, currentCallStatus) => currentCallStatus.value,
       builder: (context, callStatus, child) => switch (callStatus) {
-        CallStatus.none => Selector<CurrentChannelId, bool>(
+        CallStatus.none => Selector<CurrentChannel, bool>(
             selector: (conext, channelId) => channelId.value != null,
             builder: (context, loaded, child) => IconButton(
               icon: const Icon(Icons.call),

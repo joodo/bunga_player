@@ -2,15 +2,18 @@ import 'dart:async';
 
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:bunga_player/providers/chat.dart';
-import 'package:bunga_player/services/chat.stream_io.dart';
+import 'package:bunga_player/providers/clients/chat.stream_io.dart';
 import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/services/chat.dart';
-import 'package:bunga_player/services/services.dart';
 
 import 'call.dart';
 
-class Agora implements CallService {
-  Agora(String appId) {
+class AgoraClient implements CallClient {
+  AgoraClient(
+    String appId, {
+    double? volume,
+    NoiseSuppressionLevel? noiseSuppressionLevel,
+  })  : _volumeCache = volume,
+        _noiseSuppressionLevelCache = noiseSuppressionLevel {
     _asyncInit(appId);
   }
 
@@ -132,9 +135,9 @@ class Agora implements CallService {
 
   // Channel
   @override
-  Future<Stream<int>> joinChannel() async {
-    final streamService = getIt<ChatService>() as StreamIO;
-    final (cid, uid, token) = await streamService.getAgoraChannelData();
+  Future<Stream<int>> joinChannel(dynamic channelData) async {
+    final (:channelId, :userId, :token) =
+        channelData as AgoraChannelDataPayload;
 
     const options = ChannelMediaOptions(
       clientRoleType: ClientRoleType.clientRoleBroadcaster,
@@ -142,8 +145,8 @@ class Agora implements CallService {
     );
 
     await _engine.joinChannel(
-      channelId: cid,
-      uid: uid,
+      channelId: channelId,
+      uid: userId,
       token: token,
       options: options,
     );

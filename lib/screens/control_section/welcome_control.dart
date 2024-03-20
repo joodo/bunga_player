@@ -1,11 +1,14 @@
 import 'dart:async';
 
 import 'package:animations/animations.dart';
-import 'package:bunga_player/actions/auth.dart';
 import 'package:bunga_player/actions/play.dart';
 import 'package:bunga_player/mocks/menu_anchor.dart' as mock;
+import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/providers/chat.dart';
+import 'package:bunga_player/providers/clients/alist.dart';
+import 'package:bunga_player/providers/clients/bunga.dart';
+import 'package:bunga_player/providers/clients/online_video.dart';
 import 'package:bunga_player/providers/settings.dart';
 import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/screens/dialogs/online_video_dialog.dart';
@@ -13,9 +16,9 @@ import 'package:bunga_player/screens/dialogs/local_video_entry.dart';
 import 'package:bunga_player/screens/dialogs/net_disk.dart';
 import 'package:bunga_player/screens/dialogs/others_dialog.dart';
 import 'package:bunga_player/screens/dialogs/settings.dart';
+import 'package:bunga_player/screens/widgets/widget_in_button.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
-import 'package:bunga_player/utils/auto_retry.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
@@ -36,8 +39,6 @@ class _WelcomeControlState extends State<WelcomeControl> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<CatIndicator>().title = _title;
     });
-
-    _loginJob.run();
   }
 
   @override
@@ -66,8 +67,8 @@ class _WelcomeControlState extends State<WelcomeControl> {
               child: const Text('打开视频'),
             ),
             menuChildren: [
-              ValueListenableBuilder(
-                valueListenable: context.read<AListInitiated>(),
+              Selector<AListClient?, bool>(
+                selector: (context, client) => client != null,
                 builder: (context, initiated, child) => mock.MenuItemButton(
                   onPressed: initiated ? _openNetDisk : null,
                   leadingIcon: initiated
@@ -84,10 +85,23 @@ class _WelcomeControlState extends State<WelcomeControl> {
                   child: const Text('网盘'),
                 ),
               ),
-              mock.MenuItemButton(
-                leadingIcon: const Icon(Icons.language_outlined),
-                onPressed: _openOnline,
-                child: const Text('在线视频'),
+              Selector<OnlineVideoClient?, bool>(
+                selector: (context, client) => client != null,
+                builder: (context, initiated, child) => mock.MenuItemButton(
+                  onPressed: initiated ? _openOnline : null,
+                  leadingIcon: initiated
+                      ? const Icon(Icons.language_outlined)
+                      : SizedBox.square(
+                          dimension: IconTheme.of(context).size,
+                          child: const Padding(
+                            padding: EdgeInsets.all(4),
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                            ),
+                          ),
+                        ),
+                  child: const Text('在线视频'),
+                ),
               ),
               mock.MenuItemButton(
                 leadingIcon: const Icon(Icons.folder_outlined),
@@ -140,7 +154,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
     _openChannel(
       entryGetter: () => showModal<VideoEntry?>(
         context: context,
-        builder: (dialogContext) => NetDiskDialog(read: context.read),
+        builder: (dialogContext) => const NetDiskDialog(),
       ),
     );
   }
@@ -170,22 +184,29 @@ class _WelcomeControlState extends State<WelcomeControl> {
         ) as Future?;
         await response;
 
-        cat.title = null;
-        await navigator.pushNamed('control:main');
-        cat.title = _title;
-      } else {
+        if (!mounted) throw Exception('context unmounted');
+        context.read<CurrentChannelJoinPayload>().value =
+            ChannelJoinByDataPayload(ChannelData.fromShare(
+          context.read<CurrentUser>().value!,
+          result,
+        ));
+      } else if (result is ({String id, VideoEntry entry})) {
         final response = Actions.invoke(
           context,
-          OpenVideoIntent(videoEntry: result.$2),
+          OpenVideoIntent(videoEntry: result.entry),
         ) as Future<void>;
         await response;
 
-        cat.title = null;
-        await navigator.pushNamed('control:main', arguments: {
-          'channelId': result.$1,
-        });
-        cat.title = _title;
+        if (!mounted) throw Exception('context unmounted');
+        context.read<CurrentChannelJoinPayload>().value =
+            ChannelJoinByIdPayload(result.id);
+      } else {
+        assert(false);
       }
+
+      cat.title = null;
+      await navigator.popAndPushNamed('control:main');
+      cat.title = _title;
     } catch (e) {
       getIt<Toast>().show('解析失败');
       rethrow;
@@ -193,17 +214,18 @@ class _WelcomeControlState extends State<WelcomeControl> {
   }
 
   void _onChangeName() async {
-    _loginJob.cancelIfNotFinished();
-    Actions.maybeInvoke(context, LogoutIntent());
-    Navigator.of(context).popAndPushNamed('control:rename');
+    final notifier = context.read<SettingUserName>();
+    final name = notifier.value;
+
+    notifier.value = '';
+    Navigator.of(context).popAndPushNamed(
+      'control:rename',
+      arguments: {'name': name},
+    );
   }
 
-  String get _title => '${context.read<SettingUserName>().value}, 你好！';
-
-  late final AutoRetryJob _loginJob = AutoRetryJob(
-    () => Actions.invoke(context, AutoLoginIntent()) as Future,
-    jobName: 'Auto Login',
-  );
+  late final _userNameNotifer = context.read<SettingUserName>();
+  String get _title => '${_userNameNotifer.value}, 你好！';
 }
 
 class _DelayedCallbackButtonWrapper<T> extends SingleChildStatefulWidget {
@@ -265,16 +287,7 @@ class _DelayedCallbackButtonWrapperState<T>
           child: child!,
         ),
         if (_waiting)
-          Builder(builder: (context) {
-            final textStyle = DefaultTextStyle.of(context).style;
-            return SizedBox.square(
-              dimension: textStyle.fontSize,
-              child: CircularProgressIndicator(
-                color: textStyle.color,
-                strokeWidth: 2,
-              ),
-            );
-          }),
+          Builder(builder: (context) => createIndicatorInButton(context)),
       ],
     );
 
@@ -303,14 +316,19 @@ class _SettingButtonWrapper extends StatelessWidget {
     final theme = Theme.of(context);
     return OpenContainer(
       useRootNavigator: true,
-      closedBuilder: (context, openContainer) => IconButton(
-        icon: const Icon(Icons.settings),
-        onPressed: openContainer,
+      closedBuilder: (context, openContainer) =>
+          Selector2<BungaClient?, PendingBungaHost, bool>(
+        selector: (context, client, pending) =>
+            client == null && !pending.value,
+        builder: (context, failed, child) => IconButton(
+          color: failed ? theme.colorScheme.error : null,
+          icon: Icon(failed ? Icons.error : Icons.settings),
+          onPressed: openContainer,
+        ),
       ),
       closedColor: theme.primaryColor,
       closedShape: const CircleBorder(),
-      openBuilder: (dialogContext, closeContainer) =>
-          SettingsDialog(context.read),
+      openBuilder: (dialogContext, closeContainer) => const SettingsDialog(),
       openColor: theme.primaryColor,
     );
   }

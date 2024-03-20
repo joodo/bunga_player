@@ -12,7 +12,7 @@ import 'package:bunga_player/providers/player.dart';
 import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/providers/video_playing.dart';
 import 'package:bunga_player/providers/wrapper.dart';
-import 'package:bunga_player/services/chat.dart';
+import 'package:bunga_player/providers/clients/chat.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/player.dart';
 import 'package:bunga_player/services/services.dart';
@@ -53,7 +53,7 @@ class AskPositionAction extends ContextAction<AskPositionIntent> {
   bool isEnabled(AskPositionIntent intent, [BuildContext? context]) {
     final read = context!.read;
     return read<CurrentUser>().value != null &&
-        read<CurrentChannelId>().value != null &&
+        read<CurrentChannel>().value != null &&
         read<CurrentChannelWatchers>().value.length > 1;
   }
 }
@@ -183,16 +183,16 @@ class ShareSubtitleAction extends ContextAction<ShareSubtitleIntent> {
   Stream<UploadProgress> invoke(ShareSubtitleIntent intent,
       [BuildContext? context]) async* {
     final title = path.basenameWithoutExtension(intent.path);
-    yield* getIt<ChatService>().uploadFile(
-      intent.path,
-      description: 'subtitle $title',
-    );
+    yield* context!.read<CurrentChannel>().value!.uploadFile(
+          intent.path,
+          description: 'subtitle $title',
+        );
     getIt<Toast>().show('分享成功');
   }
 
   @override
   bool isEnabled(ShareSubtitleIntent intent, [BuildContext? context]) {
-    return context?.read<CurrentChannelId>().value != null;
+    return context?.read<CurrentChannel>().value != null;
   }
 }
 
@@ -265,7 +265,7 @@ class _VideoPlayingActionsState extends SingleChildState<VideoPlayingActions> {
     final currentUser = read<CurrentUser>();
     final currentChannelData = read<CurrentChannelData>();
     final currentData = currentChannelData.value;
-    final oldData = currentChannelData.oldValue;
+    final currentEntry = read<PlayVideoEntry>().value;
 
     // Leave channel
     if (currentData == null) return;
@@ -273,11 +273,8 @@ class _VideoPlayingActionsState extends SingleChildState<VideoPlayingActions> {
     // I did this
     if (currentUser.value?.id == currentData.sharer.id) return;
 
-    // Just join channel, no need to toast and follow video
-    if (oldData == null) return;
-
     // Not changing video
-    if (oldData.videoHash == currentData.videoHash) return;
+    if (currentEntry!.hash == currentData.videoHash) return;
 
     getIt<Toast>().show('${currentData.sharer.name} 更换了影片');
 

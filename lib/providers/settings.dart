@@ -1,3 +1,5 @@
+import 'package:bunga_player/models/playing/volume.dart';
+import 'package:bunga_player/providers/chat.dart';
 import 'package:bunga_player/services/network.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
@@ -32,12 +34,13 @@ class SettingBungaHost extends ValueNotifier<String> {
 
 class SettingClientId extends ValueNotifier<String> {
   SettingClientId() : super(const Uuid().v4()) {
-    bindPreference<String>(
-      preferences: getIt<Preferences>(),
-      key: 'client_id',
-      load: (pref) => pref,
-      update: (value) => value,
-    );
+    final pref = getIt<Preferences>();
+    final prefId = pref.get<String>('client_id');
+    if (prefId == null) {
+      pref.set('client_id', value);
+    } else {
+      value = prefId;
+    }
   }
 }
 
@@ -52,6 +55,22 @@ class SettingUserName extends ValueNotifier<String> {
   }
 }
 
+class SettingCallVolume extends ValueNotifier<Volume> {
+  SettingCallVolume() : super(Volume(volume: (Volume.max - Volume.min) ~/ 2)) {
+    bindPreference<int>(
+      preferences: getIt<Preferences>(),
+      key: 'call_volume',
+      load: (pref) => Volume(volume: pref),
+      update: (value) => value.volume,
+    );
+  }
+}
+
+class SettingCallNoiseSuppressionLevel
+    extends ValueNotifier<NoiseSuppressionLevel> {
+  SettingCallNoiseSuppressionLevel() : super(NoiseSuppressionLevel.high);
+}
+
 final settingProviders = MultiProvider(
   providers: [
     ChangeNotifierProvider(create: (context) => SettingProxy(), lazy: false),
@@ -59,5 +78,8 @@ final settingProviders = MultiProvider(
         create: (context) => SettingBungaHost(), lazy: false),
     ChangeNotifierProvider(create: (context) => SettingClientId(), lazy: false),
     ChangeNotifierProvider(create: (context) => SettingUserName(), lazy: false),
+    ChangeNotifierProvider(create: (context) => SettingCallVolume()),
+    ChangeNotifierProvider(
+        create: (context) => SettingCallNoiseSuppressionLevel()),
   ],
 );

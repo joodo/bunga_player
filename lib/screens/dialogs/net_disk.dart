@@ -4,15 +4,14 @@ import 'package:bunga_player/models/alist/file_info.dart';
 import 'package:bunga_player/models/alist/search_result.dart';
 import 'package:bunga_player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/providers/player.dart';
-import 'package:bunga_player/services/alist.dart';
+import 'package:bunga_player/providers/clients/alist.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class NetDiskDialog extends StatefulWidget {
-  final Locator read;
-  const NetDiskDialog({super.key, required this.read});
+  const NetDiskDialog({super.key});
   @override
   State<NetDiskDialog> createState() => _NetDiskDialogState();
 }
@@ -247,7 +246,7 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
                                 final videoHash =
                                     AListEntry('$_currentPath${info.name}')
                                         .hash;
-                                final percent = widget
+                                final percent = context
                                     .read<PlayWatchProgresses>()
                                     .get(videoHash)
                                     ?.percent;
@@ -317,7 +316,8 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
     _currentPath = newPath;
 
     try {
-      _currentFiles = await createNewWork(getIt<AList>().list(newPath));
+      _currentFiles =
+          await createNewWork(context.read<AListClient>().list(newPath));
       _lastSuccessPath = newPath;
     } catch (e) {
       if (e is! AbortException) {
@@ -336,10 +336,10 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
   void _refresh() async {
     try {
       _currentFiles = await createNewWork(
-        getIt<AList>().list(
-          _currentPath,
-          refresh: true,
-        ),
+        context.read<AListClient>().list(
+              _currentPath,
+              refresh: true,
+            ),
       );
     } catch (e) {
       if (![AbortException, CancelException].contains(e.runtimeType)) rethrow;
@@ -352,7 +352,8 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
 
   void _search(String keywords) async {
     try {
-      _searchResults = await createNewWork(getIt<AList>().search(keywords));
+      _searchResults =
+          await createNewWork(context.read<AListClient>().search(keywords));
     } catch (e) {
       if (![AbortException, CancelException].contains(e.runtimeType)) rethrow;
     } finally {

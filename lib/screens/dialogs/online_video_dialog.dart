@@ -1,9 +1,9 @@
 import 'package:bunga_player/models/video_entries/video_entry.dart';
-import 'package:bunga_player/services/bunga.dart';
-import 'package:bunga_player/services/online_video.dart';
-import 'package:bunga_player/services/services.dart';
+import 'package:bunga_player/providers/clients/bunga.dart';
+import 'package:bunga_player/providers/clients/online_video.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 class OnlineVideoDialog extends StatefulWidget {
@@ -56,7 +56,8 @@ class _OnlineVideoDialogState extends State<OnlineVideoDialog> {
                       ..onTap =
                           () => launchUrlString('https://www.bilibili.com/'),
                   ),
-                  for (final site in getIt<OnlineVideoService>().supportSites)
+                  for (final site
+                      in context.read<OnlineVideoClient>().supportSites)
                     TextSpan(
                       text: ' ${site.name} ',
                       style: const TextStyle(color: Colors.blue),
@@ -149,8 +150,15 @@ class _OnlineVideoDialogState extends State<OnlineVideoDialog> {
         uri = uri.replace(queryParameters: {'ep': _selectedEpIndex.toString()});
       }
 
-      final entry = await getIt<OnlineVideoService>().getEntryFromUri(uri);
-      if (mounted) Navigator.pop<VideoEntry>(context, entry);
+      final entry =
+          await context.read<OnlineVideoClient>().getEntryFromUri(uri);
+
+      // prefetch in case site not support
+      if (!mounted) return;
+      if (entry is M3u8Entry) await entry.fetch(context);
+
+      if (!mounted) return;
+      Navigator.pop<VideoEntry>(context, entry);
     } catch (e) {
       if (e is NeedEpisodeIndexException) {
         _epNames = e.episodeNames;

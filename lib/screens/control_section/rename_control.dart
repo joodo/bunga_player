@@ -17,14 +17,17 @@ class _RenameControlState extends State<RenameControl> {
   void initState() {
     super.initState();
 
-    _textController.text = context.read<SettingUserName>().value;
-    _textController.selection = TextSelection(
-      baseOffset: 0,
-      extentOffset: _textController.text.length,
-    );
-
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       context.read<CatIndicator>().title = '怎样称呼你？';
+
+      final args =
+          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      final name = args?['name'];
+      _textController.text = name ?? '';
+      _textController.selection = TextSelection(
+        baseOffset: 0,
+        extentOffset: _textController.text.length,
+      );
     });
   }
 

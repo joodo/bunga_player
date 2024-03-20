@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/models/video_entries/video_entry.dart';
-import 'package:bunga_player/services/chat.dart';
-import 'package:bunga_player/services/services.dart';
+import 'package:bunga_player/providers/clients/chat.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class OthersDialog extends StatefulWidget {
   const OthersDialog({super.key});
@@ -13,7 +13,7 @@ class OthersDialog extends StatefulWidget {
 }
 
 class OthersDialogState extends State<OthersDialog> {
-  List<(String id, ChannelData data)>? _channels;
+  List<({String id, ChannelData data})>? _channels;
   late final Timer _timer;
   bool _isPulling = false;
 
@@ -42,8 +42,10 @@ class OthersDialogState extends State<OthersDialog> {
         children: [
           const SizedBox(width: 8),
           if (_channels != null)
-            ..._channels!
-                .map((channel) => _createVideoCard(channel.$1, channel.$2)),
+            ..._channels!.map((channel) => _createVideoCard(
+                  channel.id,
+                  channel.data,
+                )),
           const SizedBox(width: 8),
         ],
       ),
@@ -177,11 +179,11 @@ class OthersDialogState extends State<OthersDialog> {
               ),
               elevation: 0,
               child: InkWell(
-                onTap: () => Navigator.pop<(String, VideoEntry)>(
+                onTap: () => Navigator.pop<({String id, VideoEntry entry})>(
                   context,
                   (
-                    channelId,
-                    VideoEntry.fromChannelData(channelData),
+                    id: channelId,
+                    entry: VideoEntry.fromChannelData(channelData),
                   ),
                 ),
                 child: cardContent,
@@ -207,8 +209,8 @@ class OthersDialogState extends State<OthersDialog> {
         _isPulling = true;
       });
 
-      final chatService = getIt<ChatService>();
-      final channels = await chatService.queryOnlineChannels();
+      final chatClient = context.read<ChatClient>();
+      final channels = await chatClient.queryOnlineChannels();
 
       if (!mounted) return;
       setState(() {

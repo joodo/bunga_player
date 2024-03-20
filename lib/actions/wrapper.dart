@@ -17,6 +17,8 @@ class ActionsLeaf {
   Object? mayBeInvoke(Intent intent) =>
       Actions.maybeInvoke(_leafContext, intent);
   Object? invoke(Intent intent) => Actions.invoke(_leafContext, intent);
+  Object? maybeInvoke(Intent intent) =>
+      Actions.maybeInvoke(_leafContext, intent);
 }
 
 class ActionsWrapper extends Nested {

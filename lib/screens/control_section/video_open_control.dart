@@ -77,7 +77,7 @@ class _VideoOpenControlState extends State<VideoOpenControl> {
     _openVideo(
       entryGetter: () => showModal<VideoEntry?>(
         context: context,
-        builder: (dialogContext) => NetDiskDialog(read: context.read),
+        builder: (dialogContext) => const NetDiskDialog(),
       ),
     );
   }
