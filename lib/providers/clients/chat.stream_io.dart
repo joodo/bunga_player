@@ -165,7 +165,7 @@ class StreamIOClient implements ChatClient {
     );
 
     return Channel(
-      id: channel.cid!,
+      id: channel.id!,
       streams: (
         data: channel.extraDataStream
             .map<ChannelData>((data) => ChannelData.fromJson(data))
