@@ -205,8 +205,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
       }
 
       cat.title = null;
-      await navigator.popAndPushNamed('control:main');
-      cat.title = _title;
+      navigator.popAndPushNamed('control:main');
     } catch (e) {
       getIt<Toast>().show('解析失败');
       rethrow;
