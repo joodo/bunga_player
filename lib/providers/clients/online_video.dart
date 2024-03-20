@@ -35,8 +35,8 @@ class OnlineVideoClient {
         logger.i('Bili video: redirect to $redirectUri');
         return getEntryFromUri(redirectUri);
 
-      // TODO: deal with m.bilibili.tv
       case 'www.bilibili.com':
+      case 'm.bilibili.com':
         switch (uri.pathSegments[0]) {
           case 'video':
             final regex = RegExp(r'\/BV(?<bvid>[A-Za-z0-9]*)\/?');
