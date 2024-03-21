@@ -6,8 +6,8 @@ import 'package:bunga_player/mocks/tooltip.dart' as mock;
 import 'package:bunga_player/providers/player.dart';
 import 'package:bunga_player/providers/video_playing.dart';
 import 'package:bunga_player/screens/control_section/dropdown.dart';
-import 'package:bunga_player/providers/clients/chat.dart';
 import 'package:bunga_player/services/player.dart';
+import 'package:bunga_player/utils/network_progress.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -242,7 +242,7 @@ class _SubtitleControlState extends State<SubtitleControl> {
                                         .firstWhere((track) =>
                                             track.id == currentTrackID.value)
                                         .uri!),
-                                  ) as Stream<UploadProgress>;
+                                  ) as Stream<RequestProgress>;
                                   await progresses.last;
 
                                   if (!mounted) return;

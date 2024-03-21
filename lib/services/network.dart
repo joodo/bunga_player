@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
+import 'package:bunga_player/utils/http_response.dart';
+import 'package:bunga_player/utils/network_progress.dart';
 import 'package:dart_ping/dart_ping.dart';
 import 'package:http/http.dart' as http;
 import 'package:platform/platform.dart';
@@ -39,9 +41,24 @@ class NetworkService {
     return (location, latency);
   }
 
-  Future<void> downloadFile(String url, String path) async {
-    final response = await http.get(Uri.parse(url));
-    await File(path).writeAsBytes(response.bodyBytes);
+  Stream<RequestProgress> downloadFile(String url, String path) async* {
+    final response = await http.Client().send(
+      http.Request('GET', Uri.parse(url)),
+    );
+    if (!response.isSuccess) {
+      throw Exception(response.statusCode);
+    }
+
+    final totalBytes = response.contentLength ?? 0;
+    final List<int> bytes = [];
+    int currentBytes = 0;
+    await for (final value in response.stream) {
+      bytes.addAll(value);
+      currentBytes += value.length;
+      yield RequestProgress(total: totalBytes, current: currentBytes);
+    }
+
+    await File(path).writeAsBytes(bytes);
     logger.i('Network: $path download finished from $url');
   }
 }

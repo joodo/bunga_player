@@ -231,7 +231,7 @@ class MediaKitPlayer implements Player {
       final tempDir = await getApplicationCacheDirectory();
       final localPath =
           '${tempDir.path}/subtitle-${DateTime.now().millisecondsSinceEpoch.toRadixString(36)}';
-      await getIt<NetworkService>().downloadFile(uri, localPath);
+      await getIt<NetworkService>().downloadFile(uri, localPath).last;
       uri = localPath;
     }
 

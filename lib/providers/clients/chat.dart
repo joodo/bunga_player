@@ -2,6 +2,7 @@ import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/models/chat/message.dart';
 import 'package:bunga_player/models/chat/user.dart';
 import 'package:bunga_player/providers/chat.dart';
+import 'package:bunga_player/utils/network_progress.dart';
 
 class OwnUser extends User {
   final Future<void> Function() logout;
@@ -26,7 +27,7 @@ class Channel {
 
   final Future<void> Function(ChannelData data) updateData;
   final Future<Message> Function(String text, {String? quoteId}) sendMessage;
-  final Stream<UploadProgress> Function(
+  final Stream<RequestProgress> Function(
     String filePath, {
     String? title,
     String? description,
@@ -62,13 +63,6 @@ class ChannelFile {
   String toString() {
     return '$title ($description) by $uploader';
   }
-}
-
-class UploadProgress {
-  final int current;
-  final int total;
-
-  UploadProgress(this.current, this.total);
 }
 
 abstract class ChatClient {

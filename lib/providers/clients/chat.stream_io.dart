@@ -7,6 +7,7 @@ import 'package:bunga_player/models/chat/user.dart';
 import 'package:bunga_player/providers/chat.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/providers/clients/chat.dart';
+import 'package:bunga_player/utils/network_progress.dart';
 import 'package:stream_chat_flutter_core/stream_chat_flutter_core.dart'
     as stream;
 import 'package:path/path.dart' as path;
@@ -265,13 +266,13 @@ class StreamIOClient implements ChatClient {
     );
   }
 
-  Stream<UploadProgress> _uploadFile(
+  Stream<RequestProgress> _uploadFile(
     stream.Channel channel,
     String filePath, {
     String? title,
     String? description,
   }) {
-    final progress = StreamController<UploadProgress>();
+    final progress = StreamController<RequestProgress>();
 
     File(filePath).length().then((size) {
       final attachmentFile = stream.AttachmentFile(
@@ -281,7 +282,7 @@ class StreamIOClient implements ChatClient {
       return channel.sendFile(
         attachmentFile,
         onSendProgress: (count, total) {
-          progress.add(UploadProgress(count, total));
+          progress.add(RequestProgress(current: count, total: total));
         },
       );
     }).then((response) {

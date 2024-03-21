@@ -12,12 +12,12 @@ import 'package:bunga_player/providers/player.dart';
 import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/providers/video_playing.dart';
 import 'package:bunga_player/providers/wrapper.dart';
-import 'package:bunga_player/providers/clients/chat.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/player.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
 import 'package:bunga_player/actions/dispatcher.dart';
+import 'package:bunga_player/utils/network_progress.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
@@ -180,7 +180,7 @@ class ShareSubtitleIntent extends Intent {
 
 class ShareSubtitleAction extends ContextAction<ShareSubtitleIntent> {
   @override
-  Stream<UploadProgress> invoke(ShareSubtitleIntent intent,
+  Stream<RequestProgress> invoke(ShareSubtitleIntent intent,
       [BuildContext? context]) async* {
     final title = path.basenameWithoutExtension(intent.path);
     yield* context!.read<CurrentChannel>().value!.uploadFile(
