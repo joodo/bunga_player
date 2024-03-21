@@ -163,7 +163,7 @@ class _UpdateWrapperState extends SingleChildState<UpdateWrapper> {
 
   Future<void> _openPath(String path) async {
     if (Platform.isWindows) {
-      await Process.start(path, []);
+      await Process.start('start', [path], runInShell: true);
     } else if (Platform.isMacOS) {
       await Process.start('open', [path]);
     }
