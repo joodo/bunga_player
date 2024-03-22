@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 
 import 'console.dart';
-import 'update.dart';
+import 'update_and_clean.dart';
 import 'restart.dart';
 import 'toast.dart';
 
@@ -18,7 +18,7 @@ Widget wrap(SingleChildStatelessWidget app, Widget child) {
       app,
       const ShortcutsWrapper(),
       const ToastWrapper(),
-      const UpdateWrapper(),
+      const UpdateAndCleanWrapper(),
       const ConsoleWrapper(),
     ],
     child: child,

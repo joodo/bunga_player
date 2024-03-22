@@ -24,14 +24,14 @@ enum UpdateStatus {
   error,
 }
 
-class UpdateWrapper extends SingleChildStatefulWidget {
-  const UpdateWrapper({super.key, super.child});
+class UpdateAndCleanWrapper extends SingleChildStatefulWidget {
+  const UpdateAndCleanWrapper({super.key, super.child});
 
   @override
-  State<UpdateWrapper> createState() => _UpdateWrapperState();
+  State<UpdateAndCleanWrapper> createState() => _UpdateWrapperState();
 }
 
-class _UpdateWrapperState extends SingleChildState<UpdateWrapper> {
+class _UpdateWrapperState extends SingleChildState<UpdateAndCleanWrapper> {
   UpdateStatus _status = UpdateStatus.checking;
   RequestProgress? _downloadProgress;
   String _latestVersion = '';
@@ -127,6 +127,7 @@ class _UpdateWrapperState extends SingleChildState<UpdateWrapper> {
       setState(() {
         _status = UpdateStatus.updated;
       });
+      _cleanTempDir();
       return;
     }
 
@@ -199,5 +200,13 @@ class _UpdateWrapperState extends SingleChildState<UpdateWrapper> {
         ],
       ),
     );
+  }
+
+  void _cleanTempDir() async {
+    final tempDir = await getApplicationCacheDirectory();
+    await for (final entry in tempDir.list().where((entry) => entry is File)) {
+      logger.i('Update: clean temp file ${entry.path}');
+      await entry.delete();
+    }
   }
 }
