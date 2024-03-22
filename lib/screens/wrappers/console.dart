@@ -206,12 +206,12 @@ class _VariablesView extends StatefulWidget {
 }
 
 class _VariablesViewState extends State<_VariablesView> {
-  late final _variables = <String, String? Function(BuildContext context)>{
+  late final _variables = <String, String Function(BuildContext context)>{
     'Client id': (context) => context.read<SettingClientId>().value,
     'App Keys': (context) {
       final bunga = context.read<BungaClient?>();
       if (bunga == null) return 'null';
-      return 'StreamIO: ${bunga.streamIOClientInfo.appKey}, Agora: ${bunga.agoraClientAppKey}';
+      return 'StreamIO: ${bunga.streamIOClientInfo.appKey}, Agora: ${bunga.agoraClientAppKey}, Bili sess: ${bunga.biliSess}';
     },
     'Current verion': (context) => getIt<PackageInfo>().version,
     'Chat User': (context) => context.read<CurrentUser>().toString(),
@@ -242,7 +242,7 @@ Status: ${context.read<PlayStatus>().value}''',
             (row) => TableRow(
               children: [
                 _padding(SelectableText(row.key)),
-                _TableValue(func: row.value),
+                _padding(SelectableText(row.value(context))),
               ],
             ),
           )
@@ -263,16 +263,18 @@ Status: ${context.read<PlayStatus>().value}''',
         return TableRow(
           children: [
             _padding(SelectableText(key)),
-            Row(children: [
-              _padding(content),
-              TextButton(
-                onPressed: () async {
-                  await pref.remove(key);
-                  setState(() {});
-                },
-                child: const Text('unset'),
-              ),
-            ]),
+            Row(
+              children: [
+                _padding(content),
+                TextButton(
+                  onPressed: () async {
+                    await pref.remove(key);
+                    setState(() {});
+                  },
+                  child: const Text('unset'),
+                ),
+              ],
+            ),
           ],
         );
       }).toList(),
@@ -282,6 +284,20 @@ Status: ${context.read<PlayStatus>().value}''',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Row(
+            children: [
+              Text(
+                'Environment',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(width: 8),
+              TextButton(
+                onPressed: () => setState(() {}),
+                child: const Text('Refresh'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
           variables,
           const SizedBox(height: 16),
           Text(
@@ -290,52 +306,6 @@ Status: ${context.read<PlayStatus>().value}''',
           ),
           const SizedBox(height: 8),
           prefs,
-        ],
-      ),
-    );
-  }
-}
-
-class _TableValue extends StatefulWidget {
-  final String? Function(BuildContext context) func;
-
-  const _TableValue({required this.func});
-
-  @override
-  State<_TableValue> createState() => _TableValueState();
-}
-
-class _TableValueState extends State<_TableValue> {
-  bool _isHovered = false;
-  late String? _text = widget.func(context);
-
-  @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (event) => setState(() {
-        _isHovered = true;
-      }),
-      onExit: (event) => setState(() {
-        _isHovered = false;
-      }),
-      child: Stack(
-        children: [
-          _padding(SizedBox(
-            width: double.maxFinite,
-            child: SelectableText(_text ?? ''),
-          )),
-          Visibility(
-            visible: _isHovered,
-            child: Positioned(
-              right: 0,
-              child: IconButton(
-                icon: const Icon(Icons.refresh),
-                onPressed: () => setState(() {
-                  _text = widget.func(context);
-                }),
-              ),
-            ),
-          ),
         ],
       ),
     );
