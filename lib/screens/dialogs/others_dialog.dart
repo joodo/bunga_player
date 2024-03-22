@@ -4,6 +4,7 @@ import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/providers/clients/chat.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
 
 class OthersDialog extends StatefulWidget {
@@ -92,7 +93,7 @@ class OthersDialogState extends State<OthersDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.of(context).pop(),
           child: const Text('取消'),
         ),
       ],
@@ -179,13 +180,15 @@ class OthersDialogState extends State<OthersDialog> {
               ),
               elevation: 0,
               child: InkWell(
-                onTap: () => Navigator.pop<({String id, VideoEntry entry})>(
-                  context,
-                  (
-                    id: channelId,
-                    entry: VideoEntry.fromChannelData(channelData),
-                  ),
-                ),
+                onTap: () =>
+                    SchedulerBinding.instance.addPostFrameCallback((_) {
+                  Navigator.of(context).pop<({String id, VideoEntry entry})>(
+                    (
+                      id: channelId,
+                      entry: VideoEntry.fromChannelData(channelData),
+                    ),
+                  );
+                }),
                 child: cardContent,
               ),
             );

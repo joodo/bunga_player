@@ -154,14 +154,14 @@ class _WelcomeControlState extends State<WelcomeControl> {
     _openChannel(
       entryGetter: () => showModal<VideoEntry?>(
         context: context,
-        builder: (dialogContext) => const NetDiskDialog(),
+        builder: (context) => const NetDiskDialog(),
       ),
     );
   }
 
   void _joinOthersChannel() async {
     _openChannel(
-      entryGetter: () => showModal<(String, VideoEntry)?>(
+      entryGetter: () => showModal<({String id, VideoEntry entry})?>(
         context: context,
         builder: (context) => const OthersDialog(),
       ),
