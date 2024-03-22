@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Bunga Player"
-#define MyAppVersion "0.9.4"
+#define MyAppVersion "0.9.5"
 #define MyAppPublisher "Joodo"
 #define MyAppURL "https://github.com/joodo/bunga_player/"
 #define MyAppExeName "bunga_player.exe"
