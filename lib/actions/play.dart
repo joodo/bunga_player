@@ -11,7 +11,6 @@ import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
 import 'package:bunga_player/utils/duration.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 
@@ -410,21 +409,6 @@ class _PlayActionsState extends SingleChildState<PlayActions> {
 
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
-    final shortcuts = Shortcuts(
-      shortcuts: const <ShortcutActivator, Intent>{
-        SingleActivator(LogicalKeyboardKey.arrowUp):
-            SetVolumeIntent.increase(10),
-        SingleActivator(LogicalKeyboardKey.arrowDown):
-            SetVolumeIntent.increase(-10),
-        SingleActivator(LogicalKeyboardKey.arrowLeft):
-            SeekIntent(Duration(seconds: -5), isIncrease: true),
-        SingleActivator(LogicalKeyboardKey.arrowRight):
-            SeekIntent(Duration(seconds: 5), isIncrease: true),
-        SingleActivator(LogicalKeyboardKey.space): TogglePlayIntent(),
-      },
-      child: child!,
-    );
-
     return Actions(
       dispatcher: LoggingActionDispatcher(
         prefix: 'play',
@@ -458,7 +442,7 @@ class _PlayActionsState extends SingleChildState<PlayActions> {
         SetSubPosIntent: SetSubPosAction(),
         SetContrastIntent: SetContrastAction(),
       },
-      child: shortcuts,
+      child: child!,
     );
   }
 

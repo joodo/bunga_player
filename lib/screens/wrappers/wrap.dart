@@ -1,5 +1,6 @@
 import 'package:bunga_player/actions/wrapper.dart';
 import 'package:bunga_player/providers/wrapper.dart';
+import 'package:bunga_player/screens/wrappers/shortcuts.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 
@@ -15,6 +16,7 @@ Widget wrap(SingleChildStatelessWidget app, Widget child) {
       const ProvidersWrapper(),
       ActionsWrapper(),
       app,
+      const ShortcutsWrapper(),
       const ToastWrapper(),
       const UpdateWrapper(),
       const ConsoleWrapper(),
