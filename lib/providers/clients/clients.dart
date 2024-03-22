@@ -29,10 +29,12 @@ final clientProviders = MultiProvider(
                   host: bungaClient!.aListClientInfo!.host,
                   token: bungaClient.aListClientInfo!.token,
                 ),
+      lazy: false,
     ),
     ProxyProvider<BungaClient?, OnlineVideoClient?>(
       update: (context, bungaClient, previous) =>
           bungaClient == null ? null : OnlineVideoClient(bungaClient),
+      lazy: false,
     ),
     ProxyProvider<BungaClient?, ChatClient?>(
       update: (context, bungaClient, previous) {
@@ -40,6 +42,7 @@ final clientProviders = MultiProvider(
             ? null
             : StreamIOClient(bungaClient.streamIOClientInfo.appKey);
       },
+      lazy: false,
     ),
     ProxyProvider<BungaClient?, CallClient?>(
       update: (context, bungaClient, previous) => bungaClient == null
@@ -50,6 +53,7 @@ final clientProviders = MultiProvider(
               noiseSuppressionLevel:
                   context.read<SettingCallNoiseSuppressionLevel>().value,
             ),
+      lazy: false,
     ),
   ],
 );
