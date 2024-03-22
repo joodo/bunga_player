@@ -1,0 +1,26 @@
+{
+    "icon": "macos.icns",
+    "background": "background.png",
+    "window": {
+        "size": {
+            "width": 640,
+            "height": 260
+        }
+    },
+    "title": "Bunga Player",
+    "contents": [
+        {
+            "x": 448,
+            "y": 125,
+            "type": "link",
+            "path": "/Applications"
+        },
+        {
+            "x": 192,
+            "y": 125,
+            "type": "file",
+            "path": "../../build/macos/Build/Products/Release/Bunga Player.app"
+        }
+    ],
+    "format": "ULMO"
+}

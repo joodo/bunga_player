@@ -17,30 +17,30 @@ void main() async {
 void macosDeploy() async {
   print('Generating dmg file...');
   try {
-    print(
-        'Please install "GraphicsMagick" to create icon:\n\nbrew install graphicsmagick imagemagick\n');
-    var result = await Process.run(
-      'create-dmg',
+    await Process.run(
+      'mv',
       [
         'build/macos/Build/Products/Release/bunga_player.app',
-        'build/macos/Build/Products/Release/',
-        '--overwrite',
+        'build/macos/Build/Products/Release/Bunga Player.app',
       ],
     );
-    if (result.exitCode != 0) {
-      print('Error: ${result.stderr}');
-    } else {
-      final version = await getVersion();
 
-      await Process.run('mv', [
-        'build/macos/Build/Products/Release/Bunga Player $version.dmg',
-        'build/macos/Build/Products/Release/bunga_player_installer_${version.replaceAll('.', '_')}_macos.dmg',
-      ]);
-      await Process.run('open', ['build/macos/Build/Products/Release/']);
-    }
+    final version = await getVersion();
+    final targetName =
+        'build/macos/Build/Products/Release/bunga_player_installer_${version.replaceAll('.', '_')}_macos.dmg';
+    await Process.run('rm', [targetName]);
+    await Process.run(
+      'appdmg',
+      [
+        'macos/deploy/deploy.json',
+        targetName,
+      ],
+    );
+
+    await Process.run('open', ['build/macos/Build/Products/Release/']);
   } on ProcessException {
     print(
-        'Error: please install "create-dmg" first:\n\nnpm install --global create-dmg\n');
+        'Error: please install "appdmg" first:\n\nnpm install --global appdmg\n');
   }
 }
 
