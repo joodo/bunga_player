@@ -2,6 +2,7 @@ import 'package:bunga_player/models/playing/volume.dart';
 import 'package:bunga_player/models/playing/watch_progress.dart';
 import 'package:bunga_player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/providers/player.dart';
+import 'package:flutter/foundation.dart';
 
 class AudioTrack {
   final String id;
@@ -35,6 +36,20 @@ class SubtitleTrack {
       '[$id]${title != null ? ' $title' : ''}${language != null ? ' ($language)' : ''}';
 }
 
+class WatchProgresses {
+  final WatchProgress? Function(String videoEntryId) get;
+  final int Function() _count;
+  final VoidCallback clearAll;
+
+  WatchProgresses({
+    required this.get,
+    required int Function() count,
+    required this.clearAll,
+  }) : _count = count;
+
+  int get count => _count();
+}
+
 abstract class Player {
   static const int maxVolume = 100;
   static const int minVolume = 0;
@@ -57,8 +72,7 @@ abstract class Player {
 
   Stream<VideoEntry?> get videoEntryStream;
   Stream<int?> get sourceIndexStream;
-  Map<String, WatchProgress> get watchProgresses;
-  void clearAllWatchProgress();
+  WatchProgresses get watchProgresses;
 
   Future<void> setAudioTrackID(String id);
   Stream<Iterable<AudioTrack>> get audioTracksStream;

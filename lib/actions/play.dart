@@ -395,8 +395,6 @@ class _PlayActionsState extends SingleChildState<PlayActions> {
     _streamSubscriptions.add(player.positionStream.listen((position) {
       if (!_dragBusiness.isDragging) read<PlayPosition>().value = position;
     }));
-
-    read<PlayWatchProgresses>().value = getIt<Player>().watchProgresses;
   }
 
   @override

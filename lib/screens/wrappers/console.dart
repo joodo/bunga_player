@@ -105,10 +105,10 @@ class _ConsoleWrapperState extends SingleChildState<ConsoleWrapper> {
         const SizedBox(height: 8),
         FilledButton(
           onPressed: () => setState(() {
-            getIt<Player>().clearAllWatchProgress();
+            getIt<Player>().watchProgresses.clearAll();
           }),
           child: Text(
-              'Clear all watch progress (${context.read<PlayWatchProgresses>().value.length})'),
+              'Clear all watch progress (${getIt<Player>().watchProgresses.count})'),
         ),
       ],
     );

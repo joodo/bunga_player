@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:bunga_player/models/alist/file_info.dart';
 import 'package:bunga_player/models/alist/search_result.dart';
 import 'package:bunga_player/models/video_entries/video_entry.dart';
-import 'package:bunga_player/providers/player.dart';
 import 'package:bunga_player/providers/clients/alist.dart';
+import 'package:bunga_player/services/player.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:flutter/material.dart';
@@ -246,8 +246,8 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
                                 final videoHash =
                                     AListEntry('$_currentPath${info.name}')
                                         .hash;
-                                final percent = context
-                                    .read<PlayWatchProgresses>()
+                                final percent = getIt<Player>()
+                                    .watchProgresses
                                     .get(videoHash)
                                     ?.percent;
                                 final tile = ListTile(

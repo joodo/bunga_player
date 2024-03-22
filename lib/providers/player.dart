@@ -1,5 +1,4 @@
 import 'package:bunga_player/models/playing/volume.dart';
-import 'package:bunga_player/models/playing/watch_progress.dart';
 import 'package:bunga_player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/services/player.dart';
 import 'package:bunga_player/services/preferences.dart';
@@ -81,11 +80,6 @@ class PlaySourceIndex extends ValueNotifier<int?> {
   PlaySourceIndex() : super(null);
 }
 
-class PlayWatchProgresses {
-  late final Map<String, WatchProgress> value;
-  WatchProgress? get(String videoHash) => value[videoHash];
-}
-
 final playerProviders = MultiProvider(
   providers: [
     ChangeNotifierProvider(create: (context) => PlayVideoEntry(), lazy: false),
@@ -107,6 +101,5 @@ final playerProviders = MultiProvider(
     ChangeNotifierProvider(create: (context) => PlaySubDelay()),
     ChangeNotifierProvider(create: (context) => PlaySubPos()),
     ChangeNotifierProvider(create: (context) => PlaySubSize()),
-    Provider(create: (context) => PlayWatchProgresses()),
   ],
 );
