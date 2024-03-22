@@ -23,7 +23,7 @@ DisableProgramGroupPage=yes
 ; Remove the following line to run in administrative install mode (install for all users.)
 PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
-OutputBaseFilename=bunga_player_installer_0_9_4_windows
+OutputBaseFilename=bunga_player_installer_0_9_5_windows
 SetupIconFile=installer.ico
 Compression=lzma
 SolidCompression=yes
