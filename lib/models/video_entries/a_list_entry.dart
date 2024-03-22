@@ -22,7 +22,7 @@ class AListEntry extends VideoEntry {
   Future<void> fetch(BuildContext context) async {
     if (_isFetched) return;
 
-    final client = context.read()<AListClient?>();
+    final client = context.read<AListClient?>();
     assert(client != null);
 
     logger.i('AList: start fetch video $path');
