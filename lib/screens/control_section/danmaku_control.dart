@@ -1,3 +1,4 @@
+import 'package:bunga_player/actions/channel.dart';
 import 'package:bunga_player/actions/danmaku.dart';
 import 'package:bunga_player/providers/ui.dart';
 import 'package:flutter/material.dart';
@@ -66,7 +67,14 @@ class _DanmakuControlState extends State<DanmakuControl> {
                 floatingLabelBehavior: FloatingLabelBehavior.never,
               ),
               onSubmitted: (value) {
-                Actions.invoke(context, SendDanmakuIntent(value));
+                if (value == '陈子祎') {
+                  Actions.invoke(
+                    context,
+                    const SendMessageIntent('popmoji 1f416'),
+                  );
+                } else {
+                  Actions.invoke(context, SendDanmakuIntent(value));
+                }
                 _controller.clear();
                 _focusNode.requestFocus();
               },
