@@ -56,17 +56,14 @@ class _ToastWrapperState extends SingleChildState<ToastWrapper>
 
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
-    final card = Theme(
-      data: ThemeData.light(),
-      child: Card(
-        shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(2.0))),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-          child: ValueListenableBuilder(
-            valueListenable: _textNotifier,
-            builder: (context, value, child) => Text(value),
-          ),
+    final card = Card(
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(2.0))),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+        child: ValueListenableBuilder(
+          valueListenable: _textNotifier,
+          builder: (context, value, child) => Text(value),
         ),
       ),
     );
@@ -82,7 +79,7 @@ class _ToastWrapperState extends SingleChildState<ToastWrapper>
       child: card,
     );
 
-    return Stack(
+    final body = Stack(
       alignment: Alignment.center,
       children: [
         if (child != null) child,
@@ -94,6 +91,11 @@ class _ToastWrapperState extends SingleChildState<ToastWrapper>
           ),
         ),
       ],
+    );
+
+    return Directionality(
+      textDirection: TextDirection.ltr,
+      child: body,
     );
   }
 
