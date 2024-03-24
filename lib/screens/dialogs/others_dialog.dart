@@ -1,11 +1,15 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/providers/clients/chat.dart';
+import 'package:bunga_player/services/logger.dart';
+import 'package:bunga_player/utils/http_response.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
+import 'package:http/http.dart' as http;
 
 class OthersDialog extends StatefulWidget {
   const OthersDialog({super.key});
@@ -43,9 +47,17 @@ class OthersDialogState extends State<OthersDialog> {
         children: [
           const SizedBox(width: 8),
           if (_channels != null)
-            ..._channels!.map((channel) => _createVideoCard(
-                  channel.id,
-                  channel.data,
+            ..._channels!.map((channel) => _ChannelCard(
+                  channelData: channel.data,
+                  onTapped: () =>
+                      SchedulerBinding.instance.addPostFrameCallback((_) {
+                    Navigator.of(context).pop<({String id, VideoEntry entry})>(
+                      (
+                        id: channel.id,
+                        entry: VideoEntry.fromChannelData(channel.data),
+                      ),
+                    );
+                  }),
                 )),
           const SizedBox(width: 8),
         ],
@@ -73,7 +85,7 @@ class OthersDialogState extends State<OthersDialog> {
               ),
             ),
           AnimatedContainer(
-            duration: const Duration(milliseconds: 500),
+            duration: const Duration(milliseconds: 250),
             curve: Curves.easeOutCubic,
             height: _isPulling ? 4 : 0,
             child: const LinearProgressIndicator(),
@@ -100,112 +112,6 @@ class OthersDialogState extends State<OthersDialog> {
     );
   }
 
-  Widget _createVideoCard(String channelId, ChannelData channelData) {
-    final themeData = Theme.of(context);
-    final videoImage = Image.network(
-      channelData.image ?? '',
-      height: 125,
-      width: 200,
-      fit: BoxFit.cover,
-      errorBuilder: (context, error, stackTrace) => const SizedBox(
-        width: 200,
-        height: 125,
-        child: Center(
-          child: Icon(Icons.movie_creation_outlined, size: 80),
-        ),
-      ),
-    );
-
-    final cardContent = Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        videoImage,
-        SizedBox(
-          width: 160,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-            child: Row(
-              children: [
-                Flexible(
-                  child: Text(
-                    channelData.sharer.name,
-                    style: themeData.textTheme.labelSmall,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                Text(
-                  '分享',
-                  style: themeData.textTheme.labelSmall,
-                ),
-              ],
-            ),
-          ),
-        ),
-        SizedBox(
-          width: 200,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-            child: Tooltip(
-              message: channelData.name,
-              child: Text(
-                channelData.name,
-                overflow: TextOverflow.ellipsis,
-                style: themeData.textTheme.titleSmall,
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-
-    final themedCard = FutureBuilder<ColorScheme>(
-      // FIXME: Unhandle exception when image videoImage not usable
-      future: ColorScheme.fromImageProvider(
-        brightness: themeData.brightness,
-        provider: videoImage.image,
-      ),
-      initialData: themeData.colorScheme,
-      builder: (context, colorScheme) {
-        final builder = Builder(
-          builder: (context) {
-            final themeData = Theme.of(context);
-            return Card(
-              margin: const EdgeInsets.symmetric(horizontal: 8),
-              clipBehavior: Clip.hardEdge,
-              color: ElevationOverlay.applySurfaceTint(
-                themeData.colorScheme.surfaceVariant,
-                themeData.colorScheme.surfaceTint,
-                0,
-              ),
-              elevation: 0,
-              child: InkWell(
-                onTap: () =>
-                    SchedulerBinding.instance.addPostFrameCallback((_) {
-                  Navigator.of(context).pop<({String id, VideoEntry entry})>(
-                    (
-                      id: channelId,
-                      entry: VideoEntry.fromChannelData(channelData),
-                    ),
-                  );
-                }),
-                child: cardContent,
-              ),
-            );
-          },
-        );
-        return Theme(
-          data: themeData.copyWith(
-            colorScheme: colorScheme.data,
-          ),
-          child: builder,
-        );
-      },
-    );
-
-    return themedCard;
-  }
-
   Timer _createUpdateTimer() {
     void updateChannel(_) async {
       setState(() {
@@ -225,5 +131,131 @@ class OthersDialogState extends State<OthersDialog> {
     final timer = Timer.periodic(const Duration(seconds: 5), updateChannel);
     updateChannel(timer);
     return timer;
+  }
+}
+
+class _ChannelCard extends StatefulWidget {
+  final ChannelData channelData;
+  final VoidCallback onTapped;
+
+  const _ChannelCard({required this.channelData, required this.onTapped});
+
+  @override
+  State<_ChannelCard> createState() => _ChannelCardState();
+}
+
+class _ChannelCardState extends State<_ChannelCard> {
+  Uint8List? _imageData;
+
+  @override
+  void initState() {
+    super.initState();
+    _getNetworkImageData(widget.channelData.image ?? '');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final videoImage = _imageData != null
+        ? Image.memory(
+            _imageData!,
+            width: 200,
+            height: 125,
+            fit: BoxFit.cover,
+          )
+        : const SizedBox(
+            width: 200,
+            height: 125,
+            child: Center(
+              child: Icon(Icons.movie_creation_outlined, size: 80),
+            ),
+          );
+
+    final themeData = Theme.of(context);
+    final cardContent = Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        videoImage,
+        SizedBox(
+          width: 160,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+            child: Row(
+              children: [
+                Flexible(
+                  child: Text(
+                    widget.channelData.sharer.name,
+                    style: themeData.textTheme.labelSmall,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                Text(
+                  '分享',
+                  style: themeData.textTheme.labelSmall,
+                ),
+              ],
+            ),
+          ),
+        ),
+        SizedBox(
+          width: 200,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+            child: Tooltip(
+              message: widget.channelData.name,
+              child: Text(
+                widget.channelData.name,
+                overflow: TextOverflow.ellipsis,
+                style: themeData.textTheme.titleSmall,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+
+    final card = Card(
+      margin: const EdgeInsets.symmetric(horizontal: 8),
+      clipBehavior: Clip.hardEdge,
+      color: ElevationOverlay.applySurfaceTint(
+        themeData.colorScheme.surfaceVariant,
+        themeData.colorScheme.surfaceTint,
+        0,
+      ),
+      elevation: 0,
+      child: InkWell(
+        onTap: widget.onTapped,
+        child: cardContent,
+      ),
+    );
+
+    final themedCard = FutureBuilder(
+      future: _imageData != null
+          ? ColorScheme.fromImageProvider(
+              provider: MemoryImage(_imageData!),
+            )
+          : null,
+      initialData: themeData.colorScheme,
+      builder: (context, snapshot) => Theme(
+        data: themeData.copyWith(colorScheme: snapshot.data!),
+        child: card,
+      ),
+    );
+
+    return themedCard;
+  }
+
+  void _getNetworkImageData(String uri) async {
+    try {
+      final response = await http.get(Uri.parse(uri));
+      if (!response.isSuccess) {
+        throw Exception('image fetch failed: ${response.statusCode}');
+      }
+      setState(() {
+        _imageData = response.bodyBytes;
+      });
+    } catch (e) {
+      logger.w(e);
+    }
   }
 }
