@@ -71,21 +71,9 @@ class SettingCallNoiseSuppressionLevel
   SettingCallNoiseSuppressionLevel() : super(NoiseSuppressionLevel.high);
 }
 
-class SettingGithubProxy extends ValueNotifier<String> {
-  SettingGithubProxy() : super('') {
-    bindPreference<String>(
-      preferences: getIt<Preferences>(),
-      key: 'github_proxy',
-      load: (pref) => pref,
-      update: (value) => value,
-    );
-  }
-}
-
 final settingProviders = MultiProvider(
   providers: [
     ChangeNotifierProvider(create: (context) => SettingProxy(), lazy: false),
-    ChangeNotifierProvider(create: (context) => SettingGithubProxy()),
     ChangeNotifierProvider(
         create: (context) => SettingBungaHost(), lazy: false),
     ChangeNotifierProvider(create: (context) => SettingClientId(), lazy: false),

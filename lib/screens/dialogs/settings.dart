@@ -17,7 +17,6 @@ class SettingsDialog extends StatefulWidget {
 class _SettingsDialogState extends State<SettingsDialog> {
   final _proxyFieldController = TextEditingController();
   final _hostFieldController = TextEditingController();
-  final _githubFieldController = TextEditingController();
 
   @override
   void initState() {
@@ -25,14 +24,12 @@ class _SettingsDialogState extends State<SettingsDialog> {
 
     _proxyFieldController.text = context.read<SettingProxy>().value ?? '';
     _hostFieldController.text = context.read<SettingBungaHost>().value;
-    _githubFieldController.text = context.read<SettingGithubProxy>().value;
   }
 
   @override
   void dispose() {
     _proxyFieldController.dispose();
     _hostFieldController.dispose();
-    _githubFieldController.dispose();
     super.dispose();
   }
 
@@ -58,16 +55,6 @@ class _SettingsDialogState extends State<SettingsDialog> {
                   controller: _proxyFieldController,
                   onChanged: (value) => context.read<SettingProxy>().value =
                       value.isEmpty ? null : value,
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  decoration: const InputDecoration(
-                    labelText: '更新代理',
-                    helperText: '用于更快地下载更新文件',
-                  ),
-                  controller: _githubFieldController,
-                  onChanged: (value) =>
-                      context.read<SettingGithubProxy>().value = value,
                 ),
                 const SizedBox(height: 8),
                 Consumer3<BungaClient?, PendingBungaHost, SettingBungaHost>(

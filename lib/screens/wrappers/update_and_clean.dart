@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:ui';
 
-import 'package:bunga_player/providers/settings.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/network.dart';
 import 'package:bunga_player/services/services.dart';
@@ -14,7 +13,6 @@ import 'package:nested/nested.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
-import 'package:provider/provider.dart';
 
 enum UpdateStatus {
   checking,
@@ -112,10 +110,8 @@ class _UpdateWrapperState extends SingleChildState<UpdateAndCleanWrapper> {
   }
 
   Future<void> _checkUpdate() async {
-    final githubProxy = context.read<SettingGithubProxy>().value;
-
     final response = await http.get(Uri.parse(
-      "https://api.github.com/repos/joodo/bunga_player/releases/latest",
+      'https://gitee.com/api/v5/repos/joodo2/bunga_player/releases/latest',
     ));
     final responseData = jsonDecode(response.body);
 
@@ -153,9 +149,8 @@ class _UpdateWrapperState extends SingleChildState<UpdateAndCleanWrapper> {
       });
       final binaryUrl = (responseData['assets'] as List)
           .firstWhere((e) => e['name'] == fileName)['browser_download_url'];
-      final downloadUrl = '$githubProxy$binaryUrl';
       await for (final progress in getIt<NetworkService>()
-          .downloadFile(downloadUrl, _installFilePath)) {
+          .downloadFile(binaryUrl, _installFilePath)) {
         setState(() {
           _downloadProgress = progress;
         });
