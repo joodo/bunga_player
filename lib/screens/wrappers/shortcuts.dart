@@ -19,6 +19,8 @@ class ShortcutsWrapper extends SingleChildStatelessWidget {
         SingleActivator(LogicalKeyboardKey.arrowRight):
             SeekIntent(Duration(seconds: 5), isIncrease: true),
         SingleActivator(LogicalKeyboardKey.space): TogglePlayIntent(),
+        SingleActivator(LogicalKeyboardKey.keyS, control: true):
+            ScreenshotIntent(),
       },
       child: child!,
     );

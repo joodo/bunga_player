@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:bunga_player/actions/dispatcher.dart';
 import 'package:bunga_player/actions/ui.dart';
@@ -12,7 +13,9 @@ import 'package:bunga_player/services/toast.dart';
 import 'package:bunga_player/utils/duration.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:path/path.dart' as path;
 
 class SetVolumeIntent extends Intent {
   const SetVolumeIntent(this.volume) : offset = false;
@@ -350,6 +353,42 @@ class SetContrastAction extends Action<SetContrastIntent> {
       : getIt<Player>().resetContrast();
 }
 
+class ScreenshotIntent extends Intent {
+  const ScreenshotIntent();
+}
+
+class ScreenshotAction extends ContextAction<ScreenshotIntent> {
+  @override
+  Future<File> invoke(ScreenshotIntent intent, [BuildContext? context]) async {
+    final positionStr = context!.read<PlayPosition>().value.toString();
+    final positionStamp = positionStr
+        .substring(0, positionStr.length - 4)
+        .replaceAll(RegExp(r'[:|.]'), '_');
+    final videoFileName = context.read<PlayVideoEntry>().value!.title;
+    final videoName = path.basenameWithoutExtension(videoFileName);
+    final fileName = '${videoName}_$positionStamp.jpg';
+
+    final data = await getIt<Player>().screenshot();
+    assert(data != null);
+
+    final documentDir = await getApplicationDocumentsDirectory();
+    final picturePath = '${documentDir.parent.path}/Pictures/Bunga';
+    final pictureDir = await Directory(picturePath).create(recursive: true);
+
+    final file = File('${pictureDir.path}/$fileName');
+    await file.writeAsBytes(data!);
+
+    getIt<Toast>().show('已截图 $fileName');
+
+    return file;
+  }
+
+  @override
+  bool isEnabled(ScreenshotIntent intent, [BuildContext? context]) {
+    return context?.read<PlayVideoEntry>().value != null;
+  }
+}
+
 class PlayActions extends SingleChildStatefulWidget {
   const PlayActions({super.key, super.child});
 
@@ -439,6 +478,7 @@ class _PlayActionsState extends SingleChildState<PlayActions> {
         SetSubSizeIntent: SetSubSizeAction(),
         SetSubPosIntent: SetSubPosAction(),
         SetContrastIntent: SetContrastAction(),
+        ScreenshotIntent: ScreenshotAction(),
       },
       child: child!,
     );

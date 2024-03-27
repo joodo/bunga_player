@@ -70,6 +70,8 @@ abstract class Player {
   Future<void> stop();
   Future<void> toggle();
 
+  Future<Uint8List?> screenshot();
+
   Stream<VideoEntry?> get videoEntryStream;
   Stream<int?> get sourceIndexStream;
   WatchProgresses get watchProgresses;

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:bunga_player/models/playing/volume.dart';
@@ -175,6 +176,9 @@ class MediaKitPlayer implements Player {
   Future<void> pause() => _player.pause();
   @override
   Future<void> toggle() => _player.playOrPause();
+
+  @override
+  Future<Uint8List?> screenshot() => _player.screenshot();
 
   @override
   Future<void> stop() {
