@@ -2,9 +2,11 @@ import 'package:bunga_player/providers/clients/bunga.dart';
 import 'package:bunga_player/providers/clients/clients.dart';
 import 'package:bunga_player/providers/settings.dart';
 import 'package:bunga_player/providers/ui.dart';
+import 'package:bunga_player/screens/player_section/danmaku_player.dart';
 import 'package:bunga_player/screens/widgets/widget_in_button.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart';
+import 'package:bunga_player/utils/slider_dense_track_shape.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:nested/nested.dart';
@@ -40,11 +42,11 @@ class _SettingsDialogState extends State<SettingsDialog> {
                   selectedIcon: Icon(Icons.lan),
                   label: Text('网络'),
                 ),
-                /*NavigationRailDestination(
+                NavigationRailDestination(
                   icon: Icon(Icons.chat_outlined),
                   selectedIcon: Icon(Icons.chat),
                   label: Text('互动'),
-                ),*/
+                ),
                 NavigationRailDestination(
                   icon: Icon(Icons.info_outline),
                   selectedIcon: Icon(Icons.info),
@@ -59,6 +61,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
                     index: _selectedIndex,
                     children: const [
                       _NetworkSettings(),
+                      _ReactionSettings(),
                       _AboutSetting(),
                     ],
                   ),
@@ -191,6 +194,118 @@ class _NetworkSettingsState extends State<_NetworkSettings> {
   }
 }
 
+class _ReactionSettings extends StatefulWidget {
+  const _ReactionSettings();
+
+  @override
+  State<_ReactionSettings> createState() => _ReactionSettingsState();
+}
+
+class _ReactionSettingsState extends State<_ReactionSettings> {
+  late final _hueProvider = context.read<SettingColorHue>();
+  late int _hue = _hueProvider.value;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 480,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const _SectionText('个性化'),
+          _SectionContainer(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('弹幕颜色'),
+                _ColorSlider(
+                  value: _hue,
+                  onChanged: (value) => setState(() {
+                    _hue = value;
+                  }),
+                ),
+                DanmakuText(
+                  text: '测试弹幕样式',
+                  hue: _hue,
+                ),
+              ],
+            ),
+          ),
+          const _SectionText('行为'),
+          SwitchListTile(
+            title: const Text('打开视频后自动加入房间'),
+            value: true,
+            onChanged: (value) {},
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    Future.microtask(() => _hueProvider.value = _hue);
+    super.dispose();
+  }
+}
+
+class _ColorSlider extends StatelessWidget {
+  final int value;
+  final Function(int value) onChanged;
+
+  final _colors = [
+    const Color.fromARGB(255, 255, 0, 0),
+    const Color.fromARGB(255, 255, 128, 0),
+    const Color.fromARGB(255, 255, 255, 0),
+    const Color.fromARGB(255, 128, 255, 0),
+    const Color.fromARGB(255, 0, 255, 0),
+    const Color.fromARGB(255, 0, 255, 128),
+    const Color.fromARGB(255, 0, 255, 255),
+    const Color.fromARGB(255, 0, 128, 255),
+    const Color.fromARGB(255, 0, 0, 255),
+    const Color.fromARGB(255, 127, 0, 255),
+    const Color.fromARGB(255, 255, 0, 255),
+    const Color.fromARGB(255, 255, 0, 127),
+    const Color.fromARGB(255, 255, 0, 0),
+  ];
+
+  _ColorSlider({required this.value, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 16),
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(
+            width: 2,
+            color: Theme.of(context).dividerColor,
+          ),
+          borderRadius: BorderRadius.circular(15),
+          gradient: LinearGradient(colors: _colors),
+        ),
+        height: 15,
+        child: SliderTheme(
+          data: SliderThemeData(
+            trackShape: SliderDenseTrackShape(),
+            trackHeight: 16,
+            activeTrackColor: Colors.transparent,
+            inactiveTrackColor: Colors.transparent,
+            showValueIndicator: ShowValueIndicator.never,
+            thumbShape: _ColorSliderThumbShape(),
+          ),
+          child: Slider(
+            min: 0,
+            max: 360,
+            value: value.toDouble(),
+            onChanged: (value) => onChanged(value.toInt()),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _AboutSetting extends StatelessWidget {
   const _AboutSetting();
   @override
@@ -210,7 +325,7 @@ class _AboutSetting extends StatelessWidget {
             style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: 8),
-          Text(getIt<PackageInfo>().version),
+          Text('版本: ${getIt<PackageInfo>().version}'),
           const SizedBox(height: 8),
           TextButton(
             onPressed: () => showLicensePage(
@@ -249,8 +364,39 @@ class _SectionContainer extends SingleChildStatelessWidget {
       elevation: 2,
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: child,
+        child: DefaultTextStyle(
+          style: Theme.of(context).textTheme.bodyLarge!,
+          child: child!,
+        ),
       ),
+    );
+  }
+}
+
+class _ColorSliderThumbShape extends RoundSliderThumbShape {
+  @override
+  void paint(
+    PaintingContext context,
+    Offset center, {
+    required Animation<double> activationAnimation,
+    required Animation<double> enableAnimation,
+    required bool isDiscrete,
+    required TextPainter labelPainter,
+    required RenderBox parentBox,
+    required SliderThemeData sliderTheme,
+    required TextDirection textDirection,
+    required double value,
+    required double textScaleFactor,
+    required Size sizeWithOverflow,
+  }) {
+    final Canvas canvas = context.canvas;
+    canvas.drawCircle(
+      center,
+      10,
+      Paint()
+        ..color = sliderTheme.thumbColor!
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 4,
     );
   }
 }

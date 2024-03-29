@@ -17,11 +17,15 @@ extension UserId on List<User> {
 class User {
   final String id;
   final String name;
+  late final int colorHue;
 
   User({
     required this.id,
     required this.name,
-  });
+    int? colorHue,
+  }) {
+    this.colorHue = colorHue ?? (id.hashCode % 360);
+  }
 
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
   Map<String, dynamic> toJson() => _$UserToJson(this);
@@ -29,8 +33,7 @@ class User {
   /// Based on hsv.
   /// value 0.0 ~ 1.0, the higher, the lighter
   Color getColor(double value) {
-    final hash = id.hashCode;
-    final hsvColor = HSVColor.fromAHSV(1, (hash % 360), 0.5, value);
+    final hsvColor = HSVColor.fromAHSV(1, colorHue.toDouble(), 0.5, value);
     return hsvColor.toColor();
   }
 
@@ -39,9 +42,12 @@ class User {
 
   @override
   bool operator ==(other) {
-    return other is User && id == other.id && name == other.name;
+    return other is User &&
+        id == other.id &&
+        name == other.name &&
+        colorHue == other.colorHue;
   }
 
   @override
-  int get hashCode => Object.hash(id, name);
+  int get hashCode => Object.hash(id, name, colorHue);
 }

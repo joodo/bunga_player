@@ -30,14 +30,21 @@ class StreamIOClient implements ChatClient {
   User _userFromStreamUser(stream.User streamUser) => User(
         id: streamUser.id,
         name: streamUser.name,
+        colorHue: streamUser.extraData['color_hue'] as int?,
       );
 
   @override
-  Future<OwnUser> login(String id, String token, String? name) async {
+  Future<OwnUser> login(
+    String id,
+    String token,
+    String? name, {
+    int? colorHue,
+  }) async {
     await _logout();
     final streamUser = stream.User(
       id: id,
       name: name,
+      extraData: {'color_hue': colorHue},
     );
     await _client.connectUser(
       streamUser,
@@ -46,6 +53,7 @@ class StreamIOClient implements ChatClient {
     return OwnUser(
       id: id,
       name: name ?? '',
+      colorHue: colorHue,
       logout: () async {
         if (id != _client.state.currentUser?.id) return;
         return _logout();

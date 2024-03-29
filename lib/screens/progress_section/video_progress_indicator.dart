@@ -1,6 +1,7 @@
 import 'package:bunga_player/actions/play.dart';
 import 'package:bunga_player/providers/player.dart';
 import 'package:bunga_player/utils/duration.dart';
+import 'package:bunga_player/utils/slider_dense_track_shape.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -36,7 +37,7 @@ class _VideoProgressIndicatorState extends State<VideoProgressIndicator> {
             data: SliderThemeData(
               thumbShape: RoundSliderThumbShape(enabledThumbRadius: 8 * value),
               trackHeight: 2 + 2 * value,
-              trackShape: SliderCustomTrackShape(),
+              trackShape: SliderDenseTrackShape(),
               showValueIndicator: ShowValueIndicator.always,
             ),
             child: child!,
@@ -92,23 +93,5 @@ class _VideoProgressIndicatorState extends State<VideoProgressIndicator> {
         ),
       ),
     );
-  }
-}
-
-class SliderCustomTrackShape extends RoundedRectSliderTrackShape {
-  @override
-  Rect getPreferredRect({
-    required RenderBox parentBox,
-    Offset offset = Offset.zero,
-    required SliderThemeData sliderTheme,
-    bool isEnabled = false,
-    bool isDiscrete = false,
-  }) {
-    final double? trackHeight = sliderTheme.trackHeight;
-    final double trackLeft = offset.dx;
-    final double trackTop =
-        offset.dy + (parentBox.size.height - trackHeight!) / 2;
-    final double trackWidth = parentBox.size.width;
-    return Rect.fromLTWH(trackLeft, trackTop, trackWidth, trackHeight);
   }
 }

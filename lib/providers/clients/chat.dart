@@ -11,6 +11,7 @@ class OwnUser extends User {
     required super.id,
     required super.name,
     required this.logout,
+    super.colorHue,
   });
 }
 
@@ -66,7 +67,7 @@ class ChannelFile {
 }
 
 abstract class ChatClient {
-  Future<OwnUser> login(String id, String token, String? name);
+  Future<OwnUser> login(String id, String token, String? name, {int? colorHue});
   Future<List<({String id, ChannelData data})>> queryOnlineChannels();
   Future<Channel> joinChannel(ChannelJoinPayload payload);
 }

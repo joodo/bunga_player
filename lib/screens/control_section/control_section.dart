@@ -12,7 +12,7 @@ import 'package:bunga_player/screens/control_section/popmoji_control.dart';
 import 'package:bunga_player/screens/control_section/subtitle_control.dart';
 import 'package:bunga_player/screens/control_section/tune_control.dart';
 import 'package:bunga_player/screens/control_section/welcome_control.dart';
-import 'package:bunga_player/screens/progress_section/video_progress_indicator.dart';
+import 'package:bunga_player/utils/slider_dense_track_shape.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -85,7 +85,7 @@ class _ControlSectionState extends State<ControlSection> {
         thumbColor: Theme.of(context).colorScheme.secondary,
         thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
         valueIndicatorColor: Theme.of(context).colorScheme.secondary,
-        trackShape: SliderCustomTrackShape(),
+        trackShape: SliderDenseTrackShape(),
         showValueIndicator: ShowValueIndicator.always,
       ),
       child: body,

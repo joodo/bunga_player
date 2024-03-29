@@ -44,6 +44,17 @@ class SettingClientId extends ValueNotifier<String> {
   }
 }
 
+class SettingColorHue extends ValueNotifier<int> {
+  SettingColorHue(super._value) {
+    bindPreference<int>(
+      preferences: getIt<Preferences>(),
+      key: 'color_hue',
+      load: (pref) => pref,
+      update: (value) => value,
+    );
+  }
+}
+
 class SettingUserName extends ValueNotifier<String> {
   SettingUserName() : super('') {
     bindPreference<String>(
@@ -77,6 +88,16 @@ final settingProviders = MultiProvider(
     ChangeNotifierProvider(
         create: (context) => SettingBungaHost(), lazy: false),
     ChangeNotifierProvider(create: (context) => SettingClientId(), lazy: false),
+    ChangeNotifierProxyProvider<SettingClientId, SettingColorHue?>(
+      create: (context) => null,
+      update: (context, cliendId, previous) {
+        if (previous == null) {
+          return SettingColorHue(cliendId.value.hashCode % 360);
+        } else {
+          return previous;
+        }
+      },
+    ),
     ChangeNotifierProvider(create: (context) => SettingUserName(), lazy: false),
     ChangeNotifierProvider(create: (context) => SettingCallVolume()),
     ChangeNotifierProvider(

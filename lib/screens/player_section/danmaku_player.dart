@@ -43,9 +43,7 @@ class _DanmakuPlayerState extends State<DanmakuPlayer>
               left: danmakuPos.x,
               child: DanmakuText(
                 text: danmakuPos.danmaku.text,
-                foregroundColor: danmakuPos.danmaku.sender.getColor(0.95),
-                borderColor: danmakuPos.danmaku.sender.getColor(0.3),
-                textStyle: textStyle,
+                hue: danmakuPos.danmaku.sender.colorHue,
               ),
             ),
       ],
@@ -58,10 +56,6 @@ class _DanmakuPlayerState extends State<DanmakuPlayer>
     _addDanmakuToDisplay(newDanmaku);
   }
 
-  final textStyle = const TextStyle(
-    fontSize: 40,
-    letterSpacing: 2,
-  );
   static const spacing = 24.0;
 
   static const preferLines = 5;
@@ -79,7 +73,7 @@ class _DanmakuPlayerState extends State<DanmakuPlayer>
 
   double _getStringWidth(String text) {
     final textPainter = TextPainter(
-      text: TextSpan(text: text, style: textStyle),
+      text: TextSpan(text: text, style: DanmakuText.textStyle),
       textDirection: TextDirection.ltr,
     )..layout(minWidth: 0, maxWidth: double.infinity);
     return textPainter.width;
@@ -146,21 +140,26 @@ class DanmakuPosition {
 }
 
 class DanmakuText extends StatelessWidget {
+  static const textStyle = TextStyle(
+    fontSize: 40,
+    letterSpacing: 2,
+  );
+
   final String text;
-  final Color borderColor;
-  final Color foregroundColor;
-  final TextStyle textStyle;
+  final int hue;
 
   const DanmakuText({
     super.key,
     required this.text,
-    required this.borderColor,
-    required this.textStyle,
-    required this.foregroundColor,
+    required this.hue,
   });
 
   @override
   Widget build(BuildContext context) {
+    final borderColor = HSVColor.fromAHSV(1, (hue % 360), 0.5, 0.3).toColor();
+    final foregroundColor =
+        HSVColor.fromAHSV(1, (hue % 360), 0.5, 0.95).toColor();
+
     return Stack(
       children: <Widget>[
         // Stroked text as border.
