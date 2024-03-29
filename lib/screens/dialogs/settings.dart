@@ -4,7 +4,11 @@ import 'package:bunga_player/providers/settings.dart';
 import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/screens/widgets/widget_in_button.dart';
 import 'package:bunga_player/services/logger.dart';
+import 'package:bunga_player/services/services.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:nested/nested.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 
 class SettingsDialog extends StatefulWidget {
@@ -15,6 +19,75 @@ class SettingsDialog extends StatefulWidget {
 }
 
 class _SettingsDialogState extends State<SettingsDialog> {
+  int _selectedIndex = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog.fullscreen(
+      child: Padding(
+        padding: const EdgeInsets.only(top: 8),
+        child: Row(
+          children: [
+            NavigationRail(
+              selectedIndex: _selectedIndex,
+              onDestinationSelected: (value) => setState(() {
+                _selectedIndex = value;
+              }),
+              labelType: NavigationRailLabelType.all,
+              destinations: const [
+                NavigationRailDestination(
+                  icon: Icon(Icons.lan_outlined),
+                  selectedIcon: Icon(Icons.lan),
+                  label: Text('网络'),
+                ),
+                /*NavigationRailDestination(
+                  icon: Icon(Icons.chat_outlined),
+                  selectedIcon: Icon(Icons.chat),
+                  label: Text('互动'),
+                ),*/
+                NavigationRailDestination(
+                  icon: Icon(Icons.info_outline),
+                  selectedIcon: Icon(Icons.info),
+                  label: Text('关于'),
+                ),
+              ],
+            ),
+            Expanded(
+              child: Stack(
+                children: [
+                  IndexedStack(
+                    index: _selectedIndex,
+                    children: const [
+                      _NetworkSettings(),
+                      _AboutSetting(),
+                    ],
+                  ),
+                  Positioned(
+                    right: 12,
+                    bottom: 12,
+                    child: FilledButton(
+                      onPressed: Navigator.of(context).pop,
+                      child: const Text('确定'),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _NetworkSettings extends StatefulWidget {
+  const _NetworkSettings();
+
+  @override
+  State<_NetworkSettings> createState() => _NetworkSettingsState();
+}
+
+class _NetworkSettingsState extends State<_NetworkSettings> {
   final _proxyFieldController = TextEditingController();
   final _hostFieldController = TextEditingController();
 
@@ -35,64 +108,61 @@ class _SettingsDialogState extends State<SettingsDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog.fullscreen(
-      child: Scaffold(
-        appBar: AppBar(
-          leading: IconButton(
-            icon: const Icon(Icons.close),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-          title: const Text('设置'),
-        ),
-        body: Padding(
-          padding: const EdgeInsets.all(16),
-          child: SizedBox(
-            width: 400,
-            child: Column(
-              children: [
-                TextField(
-                  decoration: const InputDecoration(labelText: '网络代理'),
-                  controller: _proxyFieldController,
-                  onChanged: (value) => context.read<SettingProxy>().value =
-                      value.isEmpty ? null : value,
-                ),
-                const SizedBox(height: 8),
-                Consumer3<BungaClient?, PendingBungaHost, SettingBungaHost>(
-                  builder: (context, client, pending, host, child) => TextField(
-                    decoration: InputDecoration(
-                      labelText: 'Bunga 服务器',
-                      errorText: client == null && !pending.value
-                          ? host.value.isEmpty
-                              ? '设置服务器地址'
-                              : '无法连接'
-                          : null,
-                      suffix: ValueListenableBuilder(
-                        valueListenable: _hostFieldController,
-                        builder: (context, hostFieldValue, child) => TextButton(
-                          onPressed: pending.value ||
-                                  hostFieldValue.text == client?.host
+    return SizedBox(
+      width: 480,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const _SectionText('服务器'),
+          _SectionContainer(
+            child: Consumer3<BungaClient?, PendingBungaHost, SettingBungaHost>(
+              builder: (context, client, pending, host, child) => TextField(
+                decoration: InputDecoration(
+                  labelText: 'Bunga 服务器',
+                  errorText: client == null && !pending.value
+                      ? host.value.isEmpty
+                          ? '设置服务器地址'
+                          : '无法连接'
+                      : null,
+                  border: const OutlineInputBorder(),
+                  suffix: ValueListenableBuilder(
+                    valueListenable: _hostFieldController,
+                    builder: (context, hostFieldValue, child) => TextButton(
+                      onPressed:
+                          pending.value || hostFieldValue.text == client?.host
                               ? null
                               : _connectToHost,
-                          child: pending.value
-                              ? createIndicatorInButton(context)
-                              : hostFieldValue.text == client?.host
-                                  ? createIconInButton(
-                                      context,
-                                      Icons.check,
-                                      color: Colors.greenAccent,
-                                    )
-                                  : const Text('连接'),
-                        ),
-                      ),
+                      child: pending.value
+                          ? createIndicatorInButton(context)
+                          : hostFieldValue.text == client?.host
+                              ? createIconInButton(
+                                  context,
+                                  Icons.check,
+                                  color: Colors.greenAccent,
+                                )
+                              : const Text('连接'),
                     ),
-                    enabled: !pending.value,
-                    controller: _hostFieldController,
                   ),
-                )
-              ],
+                ),
+                enabled: !pending.value,
+                controller: _hostFieldController,
+              ),
             ),
           ),
-        ),
+          const _SectionText('代理'),
+          _SectionContainer(
+            child: TextField(
+              decoration: const InputDecoration(
+                labelText: '网络代理',
+                border: OutlineInputBorder(),
+              ),
+              controller: _proxyFieldController,
+              onChanged: (value) => context.read<SettingProxy>().value =
+                  value.isEmpty ? null : value,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -118,5 +188,69 @@ class _SettingsDialogState extends State<SettingsDialog> {
     } finally {
       pendingNotifier.value = false;
     }
+  }
+}
+
+class _AboutSetting extends StatelessWidget {
+  const _AboutSetting();
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox.expand(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const SizedBox(height: 24),
+          SvgPicture.asset(
+            'assets/images/icon.svg',
+            width: 96,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            getIt<PackageInfo>().appName,
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          const SizedBox(height: 8),
+          Text(getIt<PackageInfo>().version),
+          const SizedBox(height: 8),
+          TextButton(
+            onPressed: () => showLicensePage(
+              context: context,
+              applicationName: getIt<PackageInfo>().appName,
+            ),
+            child: const Text('查看许可'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SectionText extends StatelessWidget {
+  final String text;
+  const _SectionText(this.text);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+      child: Text(
+        text,
+        style: Theme.of(context).textTheme.labelMedium,
+      ),
+    );
+  }
+}
+
+class _SectionContainer extends SingleChildStatelessWidget {
+  const _SectionContainer({super.child});
+  @override
+  Widget buildWithChild(BuildContext context, Widget? child) {
+    return Card(
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: child,
+      ),
+    );
   }
 }
