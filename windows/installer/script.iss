@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Bunga Player"
-#define MyAppVersion "0.9.7"
+#define MyAppVersion "0.9.8"
 #define MyAppPublisher "Joodo"
 #define MyAppURL "https://github.com/joodo/bunga_player/"
 #define MyAppExeName "bunga_player.exe"
@@ -23,7 +23,7 @@ DisableProgramGroupPage=yes
 ; Remove the following line to run in administrative install mode (install for all users.)
 PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
-OutputBaseFilename=bunga_player_installer_0_9_7_windows
+OutputBaseFilename=bunga_player_installer_0_9_8_windows
 SetupIconFile=installer.ico
 Compression=lzma
 SolidCompression=yes
