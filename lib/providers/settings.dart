@@ -66,6 +66,17 @@ class SettingUserName extends ValueNotifier<String> {
   }
 }
 
+class SettingAutoJoinChannel extends ValueNotifier<bool> {
+  SettingAutoJoinChannel() : super(true) {
+    bindPreference<bool>(
+      preferences: getIt<Preferences>(),
+      key: 'auto_join_channel',
+      load: (pref) => pref,
+      update: (value) => value,
+    );
+  }
+}
+
 class SettingCallVolume extends ValueNotifier<Volume> {
   SettingCallVolume() : super(Volume(volume: (Volume.max - Volume.min) ~/ 2)) {
     bindPreference<int>(
@@ -99,6 +110,7 @@ final settingProviders = MultiProvider(
       },
     ),
     ChangeNotifierProvider(create: (context) => SettingUserName(), lazy: false),
+    ChangeNotifierProvider(create: (context) => SettingAutoJoinChannel()),
     ChangeNotifierProvider(create: (context) => SettingCallVolume()),
     ChangeNotifierProvider(
         create: (context) => SettingCallNoiseSuppressionLevel()),

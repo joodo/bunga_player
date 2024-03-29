@@ -18,16 +18,30 @@ class CurrentUser extends ValueNotifier<OwnUser?> {
 }
 
 // Channel
-sealed class ChannelJoinPayload {}
+sealed class ChannelJoinPayload {
+  bool get active;
+  ChannelJoinPayload createActive();
+}
 
 class ChannelJoinByIdPayload extends ChannelJoinPayload {
   final String id;
-  ChannelJoinByIdPayload(this.id);
+  ChannelJoinByIdPayload(this.id, {required this.active});
+
+  @override
+  final bool active;
+  @override
+  ChannelJoinPayload createActive() => ChannelJoinByIdPayload(id, active: true);
 }
 
 class ChannelJoinByDataPayload extends ChannelJoinPayload {
   final ChannelData data;
-  ChannelJoinByDataPayload(this.data);
+  ChannelJoinByDataPayload(this.data, {required this.active});
+
+  @override
+  final bool active;
+  @override
+  ChannelJoinPayload createActive() =>
+      ChannelJoinByDataPayload(data, active: true);
 }
 
 class CurrentChannelJoinPayload extends ValueNotifier<ChannelJoinPayload?> {
@@ -222,7 +236,9 @@ final chatProviders = MultiProvider(providers: [
       previous!.value?.leave();
       previous.value = null;
 
-      if (chatClient != null && channelJoinPayload.value != null) {
+      if (chatClient != null &&
+          channelJoinPayload.value != null &&
+          channelJoinPayload.value!.active) {
         final payload = channelJoinPayload.value!;
         final job = AutoRetryJob<Channel>(
           () => chatClient.joinChannel(payload),

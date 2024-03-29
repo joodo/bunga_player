@@ -232,10 +232,12 @@ class _ReactionSettingsState extends State<_ReactionSettings> {
             ),
           ),
           const _SectionText('行为'),
-          SwitchListTile(
-            title: const Text('打开视频后自动加入房间'),
-            value: true,
-            onChanged: (value) {},
+          Consumer<SettingAutoJoinChannel>(
+            builder: (context, autoJoinNotifier, child) => SwitchListTile(
+              title: const Text('打开视频后自动加入房间'),
+              value: autoJoinNotifier.value,
+              onChanged: (value) => autoJoinNotifier.value = value,
+            ),
           ),
         ],
       ),

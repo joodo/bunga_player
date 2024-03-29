@@ -186,10 +186,13 @@ class _WelcomeControlState extends State<WelcomeControl> {
 
         if (!mounted) throw Exception('context unmounted');
         context.read<CurrentChannelJoinPayload>().value =
-            ChannelJoinByDataPayload(ChannelData.fromShare(
-          context.read<CurrentUser>().value!,
-          result,
-        ));
+            ChannelJoinByDataPayload(
+          ChannelData.fromShare(
+            context.read<CurrentUser>().value!,
+            result,
+          ),
+          active: context.read<SettingAutoJoinChannel>().value,
+        );
       } else if (result is ({String id, VideoEntry entry})) {
         final response = Actions.invoke(
           context,
@@ -199,7 +202,10 @@ class _WelcomeControlState extends State<WelcomeControl> {
 
         if (!mounted) throw Exception('context unmounted');
         context.read<CurrentChannelJoinPayload>().value =
-            ChannelJoinByIdPayload(result.id);
+            ChannelJoinByIdPayload(
+          result.id,
+          active: context.read<SettingAutoJoinChannel>().value,
+        );
       } else {
         assert(false);
       }
