@@ -8,6 +8,7 @@ import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/slider_dense_track_shape.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_lazy_indexed_stack/flutter_lazy_indexed_stack.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:nested/nested.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -57,8 +58,9 @@ class _SettingsDialogState extends State<SettingsDialog> {
             Expanded(
               child: Stack(
                 children: [
-                  IndexedStack(
+                  LazyIndexedStack(
                     index: _selectedIndex,
+                    sizing: StackFit.expand,
                     children: const [
                       _NetworkSettings(),
                       _ReactionSettings(),
