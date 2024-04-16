@@ -130,6 +130,17 @@ class SettingShortcutMapping
   }
 }
 
+class SettingShowRemainDuration extends ValueNotifier<bool> {
+  SettingShowRemainDuration() : super(false) {
+    bindPreference<bool>(
+      preferences: getIt<Preferences>(),
+      key: 'show_remain_duration',
+      load: (pref) => pref,
+      update: (value) => value,
+    );
+  }
+}
+
 class SettingCallVolume extends ValueNotifier<Volume> {
   SettingCallVolume() : super(Volume(volume: (Volume.max - Volume.min) ~/ 2)) {
     bindPreference<int>(
@@ -163,6 +174,8 @@ final settingProviders = MultiProvider(
       },
     ),
     ChangeNotifierProvider(create: (context) => SettingUserName(), lazy: false),
+    ChangeNotifierProvider(
+        create: (context) => SettingShowRemainDuration(), lazy: false),
     ChangeNotifierProvider(create: (context) => SettingAutoJoinChannel()),
     ChangeNotifierProvider(create: (context) => SettingShortcutMapping()),
     ChangeNotifierProvider(create: (context) => SettingCallVolume()),

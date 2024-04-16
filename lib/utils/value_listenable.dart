@@ -121,3 +121,9 @@ extension Mapping<T> on ValueListenable<T> {
       ProxyValueNotifier(from: this, proxy: proxy);
   ProxyValueNotifier<T, T> createReadonly() => ProxyValueNotifier(from: this);
 }
+
+extension ToggleBoolNotifier on ValueNotifier<bool> {
+  void toggle() {
+    value = !value;
+  }
+}

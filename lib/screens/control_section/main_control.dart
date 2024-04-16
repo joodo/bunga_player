@@ -7,9 +7,11 @@ import 'package:bunga_player/mocks/slider.dart' as mock;
 import 'package:bunga_player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/providers/chat.dart';
 import 'package:bunga_player/providers/player.dart';
+import 'package:bunga_player/providers/settings.dart';
 import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/screens/control_section/popmoji_control.dart';
 import 'package:bunga_player/utils/duration.dart';
+import 'package:bunga_player/utils/value_listenable.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -103,7 +105,7 @@ class _MainControlState extends State<MainControl> {
 
         // Duration button
         const Spacer(),
-        const DurationButton(),
+        const _DurationButton(),
         const Spacer(),
 
         // Call Button
@@ -347,29 +349,21 @@ class _CallButtonState extends State<CallButton> with TickerProviderStateMixin {
   }
 }
 
-class DurationButton extends StatefulWidget {
-  const DurationButton({super.key});
-
-  @override
-  State<DurationButton> createState() => _DurationButtonState();
-}
-
-class _DurationButtonState extends State<DurationButton> {
-  bool _showTotalTime = true;
-
+class _DurationButton extends StatelessWidget {
+  const _DurationButton();
   @override
   Widget build(BuildContext context) {
-    return Consumer2<PlayPosition, PlayDuration>(
-      builder: (context, position, duration, child) {
-        final displayString = _showTotalTime
-            ? '${position.value.hhmmss} / ${duration.value.hhmmss}'
-            : '${position.value.hhmmss} - ${(duration.value - position.value).hhmmss}';
+    return Consumer3<PlayPosition, PlayDuration, SettingShowRemainDuration>(
+      builder: (context, position, duration, showRemainDuration, child) {
+        final displayString = showRemainDuration.value
+            ? '${position.value.hhmmss} - ${(duration.value - position.value).hhmmss}'
+            : '${position.value.hhmmss} / ${duration.value.hhmmss}';
         return TextButton(
+          onPressed: showRemainDuration.toggle,
           child: Text(
             displayString,
             style: Theme.of(context).textTheme.labelMedium,
           ),
-          onPressed: () => setState(() => _showTotalTime = !_showTotalTime),
         );
       },
     );
