@@ -1,9 +1,13 @@
+import 'dart:convert';
+
 import 'package:bunga_player/models/playing/volume.dart';
 import 'package:bunga_player/providers/chat.dart';
 import 'package:bunga_player/services/network.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
+import 'package:bunga_player/utils/single_activator.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
@@ -77,6 +81,55 @@ class SettingAutoJoinChannel extends ValueNotifier<bool> {
   }
 }
 
+enum ShortcutKey {
+  volumeUp,
+  volumeDown,
+  forward5Sec,
+  backward5Sec,
+  togglePlay,
+  screenshot,
+}
+
+class SettingShortcutMapping
+    extends ValueNotifier<Map<ShortcutKey, SingleActivator?>> {
+  static const defaultMapping = {
+    ShortcutKey.volumeUp: SingleActivator(LogicalKeyboardKey.arrowUp),
+    ShortcutKey.volumeDown: SingleActivator(LogicalKeyboardKey.arrowDown),
+    ShortcutKey.forward5Sec: SingleActivator(LogicalKeyboardKey.arrowRight),
+    ShortcutKey.backward5Sec: SingleActivator(LogicalKeyboardKey.arrowLeft),
+    ShortcutKey.togglePlay: SingleActivator(LogicalKeyboardKey.space),
+    ShortcutKey.screenshot:
+        SingleActivator(LogicalKeyboardKey.keyS, control: true),
+  };
+
+  SettingShortcutMapping() : super(defaultMapping) {
+    bindPreference<String>(
+      preferences: getIt<Preferences>(),
+      key: 'shortcut_mapping',
+      load: (pref) {
+        final savedMap = (jsonDecode(pref) as Map<String, dynamic>)
+            .map<String, SingleActivator?>((key, value) {
+          final serialized = value as String;
+          return MapEntry(
+            key,
+            serialized.isEmpty ? null : unserializeSingleActivator(serialized),
+          );
+        });
+        final mergedMap = defaultMapping.map<ShortcutKey, SingleActivator?>(
+          (key, value) => MapEntry(
+              key, savedMap.containsKey(key.name) ? savedMap[key.name] : value),
+        );
+        return Map.unmodifiable(mergedMap);
+      },
+      update: (value) => jsonEncode(
+        value.map<String, String>(
+          (key, value) => MapEntry(key.name, value?.serialize() ?? ''),
+        ),
+      ),
+    );
+  }
+}
+
 class SettingCallVolume extends ValueNotifier<Volume> {
   SettingCallVolume() : super(Volume(volume: (Volume.max - Volume.min) ~/ 2)) {
     bindPreference<int>(
@@ -111,6 +164,7 @@ final settingProviders = MultiProvider(
     ),
     ChangeNotifierProvider(create: (context) => SettingUserName(), lazy: false),
     ChangeNotifierProvider(create: (context) => SettingAutoJoinChannel()),
+    ChangeNotifierProvider(create: (context) => SettingShortcutMapping()),
     ChangeNotifierProvider(create: (context) => SettingCallVolume()),
     ChangeNotifierProvider(
         create: (context) => SettingCallNoiseSuppressionLevel()),

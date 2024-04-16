@@ -263,7 +263,7 @@ Status: ${context.read<PlayStatus>().value}''',
         return TableRow(
           children: [
             _padding(SelectableText(key)),
-            Row(
+            Wrap(
               children: [
                 _padding(content),
                 TextButton(

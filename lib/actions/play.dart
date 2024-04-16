@@ -126,7 +126,8 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
 }
 
 class SeekIntent extends Intent {
-  const SeekIntent(this.duration, {this.isIncrease = false});
+  const SeekIntent(this.duration) : isIncrease = false;
+  const SeekIntent.increase(this.duration) : isIncrease = true;
   final Duration duration;
   final bool isIncrease;
 }
