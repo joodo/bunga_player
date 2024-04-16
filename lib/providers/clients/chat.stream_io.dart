@@ -228,7 +228,7 @@ class StreamIOClient implements ChatClient {
         .queryChannels(
           filter: filter,
           channelStateSort: [
-            const stream.SortOption('last_message_at',
+            const stream.SortOption('created_at',
                 direction: stream.SortOption.DESC)
           ],
           watch: false,
