@@ -37,7 +37,7 @@ class _PlayerPlaceholderState extends State<PlayerPlaceholder> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 SizedBox(
-                  height: 400,
+                  height: 370,
                   child: RiveAnimation.asset(
                     'assets/images/wake_up_the_black_cat.riv',
                     onInit: (Artboard artboard) {
@@ -55,7 +55,7 @@ class _PlayerPlaceholderState extends State<PlayerPlaceholder> {
               ],
             ),
             Positioned(
-              top: 340,
+              top: 320,
               child: Text(
                 context.select<CatIndicator, String?>((bi) => bi.title) ?? '',
                 style: Theme.of(context).textTheme.titleLarge,
