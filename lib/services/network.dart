@@ -27,7 +27,7 @@ class NetworkService {
 
   Future<(String location, Duration latency)> ipInfo(String source) async {
     final uri = Uri.parse(source);
-    final ping = Ping(uri.host, count: 5);
+    final ping = Ping(uri.host, count: 5, forceCodepage: true);
     final result = await ping.stream.first;
     final latency = result.response!.time!;
 
