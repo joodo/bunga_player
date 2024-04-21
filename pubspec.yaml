@@ -23,7 +23,7 @@ dependencies:
   ffi: ^2.1.0
 
   # Communication
-  stream_chat_flutter_core: ^7.1.0
+  stream_chat_flutter_core: 7.1.0
   agora_rtc_engine: ^6.2.6
 
   # Update
@@ -41,6 +41,7 @@ dependencies:
   window_manager: ^0.3.8
   flutter_markdown: ^0.6.22
   flutter_lazy_indexed_stack: ^0.0.6
+  chinese_font_library: ^1.1.0
 
   # Popmoji
   flutter_svg: ^2.0.10+1

@@ -4,6 +4,7 @@ import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart' as services;
 import 'package:bunga_player/screens/main_screen.dart';
 import 'package:bunga_player/screens/wrappers/wrap.dart';
+import 'package:chinese_font_library/chinese_font_library.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:window_manager/window_manager.dart';
@@ -28,7 +29,7 @@ void main() {
             brightness: Brightness.dark,
             useMaterial3: true,
             colorSchemeSeed: const Color(0xFFF5C253),
-          ),
+          ).useSystemChineseFont(Brightness.dark),
           home: Material(child: child),
         ),
       );
