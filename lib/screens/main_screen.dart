@@ -1,12 +1,18 @@
+import 'dart:async';
+import 'dart:ffi';
+
 import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/screens/progress_section/progress_section.dart';
 import 'package:bunga_player/screens/room_section.dart';
 import 'package:bunga_player/screens/control_section/control_section.dart';
 import 'package:bunga_player/screens/player_section/player_section.dart';
+import 'package:ffi/ffi.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
+import 'package:platform/platform.dart';
 import 'package:provider/provider.dart';
+import 'package:win32/win32.dart';
 
 class MainScreen extends StatefulWidget {
   static const roomSectionHeight = 36.0;
@@ -116,33 +122,46 @@ class _HUDWrapper extends SingleChildStatelessWidget {
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
     return Consumer<ShouldShowHUD>(
-      builder: (context, shouldShowHUD, child) => MouseRegion(
-        opaque: false,
-        cursor: shouldShowHUD.value
-            ? SystemMouseCursors.basic
-            : SystemMouseCursors.none,
-        onEnter: (event) => shouldShowHUD.unlock('interactive'),
-        onExit: (event) {
-          if (!_isLeaveFromEdge(context, event)) {
-            // When mouse region blocked by popup menu
-            shouldShowHUD.lock('interactive');
-          }
-        },
-        onHover: (event) {
-          if (_isInUISection(context, event)) {
-            shouldShowHUD.lock('interactive');
-          } else {
-            shouldShowHUD.unlock('interactive');
-            shouldShowHUD.mark();
-          }
-        },
-        child: AnimatedOpacity(
-          opacity: shouldShowHUD.value ? 1.0 : 0.0,
-          curve: Curves.easeOutCubic,
-          duration: const Duration(milliseconds: 250),
-          child: child,
-        ),
-      ),
+      builder: (context, shouldShowHUD, child) {
+        // HACK: Hide cursor issue under windows
+        // see https://stackoverflow.com/questions/74963577/how-to-hide-mouse-cursor-in-flutter
+        if (!shouldShowHUD.value || const LocalPlatform().isWindows) {
+          Timer(const Duration(milliseconds: 100), () {
+            Pointer<POINT> point = malloc();
+            GetCursorPos(point);
+            SetCursorPos(point.ref.x, point.ref.y);
+            free(point);
+          });
+        }
+
+        return MouseRegion(
+          opaque: false,
+          cursor: shouldShowHUD.value
+              ? SystemMouseCursors.basic
+              : SystemMouseCursors.none,
+          onEnter: (event) => shouldShowHUD.unlock('interactive'),
+          onExit: (event) {
+            if (!_isLeaveFromEdge(context, event)) {
+              // When mouse region blocked by popup menu
+              shouldShowHUD.lock('interactive');
+            }
+          },
+          onHover: (event) {
+            if (_isInUISection(context, event)) {
+              shouldShowHUD.lock('interactive');
+            } else {
+              shouldShowHUD.unlock('interactive');
+              shouldShowHUD.mark();
+            }
+          },
+          child: AnimatedOpacity(
+            opacity: shouldShowHUD.value ? 1.0 : 0.0,
+            curve: Curves.easeOutCubic,
+            duration: const Duration(milliseconds: 250),
+            child: child,
+          ),
+        );
+      },
       child: child,
     );
   }
