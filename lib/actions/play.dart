@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:bunga_player/actions/dispatcher.dart';
 import 'package:bunga_player/actions/ui.dart';
 import 'package:bunga_player/actions/video_playing.dart';
@@ -380,6 +381,7 @@ class ScreenshotAction extends ContextAction<ScreenshotIntent> {
     await file.writeAsBytes(data!);
 
     getIt<Toast>().show('已截图 $fileName');
+    AudioPlayer().play(AssetSource('sounds/screenshot.wav'));
 
     return file;
   }
