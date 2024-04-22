@@ -4,7 +4,6 @@ import 'package:bunga_player/mocks/slider.dart' as mock;
 import 'package:bunga_player/models/playing/volume.dart';
 import 'package:bunga_player/providers/chat.dart';
 import 'package:bunga_player/providers/settings.dart';
-import 'package:bunga_player/screens/control_section/card.dart';
 import 'package:bunga_player/screens/widgets/loading_text.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -46,72 +45,62 @@ class _CallControlState extends State<CallControl> {
           const SizedBox(width: 8),
           child!,
           const SizedBox(width: 16),
-          if (constraints.minWidth > 820) const Text('语音通话中'),
+          if (constraints.minWidth > 850) const Text('语音通话中'),
           const Spacer(),
-          ControlCard(
-            child: Row(
-              children: [
-                const SizedBox(width: 8),
-                Consumer<MuteMic>(
-                  builder: (context, muteMic, child) => IconButton(
-                    style: muteMic.value
-                        ? const ButtonStyle(
-                            backgroundColor:
-                                MaterialStatePropertyAll<Color>(Colors.red),
-                          )
-                        : null,
-                    color: muteMic.value ? Colors.white70 : null,
-                    icon: Icon(muteMic.value ? Icons.mic_off : Icons.mic),
-                    onPressed: () =>
-                        Actions.invoke(context, MuteMicIntent(!muteMic.value)),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                _NoiseSuppressWidget(),
-                const SizedBox(width: 8),
-              ],
+
+          // Mic control
+          Consumer<MuteMic>(
+            builder: (context, muteMic, child) => IconButton(
+              style: muteMic.value
+                  ? const ButtonStyle(
+                      backgroundColor:
+                          MaterialStatePropertyAll<Color>(Colors.red),
+                    )
+                  : null,
+              color: muteMic.value ? Colors.white70 : null,
+              icon: Icon(muteMic.value ? Icons.mic_off : Icons.mic),
+              onPressed: () =>
+                  Actions.invoke(context, MuteMicIntent(!muteMic.value)),
             ),
           ),
-          const SizedBox(width: 16),
-          ControlCard(
-              child: Row(
-            children: [
-              const SizedBox(width: 8),
-              Consumer<SettingCallVolume>(
-                builder: (context, callVolume, child) => IconButton(
-                  icon: callVolume.value.mute
-                      ? const Icon(Icons.headset_off)
-                      : const Icon(Icons.headset_mic),
-                  onPressed: () =>
-                      callVolume.value = callVolume.value.copyWithToggleMute(),
-                ),
+          const SizedBox(width: 8),
+          _NoiseSuppressWidget(),
+          const SizedBox(width: 8),
+
+          // Call control
+          const VerticalDivider(indent: 8, endIndent: 8),
+          Consumer<SettingCallVolume>(
+            builder: (context, callVolume, child) => IconButton(
+              icon: callVolume.value.mute
+                  ? const Icon(Icons.headset_off)
+                  : const Icon(Icons.headset_mic),
+              onPressed: () =>
+                  callVolume.value = callVolume.value.copyWithToggleMute(),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Consumer<SettingCallVolume>(
+            builder: (context, callVolume, child) => SizedBox(
+              width: 100,
+              child: mock.MySlider(
+                useRootOverlay: true,
+                max: Volume.max.toDouble(),
+                min: Volume.min.toDouble(),
+                divisions: Volume.max - Volume.min,
+                value: callVolume.value.mute
+                    ? Volume.min.toDouble()
+                    : callVolume.value.volume.toDouble(),
+                label: '${callVolume.value.volume}%',
+                onChanged: (value) {
+                  callVolume.value = Volume(
+                    volume: value.toInt(),
+                  );
+                },
+                focusNode: FocusNode(canRequestFocus: false),
               ),
-              const SizedBox(width: 8),
-              Consumer<SettingCallVolume>(
-                builder: (context, callVolume, child) => SizedBox(
-                  width: 100,
-                  child: mock.MySlider(
-                    useRootOverlay: true,
-                    max: Volume.max.toDouble(),
-                    min: Volume.min.toDouble(),
-                    divisions: Volume.max - Volume.min,
-                    value: callVolume.value.mute
-                        ? Volume.min.toDouble()
-                        : callVolume.value.volume.toDouble(),
-                    label: '${callVolume.value.volume}%',
-                    onChanged: (value) {
-                      callVolume.value = Volume(
-                        volume: value.toInt(),
-                      );
-                    },
-                    focusNode: FocusNode(canRequestFocus: false),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 32),
-            ],
-          )),
-          const SizedBox(width: 16),
+            ),
+          ),
+          const SizedBox(width: 20),
           _createCallOperateButton(
             color: Colors.red,
             icon: Icons.call_end,

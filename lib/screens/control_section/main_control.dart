@@ -61,10 +61,7 @@ class _MainControlState extends State<MainControl> {
           child: const Icon(Icons.sync),
         ),
 
-        const VerticalDivider(
-          indent: 8,
-          endIndent: 8,
-        ),
+        const VerticalDivider(indent: 8, endIndent: 8),
 
         // Volume section
         Consumer<PlayVolume>(
@@ -98,10 +95,7 @@ class _MainControlState extends State<MainControl> {
           ),
         ),
         const SizedBox(width: 16),
-        const VerticalDivider(
-          indent: 8,
-          endIndent: 8,
-        ),
+        const VerticalDivider(indent: 8, endIndent: 8),
 
         // Duration button
         const Spacer(),
@@ -109,10 +103,7 @@ class _MainControlState extends State<MainControl> {
         const Spacer(),
 
         // Call Button
-        const VerticalDivider(
-          indent: 8,
-          endIndent: 8,
-        ),
+        const VerticalDivider(indent: 8, endIndent: 8),
         const SizedBox(width: 8),
         const CallButton(),
         const SizedBox(width: 8),
