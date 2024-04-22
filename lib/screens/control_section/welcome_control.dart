@@ -202,10 +202,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
 
         if (!mounted) throw Exception('context unmounted');
         context.read<CurrentChannelJoinPayload>().value =
-            ChannelJoinByIdPayload(
-          result.id,
-          active: context.read<SettingAutoJoinChannel>().value,
-        );
+            ChannelJoinByIdPayload(result.id, active: true);
       } else {
         assert(false);
       }
