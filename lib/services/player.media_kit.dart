@@ -200,6 +200,11 @@ class MediaKitPlayer implements Player {
     return _player.stop();
   }
 
+  @override
+  Future<void> setRate(double rate) {
+    return _player.setRate(rate);
+  }
+
   // Audio tracks
   @override
   Future<void> setAudioTrackID(String id) {

@@ -3,6 +3,7 @@ import 'package:bunga_player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/services/player.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
+import 'package:bunga_player/utils/value_listenable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 
@@ -56,6 +57,10 @@ class PlayVolume extends ValueNotifier<Volume> {
   }
 }
 
+class PlayRate extends ValueNotifierWithReset<double> {
+  PlayRate() : super(1.0);
+}
+
 class PlayContrast extends ValueNotifier<int> {
   PlayContrast() : super(0);
 }
@@ -97,6 +102,7 @@ final playerProviders = MultiProvider(
     ChangeNotifierProvider(
         create: (context) => PlaySubtitleTrackID(), lazy: false),
     ChangeNotifierProvider(create: (context) => PlayVolume()),
+    ChangeNotifierProvider(create: (context) => PlayRate()),
     ChangeNotifierProvider(create: (context) => PlayContrast()),
     ChangeNotifierProvider(create: (context) => PlaySubDelay()),
     ChangeNotifierProvider(create: (context) => PlaySubPos()),

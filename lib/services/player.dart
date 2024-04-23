@@ -73,6 +73,7 @@ abstract class Player {
   Future<void> play();
   Future<void> stop();
   Future<void> toggle();
+  Future<void> setRate(double rate);
 
   Future<Uint8List?> screenshot();
 

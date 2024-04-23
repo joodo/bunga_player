@@ -12,7 +12,9 @@ import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/screens/control_section/popmoji_control.dart';
 import 'package:bunga_player/utils/duration.dart';
 import 'package:bunga_player/utils/value_listenable.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 
 class MainControl extends StatefulWidget {
@@ -64,37 +66,7 @@ class _MainControlState extends State<MainControl> {
         const VerticalDivider(indent: 8, endIndent: 8),
 
         // Volume section
-        Consumer<PlayVolume>(
-          builder: (context, volumeData, child) => IconButton(
-            icon: volumeData.value.mute
-                ? const Icon(Icons.volume_off)
-                : const Icon(Icons.volume_up),
-            onPressed: () => Actions.invoke(
-              context,
-              SetMuteIntent(!volumeData.value.mute),
-            ),
-          ),
-        ),
-        const SizedBox(width: 8),
-        Consumer<PlayVolume>(
-          builder: (context, volumeData, child) => SizedBox(
-            width: 100,
-            child: mock.MySlider(
-              value: volumeData.value.mute
-                  ? 0.0
-                  : volumeData.value.volume.toDouble(),
-              max: Volume.max.toDouble(),
-              label: '${volumeData.value.volume}%',
-              onChanged: (value) => Actions.invoke(
-                context,
-                SetVolumeIntent(value.toInt()),
-              ),
-              focusNode: FocusNode(canRequestFocus: false),
-              useRootOverlay: true,
-            ),
-          ),
-        ),
-        const SizedBox(width: 16),
+        const _SliderSection(),
         const VerticalDivider(indent: 8, endIndent: 8),
 
         // Duration button
@@ -105,7 +77,7 @@ class _MainControlState extends State<MainControl> {
         // Call Button
         const VerticalDivider(indent: 8, endIndent: 8),
         const SizedBox(width: 8),
-        const CallButton(),
+        const _CallButton(),
         const SizedBox(width: 8),
 
         // Danmaku Button
@@ -184,6 +156,7 @@ class _MainControlState extends State<MainControl> {
                 Navigator.of(context).pushNamed('control:tune');
               },
             ),
+
             // Subtitle Button
             mock.MenuItemButton(
               child: const Row(
@@ -249,14 +222,89 @@ class _MainControlState extends State<MainControl> {
   }
 }
 
-class CallButton extends StatefulWidget {
-  const CallButton({super.key});
-
+class _SliderSection extends StatelessWidget {
+  const _SliderSection();
   @override
-  State<CallButton> createState() => _CallButtonState();
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 170,
+      child: PageView(
+        scrollDirection: Axis.vertical,
+        physics: const ClampingScrollPhysics(),
+        children: [
+          Row(
+            children: [
+              Consumer<PlayVolume>(
+                builder: (context, volumeData, child) => IconButton(
+                  icon: volumeData.value.mute
+                      ? const Icon(Icons.volume_off)
+                      : const Icon(Icons.volume_up),
+                  onPressed: () => Actions.invoke(
+                    context,
+                    SetMuteIntent(!volumeData.value.mute),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Consumer<PlayVolume>(
+                  builder: (context, volumeData, child) => mock.MySlider(
+                    value: volumeData.value.mute
+                        ? 0.0
+                        : volumeData.value.volume.toDouble(),
+                    max: Volume.max.toDouble(),
+                    label: '${volumeData.value.volume}%',
+                    onChanged: (value) => Actions.invoke(
+                      context,
+                      SetVolumeIntent(value.toInt()),
+                    ),
+                    focusNode: FocusNode(canRequestFocus: false),
+                    useRootOverlay: true,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+            ],
+          ),
+          Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.speed),
+                onPressed: context.read<PlayRate>().reset,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Consumer<PlayRate>(
+                  builder: (context, playRate, child) => mock.MySlider(
+                    min: 0.25,
+                    max: 1.75,
+                    divisions: 6,
+                    value: playRate.value,
+                    label: ' ×${playRate.value} ',
+                    onChanged: (value) => playRate.value = value,
+                    focusNode: FocusNode(canRequestFocus: false),
+                    useRootOverlay: true,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 }
 
-class _CallButtonState extends State<CallButton> with TickerProviderStateMixin {
+class _CallButton extends StatefulWidget {
+  const _CallButton();
+
+  @override
+  State<_CallButton> createState() => _CallButtonState();
+}
+
+class _CallButtonState extends State<_CallButton>
+    with TickerProviderStateMixin {
   AnimationController? _controller;
   late final Animation<double> _animation = CurvedAnimation(
     parent: _controller!,

@@ -404,6 +404,8 @@ class _PlayActionsState extends SingleChildState<PlayActions> {
 
   final _streamSubscriptions = <StreamSubscription>[];
 
+  late final _playRate = context.read<PlayRate>();
+
   @override
   void initState() {
     super.initState();
@@ -413,6 +415,8 @@ class _PlayActionsState extends SingleChildState<PlayActions> {
 
     // init volume
     player.setVolume(read<PlayVolume>().value.volume);
+
+    _playRate.addListener(_applyRate);
 
     _streamSubscriptions.addAll(
       <(Stream, ValueNotifier)>[
@@ -441,6 +445,7 @@ class _PlayActionsState extends SingleChildState<PlayActions> {
 
   @override
   void dispose() async {
+    _playRate.removeListener(_applyRate);
     super.dispose();
     for (final subscription in _streamSubscriptions) {
       await subscription.cancel();
@@ -492,5 +497,9 @@ class _PlayActionsState extends SingleChildState<PlayActions> {
     ValueNotifier<T> notifier,
   ) {
     return stream.listen((value) => notifier.value = value);
+  }
+
+  void _applyRate() {
+    getIt<Player>().setRate(_playRate.value);
   }
 }
