@@ -29,6 +29,9 @@ void main() {
             brightness: Brightness.dark,
             useMaterial3: true,
             colorSchemeSeed: const Color(0xFFF5C253),
+            menuTheme: const MenuThemeData(
+              style: MenuStyle(visualDensity: VisualDensity.standard),
+            ),
           ).useSystemChineseFont(Brightness.dark),
           home: Material(child: child),
         ),

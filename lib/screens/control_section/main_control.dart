@@ -2,7 +2,7 @@ import 'package:bunga_player/actions/play.dart';
 import 'package:bunga_player/actions/video_playing.dart';
 import 'package:bunga_player/actions/voice_call.dart';
 import 'package:bunga_player/models/playing/volume.dart';
-import 'package:bunga_player/mocks/popup_menu.dart' as mock;
+import 'package:bunga_player/mocks/menu_anchor.dart' as mock;
 import 'package:bunga_player/mocks/slider.dart' as mock;
 import 'package:bunga_player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/providers/chat.dart';
@@ -131,22 +131,27 @@ class _MainControlState extends State<MainControl> {
         // HACK: wait bug fixed then use PopupMenuButton
         // see https://github.com/flutter/flutter/issues/144669
         // then change animation to none
-        mock.MyPopupMenuButton(
-          icon: const Icon(Icons.more_horiz),
-          tooltip: '',
-          useRootNavigator: true,
-          itemBuilder: (context) => <mock.PopupMenuEntry>[
+        mock.MyMenuAnchor(
+          builder: (context, controller, child) => IconButton(
+            onPressed: () {
+              if (controller.isOpen) {
+                controller.close();
+              } else {
+                controller.open();
+              }
+            },
+            icon: const Icon(Icons.more_horiz),
+          ),
+          style: Theme.of(context).menuTheme.style,
+          alignmentOffset: const Offset(-50, 8),
+          rootOverlay: true,
+          menuChildren: [
             if (context.read<PlayVideoEntry>().value is! LocalVideoEntry) ...[
               // Reload button
-              mock.PopupMenuItem(
-                child: const Row(
-                  children: [
-                    Icon(Icons.refresh),
-                    SizedBox(width: 12),
-                    Text('重新载入'),
-                  ],
-                ),
-                onTap: () {
+              mock.MenuItemButton(
+                leadingIcon: const Icon(Icons.refresh),
+                child: const Text('重新载入'),
+                onPressed: () {
                   final onlineEntry = context.read<PlayVideoEntry>().value!;
                   final index = context.read<PlaySourceIndex>().value!;
                   Actions.invoke(
@@ -160,37 +165,27 @@ class _MainControlState extends State<MainControl> {
               ),
 
               // Source button
-              mock.PopupMenuItem(
-                child: const Row(
-                  children: [
-                    Icon(Icons.rss_feed),
-                    SizedBox(width: 12),
-                    Text('片源'),
-                  ],
-                ),
-                onTap: () {
+              mock.MenuItemButton(
+                leadingIcon: const Icon(Icons.rss_feed),
+                child: const Text('片源'),
+                onPressed: () {
                   Navigator.of(context).pushNamed('control:source_selection');
                 },
               ),
 
-              const mock.PopupMenuDivider(),
+              const Divider(),
             ],
 
             // Tune button
-            mock.PopupMenuItem(
-              child: const Row(
-                children: [
-                  Icon(Icons.tune),
-                  SizedBox(width: 12),
-                  Text('音视频调整'),
-                ],
-              ),
-              onTap: () {
+            mock.MenuItemButton(
+              leadingIcon: const Icon(Icons.tune),
+              child: const Text('音视频调整    '),
+              onPressed: () {
                 Navigator.of(context).pushNamed('control:tune');
               },
             ),
             // Subtitle Button
-            mock.PopupMenuItem(
+            mock.MenuItemButton(
               child: const Row(
                 children: [
                   Icon(Icons.subtitles),
@@ -198,35 +193,25 @@ class _MainControlState extends State<MainControl> {
                   Text('字幕'),
                 ],
               ),
-              onTap: () {
+              onPressed: () {
                 Navigator.of(context).pushNamed('control:subtitle');
               },
             ),
 
             // Change Video Button
-            mock.PopupMenuItem(
-              child: const Row(
-                children: [
-                  Icon(Icons.movie_filter),
-                  SizedBox(width: 12),
-                  Text('换片'),
-                ],
-              ),
-              onTap: () {
+            mock.MenuItemButton(
+              leadingIcon: const Icon(Icons.movie_filter),
+              child: const Text('换片'),
+              onPressed: () {
                 Navigator.of(context).pushNamed('control:open');
               },
             ),
 
             // Leave Button
-            mock.PopupMenuItem(
-              onTap: _leaveChannel,
-              child: const Row(
-                children: [
-                  Icon(Icons.logout),
-                  SizedBox(width: 12),
-                  Text('离开房间'),
-                ],
-              ),
+            mock.MenuItemButton(
+              leadingIcon: const Icon(Icons.logout),
+              onPressed: _leaveChannel,
+              child: const Text('离开房间'),
             ),
           ],
         ),

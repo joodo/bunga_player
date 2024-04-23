@@ -54,16 +54,15 @@ class _WelcomeControlState extends State<WelcomeControl> {
           ),
           const SizedBox(width: 16),
           mock.MyMenuAnchor(
-            style: MenuStyle(
-              elevation: MaterialStateProperty.all(12),
-              padding: MaterialStateProperty.all(
-                  const EdgeInsets.symmetric(vertical: 12)),
-            ),
             rootOverlay: true,
             alignmentOffset: const Offset(0, 8),
-            anchorTapClosesMenu: true,
+            style: Theme.of(context).menuTheme.style,
             builder: (context, controller, child) => FilledButton(
-              onPressed: isBusy ? null : controller.open,
+              onPressed: isBusy
+                  ? null
+                  : () => controller.isOpen
+                      ? controller.close()
+                      : controller.open(),
               child: const Text('打开视频'),
             ),
             menuChildren: [
@@ -106,7 +105,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
               mock.MenuItemButton(
                 leadingIcon: const Icon(Icons.folder_outlined),
                 onPressed: _openLocalVideo,
-                child: const Text('本地文件  '),
+                child: const Text('本地文件    '),
               ),
             ],
           ),
