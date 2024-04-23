@@ -68,7 +68,16 @@ class MediaKitPlayer implements Player {
       logLevel: media_kit.MPVLogLevel.warn,
     ),
   );
-  late final controller = media_kit.VideoController(_player);
+  late final _widget = media_kit.Video(
+    controller: media_kit.VideoController(_player),
+    // use mpv subtitle
+    subtitleViewConfiguration:
+        const media_kit.SubtitleViewConfiguration(visible: false),
+    wakelock: true,
+    controls: media_kit.NoVideoControls,
+  );
+  @override
+  Widget get videoWidget => _widget;
 
   // Volume
   Volume _volume = Volume(volume: Volume.max);

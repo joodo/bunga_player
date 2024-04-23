@@ -18,6 +18,7 @@ class PopmojiPlayer extends StatefulWidget {
 
 class _PopmojiPlayerState extends State<PopmojiPlayer> {
   late final _channelMessage = context.read<CurrentChannelMessage>();
+  BuildContext? _dialogContext;
 
   @override
   void initState() {
@@ -33,7 +34,15 @@ class _PopmojiPlayerState extends State<PopmojiPlayer> {
 
   @override
   Widget build(BuildContext context) {
-    return const SizedBox.shrink();
+    return Navigator(
+      onGenerateRoute: (settings) => MaterialPageRoute<void>(
+        builder: (context) {
+          _dialogContext = context;
+          return const SizedBox.shrink();
+        },
+      ),
+      requestFocus: false,
+    );
   }
 
   void _progressMessage() async {
@@ -61,7 +70,7 @@ class _PopmojiPlayerState extends State<PopmojiPlayer> {
 
   Future<void> _showFireworks() {
     return showDialog(
-      context: context,
+      context: _dialogContext!,
       useRootNavigator: false,
       builder: (context) => Dialog.fullscreen(
         backgroundColor: Colors.transparent,
@@ -72,7 +81,7 @@ class _PopmojiPlayerState extends State<PopmojiPlayer> {
 
   Future<void> _showPopmoji(String code) {
     return showDialog(
-      context: context,
+      context: _dialogContext!,
       useRootNavigator: false,
       barrierColor: Colors.transparent,
       builder: (context) => Dialog.fullscreen(

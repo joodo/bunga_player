@@ -6,10 +6,8 @@ import 'package:bunga_player/screens/player_section/placeholder.dart';
 import 'package:bunga_player/screens/player_section/popmoji_player.dart';
 import 'package:bunga_player/screens/player_section/volume_popup.dart';
 import 'package:bunga_player/services/player.dart';
-import 'package:bunga_player/services/player.media_kit.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:flutter/material.dart';
-import 'package:media_kit_video/media_kit_video.dart' as media_kit;
 import 'package:provider/provider.dart';
 
 class PlayerSection extends StatefulWidget {
@@ -25,21 +23,9 @@ class _PlayerSectionState extends State<PlayerSection> {
     return Stack(
       fit: StackFit.expand,
       children: [
-        media_kit.Video(
-          controller: (getIt<Player>() as MediaKitPlayer).controller,
-          // use mpv subtitle
-          subtitleViewConfiguration:
-              const media_kit.SubtitleViewConfiguration(visible: false),
-          wakelock: true,
-          controls: media_kit.NoVideoControls,
-        ),
+        getIt<Player>().videoWidget,
         const DanmakuPlayer(),
-        Navigator(
-          onGenerateRoute: (settings) => MaterialPageRoute<void>(
-            builder: (context) => const PopmojiPlayer(),
-          ),
-          requestFocus: false,
-        ),
+        const PopmojiPlayer(),
         AnimatedOpacity(
           opacity: context.select<CatIndicator, double>(
               (bi) => bi.title == null ? 0.0 : 1.0),

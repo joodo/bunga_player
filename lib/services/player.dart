@@ -3,6 +3,7 @@ import 'package:bunga_player/models/playing/watch_progress.dart';
 import 'package:bunga_player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/providers/player.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 
 class AudioTrack {
   final String id;
@@ -53,6 +54,9 @@ class WatchProgresses {
 abstract class Player {
   static const int maxVolume = 100;
   static const int minVolume = 0;
+
+  Widget get videoWidget;
+
   Stream<Volume> get volumeStream;
   Future<void> setVolume(int volume);
   Future<void> setMute(bool isMute);
