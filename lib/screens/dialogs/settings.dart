@@ -364,6 +364,9 @@ class _ShortcutSettingsState extends State<_ShortcutSettings> {
       '播放 / 暂停': ShortcutKey.togglePlay,
       '截图': ShortcutKey.screenshot,
     },
+    '互动': {
+      '弹幕聊天': ShortcutKey.danmaku,
+    },
   };
 
   late final SettingShortcutMapping _shortcutMapNotifier =

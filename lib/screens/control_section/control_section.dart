@@ -1,3 +1,4 @@
+import 'package:bunga_player/actions/play.dart';
 import 'package:bunga_player/providers/chat.dart';
 import 'package:bunga_player/providers/player.dart';
 import 'package:bunga_player/providers/settings.dart';
@@ -14,6 +15,7 @@ import 'package:bunga_player/screens/control_section/tune_control.dart';
 import 'package:bunga_player/screens/control_section/welcome_control.dart';
 import 'package:bunga_player/utils/slider_dense_track_shape.dart';
 import 'package:flutter/material.dart';
+import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 
 class ControlSection extends StatefulWidget {
@@ -91,10 +93,12 @@ class _ControlSectionState extends State<ControlSection> {
       child: body,
     );
 
-    return GestureDetector(
-      onTap: () {},
-      onDoubleTap: () {},
-      child: body,
+    return _ShortcutsWrapper(
+      child: GestureDetector(
+        onTap: () {},
+        onDoubleTap: () {},
+        child: body,
+      ),
     );
   }
 
@@ -143,5 +147,32 @@ class _ControlRoute<T> extends MaterialPageRoute<T> {
   ) {
     final a = CurveTween(curve: Curves.easeOutCubic).animate(animation);
     return FadeTransition(opacity: a, child: child);
+  }
+}
+
+class _ShortcutsWrapper extends SingleChildStatelessWidget {
+  const _ShortcutsWrapper({super.child});
+
+  static const _intentMapping = <ShortcutKey, Intent>{
+    ShortcutKey.volumeUp: SetVolumeIntent.increase(10),
+    ShortcutKey.volumeDown: SetVolumeIntent.increase(-10),
+    ShortcutKey.forward5Sec: SeekIntent.increase(Duration(seconds: 5)),
+    ShortcutKey.backward5Sec: SeekIntent.increase(Duration(seconds: -5)),
+    ShortcutKey.togglePlay: TogglePlayIntent(),
+    ShortcutKey.screenshot: ScreenshotIntent(),
+  };
+
+  @override
+  Widget buildWithChild(BuildContext context, Widget? child) {
+    return Consumer<SettingShortcutMapping>(
+      builder: (context, shortcutMapping, child) => Shortcuts(
+        shortcuts: (_intentMapping.map((shortcutKey, intent) =>
+                MapEntry(shortcutMapping.value[shortcutKey], intent))
+              ..remove(null))
+            .map((key, value) => MapEntry(key!, value)),
+        child: child!,
+      ),
+      child: child,
+    );
   }
 }

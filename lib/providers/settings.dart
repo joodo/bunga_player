@@ -88,6 +88,7 @@ enum ShortcutKey {
   backward5Sec,
   togglePlay,
   screenshot,
+  danmaku,
 }
 
 class SettingShortcutMapping
@@ -100,6 +101,7 @@ class SettingShortcutMapping
     ShortcutKey.togglePlay: SingleActivator(LogicalKeyboardKey.space),
     ShortcutKey.screenshot:
         SingleActivator(LogicalKeyboardKey.keyS, control: true),
+    ShortcutKey.danmaku: SingleActivator(LogicalKeyboardKey.keyT),
   };
 
   SettingShortcutMapping() : super(defaultMapping) {

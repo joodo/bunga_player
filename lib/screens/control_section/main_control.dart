@@ -12,9 +12,7 @@ import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/screens/control_section/popmoji_control.dart';
 import 'package:bunga_player/utils/duration.dart';
 import 'package:bunga_player/utils/value_listenable.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 
 class MainControl extends StatefulWidget {
@@ -33,7 +31,7 @@ class _MainControlState extends State<MainControl> {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    final body = Row(
       children: [
         const SizedBox(width: 8),
         // Play button
@@ -100,9 +98,6 @@ class _MainControlState extends State<MainControl> {
         ),
         const SizedBox(width: 8),
 
-        // HACK: wait bug fixed then use PopupMenuButton
-        // see https://github.com/flutter/flutter/issues/144669
-        // then change animation to none
         mock.MyMenuAnchor(
           builder: (context, controller, child) => IconButton(
             onPressed: () {
@@ -202,6 +197,19 @@ class _MainControlState extends State<MainControl> {
 
         const SizedBox(width: 8),
       ],
+    );
+
+    final danmakuShortcut =
+        context.read<SettingShortcutMapping>().value[ShortcutKey.danmaku];
+    return _channelButtonBuilder(
+      build: (onPressed) => CallbackShortcuts(
+        bindings: {
+          if (onPressed != null && danmakuShortcut != null)
+            danmakuShortcut: onPressed
+        },
+        child: Focus(autofocus: true, child: body),
+      ),
+      onPressed: () => Navigator.of(context).pushNamed('control:danmaku'),
     );
   }
 
