@@ -27,8 +27,6 @@ class _RoomSectionState extends State<RoomSection> {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        const SizedBox(width: 16),
-
         // Watcher list
         Consumer3<CurrentChannelJoinPayload, CurrentChannelWatchers,
             PlayVideoEntry>(
@@ -36,16 +34,15 @@ class _RoomSectionState extends State<RoomSection> {
             if (entry.value == null) return const SizedBox.shrink();
 
             if (!payloadNotifier.value!.active) {
-              return TextButton.icon(
-                icon: const Icon(Icons.add),
-                label: const Text('创建房间'),
+              return TextButton(
+                child: const Text('创建房间'),
                 onPressed: () => payloadNotifier.value =
                     payloadNotifier.value!.createActive(),
               );
             }
 
             return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
               child: watchers.value.isEmpty
                   ? const LoadingText('正在进入房间')
                   : _getUsersWidget(watchers.value),
