@@ -13,7 +13,6 @@ import 'package:bunga_player/screens/control_section/popmoji_control.dart';
 import 'package:bunga_player/screens/control_section/subtitle_control.dart';
 import 'package:bunga_player/screens/control_section/tune_control.dart';
 import 'package:bunga_player/screens/control_section/welcome_control.dart';
-import 'package:bunga_player/utils/slider_dense_track_shape.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
@@ -67,39 +66,28 @@ class _ControlSectionState extends State<ControlSection> {
     final initialRouteName =
         'control:${name.isNotEmpty ? 'welcome' : 'rename'}';
 
-    Widget body = Navigator(
+    final navigator = Navigator(
       initialRoute: initialRouteName,
       key: _navigatorStateKey,
-      onGenerateRoute: (settings) {
-        return _ControlRoute<void>(
-          builder: (BuildContext context) => Container(
+      onGenerateRoute: (settings) => PageRouteBuilder<void>(
+        pageBuilder: (context, _, __) => GestureDetector(
+          onTap: () {},
+          onDoubleTap: () {},
+          child: Container(
             color: Theme.of(context).colorScheme.surface,
             child: buildByName(settings.name ?? 'unknown'),
           ),
-          settings: settings,
-        );
-      },
-    );
-
-    body = SliderTheme(
-      data: SliderThemeData(
-        activeTrackColor: Theme.of(context).colorScheme.secondary,
-        thumbColor: Theme.of(context).colorScheme.secondary,
-        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
-        valueIndicatorColor: Theme.of(context).colorScheme.secondary,
-        trackShape: SliderDenseTrackShape(),
-        showValueIndicator: ShowValueIndicator.always,
-      ),
-      child: body,
-    );
-
-    return _ShortcutsWrapper(
-      child: GestureDetector(
-        onTap: () {},
-        onDoubleTap: () {},
-        child: body,
+        ),
+        transitionDuration: const Duration(milliseconds: 150),
+        transitionsBuilder: (_, animation, __, child) => FadeTransition(
+          opacity: CurveTween(curve: Curves.easeOutCubic).animate(animation),
+          child: child,
+        ),
+        settings: settings,
       ),
     );
+
+    return _ShortcutsWrapper(child: navigator);
   }
 
   void _onCallStatusChanged() {
@@ -126,27 +114,6 @@ class _ControlSectionState extends State<ControlSection> {
         },
       );
     }
-  }
-}
-
-class _ControlRoute<T> extends MaterialPageRoute<T> {
-  _ControlRoute({
-    required super.builder,
-    required RouteSettings super.settings,
-  });
-
-  @override
-  Duration get transitionDuration => const Duration(milliseconds: 150);
-
-  @override
-  Widget buildTransitions(
-    BuildContext context,
-    Animation<double> animation,
-    Animation<double> secondaryAnimation,
-    Widget child,
-  ) {
-    final a = CurveTween(curve: Curves.easeOutCubic).animate(animation);
-    return FadeTransition(opacity: a, child: child);
   }
 }
 
