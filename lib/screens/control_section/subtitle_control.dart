@@ -5,13 +5,16 @@ import 'package:bunga_player/mocks/dropdown.dart' as mock;
 import 'package:bunga_player/mocks/tooltip.dart' as mock;
 import 'package:bunga_player/providers/player.dart';
 import 'package:bunga_player/providers/video_playing.dart';
-import 'package:bunga_player/screens/control_section/dropdown.dart';
 import 'package:bunga_player/services/player.dart';
 import 'package:bunga_player/utils/network_progress.dart';
+import 'package:collection/collection.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+
+import 'channel_required_wrap.dart';
+import 'dropdown.dart';
 
 enum SubtitleControlUIState {
   delay,
@@ -83,7 +86,6 @@ class _SubtitleControlState extends State<SubtitleControl> {
   };
 
   bool _loading = false;
-  bool _uploading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -184,9 +186,10 @@ class _SubtitleControlState extends State<SubtitleControl> {
                   },
                 );
 
-                bool showShareButton = !_loading &&
-                    localTracks
-                        .any((track) => track.id == currentTrackID.value);
+                final localSubPath = localTracks
+                    .firstWhereOrNull(
+                        (track) => track.id == currentTrackID.value)
+                    ?.uri!;
                 return SizedBox(
                   width: 250,
                   child: Row(
@@ -218,52 +221,7 @@ class _SubtitleControlState extends State<SubtitleControl> {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      mock.Tooltip(
-                        message: '分享字幕',
-                        rootOverlay: true,
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 250),
-                          curve: Curves.easeOutCubic,
-                          width: showShareButton ? 40 : 0,
-                          child: AnimatedScale(
-                            duration: const Duration(milliseconds: 250),
-                            curve: Curves.easeOutCubic,
-                            scale: showShareButton ? 1 : 0,
-                            child: IconButton(
-                              icon: !_uploading
-                                  ? const Icon(Icons.ios_share)
-                                  : SizedBox.square(
-                                      dimension: IconTheme.of(context).size,
-                                      child: const CircularProgressIndicator(),
-                                    ),
-                              onPressed: !_uploading &&
-                                      Actions.maybeFind(
-                                            context,
-                                            intent:
-                                                const ShareSubtitleIntent(''),
-                                          ) !=
-                                          null
-                                  ? () async {
-                                      setState(() => _uploading = true);
-
-                                      final progresses = Actions.invoke(
-                                        context,
-                                        ShareSubtitleIntent(localTracks
-                                            .firstWhere((track) =>
-                                                track.id ==
-                                                currentTrackID.value)
-                                            .uri!),
-                                      ) as Stream<RequestProgress>;
-                                      await progresses.last;
-
-                                      if (!mounted) return;
-                                      setState(() => _uploading = false);
-                                    }
-                                  : null,
-                            ),
-                          ),
-                        ),
-                      ),
+                      _ShareButton(path: localSubPath),
                     ],
                   ),
                 );
@@ -384,6 +342,64 @@ class _SubtitleControlState extends State<SubtitleControl> {
 
   String _titleFromTrack(SubtitleTrack track) =>
       '${track.title ?? ''}${track.language != null ? ' (${track.language})' : ''}';
+}
+
+class _ShareButton extends StatefulWidget {
+  final String? path;
+  const _ShareButton({required this.path});
+  @override
+  State<_ShareButton> createState() => _ShareButtonState();
+}
+
+class _ShareButtonState extends State<_ShareButton> {
+  bool _uploading = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final iconButton = ChannelRequiredWrap(
+      builder: (context, action, child) => IconButton(
+        icon: !_uploading
+            ? const Icon(Icons.ios_share)
+            : SizedBox.square(
+                dimension: IconTheme.of(context).size,
+                child: const CircularProgressIndicator(),
+              ),
+        onPressed: action,
+      ),
+      action: !_uploading
+          ? () async {
+              setState(() => _uploading = true);
+
+              final progresses = Actions.invoke(
+                context,
+                ShareSubtitleIntent(widget.path!),
+              ) as Stream<RequestProgress>;
+              await progresses.last;
+
+              if (!mounted) return;
+              setState(() => _uploading = false);
+            }
+          : null,
+    );
+
+    final animatedContainer = AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeOutCubic,
+      width: widget.path != null ? 40 : 0,
+      child: AnimatedScale(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOutCubic,
+        scale: widget.path != null ? 1 : 0,
+        child: iconButton,
+      ),
+    );
+
+    return mock.Tooltip(
+      message: '分享字幕',
+      rootOverlay: true,
+      child: animatedContainer,
+    );
+  }
 }
 
 class _SubtitleController {

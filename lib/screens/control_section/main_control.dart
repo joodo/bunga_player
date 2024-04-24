@@ -15,6 +15,8 @@ import 'package:bunga_player/utils/value_listenable.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'channel_required_wrap.dart';
+
 class MainControl extends StatefulWidget {
   const MainControl({super.key});
 
@@ -79,22 +81,22 @@ class _MainControlState extends State<MainControl> {
         const SizedBox(width: 8),
 
         // Danmaku Button
-        _channelButtonBuilder(
-          build: (onPressed) => IconButton(
+        ChannelRequiredWrap(
+          builder: (context, action, child) => IconButton(
             icon: const Icon(Icons.chat),
-            onPressed: onPressed,
+            onPressed: action,
           ),
-          onPressed: () => Navigator.of(context).pushNamed('control:danmaku'),
+          action: () => Navigator.of(context).pushNamed('control:danmaku'),
         ),
         const SizedBox(width: 8),
 
         // Popmoji Button
-        _channelButtonBuilder(
-          build: (onPressed) => IconButton(
+        ChannelRequiredWrap(
+          builder: (context, action, child) => IconButton(
             icon: const Icon(Icons.mood),
-            onPressed: onPressed,
+            onPressed: action,
           ),
-          onPressed: () => Navigator.of(context).pushNamed('control:popmoji'),
+          action: () => Navigator.of(context).pushNamed('control:popmoji'),
         ),
         const SizedBox(width: 8),
 
@@ -201,25 +203,15 @@ class _MainControlState extends State<MainControl> {
 
     final danmakuShortcut =
         context.read<SettingShortcutMapping>().value[ShortcutKey.danmaku];
-    return _channelButtonBuilder(
-      build: (onPressed) => CallbackShortcuts(
+    return ChannelRequiredWrap(
+      builder: (context, action, child) => CallbackShortcuts(
         bindings: {
-          if (onPressed != null && danmakuShortcut != null)
-            danmakuShortcut: onPressed
+          if (action != null && danmakuShortcut != null) danmakuShortcut: action
         },
-        child: Focus(autofocus: true, child: body),
+        child: Focus(autofocus: true, child: child!),
       ),
-      onPressed: () => Navigator.of(context).pushNamed('control:danmaku'),
-    );
-  }
-
-  Widget _channelButtonBuilder({
-    required Widget Function(VoidCallback? onPressed) build,
-    required VoidCallback onPressed,
-  }) {
-    return Selector<CurrentChannel, bool>(
-      selector: (context, channelId) => channelId.value != null,
-      builder: (context, joined, child) => build(joined ? onPressed : null),
+      action: () => Navigator.of(context).pushNamed('control:danmaku'),
+      child: body,
     );
   }
 
