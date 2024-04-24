@@ -114,6 +114,7 @@ class _MainControlState extends State<MainControl> {
           style: Theme.of(context).menuTheme.style,
           alignmentOffset: const Offset(-50, 8),
           rootOverlay: true,
+          consumeOutsideTap: true,
           menuChildren: [
             if (context.read<PlayVideoEntry>().value is! LocalVideoEntry) ...[
               // Reload button

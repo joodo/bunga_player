@@ -57,6 +57,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
             rootOverlay: true,
             alignmentOffset: const Offset(0, 8),
             style: Theme.of(context).menuTheme.style,
+            consumeOutsideTap: true,
             builder: (context, controller, child) => FilledButton(
               onPressed: isBusy
                   ? null
