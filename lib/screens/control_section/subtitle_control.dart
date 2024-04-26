@@ -5,6 +5,7 @@ import 'package:bunga_player/mocks/dropdown.dart' as mock;
 import 'package:bunga_player/mocks/tooltip.dart' as mock;
 import 'package:bunga_player/providers/player.dart';
 import 'package:bunga_player/providers/video_playing.dart';
+import 'package:bunga_player/screens/widgets/loading_button_icon.dart';
 import 'package:bunga_player/services/player.dart';
 import 'package:bunga_player/utils/network_progress.dart';
 import 'package:collection/collection.dart';
@@ -360,10 +361,7 @@ class _ShareButtonState extends State<_ShareButton> {
       builder: (context, action, child) => IconButton(
         icon: !_uploading
             ? const Icon(Icons.ios_share)
-            : SizedBox.square(
-                dimension: IconTheme.of(context).size,
-                child: const CircularProgressIndicator(),
-              ),
+            : const LoadingButtonIcon(),
         onPressed: action,
       ),
       action: !_uploading

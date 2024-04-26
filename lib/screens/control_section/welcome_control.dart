@@ -16,7 +16,7 @@ import 'package:bunga_player/screens/dialogs/local_video_entry.dart';
 import 'package:bunga_player/screens/dialogs/net_disk.dart';
 import 'package:bunga_player/screens/dialogs/others_dialog.dart';
 import 'package:bunga_player/screens/dialogs/settings.dart';
-import 'package:bunga_player/screens/widgets/widget_in_button.dart';
+import 'package:bunga_player/screens/widgets/loading_button_icon.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
 import 'package:flutter/foundation.dart';
@@ -71,17 +71,9 @@ class _WelcomeControlState extends State<WelcomeControl> {
                 selector: (context, client) => client != null,
                 builder: (context, initiated, child) => mock.MenuItemButton(
                   onPressed: initiated ? _openNetDisk : null,
-                  leadingIcon: initiated
+                  leadingIcon: !initiated
                       ? const Icon(Icons.cloud_outlined)
-                      : SizedBox.square(
-                          dimension: IconTheme.of(context).size,
-                          child: const Padding(
-                            padding: EdgeInsets.all(4),
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                            ),
-                          ),
-                        ),
+                      : const LoadingButtonIcon(),
                   child: const Text('网盘'),
                 ),
               ),
@@ -91,15 +83,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
                   onPressed: initiated ? _openOnline : null,
                   leadingIcon: initiated
                       ? const Icon(Icons.language_outlined)
-                      : SizedBox.square(
-                          dimension: IconTheme.of(context).size,
-                          child: const Padding(
-                            padding: EdgeInsets.all(4),
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                            ),
-                          ),
-                        ),
+                      : const LoadingButtonIcon(),
                   child: const Text('在线视频'),
                 ),
               ),
@@ -288,8 +272,7 @@ class _DelayedCallbackButtonWrapperState<T>
           visible: !_waiting,
           child: child!,
         ),
-        if (_waiting)
-          Builder(builder: (context) => createIndicatorInButton(context)),
+        if (_waiting) const LoadingButtonIcon(),
       ],
     );
 

@@ -3,7 +3,7 @@ import 'package:bunga_player/providers/clients/clients.dart';
 import 'package:bunga_player/providers/settings.dart';
 import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/screens/player_section/danmaku_player.dart';
-import 'package:bunga_player/screens/widgets/widget_in_button.dart';
+import 'package:bunga_player/screens/widgets/loading_button_icon.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/iterable.dart';
@@ -174,12 +174,14 @@ class _NetworkSettingsState extends State<_NetworkSettings> {
                               ? null
                               : _connectToHost,
                       child: pending.value
-                          ? createIndicatorInButton(context)
+                          ? const LoadingButtonIcon()
                           : hostFieldValue.text == client?.host
-                              ? createIconInButton(
-                                  context,
+                              ? Icon(
                                   Icons.check,
                                   color: Colors.greenAccent,
+                                  size: DefaultTextStyle.of(context)
+                                      .style
+                                      .fontSize,
                                 )
                               : const Text('连接'),
                     ),
