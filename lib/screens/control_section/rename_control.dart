@@ -32,24 +32,32 @@ class _RenameControlState extends State<RenameControl> {
   }
 
   @override
+  void dispose() {
+    _textController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         SizedBox(
           width: 300,
-          child: TextField(
-            style: const TextStyle(height: 1.0),
-            autofocus: true,
-            controller: _textController,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
+          child: DefaultTextEditingShortcuts(
+            child: TextField(
+              style: const TextStyle(height: 1.0),
+              autofocus: true,
+              controller: _textController,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+              ),
+              onSubmitted: (value) {
+                if (value.isNotEmpty) {
+                  _onSubmit(value);
+                }
+              },
             ),
-            onSubmitted: (value) {
-              if (value.isNotEmpty) {
-                _onSubmit(value);
-              }
-            },
           ),
         ),
         const SizedBox(width: 16),

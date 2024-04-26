@@ -2,7 +2,6 @@ import 'package:bunga_player/actions/channel.dart';
 import 'package:bunga_player/actions/danmaku.dart';
 import 'package:bunga_player/providers/ui.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 class DanmakuControl extends StatefulWidget {
@@ -49,13 +48,7 @@ class _DanmakuControlState extends State<DanmakuControl> {
 
         // Text field
         Expanded(
-          child: Shortcuts(
-            shortcuts: const <ShortcutActivator, Intent>{
-              SingleActivator(LogicalKeyboardKey.space):
-                  DoNothingAndStopPropagationTextIntent(),
-              SingleActivator(LogicalKeyboardKey.escape):
-                  DoNothingAndStopPropagationTextIntent(),
-            },
+          child: DefaultTextEditingShortcuts(
             child: TextField(
               style: const TextStyle(height: 1.0),
               controller: _controller,
