@@ -11,7 +11,7 @@ import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/services/player.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
-import 'package:bunga_player/utils/duration.dart';
+import 'package:bunga_player/utils/comparable.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:path_provider/path_provider.dart';

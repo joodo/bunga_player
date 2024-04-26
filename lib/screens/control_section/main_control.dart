@@ -10,6 +10,7 @@ import 'package:bunga_player/providers/player.dart';
 import 'package:bunga_player/providers/settings.dart';
 import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/screens/control_section/popmoji_control.dart';
+import 'package:bunga_player/utils/comparable.dart';
 import 'package:bunga_player/utils/duration.dart';
 import 'package:bunga_player/utils/value_listenable.dart';
 import 'package:flutter/material.dart';
@@ -381,7 +382,7 @@ class _DurationButton extends StatelessWidget {
     return Consumer3<PlayPosition, PlayDuration, SettingShowRemainDuration>(
       builder: (context, position, duration, showRemainDuration, child) {
         final displayString = showRemainDuration.value
-            ? '${position.value.hhmmss} - ${(duration.value - position.value).hhmmss}'
+            ? '${position.value.hhmmss} - ${max(duration.value - position.value, Duration.zero).hhmmss}'
             : '${position.value.hhmmss} / ${duration.value.hhmmss}';
         return TextButton(
           onPressed: showRemainDuration.toggle,
