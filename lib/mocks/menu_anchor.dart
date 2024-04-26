@@ -2037,6 +2037,7 @@ class _SubmenuButtonState extends State<SubmenuButton> {
         return child;
       },
       menuChildren: widget.menuChildren,
+      rootOverlay: _anchor?.widget.rootOverlay ?? false,
       child: widget.child,
     );
   }

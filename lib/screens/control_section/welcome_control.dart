@@ -6,19 +6,13 @@ import 'package:bunga_player/mocks/menu_anchor.dart' as mock;
 import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/providers/chat.dart';
-import 'package:bunga_player/providers/clients/alist.dart';
 import 'package:bunga_player/providers/clients/bunga.dart';
-import 'package:bunga_player/providers/clients/online_video.dart';
 import 'package:bunga_player/providers/settings.dart';
 import 'package:bunga_player/providers/ui.dart';
-import 'package:bunga_player/screens/dialogs/online_video_dialog.dart';
-import 'package:bunga_player/screens/dialogs/local_video_entry.dart';
-import 'package:bunga_player/screens/dialogs/net_disk.dart';
 import 'package:bunga_player/screens/dialogs/others_dialog.dart';
 import 'package:bunga_player/screens/dialogs/settings.dart';
 import 'package:bunga_player/screens/widgets/loading_button_icon.dart';
-import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/services/toast.dart';
+import 'package:bunga_player/screens/widgets/video_open_menu_items.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
@@ -66,33 +60,10 @@ class _WelcomeControlState extends State<WelcomeControl> {
                       : controller.open(),
               child: const Text('打开视频'),
             ),
-            menuChildren: [
-              Selector<AListClient?, bool>(
-                selector: (context, client) => client != null,
-                builder: (context, initiated, child) => mock.MenuItemButton(
-                  onPressed: initiated ? _openNetDisk : null,
-                  leadingIcon: !initiated
-                      ? const Icon(Icons.cloud_outlined)
-                      : const LoadingButtonIcon(),
-                  child: const Text('网盘'),
-                ),
-              ),
-              Selector<OnlineVideoClient?, bool>(
-                selector: (context, client) => client != null,
-                builder: (context, initiated, child) => mock.MenuItemButton(
-                  onPressed: initiated ? _openOnline : null,
-                  leadingIcon: initiated
-                      ? const Icon(Icons.language_outlined)
-                      : const LoadingButtonIcon(),
-                  child: const Text('在线视频'),
-                ),
-              ),
-              mock.MenuItemButton(
-                leadingIcon: const Icon(Icons.folder_outlined),
-                onPressed: _openLocalVideo,
-                child: const Text('本地文件    '),
-              ),
-            ],
+            menuChildren: VideoOpenMenuItemsCreator(
+              context,
+              onVideoOpened: _onVideoOpened,
+            ).create(),
           ),
           const SizedBox(width: 16),
           _DelayedCallbackButtonWrapper(
@@ -121,82 +92,42 @@ class _WelcomeControlState extends State<WelcomeControl> {
     );
   }
 
-  void _openLocalVideo() async {
-    _openChannel(entryGetter: LocalVideoEntryDialog().show);
-  }
-
-  void _openOnline() {
-    _openChannel(
-      entryGetter: () => showModal<VideoEntry?>(
-        context: context,
-        builder: (context) => const OnlineVideoDialog(),
+  void _onVideoOpened(VideoEntry entry) {
+    if (!mounted) throw Exception('Context unmounted');
+    context.read<CurrentChannelJoinPayload>().value = ChannelJoinByDataPayload(
+      ChannelData.fromShare(
+        context.read<CurrentUser>().value!,
+        entry,
       ),
+      active: context.read<SettingAutoJoinChannel>().value,
     );
-  }
 
-  void _openNetDisk() async {
-    _openChannel(
-      entryGetter: () => showModal<VideoEntry?>(
-        context: context,
-        builder: (context) => const NetDiskDialog(),
-      ),
-    );
+    _onLeaving();
   }
 
   void _joinOthersChannel() async {
-    _openChannel(
-      entryGetter: () => showModal<({String id, VideoEntry entry})?>(
-        context: context,
-        builder: (context) => const OthersDialog(),
-      ),
+    final result = await showModal<({String id, VideoEntry entry})?>(
+      context: context,
+      builder: (context) => const OthersDialog(),
     );
-  }
-
-  Future<void> _openChannel({
-    required Future Function() entryGetter,
-  }) async {
-    final result = await entryGetter();
     if (result == null || !mounted) return;
 
-    final navigator = Navigator.of(context);
-    final cat = context.read<CatIndicator>();
-    try {
-      if (result is VideoEntry) {
-        final response = Actions.invoke(
-          context,
-          OpenVideoIntent(videoEntry: result),
-        ) as Future?;
-        await response;
+    final response = Actions.invoke(
+      context,
+      OpenVideoIntent(videoEntry: result.entry),
+    ) as Future<void>;
+    await response;
 
-        if (!mounted) throw Exception('context unmounted');
-        context.read<CurrentChannelJoinPayload>().value =
-            ChannelJoinByDataPayload(
-          ChannelData.fromShare(
-            context.read<CurrentUser>().value!,
-            result,
-          ),
-          active: context.read<SettingAutoJoinChannel>().value,
-        );
-      } else if (result is ({String id, VideoEntry entry})) {
-        final response = Actions.invoke(
-          context,
-          OpenVideoIntent(videoEntry: result.entry),
-        ) as Future<void>;
-        await response;
+    if (!mounted) throw Exception('context unmounted');
+    context.read<CurrentChannelJoinPayload>().value =
+        ChannelJoinByIdPayload(result.id, active: true);
 
-        if (!mounted) throw Exception('context unmounted');
-        context.read<CurrentChannelJoinPayload>().value =
-            ChannelJoinByIdPayload(result.id, active: true);
-      } else {
-        assert(false);
-      }
+    _onLeaving();
+  }
 
-      cat.title = null;
-      navigator.popAndPushNamed('control:main');
-    } catch (e) {
-      getIt<Toast>().show('解析失败');
-      rethrow;
-    }
+  void _onLeaving() {
+    context.read<CatIndicator>().title = null;
+    Navigator.of(context).popAndPushNamed('control:main');
   }
 
   void _onChangeName() async {

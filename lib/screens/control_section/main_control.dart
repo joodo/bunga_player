@@ -1,6 +1,8 @@
+import 'package:bunga_player/actions/channel.dart';
 import 'package:bunga_player/actions/play.dart';
 import 'package:bunga_player/actions/video_playing.dart';
 import 'package:bunga_player/actions/voice_call.dart';
+import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/models/playing/volume.dart';
 import 'package:bunga_player/mocks/menu_anchor.dart' as mock;
 import 'package:bunga_player/mocks/slider.dart' as mock;
@@ -9,7 +11,9 @@ import 'package:bunga_player/providers/chat.dart';
 import 'package:bunga_player/providers/player.dart';
 import 'package:bunga_player/providers/settings.dart';
 import 'package:bunga_player/providers/ui.dart';
+import 'package:bunga_player/providers/wrapper.dart';
 import 'package:bunga_player/screens/control_section/popmoji_control.dart';
+import 'package:bunga_player/screens/widgets/video_open_menu_items.dart';
 import 'package:bunga_player/utils/comparable.dart';
 import 'package:bunga_player/utils/duration.dart';
 import 'package:bunga_player/utils/value_listenable.dart';
@@ -171,12 +175,13 @@ class _MainControlState extends State<MainControl> {
             ),
 
             // Change Video Button
-            mock.MenuItemButton(
+            mock.SubmenuButton(
               leadingIcon: const Icon(Icons.movie_filter),
+              menuChildren: VideoOpenMenuItemsCreator(
+                context,
+                onVideoOpened: _onVideoOpened,
+              ).create(),
               child: const Text('换片'),
-              onPressed: () {
-                Navigator.of(context).pushNamed('control:open');
-              },
             ),
 
             // Leave Button
@@ -221,6 +226,23 @@ class _MainControlState extends State<MainControl> {
     Actions.invoke(context, StopPlayIntent());
     context.read<CurrentChannelJoinPayload>().value = null;
     Navigator.of(context).popAndPushNamed('control:welcome');
+  }
+
+  void _onVideoOpened(VideoEntry entry) {
+    if (!mounted) throw Exception('Context unmounted');
+
+    final currentUser = context.read<CurrentUser>().value;
+    if (!context.isVideoSameWithChannel && currentUser != null) {
+      Actions.maybeInvoke(
+        context,
+        UpdateChannelDataIntent(
+          ChannelData.fromShare(
+            currentUser,
+            entry,
+          ),
+        ),
+      );
+    }
   }
 }
 

@@ -5,7 +5,6 @@ import 'package:bunga_player/providers/settings.dart';
 import 'package:bunga_player/providers/ui.dart';
 import 'package:bunga_player/screens/control_section/danmaku_control.dart';
 import 'package:bunga_player/screens/control_section/source_selection_control.dart';
-import 'package:bunga_player/screens/control_section/video_open_control.dart';
 import 'package:bunga_player/screens/control_section/call_control.dart';
 import 'package:bunga_player/screens/control_section/rename_control.dart';
 import 'package:bunga_player/screens/control_section/main_control.dart';
@@ -53,7 +52,6 @@ class _ControlSectionState extends State<ControlSection> {
       'control:popmoji' => const PopmojiControl(),
       'control:subtitle' => const SubtitleControl(),
       'control:tune' => const TuneControl(),
-      'control:open' => const VideoOpenControl(),
       'control:danmaku' => const DanmakuControl(),
       'control:source_selection' => const SourceSelectionControl(),
       String() => throw Exception('Invalid route: $name'),
