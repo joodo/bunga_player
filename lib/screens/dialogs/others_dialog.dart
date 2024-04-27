@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/providers/clients/chat.dart';
+import 'package:bunga_player/screens/widgets/scroll_optimizer.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/utils/http_response.dart';
 import 'package:flutter/material.dart';
@@ -20,7 +21,6 @@ class OthersDialog extends StatefulWidget {
 class OthersDialogState extends State<OthersDialog> {
   List<({String id, ChannelData data})>? _channels;
   late final Timer _timer;
-  bool _isPulling = false;
 
   final _scrollController = ScrollController();
 
@@ -40,27 +40,36 @@ class OthersDialogState extends State<OthersDialog> {
   Widget build(BuildContext context) {
     final themeData = Theme.of(context);
 
-    final channelsScroll = SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
+    final channelsScroll = Scrollbar(
       controller: _scrollController,
-      child: Row(
-        children: [
-          const SizedBox(width: 8),
-          if (_channels != null)
-            ..._channels!.map((channel) => _ChannelCard(
-                  channelData: channel.data,
-                  onTapped: () =>
-                      SchedulerBinding.instance.addPostFrameCallback((_) {
-                    Navigator.of(context).pop<({String id, VideoEntry entry})>(
-                      (
-                        id: channel.id,
-                        entry: VideoEntry.fromChannelData(channel.data),
-                      ),
-                    );
-                  }),
-                )),
-          const SizedBox(width: 8),
-        ],
+      child: ScrollOptimizer(
+        scrollController: _scrollController,
+        child: Center(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            controller: _scrollController,
+            child: Row(
+              children: [
+                const SizedBox(width: 8),
+                if (_channels != null)
+                  ..._channels!.map((channel) => _ChannelCard(
+                        channelData: channel.data,
+                        onTapped: () =>
+                            SchedulerBinding.instance.addPostFrameCallback((_) {
+                          Navigator.of(context)
+                              .pop<({String id, VideoEntry entry})>(
+                            (
+                              id: channel.id,
+                              entry: VideoEntry.fromChannelData(channel.data),
+                            ),
+                          );
+                        }),
+                      )),
+                const SizedBox(width: 8),
+              ],
+            ),
+          ),
+        ),
       ),
     );
     // HACK: cannot use listview because issue, same as popmoji
@@ -73,10 +82,7 @@ class OthersDialogState extends State<OthersDialog> {
       ),
       child: Stack(
         children: [
-          Scrollbar(
-            controller: _scrollController,
-            child: Center(child: channelsScroll),
-          ),
+          channelsScroll,
           if (_channels?.isEmpty ?? false)
             Center(
               child: Text(
@@ -84,12 +90,6 @@ class OthersDialogState extends State<OthersDialog> {
                 style: themeData.textTheme.labelMedium,
               ),
             ),
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 250),
-            curve: Curves.easeOutCubic,
-            height: _isPulling ? 4 : 0,
-            child: const LinearProgressIndicator(),
-          ),
         ],
       ),
     );
@@ -114,18 +114,13 @@ class OthersDialogState extends State<OthersDialog> {
 
   Timer _createUpdateTimer() {
     void updateChannel(_) async {
-      setState(() {
-        _isPulling = true;
-      });
-
       final chatClient = context.read<ChatClient>();
       final channels = await chatClient.queryOnlineChannels();
-
-      if (!mounted) return;
-      setState(() {
-        _channels = channels;
-        _isPulling = false;
-      });
+      if (mounted) {
+        setState(() {
+          _channels = channels;
+        });
+      }
     }
 
     final timer = Timer.periodic(const Duration(seconds: 5), updateChannel);

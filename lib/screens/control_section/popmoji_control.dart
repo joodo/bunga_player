@@ -2,13 +2,14 @@ import 'dart:ui';
 
 import 'package:bunga_player/actions/channel.dart';
 import 'package:bunga_player/constants/constants.dart';
+import 'package:bunga_player/screens/widgets/scroll_optimizer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:bunga_player/mocks/tooltip.dart' as mock;
 import 'package:lottie/lottie.dart';
 import 'package:nested/nested.dart';
 
-class PopmojiControl extends StatelessWidget {
+class PopmojiControl extends StatefulWidget {
   static Future<void> cacheSvgs() async {
     String? previousCode;
     for (var rune in emojis.runes) {
@@ -30,6 +31,19 @@ class PopmojiControl extends StatelessWidget {
   }
 
   const PopmojiControl({super.key});
+
+  @override
+  State<PopmojiControl> createState() => _PopmojiControlState();
+}
+
+class _PopmojiControlState extends State<PopmojiControl> {
+  final _scrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -62,9 +76,10 @@ class PopmojiControl extends StatelessWidget {
         const SizedBox(width: 8),
 
         Expanded(
-          child: ScrollConfiguration(
-            behavior: _AllowAllDeviceScroll(),
+          child: ScrollOptimizer(
+            scrollController: _scrollController,
             child: SingleChildScrollView(
+              controller: _scrollController,
               scrollDirection: Axis.horizontal,
               child: Row(children: [...emojiButtons]),
             ),
@@ -74,11 +89,6 @@ class PopmojiControl extends StatelessWidget {
       ],
     );
   }
-}
-
-class _AllowAllDeviceScroll extends MaterialScrollBehavior {
-  @override
-  Set<PointerDeviceKind> get dragDevices => PointerDeviceKind.values.toSet();
 }
 
 class _EmojiButton extends StatelessWidget {
