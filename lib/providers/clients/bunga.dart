@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:bunga_player/providers/clients/online_video.dart';
 import 'package:bunga_player/utils/http_response.dart';
@@ -104,5 +105,16 @@ class BungaClient {
         url: result['url'],
       ),
     );
+  }
+
+  Future<Uint8List> getAlistThumb({
+    required String path,
+    required String alistToken,
+  }) async {
+    final response = await http.get(
+      _host.resolve('alist/thumb?path=${Uri.encodeFull(path)}'),
+      headers: {'alist-token': alistToken},
+    );
+    return response.bodyBytes;
   }
 }

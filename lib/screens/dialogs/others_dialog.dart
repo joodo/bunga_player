@@ -3,6 +3,8 @@ import 'dart:typed_data';
 
 import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/models/video_entries/video_entry.dart';
+import 'package:bunga_player/providers/clients/alist.dart';
+import 'package:bunga_player/providers/clients/bunga.dart';
 import 'package:bunga_player/providers/clients/chat.dart';
 import 'package:bunga_player/screens/widgets/scroll_optimizer.dart';
 import 'package:bunga_player/services/logger.dart';
@@ -207,25 +209,24 @@ class _ChannelCardState extends State<_ChannelCard> {
       ],
     );
 
-    final card = Card(
-      margin: const EdgeInsets.symmetric(horizontal: 8),
-      clipBehavior: Clip.hardEdge,
-      color: ElevationOverlay.applySurfaceTint(
-        themeData.colorScheme.surfaceVariant,
-        themeData.colorScheme.surfaceTint,
-        0,
-      ),
-      elevation: 0,
-      child: InkWell(
-        onTap: widget.onTapped,
-        child: cardContent,
-      ),
-    );
+    final card = Builder(builder: (context) {
+      final colorScheme = Theme.of(context).colorScheme;
+      return Card(
+        margin: const EdgeInsets.symmetric(horizontal: 8),
+        clipBehavior: Clip.hardEdge,
+        color: colorScheme.primaryContainer,
+        child: InkWell(
+          onTap: widget.onTapped,
+          child: cardContent,
+        ),
+      );
+    });
 
     final themedCard = FutureBuilder(
       future: _imageData != null
           ? ColorScheme.fromImageProvider(
               provider: MemoryImage(_imageData!),
+              brightness: Brightness.dark,
             )
           : null,
       initialData: themeData.colorScheme,
@@ -238,15 +239,25 @@ class _ChannelCardState extends State<_ChannelCard> {
     return themedCard;
   }
 
-  void _getNetworkImageData(String uri) async {
+  void _getNetworkImageData(String uriString) async {
     try {
-      final response = await http.get(Uri.parse(uri));
-      if (!response.isSuccess) {
-        throw Exception('image fetch failed: ${response.statusCode}');
-      }
-      setState(() {
+      final uri = Uri.parse(uriString);
+
+      if (uri.scheme == 'alist') {
+        final bungaClient = context.read<BungaClient>();
+        _imageData = await bungaClient.getAlistThumb(
+          path: uri.path,
+          alistToken: context.read<AListClient>().token,
+        );
+      } else {
+        final response = await http.get(uri);
+        if (!response.isSuccess) {
+          throw Exception('image fetch failed: ${response.statusCode}');
+        }
         _imageData = response.bodyBytes;
-      });
+      }
+
+      if (mounted) setState(() {});
     } catch (e) {
       logger.w(e);
     }

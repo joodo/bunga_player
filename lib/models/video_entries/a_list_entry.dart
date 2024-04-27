@@ -2,6 +2,7 @@ part of 'video_entry.dart';
 
 class AListEntry extends VideoEntry {
   static const hashPrefix = 'alist';
+  static bool useThumbProxy = true;
 
   AListEntry(String path) {
     this.path = path;
@@ -29,7 +30,7 @@ class AListEntry extends VideoEntry {
     final info = await client!.get(path!);
 
     title = info.name;
-    image = info.thumb;
+    image = AListEntry.useThumbProxy ? 'alist://$path' : info.thumb;
     sources = VideoSources(videos: [info.rawUrl!]);
 
     _isFetched = true;
