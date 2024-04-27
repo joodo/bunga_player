@@ -1,10 +1,9 @@
 import 'package:bunga_player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/providers/clients/bunga.dart';
 import 'package:bunga_player/providers/clients/online_video.dart';
-import 'package:flutter/gestures.dart';
+import 'package:bunga_player/screens/widgets/hyper_text.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher_string.dart';
 
 class OnlineVideoDialog extends StatefulWidget {
   const OnlineVideoDialog({super.key});
@@ -33,6 +32,12 @@ class _OnlineVideoDialogState extends State<OnlineVideoDialog> {
     super.initState();
   }
 
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
   final _textController = TextEditingController();
   @override
   Widget build(BuildContext context) {
@@ -47,22 +52,25 @@ class _OnlineVideoDialogState extends State<OnlineVideoDialog> {
           children: [
             Text.rich(
               TextSpan(
-                text: '支持网站：',
+                text: '支持网站： ',
                 children: [
-                  TextSpan(
-                    text: ' 哔哩哔哩 ',
-                    style: const TextStyle(color: Colors.blue),
-                    recognizer: TapGestureRecognizer()
-                      ..onTap =
-                          () => launchUrlString('https://www.bilibili.com/'),
+                  createHyperText(
+                    context,
+                    text: '哔哩哔哩',
+                    url: 'https://www.bilibili.com/',
                   ),
+                  const TextSpan(text: '  '),
                   for (final site
                       in context.read<OnlineVideoClient>().supportSites ?? [])
                     TextSpan(
-                      text: ' ${site.name} ',
-                      style: const TextStyle(color: Colors.blue),
-                      recognizer: TapGestureRecognizer()
-                        ..onTap = () => launchUrlString(site.url),
+                      children: [
+                        createHyperText(
+                          context,
+                          text: site.name,
+                          url: site.url,
+                        ),
+                        const TextSpan(text: '  '),
+                      ],
                     ),
                 ],
               ),

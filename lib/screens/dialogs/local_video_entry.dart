@@ -43,7 +43,6 @@ class LocalVideoEntryDialog {
       'f4a',
       'f4b',
       'mod',
-      'rm',
     ],
   );
 

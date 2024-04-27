@@ -66,63 +66,72 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
 
     return AlertDialog(
       insetPadding: const EdgeInsets.all(40),
-      title: IndexedStack(
-        index: _searchMode ? 1 : 0,
+      titlePadding: const EdgeInsets.only(top: 24.0),
+      title: Column(
         children: [
-          Row(
-            children: [
-              Container(
-                constraints: const BoxConstraints(maxWidth: 440),
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Text(ellipseStart(_currentPath)),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: IndexedStack(
+              index: _searchMode ? 1 : 0,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      constraints: const BoxConstraints(maxWidth: 440),
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Text(ellipseStart(_currentPath)),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    IconButton.outlined(
+                      onPressed: () => _cd('..'),
+                      icon: const Icon(Icons.subdirectory_arrow_left),
+                    ),
+                    const SizedBox(width: 12),
+                    IconButton.outlined(
+                      onPressed: _refresh,
+                      icon: const Icon(Icons.refresh),
+                    ),
+                    const SizedBox(width: 12),
+                    IconButton.outlined(
+                      onPressed: () => setState(() {
+                        _alistBookmarks.add(_currentPath);
+                      }),
+                      icon: const Icon(Icons.bookmark_add),
+                    ),
+                    const Spacer(),
+                    const SizedBox(width: 16),
+                    IconButton.filled(
+                      onPressed: () {
+                        setState(() {
+                          _searchMode = true;
+                        });
+                        _searchFieldFocusNode.requestFocus();
+                      },
+                      icon: const Icon(Icons.search),
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(width: 12),
-              IconButton.outlined(
-                onPressed: () => _cd('..'),
-                icon: const Icon(Icons.subdirectory_arrow_left),
-              ),
-              const SizedBox(width: 12),
-              IconButton.outlined(
-                onPressed: _refresh,
-                icon: const Icon(Icons.refresh),
-              ),
-              const SizedBox(width: 12),
-              IconButton.outlined(
-                onPressed: () => setState(() {
-                  _alistBookmarks.add(_currentPath);
-                }),
-                icon: const Icon(Icons.bookmark_add),
-              ),
-              const Spacer(),
-              const SizedBox(width: 16),
-              IconButton.filled(
-                onPressed: () {
-                  setState(() {
-                    _searchMode = true;
-                  });
-                  _searchFieldFocusNode.requestFocus();
-                },
-                icon: const Icon(Icons.search),
-              ),
-            ],
-          ),
-          TextField(
-            focusNode: _searchFieldFocusNode,
-            decoration: InputDecoration(
-              hintText: '搜索文件和文件夹',
-              suffixIcon: IconButton(
-                onPressed: () {
-                  setState(() {
-                    _searchMode = false;
-                  });
-                },
-                icon: const Icon(Icons.clear),
-              ),
+                TextField(
+                  focusNode: _searchFieldFocusNode,
+                  decoration: InputDecoration(
+                    hintText: '搜索文件和文件夹',
+                    suffixIcon: IconButton(
+                      onPressed: () {
+                        setState(() {
+                          _searchMode = false;
+                        });
+                      },
+                      icon: const Icon(Icons.clear),
+                    ),
+                  ),
+                  onSubmitted: _search,
+                ),
+              ],
             ),
-            onSubmitted: _search,
           ),
+          const Divider(height: 6),
         ],
       ),
       content: SizedBox(

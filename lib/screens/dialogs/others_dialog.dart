@@ -76,13 +76,12 @@ class OthersDialogState extends State<OthersDialog> {
     // https://github.com/flutter/flutter/issues/26527
     final channelsView = Container(
       clipBehavior: Clip.hardEdge,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
-        color: themeData.colorScheme.surface,
-      ),
+      decoration: BoxDecoration(color: themeData.colorScheme.surface),
       child: Stack(
         children: [
-          channelsScroll,
+          if (_channels != null) channelsScroll,
+          if (_channels == null)
+            const Center(child: CircularProgressIndicator()),
           if (_channels?.isEmpty ?? false)
             Center(
               child: Text(
@@ -96,12 +95,11 @@ class OthersDialogState extends State<OthersDialog> {
 
     return AlertDialog(
       title: const Text('加入其他人'),
+      contentPadding: const EdgeInsets.only(top: 20, bottom: 24),
       content: SizedBox(
-        width: 500,
-        height: 220,
-        child: _channels == null
-            ? const Center(child: CircularProgressIndicator())
-            : channelsView,
+        width: 560,
+        height: 256,
+        child: channelsView,
       ),
       actions: [
         TextButton(
