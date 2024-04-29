@@ -42,21 +42,7 @@ class _MainControlState extends State<MainControl> {
       children: [
         const SizedBox(width: 8),
         // Play button
-        Consumer2<PlayStatus, PlayIsBuffering>(
-          builder: (context, playStatus, isBuffering, child) =>
-              IconButton.filledTonal(
-            icon: playStatus.isPlaying
-                ? const Icon(Icons.pause)
-                : const Icon(Icons.play_arrow),
-            iconSize: 36,
-            onPressed: isBuffering.value
-                ? null
-                : () => Actions.maybeInvoke(
-                      context,
-                      const TogglePlayIntent(),
-                    ),
-          ),
-        ),
+        const _PlayButton(),
         const SizedBox(width: 8),
 
         // Ask position button
@@ -243,6 +229,61 @@ class _MainControlState extends State<MainControl> {
         ),
       );
     }
+  }
+}
+
+class _PlayButton extends StatefulWidget {
+  const _PlayButton();
+
+  @override
+  State<_PlayButton> createState() => _PlayButtonState();
+}
+
+class _PlayButtonState extends State<_PlayButton>
+    with SingleTickerProviderStateMixin {
+  late final playStatusNotifier = context.read<PlayStatus>();
+
+  late final controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 150),
+  );
+  late final animation =
+      Tween<double>(begin: 0.0, end: 1.0).animate(controller);
+
+  @override
+  void initState() {
+    super.initState();
+    playStatusNotifier.addListener(_onPlayStatusChanged);
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    playStatusNotifier.removeListener(_onPlayStatusChanged);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<PlayIsBuffering>(
+      builder: (context, isBuffering, child) => IconButton.filledTonal(
+        icon: AnimatedIcon(
+          icon: AnimatedIcons.play_pause,
+          progress: animation,
+        ),
+        iconSize: 36,
+        onPressed: isBuffering.value
+            ? null
+            : Actions.handler(
+                context,
+                const TogglePlayIntent(),
+              ),
+      ),
+    );
+  }
+
+  void _onPlayStatusChanged() {
+    playStatusNotifier.isPlaying ? controller.forward() : controller.reverse();
   }
 }
 
