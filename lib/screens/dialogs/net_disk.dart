@@ -8,7 +8,9 @@ import 'package:bunga_player/services/player.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/iterable.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 
 class AbortException implements Exception {}
@@ -24,10 +26,12 @@ class NetDiskDialog extends StatefulWidget {
 }
 
 class _NetDiskDialogState extends State<NetDiskDialog> {
+  // Directory
   Completer? _work;
   bool get _pending => _work != null;
   String _currentPath = '';
   List<AListFileInfo> _currentFiles = [];
+  final _dirScrollController = ScrollController();
 
   // Search
   bool _searchMode = false;
@@ -57,47 +61,62 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
   @override
   Widget build(BuildContext context) {
     final themeData = Theme.of(context);
-
-    String ellipseStart(String path) {
-      final splits = path.split('/')..removeWhere((e) => e.isEmpty);
-      if (splits.length <= 2) return path;
-
-      splits.removeRange(0, splits.length - 2);
-      return '.../${splits.join('/')}';
-    }
-
     final itemCount =
         _searchMode ? _searchResults.length : _currentFiles.length;
 
-    final pathSection = Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Row(
-        children: [
-          Container(
-            constraints: const BoxConstraints(maxWidth: 480),
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Text(ellipseStart(_currentPath)),
+    final pathSplits = _currentPath.split('/');
+    final pathSection = Row(
+      children: [
+        Expanded(
+          child: SizedBox(
+            height: 42,
+            child: ShaderMask(
+              shaderCallback: (Rect rect) {
+                return const LinearGradient(
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                  colors: [Colors.transparent, Colors.purple],
+                  stops: [0.95, 1.0],
+                ).createShader(rect);
+              },
+              blendMode: BlendMode.dstOut,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                controller: _dirScrollController,
+                itemBuilder: (context, index) => Padding(
+                  padding: EdgeInsets.only(
+                    left: index == 0 ? 24 : 0,
+                    right: index == pathSplits.length - 2 ? 24 : 0,
+                  ),
+                  child: FilledButton.tonal(
+                    onPressed: () {
+                      final cdPath = pathSplits.sublist(0, index + 1).join('/');
+                      _cd('$cdPath/');
+                    },
+                    child: Text(
+                      index == 0 ? '所有文件' : pathSplits[index],
+                      style: themeData.textTheme.bodyLarge,
+                    ),
+                  ),
+                ),
+                separatorBuilder: (context, index) =>
+                    const Center(child: Icon(Icons.chevron_right)),
+                itemCount: pathSplits.length - 1,
+              ),
             ),
           ),
-          const SizedBox(width: 12),
-          IconButton.outlined(
-            onPressed: _refresh,
-            icon: const Icon(Icons.refresh),
-          ),
-          const Spacer(),
-          const SizedBox(width: 16),
-          IconButton.filled(
-            onPressed: () {
-              setState(() {
-                _searchMode = true;
-              });
-              _searchFieldFocusNode.requestFocus();
-            },
-            icon: const Icon(Icons.search),
-          ),
-        ],
-      ),
+        ),
+        IconButton.filled(
+          onPressed: () {
+            setState(() {
+              _searchMode = true;
+            });
+            _searchFieldFocusNode.requestFocus();
+          },
+          icon: const Icon(Icons.search),
+        ),
+        const SizedBox(width: 24),
+      ],
     );
     final bookmarkSection = SizedBox(
       height: 36,
@@ -107,16 +126,6 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
         controller: _bookmarksScrollController,
         children: <Widget>[
           const SizedBox(width: 16),
-          ActionChip(
-            label: const Text('主目录'),
-            avatar: const Icon(Icons.home),
-            onPressed: () => _cd('/'),
-          ),
-          ActionChip(
-            label: const Text('上层目录'),
-            avatar: const Icon(Icons.drive_folder_upload),
-            onPressed: _currentPath != '/' ? () => _cd('..') : null,
-          ),
           ..._alistBookmarks.map(
             (path) => InputChip(
               label: Text(getName(path)),
@@ -153,6 +162,7 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
     final dirTitleBar = Column(
       children: [
         pathSection,
+        const SizedBox(height: 8),
         bookmarkSection,
         const SizedBox(height: 8),
       ],
@@ -290,14 +300,20 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
     );
     final dialogContent = SizedBox(
       width: NetDiskDialog.dialogWidth,
-      // FIXME: ListTile InkWell clip not work
-      child: Ink(
-        color: themeData.colorScheme.surface,
-        child: _pending
-            ? pendingIndicator
-            : itemCount == 0
-                ? emptyIndicator
-                : listView,
+      child: Scaffold(
+        body: Ink(
+          color: themeData.colorScheme.surface,
+          child: _pending
+              ? pendingIndicator
+              : itemCount == 0
+                  ? emptyIndicator
+                  : listView,
+        ),
+        floatingActionButton: FloatingActionButton.small(
+          onPressed: _refresh,
+          tooltip: '刷新',
+          child: const Icon(Icons.refresh),
+        ),
       ),
     );
 
@@ -340,6 +356,13 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
       if (mounted) {
         setState(() {
           _work = null;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _dirScrollController.animateTo(
+              _dirScrollController.position.maxScrollExtent,
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeOutCubic,
+            );
+          });
         });
       }
     }
