@@ -166,24 +166,27 @@ class _NetworkSettingsState extends State<_NetworkSettings> {
                           : '无法连接'
                       : null,
                   border: const OutlineInputBorder(),
-                  suffix: ValueListenableBuilder(
-                    valueListenable: _hostFieldController,
-                    builder: (context, hostFieldValue, child) => TextButton(
-                      onPressed:
-                          pending.value || hostFieldValue.text == client?.host
-                              ? null
-                              : _connectToHost,
-                      child: pending.value
-                          ? const LoadingButtonIcon()
+                  suffixIcon: Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: ValueListenableBuilder(
+                      valueListenable: _hostFieldController,
+                      builder: (context, hostFieldValue, child) => pending.value
+                          ? const SizedBox.square(
+                              dimension: 36,
+                              child: Center(
+                                child: LoadingButtonIcon(),
+                              ),
+                            )
                           : hostFieldValue.text == client?.host
                               ? Icon(
                                   Icons.check,
                                   color: Colors.greenAccent,
-                                  size: DefaultTextStyle.of(context)
-                                      .style
-                                      .fontSize,
+                                  size: IconTheme.of(context).size,
                                 )
-                              : const Text('连接'),
+                              : TextButton(
+                                  onPressed: _connectToHost,
+                                  child: const Text('连接'),
+                                ),
                     ),
                   ),
                 ),
