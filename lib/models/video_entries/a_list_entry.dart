@@ -20,10 +20,10 @@ class AListEntry extends VideoEntry {
   @override
   bool get isFetched => _isFetched;
   @override
-  Future<void> fetch(BuildContext context) async {
+  Future<void> fetch(Locator read) async {
     if (_isFetched) return;
 
-    final client = context.read<AListClient?>();
+    final client = read<AListClient?>();
     assert(client != null);
 
     logger.i('AList: start fetch video $path');

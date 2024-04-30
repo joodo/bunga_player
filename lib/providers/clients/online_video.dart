@@ -63,7 +63,7 @@ class OnlineVideoClient {
         }
 
       default:
-        final entry = M3u8Entry(path: uri.toString());
+        final entry = M3u8Entry(uri.toString());
         return entry;
     }
   }

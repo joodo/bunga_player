@@ -113,12 +113,12 @@ class _MainControlState extends State<MainControl> {
                 leadingIcon: const Icon(Icons.refresh),
                 child: const Text('重新载入'),
                 onPressed: () {
-                  final onlineEntry = context.read<PlayVideoEntry>().value!;
                   final index = context.read<PlaySourceIndex>().value!;
+                  final onlineEntry = context.read<PlayVideoEntry>().value!;
                   Actions.invoke(
                     context,
                     OpenVideoIntent(
-                      videoEntry: onlineEntry,
+                      videoEntry: VideoEntry.copy(onlineEntry),
                       sourceIndex: index,
                     ),
                   );

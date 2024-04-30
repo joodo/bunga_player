@@ -163,7 +163,7 @@ class _OnlineVideoDialogState extends State<OnlineVideoDialog> {
 
       // prefetch in case site not support
       if (!mounted) return;
-      if (entry is M3u8Entry) await entry.fetch(context);
+      if (entry is M3u8Entry) await entry.fetch(context.read);
 
       if (!mounted) return;
       Navigator.pop<VideoEntry>(context, entry);

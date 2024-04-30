@@ -27,13 +27,13 @@ class BiliBungumiEntry extends VideoEntry {
   @override
   bool get isFetched => _isFetched;
   @override
-  Future<void> fetch(BuildContext context) async {
+  Future<void> fetch(Locator read) async {
     if (_isFetched) return;
 
     logger.i('Bili bungumi: start fetch epid=$epid');
 
     // fetch sess
-    final sess = context.read<OnlineVideoClient?>()?.biliSess;
+    final sess = read<OnlineVideoClient?>()?.biliSess;
     if (sess == null) {
       throw 'No sess data in Bunga server, cannot get bungami video';
     }

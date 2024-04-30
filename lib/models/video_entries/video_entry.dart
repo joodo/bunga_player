@@ -5,7 +5,6 @@ import 'package:bunga_player/models/chat/channel_data.dart';
 import 'package:bunga_player/providers/clients/online_video.dart';
 import 'package:crclib/catalog.dart';
 import 'package:file_selector/file_selector.dart';
-import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 import 'package:bunga_player/providers/clients/alist.dart';
 import 'package:bunga_player/providers/clients/bunga.dart';
@@ -53,6 +52,21 @@ sealed class VideoEntry {
 
   VideoEntry();
 
+  factory VideoEntry.copy(VideoEntry other) {
+    switch (other) {
+      case LocalVideoEntry():
+        throw UnimplementedError();
+      case AListEntry():
+        return AListEntry(other.path!);
+      case BiliBungumiEntry():
+        return BiliBungumiEntry(epid: other.epid);
+      case BiliVideoEntry():
+        return BiliVideoEntry(bvid: other.bvid, p: other.p);
+      case M3u8Entry():
+        return M3u8Entry(other.path!);
+    }
+  }
+
   factory VideoEntry.fromChannelData(ChannelData channelData) {
     final prefix = channelData.videoHash.split('-').first;
     if (!_factoryMap.containsKey(prefix)) {
@@ -63,7 +77,7 @@ sealed class VideoEntry {
   }
 
   bool get isFetched;
-  Future<void> fetch(BuildContext context);
+  Future<void> fetch(Locator read);
 
   @override
   String toString() {

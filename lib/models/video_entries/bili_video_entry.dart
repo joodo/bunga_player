@@ -19,13 +19,13 @@ class BiliVideoEntry extends VideoEntry {
   @override
   bool get isFetched => _isFetched;
   @override
-  Future<void> fetch(BuildContext context) async {
+  Future<void> fetch(Locator read) async {
     if (_isFetched) return;
 
     logger.i('Bili video: start fetch BV=$bvid, p=$p');
 
     // fetch sess
-    final sess = context.read<OnlineVideoClient?>()?.biliSess;
+    final sess = read<OnlineVideoClient?>()?.biliSess;
     isHD = sess != null;
     if (!isHD) {
       getIt<Toast>().show('无法获取高清视频');
