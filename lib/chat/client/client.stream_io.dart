@@ -10,7 +10,6 @@ import 'package:path/path.dart' as path;
 import '../models/channel_data.dart';
 import '../models/message.dart';
 import '../models/user.dart';
-import '../providers.dart';
 import 'client.dart';
 
 typedef AgoraChannelDataPayload = ({
@@ -69,16 +68,7 @@ class StreamIOClient implements ChatClient {
 
   // Channel
   @override
-  Future<Channel> joinChannel(ChannelJoinPayload payload) {
-    switch (payload) {
-      case ChannelJoinByIdPayload():
-        return _joinChannelById(payload.id);
-      case ChannelJoinByDataPayload():
-        return _createOrJoinChannelByData(payload.data);
-    }
-  }
-
-  Future<Channel> _createOrJoinChannelByData(ChannelData data) async {
+  Future<Channel> joinChannelByData(ChannelData data) async {
     stream.Channel channel;
 
     for (int suffix = 0; true; suffix++) {
@@ -102,7 +92,8 @@ class StreamIOClient implements ChatClient {
     return _getResponseByStreamChannel(channel);
   }
 
-  Future<Channel> _joinChannelById(String id) async {
+  @override
+  Future<Channel> joinChannelById(String id) async {
     final channel = _client.channel(
       'livestream',
       id: id,

@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:animations/animations.dart';
+import 'package:bunga_player/play_sync/models.dart';
+import 'package:bunga_player/play_sync/providers.dart';
 import 'package:bunga_player/player/actions.dart';
 import 'package:bunga_player/chat/models/channel_data.dart';
 import 'package:bunga_player/chat/models/user.dart';
@@ -12,6 +14,7 @@ import 'package:bunga_player/screens/widgets/loading_text.dart';
 import 'package:bunga_player/screens/wrappers/providers.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
+import 'package:bunga_player/utils/business/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -25,47 +28,51 @@ class RoomSection extends StatefulWidget {
 class _RoomSectionState extends State<RoomSection> {
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        // Watcher list
-        Consumer3<ChatChannelJoinPayload, ChatChannelWatchers, PlayVideoEntry>(
-          builder: (context, payloadNotifier, watchers, entry, child) {
-            if (entry.value == null) return const SizedBox.shrink();
+    return Selector<PlayVideoEntry, VideoEntry?>(
+      selector: (context, notifier) => notifier.value,
+      builder: (context, videoEntry, child) => videoEntry == null
+          ? const SizedBox.shrink()
+          : Row(
+              children: [
+                // Watcher list
+                Consumer<ChatChannelJoinPayload>(
+                  builder: (context, payload, child) => payload.value == null
+                      ? TextButton(
+                          child: const Text('创建房间'),
+                          onPressed: () => payload.value =
+                              ChannelJoinByEntryPayload(videoEntry),
+                        )
+                      : Padding(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 8,
+                            horizontal: 12,
+                          ),
+                          child: Consumer<ChatChannelWatchers>(
+                            builder: (context, watchers, child) {
+                              return watchers.value.isEmpty
+                                  ? const LoadingText('正在进入房间')
+                                  : _getUsersWidget(watchers.value);
+                            },
+                          ),
+                        ),
+                ),
+                const Spacer(),
 
-            if (!payloadNotifier.value!.active) {
-              return TextButton(
-                child: const Text('创建房间'),
-                onPressed: () => payloadNotifier.value =
-                    payloadNotifier.value!.createActive(),
-              );
-            }
-
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-              child: watchers.value.isEmpty
-                  ? const LoadingText('正在进入房间')
-                  : _getUsersWidget(watchers.value),
-            );
-          },
-        ),
-        const Spacer(),
-
-        // Unsync hint
-        Consumer2<ChatChannelData, PlayVideoEntry>(
-          builder: (context, channelData, videoEntry, child) {
-            if (channelData.value == null ||
-                videoEntry.value == null ||
-                context.isVideoSameWithChannel) {
-              return const SizedBox.shrink();
-            }
-            return _VideoUnsyncNotification(
-              otherUserName: channelData.value!.sharer.name,
-              otherVideoTitle: channelData.value!.name,
-              onAction: () => _onOpenVideoPressed(channelData.value!),
-            );
-          },
-        ),
-      ],
+                // Unsync hint
+                ValueListenableConsumer<ChatChannelData, ChannelData?>(
+                  builder: (context, channelData, child) {
+                    if (channelData == null || context.isVideoSameWithChannel) {
+                      return const SizedBox.shrink();
+                    }
+                    return _VideoUnsyncNotification(
+                      otherUserName: channelData.sharer.name,
+                      otherVideoTitle: channelData.name,
+                      onAction: () => _onOpenVideoPressed(channelData),
+                    );
+                  },
+                ),
+              ],
+            ),
     );
   }
 

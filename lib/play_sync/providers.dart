@@ -1,37 +1,26 @@
-import 'package:bunga_player/chat/models/user.dart';
 import 'package:bunga_player/chat/providers.dart';
 import 'package:bunga_player/chat/client/client.dart';
-import 'package:bunga_player/player/service/service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 
-class ChannelSubtitle {
-  final String id;
-  final String title;
-  final User sharer;
-  final String url;
-
-  SubtitleTrack? _track;
-  SubtitleTrack? get track => _track;
-  set track(SubtitleTrack? value) {
-    if (_track == null) {
-      _track = value;
-    } else {
-      throw Exception('Variable already initiated');
-    }
-  }
-
-  ChannelSubtitle({
-    required this.id,
-    required this.title,
-    required this.sharer,
-    required this.url,
-  });
-}
+import 'models.dart';
 
 class ChannelSubtitles extends ValueNotifier<Map<String, ChannelSubtitle>> {
   ChannelSubtitles() : super({});
 }
+
+class ChatChannelJoinPayload extends ValueNotifier<ChannelJoinPayload?> {
+  ChatChannelJoinPayload() : super(null);
+}
+
+final channelJoiningProvider = MultiProvider(
+  providers: [
+    ChangeNotifierProvider(
+      create: (context) => ChatChannelJoinPayload(),
+      lazy: false,
+    ),
+  ],
+);
 
 final playSyncProvider = MultiProvider(
   providers: [

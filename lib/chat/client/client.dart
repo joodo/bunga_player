@@ -3,7 +3,6 @@ import 'package:bunga_player/utils/models/network_progress.dart';
 import '../models/channel_data.dart';
 import '../models/message.dart';
 import '../models/user.dart';
-import '../providers.dart';
 
 class OwnUser extends User {
   final Future<void> Function() logout;
@@ -75,5 +74,6 @@ class ChannelFile {
 abstract class ChatClient {
   Future<OwnUser> login(String id, String token, String? name, {int? colorHue});
   Future<List<({String id, ChannelData data})>> queryOnlineChannels();
-  Future<Channel> joinChannel(ChannelJoinPayload payload);
+  Future<Channel> joinChannelById(String id);
+  Future<Channel> joinChannelByData(ChannelData data);
 }

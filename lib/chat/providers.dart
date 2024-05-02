@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:bunga_player/bunga_server/client.dart';
 import 'package:bunga_player/client_info/providers.dart';
+import 'package:bunga_player/play_sync/models.dart';
+import 'package:bunga_player/play_sync/providers.dart';
 import 'package:bunga_player/utils/business/auto_retry.dart';
 import 'package:bunga_player/utils/business/value_listenable.dart';
 import 'package:flutter/foundation.dart';
@@ -19,36 +21,6 @@ class ChatUser extends ValueNotifier<OwnUser?> {
 }
 
 // Channel
-sealed class ChannelJoinPayload {
-  bool get active;
-  ChannelJoinPayload createActive();
-}
-
-class ChannelJoinByIdPayload extends ChannelJoinPayload {
-  final String id;
-  ChannelJoinByIdPayload(this.id, {required this.active});
-
-  @override
-  final bool active;
-  @override
-  ChannelJoinPayload createActive() => ChannelJoinByIdPayload(id, active: true);
-}
-
-class ChannelJoinByDataPayload extends ChannelJoinPayload {
-  final ChannelData data;
-  ChannelJoinByDataPayload(this.data, {required this.active});
-
-  @override
-  final bool active;
-  @override
-  ChannelJoinPayload createActive() =>
-      ChannelJoinByDataPayload(data, active: true);
-}
-
-class ChatChannelJoinPayload extends ValueNotifier<ChannelJoinPayload?> {
-  ChatChannelJoinPayload() : super(null);
-}
-
 class ChatChannel extends ValueNotifier<Channel?> with StreamBinding {
   ChatChannel() : super(null);
 }
@@ -211,23 +183,28 @@ final chatProviders = MultiProvider(providers: [
   ),
 
   // Channel
-  ChangeNotifierProvider(
-    create: (context) => ChatChannelJoinPayload(),
-    lazy: false,
-  ),
-  ChangeNotifierProxyProvider2<ChatClient?, ChatChannelJoinPayload,
-      ChatChannel>(
+  ChangeNotifierProxyProvider2<ChatUser, ChatChannelJoinPayload, ChatChannel>(
     create: (context) => ChatChannel(),
-    update: (context, chatClient, channelJoinPayload, previous) {
+    update: (context, chatUser, channelJoinPayload, previous) {
       previous!.value?.leave();
       previous.value = null;
 
-      if (chatClient != null &&
-          channelJoinPayload.value != null &&
-          channelJoinPayload.value!.active) {
+      if (chatUser.value != null && channelJoinPayload.value != null) {
         final payload = channelJoinPayload.value!;
         final job = AutoRetryJob<Channel>(
-          () => chatClient.joinChannel(payload),
+          () {
+            final chatClient = context.read<ChatClient>();
+            final payload = channelJoinPayload.value!;
+            switch (payload) {
+              case ChannelJoinByIdPayload():
+                return chatClient.joinChannelById(payload.id);
+              case ChannelJoinByEntryPayload():
+                return chatClient.joinChannelByData(ChannelData.fromShare(
+                  chatUser.value!,
+                  payload.videoEntry,
+                ));
+            }
+          },
           jobName: 'Join Channel',
           alive: () => context.mounted && channelJoinPayload.value == payload,
         );
