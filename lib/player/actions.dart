@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
-import 'package:bunga_player/ui/actions.dart';
 import 'package:bunga_player/play_sync/actions.dart';
 import 'package:bunga_player/ui/providers.dart';
 import 'package:bunga_player/services/services.dart';
@@ -86,7 +85,7 @@ class StopPlayIntent extends Intent {}
 class StopPlayAction extends ContextAction<StopPlayIntent> {
   @override
   Future<void> invoke(StopPlayIntent intent, [BuildContext? context]) {
-    Actions.invoke(context!, const SetWindowTitleIntent());
+    context!.read<WindowTitle>().reset();
     return getIt<Player>().stop();
   }
 }
@@ -118,7 +117,7 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
       await videoPlayer.open(intent.videoEntry, intent.sourceIndex);
 
       if (context.mounted) {
-        Actions.invoke(context, SetWindowTitleIntent(intent.videoEntry.title));
+        context.read<WindowTitle>().value = intent.videoEntry.title;
       }
 
       cat.title = null;

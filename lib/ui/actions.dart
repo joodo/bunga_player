@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
-import 'package:window_manager/window_manager.dart';
 
 import 'providers.dart';
 
@@ -20,32 +19,8 @@ class SetFullScreenAction extends ContextAction<SetFullScreenIntent> {
   }
 }
 
-class SetWindowTitleIntent extends Intent {
-  final String? title;
-
-  const SetWindowTitleIntent([this.title]);
-}
-
-class SetWindowTitleAction extends Action<SetWindowTitleIntent> {
-  @override
-  Future<void> invoke(SetWindowTitleIntent intent) {
-    return windowManager.setTitle(intent.title ?? '👍 棒嘎大影院，你我来相见');
-  }
-}
-
-class UIActions extends SingleChildStatefulWidget {
+class UIActions extends SingleChildStatelessWidget {
   const UIActions({super.key, super.child});
-
-  @override
-  State<UIActions> createState() => _UIActionsState();
-}
-
-class _UIActionsState extends SingleChildState<UIActions> {
-  @override
-  void initState() {
-    SetWindowTitleAction().invoke(const SetWindowTitleIntent());
-    super.initState();
-  }
 
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
@@ -59,7 +34,6 @@ class _UIActionsState extends SingleChildState<UIActions> {
     return Actions(
       actions: <Type, Action<Intent>>{
         SetFullScreenIntent: SetFullScreenAction(),
-        SetWindowTitleIntent: SetWindowTitleAction(),
       },
       child: shortcuts,
     );

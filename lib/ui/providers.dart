@@ -18,6 +18,15 @@ class IsFullScreen extends ValueNotifier<bool> {
   }
 }
 
+class WindowTitle extends ValueNotifierWithReset<String> {
+  WindowTitle() : super('👍 棒嘎大影院，你我来相见') {
+    addListener(() {
+      windowManager.setTitle(value);
+    });
+    notifyListeners();
+  }
+}
+
 class ShouldShowHUD extends AutoResetNotifier {
   ShouldShowHUD() : super(const Duration(seconds: 3));
 }
@@ -152,6 +161,10 @@ final uiProviders = MultiProvider(
   providers: [
     ChangeNotifierProvider(create: (context) => CatIndicator()),
     ChangeNotifierProvider(create: (context) => IsFullScreen()),
+    ChangeNotifierProvider(
+      create: (context) => WindowTitle(),
+      lazy: false,
+    ),
     ChangeNotifierProvider(create: (context) => DanmakuMode()),
     ProxyProvider2<IsFullScreen, DanmakuMode, FoldLayout>(
       update: (context, isFullScreen, danmakuMode, previous) =>
