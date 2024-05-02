@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:async/async.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:bunga_player/chat/actions.dart';
-import 'package:bunga_player/actions/dispatcher.dart';
 import 'package:bunga_player/screens/wrappers/actions.dart';
 import 'package:bunga_player/chat/models/message.dart';
 import 'package:bunga_player/chat/models/user.dart';
@@ -270,7 +269,6 @@ class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
     return Actions(
-      dispatcher: LoggingActionDispatcher(prefix: 'Voice call'),
       actions: <Type, Action<Intent>>{
         StartCallingRequestIntent: StartCallingRequestAction(
             callingRequestBusiness: _callingRequestBusiness),

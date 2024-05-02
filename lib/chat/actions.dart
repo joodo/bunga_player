@@ -6,7 +6,6 @@ import 'package:bunga_player/screens/wrappers/actions.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
-import 'package:bunga_player/actions/dispatcher.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
@@ -103,7 +102,6 @@ class _ChannelActionsState extends SingleChildState<ChannelActions> {
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
     return Actions(
-      dispatcher: LoggingActionDispatcher(prefix: 'Channel'),
       actions: <Type, Action<Intent>>{
         UpdateChannelDataIntent: UpdateChannelDataAction(),
         SendMessageIntent: SendMessageAction(),

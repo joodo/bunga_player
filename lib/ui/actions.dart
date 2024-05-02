@@ -1,4 +1,3 @@
-import 'package:bunga_player/actions/dispatcher.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:nested/nested.dart';
@@ -58,7 +57,6 @@ class _UIActionsState extends SingleChildState<UIActions> {
     );
 
     return Actions(
-      dispatcher: LoggingActionDispatcher(prefix: 'ui'),
       actions: <Type, Action<Intent>>{
         SetFullScreenIntent: SetFullScreenAction(),
         SetWindowTitleIntent: SetWindowTitleAction(),

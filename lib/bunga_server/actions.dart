@@ -1,7 +1,6 @@
 import 'package:bunga_player/client_info/providers.dart';
 import 'package:bunga_player/ui/providers.dart';
 import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/actions/dispatcher.dart';
 import 'package:bunga_player/services/toast.dart';
 import 'package:bunga_player/utils/business/auto_retry.dart';
 import 'package:flutter/material.dart';
@@ -36,7 +35,6 @@ class _BungaServerActionsState extends SingleChildState<BungaServerActions> {
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
     return Actions(
-      dispatcher: LoggingActionDispatcher(prefix: 'Auth'),
       actions: const <Type, Action<Intent>>{},
       child: child!,
     );

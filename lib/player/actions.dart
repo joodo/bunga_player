@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
-import 'package:bunga_player/actions/dispatcher.dart';
 import 'package:bunga_player/ui/actions.dart';
 import 'package:bunga_player/play_sync/actions.dart';
 import 'package:bunga_player/ui/providers.dart';
@@ -456,17 +455,6 @@ class _PlayActionsState extends SingleChildState<PlayActions> {
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
     return Actions(
-      dispatcher: LoggingActionDispatcher(
-        prefix: 'play',
-        mute: {
-          SetVolumeIntent,
-          DraggingProgressIntent,
-          SetSubDelayIntent,
-          SetSubSizeIntent,
-          SetSubPosIntent,
-          SetContrastIntent,
-        },
-      ),
       actions: <Type, Action<Intent>>{
         SetVolumeIntent: SetVolumeAction(),
         SetMuteIntent: SetMuteAction(),

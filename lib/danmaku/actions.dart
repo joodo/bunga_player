@@ -1,5 +1,4 @@
 import 'package:bunga_player/chat/actions.dart';
-import 'package:bunga_player/actions/dispatcher.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 
@@ -25,7 +24,6 @@ class DanmakuActions extends SingleChildStatelessWidget {
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
     return Actions(
-      dispatcher: LoggingActionDispatcher(prefix: 'Danmaku'),
       actions: <Type, Action<Intent>>{
         SendDanmakuIntent: SendDanmakuAction(),
       },
