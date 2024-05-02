@@ -16,12 +16,17 @@ class OwnUser extends User {
   });
 }
 
+typedef JoinEvent = ({
+  User user,
+  bool isNew,
+});
+
 class Channel {
   final String id;
 
   final ({
     Stream<ChannelData> data,
-    Stream<User> joiner,
+    Stream<JoinEvent> joinEvents,
     Stream<User> leaver,
     Stream<Message> message,
     Stream<ChannelFile> file,

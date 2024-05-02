@@ -320,7 +320,7 @@ class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
         .setNoiseSuppression(_nsLevel.value);
   }
 
-  void _leaveMeansRejectBy(User user) {
+  void _leaveMeansRejectBy({required User user}) {
     if (_callStatus.value == VoiceCallStatusType.callOut) {
       _callingRequestBusiness.myRequestIsRejectedBy(user);
     }

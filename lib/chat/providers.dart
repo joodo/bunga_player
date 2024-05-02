@@ -57,7 +57,11 @@ class ChatChannelData extends ValueNotifier<ChannelData?> with StreamBinding {
   ChatChannelData() : super(null);
 }
 
-typedef WatchersChangedEventListener = void Function(User uesr);
+typedef LeaveEventListener = void Function({required User user});
+typedef JoinEventListener = void Function({
+  required User user,
+  required bool isNew,
+});
 
 class ChatChannelWatchers extends ChangeNotifier
     implements ValueListenable<List<User>> {
@@ -70,31 +74,34 @@ class ChatChannelWatchers extends ChangeNotifier
   }
 
   // Join
-  final List<WatchersChangedEventListener> _joinListeners = [];
-  void addJoinListener(WatchersChangedEventListener listener) {
+  final List<JoinEventListener> _joinListeners = [];
+  void addJoinListener(JoinEventListener listener) {
     _joinListeners.add(listener);
   }
 
-  void removeJoinListener(WatchersChangedEventListener listener) {
+  void removeJoinListener(JoinEventListener listener) {
     _joinListeners.remove(listener);
   }
 
-  void join(User user) {
-    if (_value.containsId(user.id)) return;
-    _value.add(user);
+  void join(JoinEvent event) {
+    if (_value.containsId(event.user.id)) return;
+    _value.add(event.user);
     notifyListeners();
     for (final listener in _joinListeners) {
-      listener(user);
+      listener(
+        user: event.user,
+        isNew: event.isNew,
+      );
     }
   }
 
   // Remove
-  final List<WatchersChangedEventListener> _leaveListeners = [];
-  void addLeaveListener(WatchersChangedEventListener listener) {
+  final List<LeaveEventListener> _leaveListeners = [];
+  void addLeaveListener(LeaveEventListener listener) {
     _leaveListeners.add(listener);
   }
 
-  void removeLeaveListener(WatchersChangedEventListener listener) {
+  void removeLeaveListener(LeaveEventListener listener) {
     _leaveListeners.remove(listener);
   }
 
@@ -102,14 +109,17 @@ class ChatChannelWatchers extends ChangeNotifier
     _value.removeId(user.id);
     notifyListeners();
     for (final listener in _leaveListeners) {
-      listener(user);
+      listener(user: user);
     }
   }
 
   final _subscriptions = <StreamSubscription>[];
   bool get isBinded => _subscriptions.isNotEmpty;
 
-  void bind(Stream<User> joinStream, Stream<User> leaveStream) {
+  void bind({
+    required Stream<JoinEvent> joinStream,
+    required Stream<User> leaveStream,
+  }) {
     assert(!isBinded);
     _subscriptions.addAll([
       joinStream.listen(join),
@@ -284,7 +294,10 @@ final chatProviders = MultiProvider(providers: [
         previous!.clear();
         previous.unbind();
       } else {
-        previous!.bind(channel.streams.joiner, channel.streams.leaver);
+        previous!.bind(
+          joinStream: channel.streams.joinEvents,
+          leaveStream: channel.streams.leaver,
+        );
       }
       return previous;
     },

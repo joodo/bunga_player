@@ -15,14 +15,6 @@ import 'models/message.dart';
 import 'models/user.dart';
 import 'providers.dart';
 
-class SubscriptionBusiness {
-  final subscriptions = <StreamSubscription>[];
-  final BuildContext actionContext;
-  int joinChannelTimestamp = 0;
-
-  SubscriptionBusiness({required this.actionContext});
-}
-
 class UpdateChannelDataIntent extends Intent {
   final ChannelData channelData;
   const UpdateChannelDataIntent(this.channelData);
@@ -75,9 +67,6 @@ class ChannelActions extends SingleChildStatefulWidget {
 }
 
 class _ChannelActionsState extends SingleChildState<ChannelActions> {
-  late final _subscriptionBusiness =
-      SubscriptionBusiness(actionContext: context);
-
   late final _currentWatchers = context.read<ChatChannelWatchers>();
   late final _currentChannel = context.read<ChatChannel>();
 
@@ -110,19 +99,16 @@ class _ChannelActionsState extends SingleChildState<ChannelActions> {
     );
   }
 
-  void _onUserJoin(User user) {
+  void _onUserJoin({required User user, required bool isNew}) {
     final currentId = context.read<ChatUser>().value!.id;
     if (user.id == currentId) return;
 
-    // Mute when pulling exist channel watchers
-    if (DateTime.now().millisecondsSinceEpoch -
-            _subscriptionBusiness.joinChannelTimestamp <
-        3000) return;
+    if (!isNew) return;
     getIt<Toast>().show('${user.name} 已加入');
     AudioPlayer().play(AssetSource('sounds/user_join.wav'));
   }
 
-  void _onUserLeave(User user) {
+  void _onUserLeave({required User user}) {
     getIt<Toast>().show('${user.name} 已离开');
     AudioPlayer().play(AssetSource('sounds/user_leave.wav'));
   }

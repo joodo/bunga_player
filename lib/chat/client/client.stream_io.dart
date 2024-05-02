@@ -125,7 +125,7 @@ class StreamIOClient implements ChatClient {
   }
 
   Channel _getResponseByStreamChannel(stream.Channel channel) {
-    final joinerStreamController = StreamController<User>.broadcast();
+    final joinerStreamController = StreamController<JoinEvent>.broadcast();
     final fileStreamController = StreamController<ChannelFile>.broadcast();
 
     // Watchers won't auto fetch
@@ -142,13 +142,17 @@ class StreamIOClient implements ChatClient {
           (watchers) {
             // push users that already watched
             for (final user in watchers) {
-              joinerStreamController.add(_userFromStreamUser(user));
+              joinerStreamController.add((
+                user: _userFromStreamUser(user),
+                isNew: false,
+              ));
             }
             // then follow stream
             joinerStreamController.addStream(
-              channel
-                  .on('user.watching.start')
-                  .asyncMap<User>(_getUpdatedEventUser),
+              channel.on('user.watching.start').asyncMap((event) async => (
+                    user: await _getUpdatedEventUser(event),
+                    isNew: true,
+                  )),
             );
           },
         );
@@ -180,7 +184,7 @@ class StreamIOClient implements ChatClient {
         data: channel.extraDataStream
             .map<ChannelData>((data) => ChannelData.fromJson(data))
             .distinct(),
-        joiner: joinerStreamController.stream.distinct(),
+        joinEvents: joinerStreamController.stream.distinct(),
         leaver: channel
             .on('user.watching.stop')
             .asyncMap<User>(_getUpdatedEventUser)
