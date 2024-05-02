@@ -1,8 +1,8 @@
 import 'package:animations/animations.dart';
-import 'package:bunga_player/actions/play.dart';
-import 'package:bunga_player/models/video_entries/video_entry.dart';
-import 'package:bunga_player/providers/clients/alist.dart';
-import 'package:bunga_player/providers/clients/online_video.dart';
+import 'package:bunga_player/player/actions.dart';
+import 'package:bunga_player/player/models/video_entries/video_entry.dart';
+import 'package:bunga_player/alist/client.dart';
+import 'package:bunga_player/online_video/client.dart';
 import 'package:bunga_player/screens/dialogs/local_video_entry.dart';
 import 'package:bunga_player/screens/dialogs/net_disk.dart';
 import 'package:bunga_player/screens/dialogs/online_video_dialog.dart';

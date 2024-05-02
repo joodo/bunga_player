@@ -1,13 +1,13 @@
 import 'dart:async';
 
-import 'package:bunga_player/models/alist/file_info.dart';
-import 'package:bunga_player/models/alist/search_result.dart';
-import 'package:bunga_player/models/video_entries/video_entry.dart';
-import 'package:bunga_player/providers/clients/alist.dart';
-import 'package:bunga_player/services/player.dart';
+import 'package:bunga_player/alist/models/file_info.dart';
+import 'package:bunga_player/alist/models/search_result.dart';
+import 'package:bunga_player/player/models/video_entries/video_entry.dart';
+import 'package:bunga_player/alist/client.dart';
+import 'package:bunga_player/player/service/service.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/utils/iterable.dart';
+import 'package:bunga_player/utils/extensions/iterable.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 

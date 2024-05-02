@@ -1,15 +1,15 @@
 import 'dart:async';
 
 import 'package:animations/animations.dart';
-import 'package:bunga_player/actions/play.dart';
-import 'package:bunga_player/models/chat/channel_data.dart';
-import 'package:bunga_player/models/chat/user.dart';
-import 'package:bunga_player/models/video_entries/video_entry.dart';
-import 'package:bunga_player/providers/chat.dart';
-import 'package:bunga_player/providers/player.dart';
+import 'package:bunga_player/player/actions.dart';
+import 'package:bunga_player/chat/models/channel_data.dart';
+import 'package:bunga_player/chat/models/user.dart';
+import 'package:bunga_player/player/models/video_entries/video_entry.dart';
+import 'package:bunga_player/chat/providers.dart';
+import 'package:bunga_player/player/providers.dart';
 import 'package:bunga_player/screens/dialogs/local_video_entry.dart';
 import 'package:bunga_player/screens/widgets/loading_text.dart';
-import 'package:bunga_player/providers/wrapper.dart';
+import 'package:bunga_player/screens/wrappers/providers.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
 import 'package:flutter/material.dart';
@@ -28,8 +28,7 @@ class _RoomSectionState extends State<RoomSection> {
     return Row(
       children: [
         // Watcher list
-        Consumer3<CurrentChannelJoinPayload, CurrentChannelWatchers,
-            PlayVideoEntry>(
+        Consumer3<ChatChannelJoinPayload, ChatChannelWatchers, PlayVideoEntry>(
           builder: (context, payloadNotifier, watchers, entry, child) {
             if (entry.value == null) return const SizedBox.shrink();
 
@@ -52,7 +51,7 @@ class _RoomSectionState extends State<RoomSection> {
         const Spacer(),
 
         // Unsync hint
-        Consumer2<CurrentChannelData, PlayVideoEntry>(
+        Consumer2<ChatChannelData, PlayVideoEntry>(
           builder: (context, channelData, videoEntry, child) {
             if (channelData.value == null ||
                 videoEntry.value == null ||
@@ -98,7 +97,7 @@ class _RoomSectionState extends State<RoomSection> {
   }
 
   Widget _getUsersWidget(List<User> userList) {
-    final currentUser = context.read<CurrentUser>().value!;
+    final currentUser = context.read<ChatUser>().value!;
     final textStyle = Theme.of(context).textTheme.bodyMedium!;
 
     final others = List<User>.from(userList)..removeId(currentUser.id);

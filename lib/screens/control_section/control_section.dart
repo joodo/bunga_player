@@ -1,8 +1,7 @@
-import 'package:bunga_player/actions/play.dart';
-import 'package:bunga_player/providers/chat.dart';
-import 'package:bunga_player/providers/player.dart';
-import 'package:bunga_player/providers/settings.dart';
-import 'package:bunga_player/providers/ui.dart';
+import 'package:bunga_player/player/actions.dart';
+import 'package:bunga_player/player/providers.dart';
+import 'package:bunga_player/client_info/providers.dart';
+import 'package:bunga_player/ui/providers.dart';
 import 'package:bunga_player/screens/control_section/danmaku_control.dart';
 import 'package:bunga_player/screens/control_section/source_selection_control.dart';
 import 'package:bunga_player/screens/control_section/call_control.dart';
@@ -12,6 +11,7 @@ import 'package:bunga_player/screens/control_section/popmoji_control.dart';
 import 'package:bunga_player/screens/control_section/subtitle_control.dart';
 import 'package:bunga_player/screens/control_section/tune_control.dart';
 import 'package:bunga_player/screens/control_section/welcome_control.dart';
+import 'package:bunga_player/voice_call/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
@@ -25,7 +25,7 @@ class ControlSection extends StatefulWidget {
 class _ControlSectionState extends State<ControlSection> {
   final _navigatorStateKey = GlobalKey<NavigatorState>();
   late final _showHUD = context.read<ShouldShowHUD>();
-  late final _callStatus = context.read<CurrentCallStatus>();
+  late final _callStatus = context.read<VoiceCallStatus>();
 
   @override
   void initState() {
@@ -60,7 +60,7 @@ class _ControlSectionState extends State<ControlSection> {
 
   @override
   Widget build(BuildContext context) {
-    final name = context.read<SettingUserName>().value;
+    final name = context.read<ClientUserName>().value;
     final initialRouteName =
         'control:${name.isNotEmpty ? 'welcome' : 'rename'}';
 
@@ -90,7 +90,7 @@ class _ControlSectionState extends State<ControlSection> {
 
   void _onCallStatusChanged() {
     // Route to call control when call in
-    if (context.read<CurrentCallStatus>().value == CallStatus.callIn) {
+    if (context.read<VoiceCallStatus>().value == VoiceCallStatusType.callIn) {
       final navigator = _navigatorStateKey.currentState!;
       navigator.pushNamed('control:call');
     }
@@ -129,7 +129,7 @@ class _ShortcutsWrapper extends SingleChildStatelessWidget {
 
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
-    return Consumer<SettingShortcutMapping>(
+    return Consumer<ShortcutMapping>(
       builder: (context, shortcutMapping, child) => Shortcuts(
         shortcuts: (_intentMapping.map((shortcutKey, intent) =>
                 MapEntry(shortcutMapping.value[shortcutKey], intent))

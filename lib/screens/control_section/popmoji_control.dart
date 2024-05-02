@@ -1,6 +1,6 @@
 import 'dart:ui';
 
-import 'package:bunga_player/actions/channel.dart';
+import 'package:bunga_player/chat/actions.dart';
 import 'package:bunga_player/constants/constants.dart';
 import 'package:bunga_player/screens/widgets/scroll_optimizer.dart';
 import 'package:flutter/material.dart';

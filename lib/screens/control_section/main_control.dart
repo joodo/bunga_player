@@ -1,22 +1,22 @@
-import 'package:bunga_player/actions/channel.dart';
-import 'package:bunga_player/actions/play.dart';
-import 'package:bunga_player/actions/video_playing.dart';
-import 'package:bunga_player/actions/voice_call.dart';
-import 'package:bunga_player/models/chat/channel_data.dart';
-import 'package:bunga_player/models/playing/volume.dart';
+import 'package:bunga_player/chat/actions.dart';
+import 'package:bunga_player/player/actions.dart';
+import 'package:bunga_player/play_sync/actions.dart';
+import 'package:bunga_player/voice_call/actions.dart';
+import 'package:bunga_player/chat/models/channel_data.dart';
+import 'package:bunga_player/utils/models/volume.dart';
 import 'package:bunga_player/mocks/menu_anchor.dart' as mock;
 import 'package:bunga_player/mocks/slider.dart' as mock;
-import 'package:bunga_player/models/video_entries/video_entry.dart';
-import 'package:bunga_player/providers/chat.dart';
-import 'package:bunga_player/providers/player.dart';
-import 'package:bunga_player/providers/settings.dart';
-import 'package:bunga_player/providers/ui.dart';
-import 'package:bunga_player/providers/wrapper.dart';
+import 'package:bunga_player/player/models/video_entries/video_entry.dart';
+import 'package:bunga_player/chat/providers.dart';
+import 'package:bunga_player/player/providers.dart';
+import 'package:bunga_player/ui/providers.dart';
+import 'package:bunga_player/screens/wrappers/providers.dart';
 import 'package:bunga_player/screens/control_section/popmoji_control.dart';
 import 'package:bunga_player/screens/widgets/video_open_menu_items.dart';
-import 'package:bunga_player/utils/comparable.dart';
-import 'package:bunga_player/utils/duration.dart';
-import 'package:bunga_player/utils/value_listenable.dart';
+import 'package:bunga_player/utils/extensions/comparable.dart';
+import 'package:bunga_player/utils/extensions/duration.dart';
+import 'package:bunga_player/utils/business/value_listenable.dart';
+import 'package:bunga_player/voice_call/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -46,7 +46,7 @@ class _MainControlState extends State<MainControl> {
         const SizedBox(width: 8),
 
         // Ask position button
-        Consumer3<CurrentUser, CurrentChannel, CurrentChannelWatchers>(
+        Consumer3<ChatUser, ChatChannel, ChatChannelWatchers>(
           builder: (context, _, __, ___, child) => IconButton(
             onPressed: Actions.handler(context, AskPositionIntent()),
             icon: child!,
@@ -195,7 +195,7 @@ class _MainControlState extends State<MainControl> {
     );
 
     final danmakuShortcut =
-        context.read<SettingShortcutMapping>().value[ShortcutKey.danmaku];
+        context.read<ShortcutMapping>().value[ShortcutKey.danmaku];
     return ChannelRequiredWrap(
       builder: (context, action, child) => CallbackShortcuts(
         bindings: {
@@ -210,14 +210,14 @@ class _MainControlState extends State<MainControl> {
 
   void _leaveChannel() async {
     Actions.invoke(context, StopPlayIntent());
-    context.read<CurrentChannelJoinPayload>().value = null;
+    context.read<ChatChannelJoinPayload>().value = null;
     Navigator.of(context).popAndPushNamed('control:welcome');
   }
 
   void _onVideoOpened(VideoEntry entry) {
     if (!mounted) throw Exception('Context unmounted');
 
-    final currentUser = context.read<CurrentUser>().value;
+    final currentUser = context.read<ChatUser>().value;
     if (!context.isVideoSameWithChannel && currentUser != null) {
       Actions.maybeInvoke(
         context,
@@ -395,10 +395,10 @@ class _CallButtonState extends State<_CallButton>
 
   @override
   Widget build(BuildContext context) {
-    return Selector<CurrentCallStatus, CallStatus>(
+    return Selector<VoiceCallStatus, VoiceCallStatusType>(
       selector: (context, currentCallStatus) => currentCallStatus.value,
       builder: (context, callStatus, child) => switch (callStatus) {
-        CallStatus.none => Selector<CurrentChannel, bool>(
+        VoiceCallStatusType.none => Selector<ChatChannel, bool>(
             selector: (conext, channelId) => channelId.value != null,
             builder: (context, loaded, child) => IconButton(
               icon: const Icon(Icons.call),
@@ -410,7 +410,9 @@ class _CallButtonState extends State<_CallButton>
                   : null,
             ),
           ),
-        CallStatus.callOut || CallStatus.talking => IconButton(
+        VoiceCallStatusType.callOut ||
+        VoiceCallStatusType.talking =>
+          IconButton(
             style: const ButtonStyle(
               backgroundColor: MaterialStatePropertyAll<Color>(Colors.green),
             ),
@@ -418,7 +420,7 @@ class _CallButtonState extends State<_CallButton>
             icon: const Icon(Icons.call),
             onPressed: _pushNavigate,
           ),
-        CallStatus.callIn => RotationTransition(
+        VoiceCallStatusType.callIn => RotationTransition(
             turns: _animation,
             child: IconButton(
               style: const ButtonStyle(
@@ -442,7 +444,7 @@ class _DurationButton extends StatelessWidget {
   const _DurationButton();
   @override
   Widget build(BuildContext context) {
-    return Consumer3<PlayPosition, PlayDuration, SettingShowRemainDuration>(
+    return Consumer3<PlayPosition, PlayDuration, ShowRemainDuration>(
       builder: (context, position, duration, showRemainDuration, child) {
         final displayString = showRemainDuration.value
             ? '${position.value.hhmmss} - ${max(duration.value - position.value, Duration.zero).hhmmss}'

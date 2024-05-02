@@ -1,17 +1,18 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:bunga_player/providers/chat.dart';
-import 'package:bunga_player/providers/clients/bunga.dart';
-import 'package:bunga_player/providers/clients/clients.dart';
-import 'package:bunga_player/providers/player.dart';
-import 'package:bunga_player/providers/settings.dart';
-import 'package:bunga_player/providers/clients/alist.dart';
+import 'package:bunga_player/bunga_server/providers.dart';
+import 'package:bunga_player/chat/providers.dart';
+import 'package:bunga_player/bunga_server/client.dart';
+import 'package:bunga_player/player/providers.dart';
+import 'package:bunga_player/client_info/providers.dart';
+import 'package:bunga_player/alist/client.dart';
 import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/services/player.dart';
+import 'package:bunga_player/player/service/service.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
+import 'package:bunga_player/voice_call/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:nested/nested.dart';
@@ -63,7 +64,7 @@ class _ConsoleWrapperState extends SingleChildState<ConsoleWrapper> {
       children: [
         FilledButton(
           onPressed: () async {
-            final clientIdNotifier = context.read<SettingClientId>();
+            final clientIdNotifier = context.read<ClientId>();
 
             final currentID = clientIdNotifier.value;
             final split = currentID.split('__');
@@ -207,22 +208,21 @@ class _VariablesView extends StatefulWidget {
 
 class _VariablesViewState extends State<_VariablesView> {
   late final _variables = <String, String Function(BuildContext context)>{
-    'Client id': (context) => context.read<SettingClientId>().value,
+    'Client id': (context) => context.read<ClientId>().value,
     'App Keys': (context) {
       final bunga = context.read<BungaClient?>();
       if (bunga == null) return 'null';
       return 'StreamIO: ${bunga.streamIOClientInfo.appKey}, Agora: ${bunga.agoraClientAppKey}, Bili sess: ${bunga.biliSess}';
     },
     'Current verion': (context) => getIt<PackageInfo>().version,
-    'Chat User': (context) => context.read<CurrentUser>().toString(),
-    'Chat Channel': (context) =>
-        '''id: ${context.read<CurrentChannel>().value?.id}
-data: ${context.read<CurrentChannelData>().value}
-watchers:${context.read<CurrentChannelWatchers>().value}
-last message: ${context.read<CurrentChannelMessage>().value}''',
+    'Chat User': (context) => context.read<ChatUser>().toString(),
+    'Chat Channel': (context) => '''id: ${context.read<ChatChannel>().value?.id}
+data: ${context.read<ChatChannelData>().value}
+watchers:${context.read<ChatChannelWatchers>().value}
+last message: ${context.read<ChatChannelLastMessage>().value}''',
     'Voice Call': (context) =>
-        '''status: ${context.read<CurrentCallStatus>().value.name}
-talkers: ${context.read<CurrentTalkersCount>().value}''',
+        '''status: ${context.read<VoiceCallStatus>().value.name}
+talkers: ${context.read<VoiceCallTalkersCount>().value}''',
     'Player': (context) =>
         '''Video Entry: ${context.read<PlayVideoEntry>().value}
 Status: ${context.read<PlayStatus>().value}''',

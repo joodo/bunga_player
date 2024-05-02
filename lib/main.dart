@@ -4,7 +4,7 @@ import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart' as services;
 import 'package:bunga_player/screens/main_screen.dart';
 import 'package:bunga_player/screens/wrappers/wrap.dart';
-import 'package:bunga_player/utils/slider_dense_track_shape.dart';
+import 'package:bunga_player/screens/widgets/slider_dense_track_shape.dart';
 import 'package:chinese_font_library/chinese_font_library.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';

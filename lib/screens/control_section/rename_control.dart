@@ -1,5 +1,5 @@
-import 'package:bunga_player/providers/settings.dart';
-import 'package:bunga_player/providers/ui.dart';
+import 'package:bunga_player/client_info/providers.dart';
+import 'package:bunga_player/ui/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -77,7 +77,7 @@ class _RenameControlState extends State<RenameControl> {
   }
 
   void _onSubmit(String userName) {
-    context.read<SettingUserName>().value = userName;
+    context.read<ClientUserName>().value = userName;
     Navigator.of(context).popAndPushNamed('control:welcome');
   }
 }

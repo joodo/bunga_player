@@ -1,10 +1,9 @@
 import 'package:animated_text_kit/animated_text_kit.dart';
-import 'package:bunga_player/actions/voice_call.dart';
+import 'package:bunga_player/voice_call/actions.dart';
 import 'package:bunga_player/mocks/slider.dart' as mock;
-import 'package:bunga_player/models/playing/volume.dart';
-import 'package:bunga_player/providers/chat.dart';
-import 'package:bunga_player/providers/settings.dart';
+import 'package:bunga_player/utils/models/volume.dart';
 import 'package:bunga_player/screens/widgets/loading_text.dart';
+import 'package:bunga_player/voice_call/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -18,13 +17,13 @@ class CallControl extends StatefulWidget {
 class _CallControlState extends State<CallControl> {
   @override
   Widget build(BuildContext context) {
-    return Selector<CurrentCallStatus, CallStatus>(
+    return Selector<VoiceCallStatus, VoiceCallStatusType>(
       selector: (context, currentCallStatus) => currentCallStatus.value,
       builder: (context, callStatus, child) => switch (callStatus) {
-        CallStatus.callIn => _createCallInWidget(child, context),
-        CallStatus.callOut => _createCallOutWidget(child, context),
-        CallStatus.talking => _createTalkingWidget(child, context),
-        CallStatus.none => Builder(
+        VoiceCallStatusType.callIn => _createCallInWidget(child, context),
+        VoiceCallStatusType.callOut => _createCallOutWidget(child, context),
+        VoiceCallStatusType.talking => _createTalkingWidget(child, context),
+        VoiceCallStatusType.none => Builder(
             builder: (context) {
               Future.microtask(Navigator.of(context).pop);
               return const SizedBox.shrink();
@@ -49,7 +48,7 @@ class _CallControlState extends State<CallControl> {
           const Spacer(),
 
           // Mic control
-          Consumer<MuteMic>(
+          Consumer<VoiceCallMuteMic>(
             builder: (context, muteMic, child) => IconButton(
               style: muteMic.value
                   ? const ButtonStyle(
@@ -59,8 +58,8 @@ class _CallControlState extends State<CallControl> {
                   : null,
               color: muteMic.value ? Colors.white70 : null,
               icon: Icon(muteMic.value ? Icons.mic_off : Icons.mic),
-              onPressed: () =>
-                  Actions.invoke(context, MuteMicIntent(!muteMic.value)),
+              onPressed: () => Actions.invoke(
+                  context, VoiceCallMuteMicIntent(!muteMic.value)),
             ),
           ),
           const SizedBox(width: 8),
@@ -69,7 +68,7 @@ class _CallControlState extends State<CallControl> {
 
           // Call control
           const VerticalDivider(indent: 8, endIndent: 8),
-          Consumer<SettingCallVolume>(
+          Consumer<VoiceCallVolume>(
             builder: (context, callVolume, child) => IconButton(
               icon: callVolume.value.mute
                   ? const Icon(Icons.headset_off)
@@ -79,7 +78,7 @@ class _CallControlState extends State<CallControl> {
             ),
           ),
           const SizedBox(width: 8),
-          Consumer<SettingCallVolume>(
+          Consumer<VoiceCallVolume>(
             builder: (context, callVolume, child) => SizedBox(
               width: 100,
               child: mock.MySlider(
@@ -179,7 +178,7 @@ class _CallControlState extends State<CallControl> {
 class _NoiseSuppressWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Consumer2<MuteMic, SettingCallNoiseSuppressionLevel>(
+    return Consumer2<VoiceCallMuteMic, VoiceCallNoiseSuppressionLevel>(
       builder: (context, muteMic, suppressLevel, child) => SegmentedButton<int>(
         showSelectedIcon: false,
         segments: const [
@@ -208,11 +207,11 @@ class _NoiseSuppressWidget extends StatelessWidget {
         onSelectionChanged: (Set<int> newSelection) {
           final level = newSelection.first;
           if (level == 0) {
-            Actions.invoke(context, const MuteMicIntent(true));
+            Actions.invoke(context, const VoiceCallMuteMicIntent(true));
             return;
           }
 
-          Actions.invoke(context, const MuteMicIntent(false));
+          Actions.invoke(context, const VoiceCallMuteMicIntent(false));
           suppressLevel.value = NoiseSuppressionLevel.values[level - 1];
         },
       ),

@@ -1,6 +1,6 @@
 import 'dart:collection';
 
-import 'package:bunga_player/providers/chat.dart';
+import 'package:bunga_player/danmaku/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -14,7 +14,7 @@ class DanmakuPlayer extends StatefulWidget {
 class _DanmakuPlayerState extends State<DanmakuPlayer>
     with SingleTickerProviderStateMixin {
   final _danmakus = <Danmaku>[];
-  late final _lastDanmaku = context.read<LastDanmaku>();
+  late final _lastDanmaku = context.read<LastDanmakuNotifier>();
 
   @override
   void initState() {
@@ -51,7 +51,9 @@ class _DanmakuPlayerState extends State<DanmakuPlayer>
   }
 
   void _processDanmaku() {
-    final newDanmaku = context.read<LastDanmaku>().value!;
+    final newDanmaku = context.read<LastDanmakuNotifier>().value;
+    if (newDanmaku == null) return;
+
     _danmakus.add(newDanmaku);
     _addDanmakuToDisplay(newDanmaku);
   }

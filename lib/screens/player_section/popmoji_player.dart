@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:bunga_player/providers/chat.dart';
+import 'package:bunga_player/chat/providers.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
@@ -17,7 +17,7 @@ class PopmojiPlayer extends StatefulWidget {
 }
 
 class _PopmojiPlayerState extends State<PopmojiPlayer> {
-  late final _channelMessage = context.read<CurrentChannelMessage>();
+  late final _channelMessage = context.read<ChatChannelLastMessage>();
   BuildContext? _dialogContext;
 
   @override
@@ -46,14 +46,14 @@ class _PopmojiPlayerState extends State<PopmojiPlayer> {
   }
 
   void _progressMessage() async {
-    final message = context.read<CurrentChannelMessage>().value;
+    final message = context.read<ChatChannelLastMessage>().value;
     if (message == null) return;
 
     final splits = message.text.split(' ');
 
     if (splits.first == 'popmoji') {
       final isCurrentUser =
-          message.sender.id == context.read<CurrentUser>().value!.id;
+          message.sender.id == context.read<ChatUser>().value!.id;
 
       final code = splits[1];
       if (code == '1f386') {

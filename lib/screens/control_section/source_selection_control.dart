@@ -1,9 +1,9 @@
-import 'package:bunga_player/actions/play.dart';
-import 'package:bunga_player/providers/player.dart';
+import 'package:bunga_player/player/actions.dart';
+import 'package:bunga_player/player/providers.dart';
 import 'package:bunga_player/screens/control_section/dropdown.dart';
 import 'package:bunga_player/mocks/dropdown.dart' as mock;
 import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/services/network.dart';
+import 'package:bunga_player/network/service.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

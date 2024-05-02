@@ -1,8 +1,8 @@
-import 'package:bunga_player/providers/chat.dart';
+import 'package:bunga_player/chat/providers.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 
-class ChannelRequiredWrap extends Selector<CurrentChannel, VoidCallback?> {
+class ChannelRequiredWrap extends Selector<ChatChannel, VoidCallback?> {
   ChannelRequiredWrap({
     super.key,
     super.child,

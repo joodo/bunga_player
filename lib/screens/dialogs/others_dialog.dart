@@ -1,14 +1,14 @@
 import 'dart:async';
 import 'dart:typed_data';
 
-import 'package:bunga_player/models/chat/channel_data.dart';
-import 'package:bunga_player/models/video_entries/video_entry.dart';
-import 'package:bunga_player/providers/clients/alist.dart';
-import 'package:bunga_player/providers/clients/bunga.dart';
-import 'package:bunga_player/providers/clients/chat.dart';
+import 'package:bunga_player/chat/models/channel_data.dart';
+import 'package:bunga_player/player/models/video_entries/video_entry.dart';
+import 'package:bunga_player/alist/client.dart';
+import 'package:bunga_player/bunga_server/client.dart';
+import 'package:bunga_player/chat/client/client.dart';
 import 'package:bunga_player/screens/widgets/scroll_optimizer.dart';
 import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/utils/http_response.dart';
+import 'package:bunga_player/utils/extensions/http_response.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';

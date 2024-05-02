@@ -1,5 +1,5 @@
-import 'package:bunga_player/providers/chat.dart';
-import 'package:bunga_player/providers/ui.dart';
+import 'package:bunga_player/chat/providers.dart';
+import 'package:bunga_player/ui/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rive/rive.dart';
@@ -18,7 +18,7 @@ class _PlayerPlaceholderState extends State<PlayerPlaceholder> {
   void initState() {
     super.initState();
 
-    final currentUser = context.read<CurrentUser>();
+    final currentUser = context.read<ChatUser>();
     currentUser.addListener(() {
       _isCatAwakeInput.value = currentUser.value != null;
     });

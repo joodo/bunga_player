@@ -3,9 +3,9 @@ import 'dart:io';
 import 'dart:ui';
 
 import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/services/network.dart';
+import 'package:bunga_player/network/service.dart';
 import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/utils/network_progress.dart';
+import 'package:bunga_player/utils/models/network_progress.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';

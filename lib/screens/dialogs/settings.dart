@@ -1,14 +1,15 @@
-import 'package:bunga_player/providers/clients/bunga.dart';
-import 'package:bunga_player/providers/clients/clients.dart';
-import 'package:bunga_player/providers/settings.dart';
-import 'package:bunga_player/providers/ui.dart';
+import 'package:bunga_player/bunga_server/client.dart';
+import 'package:bunga_player/bunga_server/providers.dart';
+import 'package:bunga_player/network/providers.dart';
+import 'package:bunga_player/client_info/providers.dart';
+import 'package:bunga_player/ui/providers.dart';
 import 'package:bunga_player/screens/player_section/danmaku_player.dart';
 import 'package:bunga_player/screens/widgets/loading_button_icon.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/utils/iterable.dart';
-import 'package:bunga_player/utils/single_activator.dart';
-import 'package:bunga_player/utils/slider_dense_track_shape.dart';
+import 'package:bunga_player/utils/extensions/iterable.dart';
+import 'package:bunga_player/utils/extensions/single_activator.dart';
+import 'package:bunga_player/screens/widgets/slider_dense_track_shape.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_lazy_indexed_stack/flutter_lazy_indexed_stack.dart';
@@ -137,7 +138,7 @@ class _NetworkSettingsState extends State<_NetworkSettings> {
     super.initState();
 
     _proxyFieldController.text = context.read<SettingProxy>().value ?? '';
-    _hostFieldController.text = context.read<SettingBungaHost>().value;
+    _hostFieldController.text = context.read<BungaServerHost>().value;
   }
 
   @override
@@ -156,7 +157,7 @@ class _NetworkSettingsState extends State<_NetworkSettings> {
         children: [
           const _SectionText('服务器'),
           _SectionContainer(
-            child: Consumer3<BungaClient?, PendingBungaHost, SettingBungaHost>(
+            child: Consumer3<BungaClient?, PendingBungaHost, BungaServerHost>(
               builder: (context, client, pending, host, child) => TextField(
                 decoration: InputDecoration(
                   labelText: 'Bunga 服务器',
@@ -215,11 +216,11 @@ class _NetworkSettingsState extends State<_NetworkSettings> {
   void _connectToHost() async {
     final newHost = _hostFieldController.text;
     final bungaClient = BungaClient(newHost);
-    final clientId = context.read<SettingClientId>().value;
+    final clientId = context.read<ClientId>().value;
 
     final clientNotifier = context.read<BungaClientNotifier>();
     final pendingNotifier = context.read<PendingBungaHost>();
-    final hostNotifier = context.read<SettingBungaHost>();
+    final hostNotifier = context.read<BungaServerHost>();
 
     try {
       pendingNotifier.value = true;
@@ -244,7 +245,7 @@ class _ReactionSettings extends StatefulWidget {
 }
 
 class _ReactionSettingsState extends State<_ReactionSettings> {
-  late final _hueProvider = context.read<SettingColorHue>();
+  late final _hueProvider = context.read<ClientColorHue>();
   late int _hue = _hueProvider.value;
 
   @override
@@ -275,7 +276,7 @@ class _ReactionSettingsState extends State<_ReactionSettings> {
           const _SectionText('行为'),
           _SectionContainer(
             padding: EdgeInsets.zero,
-            child: Consumer<SettingAutoJoinChannel>(
+            child: Consumer<AutoJoinChannel>(
               builder: (context, autoJoinNotifier, child) => SwitchListTile(
                 title: const Text('打开视频后自动加入房间'),
                 value: autoJoinNotifier.value,
@@ -374,8 +375,8 @@ class _ShortcutSettingsState extends State<_ShortcutSettings> {
     },
   };
 
-  late final SettingShortcutMapping _shortcutMapNotifier =
-      context.read<SettingShortcutMapping>();
+  late final ShortcutMapping _shortcutMapNotifier =
+      context.read<ShortcutMapping>();
   late Map<ShortcutKey, SingleActivator?> _shortcutMap =
       Map.from(_shortcutMapNotifier.value);
 
@@ -393,7 +394,7 @@ class _ShortcutSettingsState extends State<_ShortcutSettings> {
       actions: [
         OutlinedButton(
           onPressed: () => setState(() {
-            _shortcutMap = Map.from(SettingShortcutMapping.defaultMapping);
+            _shortcutMap = Map.from(ShortcutMapping.defaultMapping);
           }),
           child: const Text('恢复默认键位'),
         ),

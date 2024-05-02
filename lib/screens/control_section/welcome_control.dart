@@ -1,14 +1,14 @@
 import 'dart:async';
 
 import 'package:animations/animations.dart';
-import 'package:bunga_player/actions/play.dart';
+import 'package:bunga_player/player/actions.dart';
 import 'package:bunga_player/mocks/menu_anchor.dart' as mock;
-import 'package:bunga_player/models/chat/channel_data.dart';
-import 'package:bunga_player/models/video_entries/video_entry.dart';
-import 'package:bunga_player/providers/chat.dart';
-import 'package:bunga_player/providers/clients/bunga.dart';
-import 'package:bunga_player/providers/settings.dart';
-import 'package:bunga_player/providers/ui.dart';
+import 'package:bunga_player/chat/models/channel_data.dart';
+import 'package:bunga_player/player/models/video_entries/video_entry.dart';
+import 'package:bunga_player/chat/providers.dart';
+import 'package:bunga_player/bunga_server/client.dart';
+import 'package:bunga_player/client_info/providers.dart';
+import 'package:bunga_player/ui/providers.dart';
 import 'package:bunga_player/screens/dialogs/others_dialog.dart';
 import 'package:bunga_player/screens/dialogs/settings.dart';
 import 'package:bunga_player/screens/widgets/loading_button_icon.dart';
@@ -67,7 +67,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
           ),
           const SizedBox(width: 16),
           _DelayedCallbackButtonWrapper(
-            listenable: context.read<CurrentUser>(),
+            listenable: context.read<ChatUser>(),
             delaySelector: (value) => value == null,
             builder: (context, buttonChild, onButtonPressed) => FilledButton(
               onPressed: onButtonPressed,
@@ -94,12 +94,12 @@ class _WelcomeControlState extends State<WelcomeControl> {
 
   void _onVideoOpened(VideoEntry entry) {
     if (!mounted) throw Exception('Context unmounted');
-    context.read<CurrentChannelJoinPayload>().value = ChannelJoinByDataPayload(
+    context.read<ChatChannelJoinPayload>().value = ChannelJoinByDataPayload(
       ChannelData.fromShare(
-        context.read<CurrentUser>().value!,
+        context.read<ChatUser>().value!,
         entry,
       ),
-      active: context.read<SettingAutoJoinChannel>().value,
+      active: context.read<AutoJoinChannel>().value,
     );
 
     _onLeaving();
@@ -119,7 +119,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
     await response;
 
     if (!mounted) throw Exception('context unmounted');
-    context.read<CurrentChannelJoinPayload>().value =
+    context.read<ChatChannelJoinPayload>().value =
         ChannelJoinByIdPayload(result.id, active: true);
 
     _onLeaving();
@@ -131,7 +131,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
   }
 
   void _onChangeName() async {
-    final notifier = context.read<SettingUserName>();
+    final notifier = context.read<ClientUserName>();
     final name = notifier.value;
 
     notifier.value = '';
@@ -141,7 +141,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
     );
   }
 
-  late final _userNameNotifer = context.read<SettingUserName>();
+  late final _userNameNotifer = context.read<ClientUserName>();
   String get _title => '${_userNameNotifer.value}, 你好！';
 }
 

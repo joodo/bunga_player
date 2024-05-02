@@ -1,9 +1,9 @@
-import 'package:bunga_player/services/network.dart';
+import 'package:bunga_player/network/service.dart';
 import 'package:get_it/get_it.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:bunga_player/player/service/service.dart';
+import 'package:bunga_player/player/service/service.media_kit.dart';
 
-import 'player.dart';
-import 'player.media_kit.dart';
 import 'preferences.dart';
 import 'toast.dart';
 

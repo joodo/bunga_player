@@ -1,6 +1,6 @@
-import 'package:bunga_player/actions/channel.dart';
-import 'package:bunga_player/actions/danmaku.dart';
-import 'package:bunga_player/providers/ui.dart';
+import 'package:bunga_player/chat/actions.dart';
+import 'package:bunga_player/danmaku/actions.dart';
+import 'package:bunga_player/ui/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 

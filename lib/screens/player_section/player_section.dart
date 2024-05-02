@@ -1,11 +1,11 @@
-import 'package:bunga_player/actions/play.dart';
-import 'package:bunga_player/actions/ui.dart';
-import 'package:bunga_player/providers/ui.dart';
+import 'package:bunga_player/player/actions.dart';
+import 'package:bunga_player/ui/actions.dart';
+import 'package:bunga_player/ui/providers.dart';
 import 'package:bunga_player/screens/player_section/danmaku_player.dart';
 import 'package:bunga_player/screens/player_section/placeholder.dart';
 import 'package:bunga_player/screens/player_section/popmoji_player.dart';
 import 'package:bunga_player/screens/player_section/volume_popup.dart';
-import 'package:bunga_player/services/player.dart';
+import 'package:bunga_player/player/service/service.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

@@ -1,7 +1,7 @@
-import 'package:bunga_player/actions/play.dart';
-import 'package:bunga_player/providers/player.dart';
-import 'package:bunga_player/utils/duration.dart';
-import 'package:bunga_player/utils/slider_dense_track_shape.dart';
+import 'package:bunga_player/player/actions.dart';
+import 'package:bunga_player/player/providers.dart';
+import 'package:bunga_player/utils/extensions/duration.dart';
+import 'package:bunga_player/screens/widgets/slider_dense_track_shape.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 

@@ -1,6 +1,6 @@
-import 'package:bunga_player/models/video_entries/video_entry.dart';
-import 'package:bunga_player/providers/clients/bunga.dart';
-import 'package:bunga_player/providers/clients/online_video.dart';
+import 'package:bunga_player/player/models/video_entries/video_entry.dart';
+import 'package:bunga_player/bunga_server/client.dart';
+import 'package:bunga_player/online_video/client.dart';
 import 'package:bunga_player/screens/widgets/hyper_text.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
