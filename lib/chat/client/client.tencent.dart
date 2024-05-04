@@ -57,7 +57,7 @@ class _TencentGroup extends Channel {
       );
     });
 
-    Future.delayed(const Duration(milliseconds: 100), () {
+    Future.delayed(const Duration(milliseconds: 1000), () {
       // init channel data
       groupManager.initGroupData(groupId, data);
 
