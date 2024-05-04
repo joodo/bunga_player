@@ -275,10 +275,7 @@ class _PlayButtonState extends State<_PlayButton>
         iconSize: 36,
         onPressed: isBuffering.value
             ? null
-            : Actions.handler(
-                context,
-                const TogglePlayIntent(),
-              ),
+            : () => Actions.maybeInvoke(context, const TogglePlayIntent()),
       ),
     );
   }

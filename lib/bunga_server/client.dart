@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:bunga_player/bunga_server/models.dart';
 import 'package:bunga_player/online_video/client.dart';
 import 'package:bunga_player/utils/extensions/http_response.dart';
 import 'package:http/http.dart' as http;
@@ -8,20 +9,6 @@ import 'package:http/http.dart' as http;
 class NeedEpisodeIndexException implements Exception {
   final Iterable<String> episodeNames;
   NeedEpisodeIndexException(this.episodeNames);
-}
-
-class StreamIOClientInfo {
-  final String appKey;
-  final String userToken;
-
-  StreamIOClientInfo({required this.appKey, required this.userToken});
-}
-
-class AListClientInfo {
-  final String host;
-  final String token;
-
-  AListClientInfo({required this.host, required this.token});
 }
 
 class BungaClient {
@@ -38,15 +25,23 @@ class BungaClient {
     if (!response.isSuccess) {
       throw Exception('Login failed: ${response.body}');
     }
-
     final responseData = jsonDecode(response.body);
-    _streamIOClientInfo = StreamIOClientInfo(
-      appKey: responseData['stream_io']['app_key'],
-      userToken: responseData['stream_io']['user_token'],
-    );
-    _userToken = _streamIOClientInfo.userToken;
-    _agoraClientAppKey = responseData['agora'];
+
+    final chatInfo = responseData['chat'];
+    switch (chatInfo['service']) {
+      case 'stream_io':
+        _chatClientInfo = StreamIOClientInfo.fromJson(chatInfo);
+      case 'tencent':
+        _chatClientInfo = TencentClientInfo.fromJson(chatInfo);
+    }
+    _userToken = _chatClientInfo.userToken;
+
+    final voiceCallInfo = responseData['voice_call'];
+    assert(voiceCallInfo['service'] == 'agora');
+    _agoraClientAppKey = voiceCallInfo['key'];
+
     _biliSess = responseData['bilibili_sess'];
+
     final alistData = responseData['alist'];
     _aListClientInfo = alistData == null
         ? null
@@ -56,8 +51,8 @@ class BungaClient {
           );
   }
 
-  late final StreamIOClientInfo _streamIOClientInfo;
-  StreamIOClientInfo get streamIOClientInfo => _streamIOClientInfo;
+  late final ChatClientInfo _chatClientInfo;
+  ChatClientInfo get chatClientInfo => _chatClientInfo;
 
   late final String _agoraClientAppKey;
   String get agoraClientAppKey => _agoraClientAppKey;
@@ -116,5 +111,23 @@ class BungaClient {
       headers: {'alist-token': alistToken},
     );
     return response.bodyBytes;
+  }
+
+  Future<http.Response> get(String reference) {
+    return http.get(
+      _host.resolve(reference),
+      headers: {'Authorization': _userToken},
+    );
+  }
+
+  Future<http.Response> post(String reference, Object? body) {
+    return http.post(
+      _host.resolve(reference),
+      headers: {
+        'Authorization': _userToken,
+        'content-type': 'application/json',
+      },
+      body: jsonEncode(body),
+    );
   }
 }

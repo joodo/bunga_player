@@ -373,10 +373,10 @@ packages:
     dependency: transitive
     description:
       name: file
-      sha256: "5fc22d7c25582e38ad9a8515372cd9a93834027aacf1801cf01164dac0ffa08c"
+      sha256: "1b92bec4fc2a72f59a8e15af5f52cd441e4a7860b49499d69dfa817af20e925d"
       url: "https://pub.dev"
     source: hosted
-    version: "7.0.0"
+    version: "6.1.4"
   file_selector:
     dependency: "direct main"
     description:
@@ -441,6 +441,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.9.3+1"
+  file_utils:
+    dependency: transitive
+    description:
+      name: file_utils
+      sha256: d1e64389a22649095c8405c9e177272caf05139255931c9ff30d53b5c9bcaa34
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.1"
   fireworks:
     dependency: "direct main"
     description:
@@ -545,6 +553,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.2"
+  globbing:
+    dependency: transitive
+    description:
+      name: globbing
+      sha256: "4f89cfaf6fa74c9c1740a96259da06bd45411ede56744e28017cc534a12b6e2d"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
   graphs:
     dependency: transitive
     description:
@@ -801,6 +817,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.5"
+  mime_type:
+    dependency: transitive
+    description:
+      name: mime_type
+      sha256: "2ad6e67d3d2de9ac0f8ef5352d998fd103cb21351ae8c02fb0c78b079b37d275"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
   nested:
     dependency: "direct main"
     description:
@@ -945,6 +969,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.5.1"
+  process:
+    dependency: transitive
+    description:
+      name: process
+      sha256: "53fd8db9cec1d37b0574e12f07520d582019cb6c44abf5479a01505099a34a09"
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.2.4"
   provider:
     dependency: "direct main"
     description:
@@ -1145,6 +1177,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.4"
+  shell:
+    dependency: transitive
+    description:
+      name: shell
+      sha256: fd3b7b97e5e7f734138543d5815c6cb6cdd2a1645a0def8ac8e05577cddfbe03
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.0"
   sky_engine:
     dependency: transitive
     description: flutter
@@ -1238,6 +1278,38 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.0+1"
+  system_info2:
+    dependency: transitive
+    description:
+      name: system_info2
+      sha256: "90621f3ba586e1f268e38cc7951b172cd4d997e43dc1fbed12eb334c8a22a886"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.4"
+  tencent_cloud_chat_sdk:
+    dependency: "direct main"
+    description:
+      name: tencent_cloud_chat_sdk
+      sha256: "2484054532d08d9aed51264f40f156f26781bf739fbfb39a98128199ad913d2b"
+      url: "https://pub.dev"
+    source: hosted
+    version: "7.9.5686"
+  tencent_im_sdk_plugin_desktop:
+    dependency: "direct main"
+    description:
+      name: tencent_im_sdk_plugin_desktop
+      sha256: ae232bd8ef0bf0a55933c90763e993ce41037e743cecbaca94a311a2ded7ee5b
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.22"
+  tencent_im_sdk_plugin_platform_interface:
+    dependency: transitive
+    description:
+      name: tencent_im_sdk_plugin_platform_interface
+      sha256: e6120d09fbc0dedc0f5a4143809598ae56f2ab56176b4d2646414a59d6b64371
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.16"
   term_glyph:
     dependency: transitive
     description:

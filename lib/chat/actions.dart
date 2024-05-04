@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:bunga_player/voice_call/actions.dart';
 import 'package:bunga_player/screens/wrappers/actions.dart';
-import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
 import 'package:flutter/material.dart';
@@ -45,9 +44,7 @@ class SendMessageIntent extends Intent {
 
 class SendMessageAction extends ContextAction<SendMessageIntent> {
   @override
-  Future<Message> invoke(SendMessageIntent intent,
-      [BuildContext? context]) async {
-    logger.i('Send message: ${intent.text}, quote id: ${intent.quoteId}');
+  Future<Message> invoke(SendMessageIntent intent, [BuildContext? context]) {
     return context!
         .read<ChatChannel>()
         .value!

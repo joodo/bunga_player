@@ -41,6 +41,7 @@ PODS:
   - file_selector_macos (0.0.1):
     - FlutterMacOS
   - FlutterMacOS (1.0.0)
+  - HydraAsync (2.0.6)
   - iris_method_channel (0.0.1):
     - FlutterMacOS
   - media_kit_libs_macos_video (1.0.4):
@@ -64,6 +65,11 @@ PODS:
   - shared_preferences_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
+  - tencent_cloud_chat_sdk (7.0.0):
+    - FlutterMacOS
+    - HydraAsync
+    - TXIMSDK_Plus_Mac (>= 7.9.5680)
+  - TXIMSDK_Plus_Mac (7.9.5680)
   - url_launcher_macos (0.0.1):
     - FlutterMacOS
   - wakelock_plus (0.0.1):
@@ -87,6 +93,7 @@ DEPENDENCIES:
   - screen_brightness_macos (from `Flutter/ephemeral/.symlinks/plugins/screen_brightness_macos/macos`)
   - screen_retriever (from `Flutter/ephemeral/.symlinks/plugins/screen_retriever/macos`)
   - shared_preferences_foundation (from `Flutter/ephemeral/.symlinks/plugins/shared_preferences_foundation/darwin`)
+  - tencent_cloud_chat_sdk (from `Flutter/ephemeral/.symlinks/plugins/tencent_cloud_chat_sdk/macos`)
   - url_launcher_macos (from `Flutter/ephemeral/.symlinks/plugins/url_launcher_macos/macos`)
   - wakelock_plus (from `Flutter/ephemeral/.symlinks/plugins/wakelock_plus/macos`)
   - window_manager (from `Flutter/ephemeral/.symlinks/plugins/window_manager/macos`)
@@ -95,7 +102,9 @@ SPEC REPOS:
   trunk:
     - AgoraIrisRTC_macOS
     - AgoraRtcEngine_macOS
+    - HydraAsync
     - ReachabilitySwift
+    - TXIMSDK_Plus_Mac
 
 EXTERNAL SOURCES:
   agora_rtc_engine:
@@ -128,6 +137,8 @@ EXTERNAL SOURCES:
     :path: Flutter/ephemeral/.symlinks/plugins/screen_retriever/macos
   shared_preferences_foundation:
     :path: Flutter/ephemeral/.symlinks/plugins/shared_preferences_foundation/darwin
+  tencent_cloud_chat_sdk:
+    :path: Flutter/ephemeral/.symlinks/plugins/tencent_cloud_chat_sdk/macos
   url_launcher_macos:
     :path: Flutter/ephemeral/.symlinks/plugins/url_launcher_macos/macos
   wakelock_plus:
@@ -143,6 +154,7 @@ SPEC CHECKSUMS:
   connectivity_plus: 18d3c32514c886e046de60e9c13895109866c747
   file_selector_macos: 468fb6b81fac7c0e88d71317f3eec34c3b008ff9
   FlutterMacOS: 8f6f14fa908a6fb3fba0cd85dbd81ec4b251fb24
+  HydraAsync: 8d589bd725b0224f899afafc9a396327405f8063
   iris_method_channel: fba932d668df5b2a085f19bcd0b1f23d667a83cd
   media_kit_libs_macos_video: b3e2bbec2eef97c285f2b1baa7963c67c753fb82
   media_kit_native_event_loop: 81fd5b45192b72f8b5b69eaf5b540f45777eb8d5
@@ -154,6 +166,8 @@ SPEC CHECKSUMS:
   screen_brightness_macos: 2d6d3af2165592d9a55ffcd95b7550970e41ebda
   screen_retriever: 59634572a57080243dd1bf715e55b6c54f241a38
   shared_preferences_foundation: b4c3b4cddf1c21f02770737f147a3f5da9d39695
+  tencent_cloud_chat_sdk: e002158feee3a9737c517ed82461aa7d5b4dc9ea
+  TXIMSDK_Plus_Mac: 1f42d23f49fbf8357a77b7a2bb0195ff7e72c083
   url_launcher_macos: d2691c7dd33ed713bf3544850a623080ec693d95
   wakelock_plus: 4783562c9a43d209c458cb9b30692134af456269
   window_manager: 3a1844359a6295ab1e47659b1a777e36773cd6e8

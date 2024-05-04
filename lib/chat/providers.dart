@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bunga_player/bunga_server/client.dart';
+import 'package:bunga_player/bunga_server/models.dart';
 import 'package:bunga_player/client_info/providers.dart';
 import 'package:bunga_player/play_sync/models.dart';
 import 'package:bunga_player/play_sync/providers.dart';
@@ -10,6 +11,7 @@ import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 
 import 'client/client.stream_io.dart';
+import 'client/client.tencent.dart';
 import 'models/channel_data.dart';
 import 'models/message.dart';
 import 'models/user.dart';
@@ -135,9 +137,10 @@ final chatProviders = MultiProvider(providers: [
   // Client
   ProxyProvider<BungaClient?, ChatClient?>(
     update: (context, bungaClient, previous) {
-      return bungaClient == null
-          ? null
-          : StreamIOClient(bungaClient.streamIOClientInfo.appKey);
+      if (bungaClient == null) return null;
+
+      assert(bungaClient.chatClientInfo is TencentClientInfo);
+      return TencentClient(bungaClient);
     },
     lazy: false,
   ),
@@ -161,7 +164,7 @@ final chatProviders = MultiProvider(providers: [
         final job = AutoRetryJob(
           () => chatClient.login(
             context.read<ClientId>().value,
-            bungaClient!.streamIOClientInfo.userToken,
+            bungaClient!.chatClientInfo.userToken,
             userName,
             colorHue: colorHueNotifier.value,
           ),
@@ -262,6 +265,7 @@ final chatProviders = MultiProvider(providers: [
       }
       return previous;
     },
+    lazy: false,
   ),
   ChangeNotifierProxyProvider<ChatChannel, ChatChannelWatchers>(
     create: (context) => ChatChannelWatchers(),

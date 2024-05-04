@@ -51,6 +51,7 @@ final playSyncProvider = MultiProvider(
         );
         return previous;
       },
+      lazy: false,
     ),
   ],
 );
