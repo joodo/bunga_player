@@ -184,8 +184,9 @@ class HangUpAction extends ContextAction<HangUpIntent> {
 
     read<ActionsLeaf>().invoke(const VoiceCallMuteMicIntent(false));
 
+    final notifier = read<VoiceCallTalkers>();
     await read<VoiceCallClient>().leaveChannel();
-    read<VoiceCallTalkers>().clear();
+    notifier.clear();
   }
 
   @override

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:bunga_player/bunga_server/client.dart';
 import 'package:bunga_player/services/logger.dart';
 
@@ -76,6 +77,8 @@ class AgoraClient extends VoiceCallClient {
       RtcEngineEventHandler(
         onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
           logger.i('Voice call: Local user uid:${connection.localUid} joined.');
+          _joinerStreamController.add(connection.localUid!);
+          AudioPlayer().play(AssetSource('sounds/user_speak.wav'));
         },
         onUserJoined: (RtcConnection connection, int remoteUid, int elapsed) {
           logger.i('Voice call: Remote user uid:$remoteUid joined.');

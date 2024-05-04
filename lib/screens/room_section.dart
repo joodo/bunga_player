@@ -15,6 +15,7 @@ import 'package:bunga_player/screens/wrappers/providers.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
 import 'package:bunga_player/utils/business/provider.dart';
+import 'package:bunga_player/voice_call/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -42,18 +43,18 @@ class _RoomSectionState extends State<RoomSection> {
                           onPressed: () => payload.value =
                               ChannelJoinByEntryPayload(videoEntry),
                         )
-                      : Padding(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 8,
-                            horizontal: 12,
-                          ),
-                          child: Consumer<ChatChannelWatchers>(
-                            builder: (context, watchers, child) {
-                              return watchers.value.isEmpty
-                                  ? const LoadingText('正在进入房间')
-                                  : _getUsersWidget(watchers.value);
-                            },
-                          ),
+                      : Consumer<ChatChannelWatchers>(
+                          builder: (context, watchers, child) {
+                            return watchers.value.isEmpty
+                                ? const Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      vertical: 8,
+                                      horizontal: 12,
+                                    ),
+                                    child: LoadingText('正在进入房间'),
+                                  )
+                                : _getUsersWidget(watchers.value);
+                          },
                         ),
                 ),
                 const Spacer(),
@@ -105,24 +106,35 @@ class _RoomSectionState extends State<RoomSection> {
 
   Widget _getUsersWidget(List<User> userList) {
     final currentUser = context.read<ChatUser>().value!;
-    final textStyle = Theme.of(context).textTheme.bodyMedium!;
-
     final others = List<User>.from(userList)..removeId(currentUser.id);
 
-    return Text.rich(
-      TextSpan(
-        text: '当前观看：',
-        children: [
-          TextSpan(
-            text: currentUser.name,
-            style: textStyle.copyWith(color: currentUser.getColor(0.95)),
-          ),
-          for (final user in others)
-            TextSpan(
-              text: ' ${user.name}',
-              style: textStyle.copyWith(color: user.getColor(0.95)),
-            ),
-        ],
+    return Row(
+      children: [
+        const SizedBox(width: 12),
+        const Text('当前观看：'),
+        _UserLabel(currentUser),
+        ...others.map((user) => _UserLabel(user)),
+      ],
+    );
+  }
+}
+
+class _UserLabel extends StatelessWidget {
+  final User user;
+  const _UserLabel(this.user);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: ValueListenableConsumer<VoiceCallTalkers, List<int>>(
+        builder: (context, talkers, child) => Text(
+          talkers.contains(user.id.hashCode) ? '🎤${user.name}' : user.name,
+          style: Theme.of(context)
+              .textTheme
+              .bodyMedium!
+              .copyWith(color: user.getColor(0.95)),
+        ),
       ),
     );
   }
