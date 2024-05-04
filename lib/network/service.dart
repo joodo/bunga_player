@@ -8,7 +8,6 @@ import 'package:bunga_player/utils/extensions/http_response.dart';
 import 'package:bunga_player/utils/models/network_progress.dart';
 import 'package:dart_ping/dart_ping.dart';
 import 'package:http/http.dart' as http;
-import 'package:platform/platform.dart';
 
 class NetworkService {
   NetworkService() {
