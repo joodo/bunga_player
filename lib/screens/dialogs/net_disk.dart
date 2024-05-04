@@ -5,6 +5,7 @@ import 'package:bunga_player/alist/models/search_result.dart';
 import 'package:bunga_player/player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/alist/client.dart';
 import 'package:bunga_player/player/service/service.dart';
+import 'package:bunga_player/screens/widgets/scroll_optimizer.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/extensions/iterable.dart';
@@ -78,28 +79,32 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
                 ).createShader(rect);
               },
               blendMode: BlendMode.dstOut,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                controller: _dirScrollController,
-                itemBuilder: (context, index) => Padding(
-                  padding: EdgeInsets.only(
-                    left: index == 0 ? 24 : 0,
-                    right: index == pathSplits.length - 2 ? 24 : 0,
-                  ),
-                  child: FilledButton.tonal(
-                    onPressed: () {
-                      final cdPath = pathSplits.sublist(0, index + 1).join('/');
-                      _cd('$cdPath/');
-                    },
-                    child: Text(
-                      index == 0 ? '所有文件' : pathSplits[index],
-                      style: themeData.textTheme.bodyLarge,
+              child: ScrollOptimizer(
+                scrollController: _dirScrollController,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  controller: _dirScrollController,
+                  itemBuilder: (context, index) => Padding(
+                    padding: EdgeInsets.only(
+                      left: index == 0 ? 24 : 0,
+                      right: index == pathSplits.length - 2 ? 24 : 0,
+                    ),
+                    child: FilledButton.tonal(
+                      onPressed: () {
+                        final cdPath =
+                            pathSplits.sublist(0, index + 1).join('/');
+                        _cd('$cdPath/');
+                      },
+                      child: Text(
+                        index == 0 ? '所有文件' : pathSplits[index],
+                        style: themeData.textTheme.bodyLarge,
+                      ),
                     ),
                   ),
+                  separatorBuilder: (context, index) =>
+                      const Center(child: Icon(Icons.chevron_right)),
+                  itemCount: pathSplits.length - 1,
                 ),
-                separatorBuilder: (context, index) =>
-                    const Center(child: Icon(Icons.chevron_right)),
-                itemCount: pathSplits.length - 1,
               ),
             ),
           ),
@@ -119,42 +124,45 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
     final bookmarkSection = SizedBox(
       height: 36,
       width: double.maxFinite,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        controller: _bookmarksScrollController,
-        children: <Widget>[
-          const SizedBox(width: 16),
-          ..._alistBookmarks.map(
-            (path) => InputChip(
-              label: Text(getName(path)),
-              avatar: const Icon(Icons.bookmark),
-              deleteButtonTooltipMessage: '',
-              onDeleted: () => setState(() {
-                _alistBookmarks.remove(path);
-              }),
-              onPressed: () => _cd(path),
-            ),
-          ),
-          if (!_alistBookmarks.contains(_currentPath) && _currentPath != '/')
-            ActionChip(
-              label: const Text('添加书签'),
-              avatar: Icon(
-                Icons.add,
-                color: themeData.colorScheme.tertiary,
+      child: ScrollOptimizer(
+        scrollController: _bookmarksScrollController,
+        child: ListView(
+          scrollDirection: Axis.horizontal,
+          controller: _bookmarksScrollController,
+          children: <Widget>[
+            const SizedBox(width: 16),
+            ..._alistBookmarks.map(
+              (path) => InputChip(
+                label: Text(getName(path)),
+                avatar: const Icon(Icons.bookmark),
+                deleteButtonTooltipMessage: '',
+                onDeleted: () => setState(() {
+                  _alistBookmarks.remove(path);
+                }),
+                onPressed: () => _cd(path),
               ),
-              onPressed: () => setState(() {
-                _alistBookmarks.add(_currentPath);
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  _bookmarksScrollController.animateTo(
-                    _bookmarksScrollController.position.maxScrollExtent,
-                    duration: const Duration(milliseconds: 250),
-                    curve: Curves.easeOutCubic,
-                  );
-                });
-              }),
             ),
-          const SizedBox(width: 16),
-        ].alternateWith(const SizedBox(width: 8)).toList(),
+            if (!_alistBookmarks.contains(_currentPath) && _currentPath != '/')
+              ActionChip(
+                label: const Text('添加书签'),
+                avatar: Icon(
+                  Icons.add,
+                  color: themeData.colorScheme.tertiary,
+                ),
+                onPressed: () => setState(() {
+                  _alistBookmarks.add(_currentPath);
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    _bookmarksScrollController.animateTo(
+                      _bookmarksScrollController.position.maxScrollExtent,
+                      duration: const Duration(milliseconds: 250),
+                      curve: Curves.easeOutCubic,
+                    );
+                  });
+                }),
+              ),
+            const SizedBox(width: 16),
+          ].alternateWith(const SizedBox(width: 8)).toList(),
+        ),
       ),
     );
     final dirTitleBar = Column(
