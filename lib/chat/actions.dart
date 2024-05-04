@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:bunga_player/voice_call/actions.dart';
@@ -72,6 +73,13 @@ class _ChannelActionsState extends SingleChildState<ChannelActions> {
     _currentWatchers.addJoinListener(_onUserJoin);
     _currentWatchers.addLeaveListener(_onUserLeave);
     _currentChannel.addListener(_autoHangUp);
+
+    AppLifecycleListener(
+      onExitRequested: () async {
+        await _currentChannel.value?.leave();
+        return AppExitResponse.exit;
+      },
+    );
 
     super.initState();
   }
