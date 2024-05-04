@@ -157,8 +157,10 @@ class TencentClient extends ChatClient {
 
     final manager = TencentImSDKPlugin.v2TIMManager;
 
-    final result = await manager.login(userID: id, userSig: token);
-    assert(result.code == 0);
+    if (_currentUser == null) {
+      final result = await manager.login(userID: id, userSig: token);
+      assert(result.code == 0, result.desc);
+    }
 
     final setSelfInfoRes = await manager.setSelfInfo(
       userFullInfo: V2TimUserFullInfo(
@@ -171,6 +173,7 @@ class TencentClient extends ChatClient {
     _currentUser = OwnUser(
       id: id,
       name: name!,
+      colorHue: colorHue,
       logout: () {
         _currentUser = null;
         return manager.logout();
