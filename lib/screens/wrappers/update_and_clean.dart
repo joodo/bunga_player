@@ -119,7 +119,7 @@ class _UpdateWrapperState extends SingleChildState<UpdateAndCleanWrapper> {
     final currentVersion = getIt<PackageInfo>().version;
     logger
         .i('Current version: $currentVersion, Latest version: $_latestVersion');
-    if (_latestVersion.compareTo(currentVersion) <= 0) {
+    if (_compareVersion(_latestVersion, currentVersion) <= 0) {
       setState(() {
         _status = UpdateStatus.updated;
       });
@@ -203,5 +203,17 @@ class _UpdateWrapperState extends SingleChildState<UpdateAndCleanWrapper> {
       logger.i('Update: clean temp file ${entry.path}');
       await entry.delete();
     }
+  }
+
+  int _compareVersion(String v1, String v2) {
+    int s2n(String version) {
+      List versionCells = version.split('.');
+      versionCells = versionCells.map((i) => int.parse(i)).toList();
+      return versionCells[0] * 100000 +
+          versionCells[1] * 1000 +
+          versionCells[2];
+    }
+
+    return s2n(v1) - s2n(v2);
   }
 }
