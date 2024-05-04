@@ -6,7 +6,6 @@ import 'package:bunga_player/chat/models/channel_data.dart';
 import 'package:bunga_player/chat/models/message.dart';
 import 'package:bunga_player/chat/models/user.dart';
 import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/utils/extensions/http_response.dart';
 import 'package:bunga_player/utils/models/network_progress.dart';
 import 'package:tencent_cloud_chat_sdk/enum/V2TimAdvancedMsgListener.dart';
 import 'package:tencent_cloud_chat_sdk/enum/V2TimGroupListener.dart';
@@ -186,8 +185,7 @@ class TencentClient extends ChatClient {
       'tencent/join-channel',
       {'user_id': _currentUser!.id, 'data': data.toJson()},
     );
-    if (!response.isSuccess) throw Exception(response.body);
-    return _createChannel(response.body);
+    return _createChannel(response);
   }
 
   @override
@@ -196,8 +194,7 @@ class TencentClient extends ChatClient {
       'tencent/join-channel',
       {'user_id': _currentUser!.id, 'id': id},
     );
-    if (!response.isSuccess) throw Exception(response.body);
-    return _createChannel(response.body);
+    return _createChannel(response);
   }
 
   Channel _createChannel(String responseBody) {
@@ -214,7 +211,7 @@ class TencentClient extends ChatClient {
   @override
   Future<List<({ChannelData data, String id})>> queryOnlineChannels() async {
     final response = await bungaClient.get('tencent/online-channels');
-    final channels = jsonDecode(response.body) as List;
+    final channels = jsonDecode(response) as List;
     return channels
         .map<({ChannelData data, String id})>(
           (e) => (

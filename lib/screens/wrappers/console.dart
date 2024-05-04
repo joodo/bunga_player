@@ -222,7 +222,7 @@ watchers:${context.read<ChatChannelWatchers>().value}
 last message: ${context.read<ChatChannelLastMessage>().value}''',
     'Voice Call': (context) =>
         '''status: ${context.read<VoiceCallStatus>().value.name}
-talkers: ${context.read<VoiceCallTalkersCount>().value}''',
+talkers: ${context.read<VoiceCallTalkers>().value}''',
     'Player': (context) =>
         '''Video Entry: ${context.read<PlayVideoEntry>().value}
 Status: ${context.read<PlayStatus>().value}''',

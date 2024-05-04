@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bunga_player/bunga_server/client.dart';
 import 'package:bunga_player/utils/models/volume.dart';
 import 'package:bunga_player/services/preferences.dart';
@@ -19,8 +21,37 @@ class VoiceCallStatus extends ValueNotifier<VoiceCallStatusType> {
   VoiceCallStatus() : super(VoiceCallStatusType.none);
 }
 
-class VoiceCallTalkersCount extends ValueNotifier<int> {
-  VoiceCallTalkersCount() : super(0);
+class VoiceCallTalkers extends ValueNotifier<List<int>> {
+  VoiceCallTalkers() : super([]);
+
+  void clear() {
+    value = [];
+  }
+
+  final _subscriptions = <StreamSubscription>[];
+  bool get isBinded => _subscriptions.isNotEmpty;
+
+  void bind({
+    required Stream<int> joinStream,
+    required Stream<int> leaveStream,
+  }) {
+    assert(!isBinded);
+    _subscriptions.addAll([
+      joinStream.listen((joinerId) {
+        if (!value.contains(joinerId)) value = [...value, joinerId];
+      }),
+      leaveStream.listen((leaverId) {
+        if (value.remove(leaverId)) value = [...value];
+      }),
+    ]);
+  }
+
+  Future<void> unbind() async {
+    for (final subscription in _subscriptions) {
+      await subscription.cancel();
+    }
+    _subscriptions.clear();
+  }
 }
 
 class VoiceCallMuteMic extends ValueNotifier<bool> {
@@ -52,19 +83,33 @@ class VoiceCallNoiseSuppressionLevel
 
 final voiceCallProviders = MultiProvider(providers: [
   ChangeNotifierProvider(create: (context) => VoiceCallVolume()),
+  ChangeNotifierProvider(create: (context) => VoiceCallMuteMic()),
   ChangeNotifierProvider(create: (context) => VoiceCallNoiseSuppressionLevel()),
   ProxyProvider<BungaClient?, VoiceCallClient?>(
     update: (context, bungaClient, previous) => bungaClient == null
         ? null
         : AgoraClient(
-            bungaClient.agoraClientAppKey,
+            bungaClient,
             volume: context.read<VoiceCallVolume>().value.percent,
             noiseSuppressionLevel:
                 context.read<VoiceCallNoiseSuppressionLevel>().value,
           ),
     lazy: false,
   ),
+  ChangeNotifierProxyProvider<VoiceCallClient?, VoiceCallTalkers>(
+    create: (context) => VoiceCallTalkers(),
+    update: (context, client, previous) {
+      previous!.unbind().then((_) {
+        if (client != null) {
+          previous.bind(
+            joinStream: client.joinerStream,
+            leaveStream: client.leaverStream,
+          );
+        }
+      });
+      return previous;
+    },
+    lazy: false,
+  ),
   ChangeNotifierProvider(create: (context) => VoiceCallStatus()),
-  ChangeNotifierProvider(create: (context) => VoiceCallTalkersCount()),
-  ChangeNotifierProvider(create: (context) => VoiceCallMuteMic()),
 ]);

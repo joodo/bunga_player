@@ -9,8 +9,6 @@ import 'package:bunga_player/chat/models/user.dart';
 import 'package:bunga_player/chat/providers.dart';
 import 'package:bunga_player/voice_call/client/client.agora.dart';
 import 'package:bunga_player/voice_call/client/client.dart';
-import 'package:bunga_player/chat/client/client.dart';
-import 'package:bunga_player/chat/client/client.stream_io.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
@@ -45,24 +43,6 @@ class CallingRequestBusiness {
       getIt<Toast>().show('呼叫已被拒绝');
       providerLocator<ActionsLeaf>().mayBeInvoke(CancelCallingRequestIntent());
     }
-  }
-
-  StreamSubscription? _talkersCountSubscription;
-  Future<void> joinChannel(BuildContext context) async {
-    final streamClient = context.read<ChatClient>() as StreamIOClient;
-    final channelId = context.read<ChatChannel>().value!.id;
-    final channelData = await streamClient.getAgoraChannelData(channelId);
-
-    if (!context.mounted) return;
-    final stream =
-        await context.read<VoiceCallClient>().joinChannel(channelData);
-    _talkersCountSubscription = stream.listen(
-        (count) => providerLocator<VoiceCallTalkersCount>().value = count);
-  }
-
-  Future<void> leaveChannel(VoiceCallClient client) async {
-    await _talkersCountSubscription!.cancel();
-    return client.leaveChannel();
   }
 }
 
@@ -182,8 +162,10 @@ class AcceptCallingRequestAction
 
     read<VoiceCallStatus>().value = VoiceCallStatusType.talking;
 
-    if (!context.mounted) return;
-    callingRequestBusiness.joinChannel(context);
+    await read<VoiceCallClient>().joinChannel(
+      userId: read<ChatUser>().value!.id,
+      channelId: read<ChatChannel>().value!.id,
+    );
   }
 }
 
@@ -194,14 +176,16 @@ class HangUpAction extends ContextAction<HangUpIntent> {
   HangUpAction({required this.callingRequestBusiness});
 
   @override
-  Future<void>? invoke(HangUpIntent intent, [BuildContext? context]) {
+  Future<void> invoke(HangUpIntent intent, [BuildContext? context]) async {
     final read = context!.read;
 
     read<VoiceCallStatus>().value = VoiceCallStatusType.none;
     AudioPlayer().play(AssetSource('sounds/hang_up.wav'));
 
     read<ActionsLeaf>().invoke(const VoiceCallMuteMicIntent(false));
-    return callingRequestBusiness.leaveChannel(read<VoiceCallClient>());
+
+    await read<VoiceCallClient>().leaveChannel();
+    read<VoiceCallTalkers>().clear();
   }
 
   @override
@@ -236,7 +220,7 @@ class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
   );
 
   late final _callStatus = context.read<VoiceCallStatus>();
-  late final _talkersCount = context.read<VoiceCallTalkersCount>();
+  late final _talkers = context.read<VoiceCallTalkers>();
   late final _volume = context.read<VoiceCallVolume>();
   late final _channelWatchers = context.read<ChatChannelWatchers>();
   late final _channelMessage = context.read<ChatChannelLastMessage>();
@@ -245,7 +229,7 @@ class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
   @override
   void initState() {
     _callStatus.addListener(_soundCallRing);
-    _talkersCount.addListener(_tryAutoHangUp);
+    _talkers.addListener(_tryAutoHangUp);
     _volume.addListener(_applyCallVolume);
     _nsLevel.addListener(_applyNoiceSuppress);
     _channelWatchers.addLeaveListener(_leaveMeansRejectBy);
@@ -257,7 +241,7 @@ class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
   @override
   void dispose() {
     _callStatus.removeListener(_soundCallRing);
-    _talkersCount.removeListener(_tryAutoHangUp);
+    _talkers.removeListener(_tryAutoHangUp);
     _volume.removeListener(_applyCallVolume);
     _nsLevel.removeListener(_applyNoiceSuppress);
     _channelWatchers.removeLeaveListener(_leaveMeansRejectBy);
@@ -299,7 +283,7 @@ class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
 
   // Auto hang up
   void _tryAutoHangUp() {
-    if (_talkersCount.value == 0) {
+    if (_talkers.value.isEmpty) {
       getIt<Toast>().show('通话已结束');
       context.read<ActionsLeaf>().mayBeInvoke(HangUpIntent());
     }
@@ -392,11 +376,16 @@ class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
   }
 
   Future<void> myRequestHasBeenAccepted() {
-    context.read<VoiceCallStatus>().value = VoiceCallStatusType.talking;
+    final read = context.read;
+
+    read<VoiceCallStatus>().value = VoiceCallStatusType.talking;
     _callingRequestBusiness.requestMessageId = null;
     _callingRequestBusiness.myHopeList.clear();
     _callingRequestBusiness.requestTimeOutTimer.cancel();
 
-    return _callingRequestBusiness.joinChannel(context);
+    return read<VoiceCallClient>().joinChannel(
+      userId: read<ChatUser>().value!.id,
+      channelId: read<ChatChannel>().value!.id,
+    );
   }
 }

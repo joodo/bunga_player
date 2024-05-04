@@ -1,20 +1,23 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
-import 'package:bunga_player/chat/client/client.stream_io.dart';
+import 'package:bunga_player/bunga_server/client.dart';
 import 'package:bunga_player/services/logger.dart';
 
 import '../providers.dart';
 import 'client.dart';
 
-class AgoraClient implements VoiceCallClient {
+class AgoraClient extends VoiceCallClient {
+  final BungaClient _bungaClient;
+
   AgoraClient(
-    String appId, {
+    this._bungaClient, {
     double? volume,
     NoiseSuppressionLevel? noiseSuppressionLevel,
   })  : _volumeCache = volume,
         _noiseSuppressionLevelCache = noiseSuppressionLevel {
-    _asyncInit(appId);
+    _asyncInit(_bungaClient.agoraClientAppKey);
   }
 
   final _engine = createAgoraRtcEngine();
@@ -75,19 +78,18 @@ class AgoraClient implements VoiceCallClient {
           logger.i('Voice call: Local user uid:${connection.localUid} joined.');
         },
         onUserJoined: (RtcConnection connection, int remoteUid, int elapsed) {
-          if (connection.localUid == remoteUid) return;
-          _talkersID.add(remoteUid);
-          _talkersCountStreamController.add(_talkersID.length);
-          logger.i(
-              'Voice call: Remote user uid:$remoteUid joined.\nCurrent Talkers: $_talkersID');
+          logger.i('Voice call: Remote user uid:$remoteUid joined.');
+          _joinerStreamController.add(remoteUid);
         },
-        onUserOffline: (RtcConnection connection, int remoteUid,
-            UserOfflineReasonType reason) {
+        onUserOffline: (
+          RtcConnection connection,
+          int remoteUid,
+          UserOfflineReasonType reason,
+        ) {
           if (connection.localUid == remoteUid) return;
-          _talkersID.remove(remoteUid);
-          _talkersCountStreamController.add(_talkersID.length);
           logger.i(
-              'Voice call: Remote user uid:$remoteUid left. Reason: $reason.\nCurrent Talkers: $_talkersID');
+              'Voice call: Remote user uid:$remoteUid left. Reason: $reason.');
+          _leaverStreamController.add(remoteUid);
         },
       ),
     );
@@ -109,10 +111,6 @@ class AgoraClient implements VoiceCallClient {
     }
   }
 
-  // Talkers
-  final _talkersCountStreamController = StreamController<int>.broadcast();
-  final _talkersID = <int>{};
-
   // Volume
   double? _volumeCache;
   @override
@@ -133,25 +131,40 @@ class AgoraClient implements VoiceCallClient {
     return _engine.muteLocalAudioStream(mute);
   }
 
+  // Member
+  final _joinerStreamController = StreamController<int>.broadcast();
+  @override
+  Stream<int> get joinerStream => _joinerStreamController.stream;
+
+  final _leaverStreamController = StreamController<int>.broadcast();
+  @override
+  Stream<int> get leaverStream => _leaverStreamController.stream;
+
   // Channel
   @override
-  Future<Stream<int>> joinChannel(dynamic channelData) async {
-    final (:channelId, :userId, :token) =
-        channelData as AgoraChannelDataPayload;
+  Future<void> joinChannel({
+    required String userId,
+    required String channelId,
+  }) async {
+    final uid = userId.hashCode;
+
+    final tokenResponse = await _bungaClient.post('agora/token', {
+      'uid': uid,
+      'channel': channelId,
+    });
+    final token = jsonDecode(tokenResponse)['token'];
 
     const options = ChannelMediaOptions(
       clientRoleType: ClientRoleType.clientRoleBroadcaster,
       channelProfile: ChannelProfileType.channelProfileCommunication,
     );
 
-    await _engine.joinChannel(
+    return _engine.joinChannel(
       channelId: channelId,
-      uid: userId,
+      uid: uid,
       token: token,
       options: options,
     );
-
-    return _talkersCountStreamController.stream;
   }
 
   @override

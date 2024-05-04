@@ -23,7 +23,6 @@ dependencies:
   ffi: ^2.1.0
 
   # Communication
-  stream_chat_flutter_core: 7.1.0
   tencent_cloud_chat_sdk: ^7.9.5686
   tencent_im_sdk_plugin_desktop: ^0.2.22
   agora_rtc_engine: ^6.2.6

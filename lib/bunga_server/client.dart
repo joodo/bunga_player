@@ -113,15 +113,17 @@ class BungaClient {
     return response.bodyBytes;
   }
 
-  Future<http.Response> get(String reference) {
-    return http.get(
+  Future<String> get(String reference) async {
+    final response = await http.get(
       _host.resolve(reference),
       headers: {'Authorization': _userToken},
     );
+    if (!response.isSuccess) throw Exception(response.body);
+    return response.body;
   }
 
-  Future<http.Response> post(String reference, Object? body) {
-    return http.post(
+  Future<String> post(String reference, Object? body) async {
+    final response = await http.post(
       _host.resolve(reference),
       headers: {
         'Authorization': _userToken,
@@ -129,5 +131,7 @@ class BungaClient {
       },
       body: jsonEncode(body),
     );
+    if (!response.isSuccess) throw Exception(response.body);
+    return response.body;
   }
 }

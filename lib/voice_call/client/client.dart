@@ -4,6 +4,9 @@ abstract class VoiceCallClient {
   Future<void> setVolume(double percent);
   Future<void> setMuteMic(bool mute);
 
-  Future<Stream<int>> joinChannel(dynamic channelData);
+  Future<void> joinChannel({required String userId, required String channelId});
   Future<void> leaveChannel();
+
+  Stream<int> get joinerStream;
+  Stream<int> get leaverStream;
 }
