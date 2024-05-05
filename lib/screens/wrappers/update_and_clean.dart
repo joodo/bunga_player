@@ -113,7 +113,7 @@ class _UpdateWrapperState extends SingleChildState<UpdateAndCleanWrapper> {
     final response = await http.get(Uri.parse(
       'https://gitee.com/api/v5/repos/joodo2/bunga_player/releases/latest',
     ));
-    final responseData = jsonDecode(response.body);
+    final responseData = jsonDecode(utf8.decode(response.body.runes.toList()));
 
     _latestVersion = responseData['tag_name'] as String;
     final currentVersion = getIt<PackageInfo>().version;
