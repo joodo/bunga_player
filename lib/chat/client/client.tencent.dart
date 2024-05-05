@@ -137,8 +137,6 @@ class TencentClient extends ChatClient {
       'tencent/join-channel',
       {'user_id': _currentUser!.id, 'data': data.toJson()},
     );
-    // HACK: Wait for channel "ready". Or cannot receive message for somehow
-    await Future.delayed(const Duration(milliseconds: 1000));
     return _createChannel(response);
   }
 
@@ -148,7 +146,6 @@ class TencentClient extends ChatClient {
       'tencent/join-channel',
       {'user_id': _currentUser!.id, 'id': id},
     );
-    await Future.delayed(const Duration(milliseconds: 1000));
     return _createChannel(response);
   }
 

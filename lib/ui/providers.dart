@@ -157,6 +157,21 @@ class ShortcutMapping
   }
 }
 
+typedef ExitCallback = Future<void> Function();
+
+// HACK: AppLifecycleListener.onExitRequested not work on Windows
+class ExitCallbacks {
+  final _callbacks = <ExitCallback>[];
+
+  void add(ExitCallback callback) => _callbacks.add(callback);
+
+  Future<void> runAll() async {
+    for (final callback in _callbacks) {
+      await callback();
+    }
+  }
+}
+
 final uiProviders = MultiProvider(
   providers: [
     ChangeNotifierProvider(create: (context) => CatIndicator()),
@@ -204,5 +219,6 @@ final uiProviders = MultiProvider(
     ),
     ChangeNotifierProvider(create: (context) => AutoJoinChannel()),
     ChangeNotifierProvider(create: (context) => ShortcutMapping()),
+    Provider(create: (context) => ExitCallbacks()),
   ],
 );

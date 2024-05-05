@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:bunga_player/play_sync/actions.dart';
+import 'package:bunga_player/player/service/service.media_kit.dart';
 import 'package:bunga_player/ui/providers.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
@@ -442,6 +443,8 @@ class _PlayActionsState extends SingleChildState<PlayActions> {
     _streamSubscriptions.add(player.positionStream.listen((position) {
       if (!_dragBusiness.isDragging) read<PlayPosition>().value = position;
     }));
+
+    read<ExitCallbacks>().add((player as MediaKitPlayer).saveWatchProgress);
   }
 
   @override

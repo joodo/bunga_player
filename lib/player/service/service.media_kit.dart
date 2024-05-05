@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
-import 'dart:ui';
 
 import 'package:bunga_player/utils/models/volume.dart';
 import 'package:bunga_player/player/providers.dart';
@@ -183,7 +182,11 @@ class MediaKitPlayer implements Player {
   @override
   Future<void> play() => _player.play();
   @override
-  Future<void> pause() => _player.pause();
+  Future<void> pause() async {
+    await _player.pause();
+    _saveCurrentProgress();
+  }
+
   @override
   Future<void> toggle() => _player.playOrPause();
 
@@ -192,6 +195,8 @@ class MediaKitPlayer implements Player {
 
   @override
   Future<void> stop() {
+    _saveCurrentProgress();
+
     _statusController.add(PlayStatusType.stop);
 
     _videoEntry = null;
@@ -383,25 +388,22 @@ class MediaKitPlayer implements Player {
       logger.w('Load watch progress failed');
       _watchProgress = {};
     }
+  }
 
-    Timer.periodic(const Duration(seconds: 5), (timer) {
-      if (_videoEntry != null && _player.state.playing) {
-        _watchProgress[_videoEntry!.hash] = WatchProgress(
-          progress: _player.state.position.inMilliseconds,
-          duration: _player.state.duration.inMilliseconds,
-        );
-      }
-    });
+  void _saveCurrentProgress() {
+    if (_videoEntry != null) {
+      _watchProgress[_videoEntry!.hash] = WatchProgress(
+        progress: _player.state.position.inMilliseconds,
+        duration: _player.state.duration.inMilliseconds,
+      );
+    }
+  }
 
-    AppLifecycleListener(
-      onExitRequested: () async {
-        // Save watch progress on exit
-        await getIt<Preferences>().set(
-          'watch_progress',
-          jsonEncode(_watchProgress),
-        );
-        return AppExitResponse.exit;
-      },
+  Future<void> saveWatchProgress() async {
+    _saveCurrentProgress();
+    await getIt<Preferences>().set(
+      'watch_progress',
+      jsonEncode(_watchProgress),
     );
   }
 
