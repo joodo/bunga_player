@@ -6,7 +6,4 @@ abstract class VoiceCallClient {
 
   Future<void> joinChannel({required String userId, required String channelId});
   Future<void> leaveChannel();
-
-  Stream<int> get joinerStream;
-  Stream<int> get leaverStream;
 }

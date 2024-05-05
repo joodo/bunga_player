@@ -80,7 +80,9 @@ class TogglePlayAction extends ContextAction<TogglePlayIntent> {
   }
 }
 
-class StopPlayIntent extends Intent {}
+class StopPlayIntent extends Intent {
+  const StopPlayIntent();
+}
 
 class StopPlayAction extends ContextAction<StopPlayIntent> {
   @override

@@ -103,7 +103,7 @@ class _CallControlState extends State<CallControl> {
           _createCallOperateButton(
             color: Colors.red,
             icon: Icons.call_end,
-            onPressed: () => Actions.invoke(context, HangUpIntent()),
+            onPressed: () => Actions.invoke(context, const HangUpIntent()),
           ),
           const SizedBox(width: 16),
         ],

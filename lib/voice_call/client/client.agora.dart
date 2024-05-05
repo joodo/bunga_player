@@ -77,12 +77,10 @@ class AgoraClient extends VoiceCallClient {
       RtcEngineEventHandler(
         onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
           logger.i('Voice call: Local user uid:${connection.localUid} joined.');
-          _joinerStreamController.add(connection.localUid!);
           AudioPlayer().play(AssetSource('sounds/user_speak.wav'));
         },
         onUserJoined: (RtcConnection connection, int remoteUid, int elapsed) {
           logger.i('Voice call: Remote user uid:$remoteUid joined.');
-          _joinerStreamController.add(remoteUid);
         },
         onUserOffline: (
           RtcConnection connection,
@@ -92,7 +90,6 @@ class AgoraClient extends VoiceCallClient {
           if (connection.localUid == remoteUid) return;
           logger.i(
               'Voice call: Remote user uid:$remoteUid left. Reason: $reason.');
-          _leaverStreamController.add(remoteUid);
         },
       ),
     );
@@ -133,15 +130,6 @@ class AgoraClient extends VoiceCallClient {
   Future<void> setMuteMic(bool mute) {
     return _engine.muteLocalAudioStream(mute);
   }
-
-  // Member
-  final _joinerStreamController = StreamController<int>.broadcast();
-  @override
-  Stream<int> get joinerStream => _joinerStreamController.stream;
-
-  final _leaverStreamController = StreamController<int>.broadcast();
-  @override
-  Stream<int> get leaverStream => _leaverStreamController.stream;
 
   // Channel
   @override

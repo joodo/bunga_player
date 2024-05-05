@@ -6,6 +6,7 @@ import 'package:bunga_player/chat/models/channel_data.dart';
 import 'package:bunga_player/chat/models/user.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/utils/models/network_progress.dart';
+import 'package:flutter/material.dart';
 import 'package:tencent_cloud_chat_sdk/enum/V2TimAdvancedMsgListener.dart';
 import 'package:tencent_cloud_chat_sdk/enum/V2TimGroupListener.dart';
 
@@ -40,55 +41,10 @@ class _TencentGroup extends Channel {
     final messageStream = messageManager.messageStreamByGroupId(groupId);
     final dataStream = groupManager.dataStreamByGroupId(groupId);
     final fileStream = messageManager.fileStreamByGroupId(groupId);
-    final leaverStream = groupManager.leaverStreamByGroupId(groupId);
-    final joinerStreamController = StreamController<JoinEvent>.broadcast();
 
-    final alohaSubscription = messageStream
-        .map((rawMessage) => rawMessage.toMessage())
-        .where((message) =>
-            message.data['type'] == 'aloha' &&
-            message.sender.id != currentUser.id)
-        .listen((_) {
-      messageManager.sendMessage(
-        currentUser,
-        groupId,
-        jsonEncode({
-          'type': 'hereIs',
-          ...currentUser.toJson(),
-        }),
-      );
-    });
-
-    Future.delayed(const Duration(milliseconds: 1000), () {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       // init channel data
       groupManager.initGroupData(groupId, data);
-
-      // init joiner stream
-      joinerStreamController.add((user: currentUser, isNew: false));
-      final joinerStream = messageStream
-          .map((rawMessage) => rawMessage.toMessage())
-          .where((message) =>
-              message.data['type'] == 'aloha' ||
-              message.data['type'] == 'hereIs')
-          .map<JoinEvent>(
-        (message) {
-          final isNew = message.data['type'] == 'aloha';
-          final user = User.fromJson(message.data);
-          _userInfoCache[user.id] = user;
-          return (user: user, isNew: isNew);
-        },
-      );
-      joinerStreamController.addStream(joinerStream);
-
-      // send aloha
-      messageManager.sendMessage(
-        currentUser,
-        groupId,
-        jsonEncode({
-          'type': 'aloha',
-          ...currentUser.toJson(),
-        }),
-      );
     });
 
     return _TencentGroup(
@@ -97,8 +53,6 @@ class _TencentGroup extends Channel {
         message: messageStream,
         data: dataStream,
         file: fileStream,
-        joinEvents: joinerStreamController.stream,
-        leaver: leaverStream,
       ),
       sendMessage: (text) => messageManager.sendMessage(
         currentUser,
@@ -113,10 +67,7 @@ class _TencentGroup extends Channel {
         description: description,
         title: title,
       ),
-      leave: () {
-        alohaSubscription.cancel();
-        return groupManager.quitGroup(groupId);
-      },
+      leave: () => groupManager.quitGroup(groupId),
     );
   }
 }
@@ -186,6 +137,8 @@ class TencentClient extends ChatClient {
       'tencent/join-channel',
       {'user_id': _currentUser!.id, 'data': data.toJson()},
     );
+    // HACK: Wait for channel "ready". Or cannot receive message for somehow
+    await Future.delayed(const Duration(milliseconds: 1000));
     return _createChannel(response);
   }
 
@@ -195,6 +148,7 @@ class TencentClient extends ChatClient {
       'tencent/join-channel',
       {'user_id': _currentUser!.id, 'id': id},
     );
+    await Future.delayed(const Duration(milliseconds: 1000));
     return _createChannel(response);
   }
 
@@ -357,13 +311,6 @@ class _GroupManager {
           .where((event) => event.groupId == groupId)
           .map((event) => event.data);
 
-  final _leaverStreamController =
-      StreamController<({String groupId, User leaver})>.broadcast();
-  Stream<User> leaverStreamByGroupId(String groupId) =>
-      _leaverStreamController.stream
-          .where((event) => event.groupId == groupId)
-          .map((event) => event.leaver);
-
   _GroupManager() {
     TencentImSDKPlugin.v2TIMManager.addGroupListener(
       listener: V2TimGroupListener(
@@ -392,16 +339,6 @@ class _GroupManager {
           _dataStreamController.add((
             groupId: groupID,
             data: ChannelData.fromJson(changes),
-          ));
-        },
-        onMemberLeave: (groupID, member) {
-          _leaverStreamController.add((
-            groupId: groupID,
-            leaver: _userInfoCache[member.userID!] ??
-                User(
-                  id: member.userID!,
-                  name: member.nickName!,
-                ),
           ));
         },
       ),

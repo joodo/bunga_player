@@ -1,5 +1,4 @@
 import 'package:bunga_player/chat/actions.dart';
-import 'package:bunga_player/play_sync/providers.dart';
 import 'package:bunga_player/player/actions.dart';
 import 'package:bunga_player/play_sync/actions.dart';
 import 'package:bunga_player/voice_call/actions.dart';
@@ -210,8 +209,8 @@ class _MainControlState extends State<MainControl> {
   }
 
   void _leaveChannel() async {
-    Actions.invoke(context, StopPlayIntent());
-    context.read<ChatChannelJoinPayload>().value = null;
+    Actions.invoke(context, const StopPlayIntent());
+    Actions.maybeInvoke(context, const LeaveChannelIntent());
     Navigator.of(context).popAndPushNamed('control:welcome');
   }
 

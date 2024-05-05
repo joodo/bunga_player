@@ -14,7 +14,6 @@ import 'package:bunga_player/screens/widgets/loading_text.dart';
 import 'package:bunga_player/screens/wrappers/providers.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
-import 'package:bunga_player/utils/business/provider.dart';
 import 'package:bunga_player/voice_call/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -60,8 +59,9 @@ class _RoomSectionState extends State<RoomSection> {
                 const Spacer(),
 
                 // Unsync hint
-                ValueListenableConsumer<ChatChannelData, ChannelData?>(
-                  builder: (context, channelData, child) {
+                Consumer<ChatChannelData>(
+                  builder: (context, channelDataNotifier, child) {
+                    final channelData = channelDataNotifier.value;
                     if (channelData == null || context.isVideoSameWithChannel) {
                       return const SizedBox.shrink();
                     }
@@ -127,9 +127,9 @@ class _UserLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(right: 8),
-      child: ValueListenableConsumer<VoiceCallTalkers, List<int>>(
+      child: Consumer<VoiceCallTalkers>(
         builder: (context, talkers, child) => Text(
-          talkers.contains(user.id.hashCode) ? '🎤${user.name}' : user.name,
+          talkers.value!.contains(user.id) ? '🎤${user.name}' : user.name,
           style: Theme.of(context)
               .textTheme
               .bodyMedium!

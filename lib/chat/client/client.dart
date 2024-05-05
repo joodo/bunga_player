@@ -45,8 +45,6 @@ class Channel {
 
   final ({
     Stream<ChannelData> data,
-    Stream<JoinEvent> joinEvents,
-    Stream<User> leaver,
     Stream<RawMessage> message,
     Stream<ChannelFile> file,
   }) streams;

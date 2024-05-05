@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:animations/animations.dart';
+import 'package:bunga_player/chat/actions.dart';
 import 'package:bunga_player/play_sync/models.dart';
-import 'package:bunga_player/play_sync/providers.dart';
 import 'package:bunga_player/player/actions.dart';
 import 'package:bunga_player/mocks/menu_anchor.dart' as mock;
 import 'package:bunga_player/player/models/video_entries/video_entry.dart';
@@ -96,8 +96,10 @@ class _WelcomeControlState extends State<WelcomeControl> {
   void _onVideoOpened(VideoEntry entry) {
     if (!mounted) throw Exception('Context unmounted');
     if (context.read<AutoJoinChannel>().value) {
-      context.read<ChatChannelJoinPayload>().value =
-          ChannelJoinByEntryPayload(entry);
+      Actions.invoke(
+        context,
+        JoinChannelIntent(ChannelJoinByEntryPayload(entry)),
+      );
     }
 
     _onLeaving();
@@ -117,8 +119,10 @@ class _WelcomeControlState extends State<WelcomeControl> {
     await response;
 
     if (!mounted) throw Exception('context unmounted');
-    context.read<ChatChannelJoinPayload>().value =
-        ChannelJoinByIdPayload(result.id);
+    Actions.invoke(
+      context,
+      JoinChannelIntent(ChannelJoinByIdPayload(result.id)),
+    );
 
     _onLeaving();
   }

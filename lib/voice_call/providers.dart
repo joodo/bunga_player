@@ -1,6 +1,5 @@
-import 'dart:async';
-
 import 'package:bunga_player/bunga_server/client.dart';
+import 'package:bunga_player/chat/providers.dart';
 import 'package:bunga_player/utils/models/volume.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
@@ -21,36 +20,17 @@ class VoiceCallStatus extends ValueNotifier<VoiceCallStatusType> {
   VoiceCallStatus() : super(VoiceCallStatusType.none);
 }
 
-class VoiceCallTalkers extends ValueNotifier<List<int>> {
-  VoiceCallTalkers() : super([]);
+class VoiceCallTalkers extends ValueNotifier<List<String>?> {
+  VoiceCallTalkers() : super(null);
 
-  void clear() {
-    value = [];
+  void add(String id) {
+    assert(value != null);
+    if (!value!.contains(id)) value = [...value!, id];
   }
 
-  final _subscriptions = <StreamSubscription>[];
-  bool get isBinded => _subscriptions.isNotEmpty;
-
-  void bind({
-    required Stream<int> joinStream,
-    required Stream<int> leaveStream,
-  }) {
-    assert(!isBinded);
-    _subscriptions.addAll([
-      joinStream.listen((joinerId) {
-        if (!value.contains(joinerId)) value = [...value, joinerId];
-      }),
-      leaveStream.listen((leaverId) {
-        if (value.remove(leaverId)) value = [...value];
-      }),
-    ]);
-  }
-
-  Future<void> unbind() async {
-    for (final subscription in _subscriptions) {
-      await subscription.cancel();
-    }
-    _subscriptions.clear();
+  void remove(String id) {
+    assert(value != null);
+    if (value!.contains(id)) value = [...value!..remove(id)];
   }
 }
 
@@ -96,17 +76,10 @@ final voiceCallProviders = MultiProvider(providers: [
           ),
     lazy: false,
   ),
-  ChangeNotifierProxyProvider<VoiceCallClient?, VoiceCallTalkers>(
+  ChangeNotifierProxyProvider<ChatChannel, VoiceCallTalkers>(
     create: (context) => VoiceCallTalkers(),
-    update: (context, client, previous) {
-      previous!.unbind().then((_) {
-        if (client != null) {
-          previous.bind(
-            joinStream: client.joinerStream,
-            leaveStream: client.leaverStream,
-          );
-        }
-      });
+    update: (context, channel, previous) {
+      previous!.value = channel.value == null ? null : [];
       return previous;
     },
     lazy: false,

@@ -20,12 +20,32 @@ class CallMessageData {
       };
 }
 
+enum TalkStatusType {
+  start,
+  end,
+}
+
+class TalkStatusMessageData {
+  final TalkStatusType status;
+  TalkStatusMessageData(this.status);
+
+  MessageData toMessageData() => {
+        'type': 'talk',
+        'status': status.name,
+      };
+}
+
 extension CallExtension on MessageData {
-  bool get isCall => this['type'] == 'call';
-  CallMessageData toCall() => isCall
+  bool get isCallData => this['type'] == 'call';
+  CallMessageData toCallData() => isCallData
       ? CallMessageData(
           action: CallActionType.values.byName(this['action']),
           answerId: this['answerId'],
         )
+      : throw const FormatException();
+
+  bool get isTalkStatusData => this['type'] == 'talk';
+  TalkStatusMessageData toTalkStatusData() => isTalkStatusData
+      ? TalkStatusMessageData(TalkStatusType.values.byName(this['status']))
       : throw const FormatException();
 }

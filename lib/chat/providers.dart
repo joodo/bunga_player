@@ -41,6 +41,7 @@ class ChatChannelWatchers extends ChangeNotifier
   final List<User> _value = [];
   @override
   List<User> get value => _value;
+
   void clear() {
     _value.clear();
     notifyListeners();
@@ -84,27 +85,6 @@ class ChatChannelWatchers extends ChangeNotifier
     for (final listener in _leaveListeners) {
       listener(user: user);
     }
-  }
-
-  final _subscriptions = <StreamSubscription>[];
-  bool get isBinded => _subscriptions.isNotEmpty;
-
-  void bind({
-    required Stream<JoinEvent> joinStream,
-    required Stream<User> leaveStream,
-  }) {
-    assert(!isBinded);
-    _subscriptions.addAll([
-      joinStream.listen(join),
-      leaveStream.listen(leave),
-    ]);
-  }
-
-  Future<void> unbind() async {
-    for (final subscription in _subscriptions) {
-      await subscription.cancel();
-    }
-    _subscriptions.clear();
   }
 }
 
@@ -251,6 +231,7 @@ final chatProviders = MultiProvider(providers: [
       }
       return previous;
     },
+    lazy: false,
   ),
   ChangeNotifierProxyProvider<ChatChannel, ChatChannelFiles>(
     create: (context) => ChatChannelFiles(),
@@ -272,14 +253,8 @@ final chatProviders = MultiProvider(providers: [
       final channel = currentChannel.value;
       if (channel == null) {
         previous!.clear();
-        previous.unbind();
-      } else {
-        previous!.bind(
-          joinStream: channel.streams.joinEvents,
-          leaveStream: channel.streams.leaver,
-        );
       }
-      return previous;
+      return previous!;
     },
   ),
 ]);
