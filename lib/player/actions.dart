@@ -64,7 +64,7 @@ class TogglePlayAction extends ContextAction<TogglePlayIntent> {
       context,
       SendPlayingStatusIntent(
         !playStatus.isPlaying ? PlayStatusType.play : PlayStatusType.pause,
-        position.value.inMilliseconds,
+        position.value,
       ),
     );
 
@@ -148,7 +148,7 @@ class SeekAction extends ContextAction<SeekIntent> {
       context,
       SendPlayingStatusIntent(
         read<PlayStatus>().value,
-        newPos.inMilliseconds,
+        newPos,
       ),
     ) as Future<void>?;
   }
@@ -240,7 +240,7 @@ class FinishDraggingProgressAction
         dragBusiness.isPlayingBeforeDraggingSlider
             ? PlayStatusType.play
             : PlayStatusType.pause,
-        intent.position.inMilliseconds,
+        intent.position,
       ),
     );
 

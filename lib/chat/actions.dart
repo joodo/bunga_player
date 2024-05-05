@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:ui';
 
 import 'package:audioplayers/audioplayers.dart';
@@ -37,19 +38,22 @@ class UpdateChannelDataAction extends ContextAction<UpdateChannelDataIntent> {
 }
 
 class SendMessageIntent extends Intent {
-  final String text;
-  final String? quoteId;
+  final Map<String, dynamic> data;
 
-  const SendMessageIntent(this.text, {this.quoteId});
+  const SendMessageIntent(this.data);
 }
 
 class SendMessageAction extends ContextAction<SendMessageIntent> {
   @override
-  Future<Message> invoke(SendMessageIntent intent, [BuildContext? context]) {
-    return context!
+  Future<Message> invoke(
+    SendMessageIntent intent, [
+    BuildContext? context,
+  ]) async {
+    final raw = await context!
         .read<ChatChannel>()
         .value!
-        .sendMessage(intent.text, quoteId: intent.quoteId);
+        .sendMessage(jsonEncode(intent.data));
+    return raw.toMessage();
   }
 
   @override

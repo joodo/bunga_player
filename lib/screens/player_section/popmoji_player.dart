@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bunga_player/chat/providers.dart';
+import 'package:bunga_player/popmoji/models.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
@@ -49,13 +50,11 @@ class _PopmojiPlayerState extends State<PopmojiPlayer> {
     final message = context.read<ChatChannelLastMessage>().value;
     if (message == null) return;
 
-    final splits = message.text.split(' ');
-
-    if (splits.first == 'popmoji') {
+    if (message.data.isPopmojiData) {
       final isCurrentUser =
           message.sender.id == context.read<ChatUser>().value!.id;
 
-      final code = splits[1];
+      final code = message.data.toPopmojiData().code;
       if (code == '1f386') {
         if (!isCurrentUser) getIt<Toast>().show('${message.sender.name} 在放大呲花');
         await _showFireworks();

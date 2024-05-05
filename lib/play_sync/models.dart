@@ -1,7 +1,10 @@
+import 'package:bunga_player/chat/models/message.dart';
 import 'package:bunga_player/chat/models/user.dart';
 import 'package:bunga_player/player/models/video_entries/video_entry.dart';
+import 'package:bunga_player/player/providers.dart';
 import 'package:bunga_player/player/service/service.dart';
 
+// Subtitle
 class ChannelSubtitle {
   final String id;
   final String title;
@@ -26,6 +29,7 @@ class ChannelSubtitle {
   });
 }
 
+// Channel join payload
 sealed class ChannelJoinPayload {}
 
 class ChannelJoinByIdPayload extends ChannelJoinPayload {
@@ -36,4 +40,41 @@ class ChannelJoinByIdPayload extends ChannelJoinPayload {
 class ChannelJoinByEntryPayload extends ChannelJoinPayload {
   final VideoEntry videoEntry;
   ChannelJoinByEntryPayload(this.videoEntry);
+}
+
+// Message data
+class PlayStatusMessageData {
+  final PlayStatusType status;
+  final Duration position;
+  final String? answerId;
+
+  PlayStatusMessageData({
+    required this.status,
+    required this.position,
+    required this.answerId,
+  });
+
+  MessageData toMessageData() => {
+        'type': 'playStatus',
+        'status': status.name,
+        'position': position.inMilliseconds,
+        'answerId': answerId,
+      };
+}
+
+class WhereAskingMessageData {
+  MessageData toMessageData() => {'type': 'where'};
+}
+
+extension PlayStatusExtension on MessageData {
+  bool get isPlayStatus => this['type'] == 'playStatus';
+  PlayStatusMessageData toPlayStatus() => isPlayStatus
+      ? PlayStatusMessageData(
+          status: PlayStatusType.values.byName(this['status']),
+          position: Duration(milliseconds: this['position']),
+          answerId: this['answerId'],
+        )
+      : throw const FormatException();
+
+  bool get isWhereAsking => this['type'] == 'where';
 }

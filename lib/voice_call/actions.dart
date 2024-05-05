@@ -12,6 +12,7 @@ import 'package:bunga_player/voice_call/client/client.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
+import 'package:bunga_player/voice_call/models.dart';
 import 'package:flutter/widgets.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
@@ -61,7 +62,8 @@ class StartCallingRequestAction
     read<VoiceCallStatus>().value = VoiceCallStatusType.callOut;
 
     final message = await (read<ActionsLeaf>().invoke(
-      const SendMessageIntent('call ask'),
+      SendMessageIntent(
+          CallMessageData(action: CallActionType.ask).toMessageData()),
     ) as Future<Message>);
 
     callingRequestBusiness.requestMessageId = message.id;
@@ -96,10 +98,10 @@ class CancelCallingRequestAction
     final read = context!.read;
 
     await (read<ActionsLeaf>().invoke(
-      SendMessageIntent(
-        'call cancel',
-        quoteId: callingRequestBusiness.requestMessageId,
-      ),
+      SendMessageIntent(CallMessageData(
+        action: CallActionType.cancel,
+        answerId: callingRequestBusiness.requestMessageId,
+      ).toMessageData()),
     ) as Future<Message>);
 
     callingRequestBusiness.myHopeList.clear();
@@ -125,10 +127,10 @@ class RejectCallingRequestAction
     final read = context!.read;
 
     await (read<ActionsLeaf>().invoke(
-      SendMessageIntent(
-        'call no',
-        quoteId: callingRequestBusiness.requestMessageId,
-      ),
+      SendMessageIntent(CallMessageData(
+        action: CallActionType.no,
+        answerId: callingRequestBusiness.requestMessageId,
+      ).toMessageData()),
     ) as Future<Message>);
 
     callingRequestBusiness.requestMessageId = null;
@@ -152,10 +154,10 @@ class AcceptCallingRequestAction
     final read = context!.read;
 
     await (read<ActionsLeaf>().invoke(
-      SendMessageIntent(
-        'call yes',
-        quoteId: callingRequestBusiness.requestMessageId,
-      ),
+      SendMessageIntent(CallMessageData(
+        action: CallActionType.yes,
+        answerId: callingRequestBusiness.requestMessageId,
+      ).toMessageData()),
     ) as Future<Message>);
 
     callingRequestBusiness.requestMessageId = null;
@@ -315,16 +317,14 @@ class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
     final read = context.read;
 
     final message = _channelMessage.value;
-    if (message == null) return;
+    if (message == null || !message.data.isCall) return;
 
     if (message.sender.id == read<ChatUser>().value?.id) return;
 
-    final splits = message.text.split(' ');
-    if (splits.first != 'call') return;
-
-    switch (splits[1]) {
+    final data = message.data.toCall();
+    switch (data.action) {
       // someone ask for call
-      case 'ask':
+      case CallActionType.ask:
         switch (_callStatus.value) {
           // Has call in
           case VoiceCallStatusType.none:
@@ -338,36 +338,42 @@ class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
           // Some one also want call when I'm calling out, so answer him
           case VoiceCallStatusType.callOut:
             read<ActionsLeaf>().invoke(
-              SendMessageIntent('call yes', quoteId: message.id),
+              SendMessageIntent(CallMessageData(
+                action: CallActionType.yes,
+                answerId: message.id,
+              ).toMessageData()),
             );
             myRequestHasBeenAccepted();
 
           // Some one want to join when we are calling, answer him
           case VoiceCallStatusType.talking:
             read<ActionsLeaf>().invoke(
-              SendMessageIntent('call yes', quoteId: message.id),
+              SendMessageIntent(CallMessageData(
+                action: CallActionType.yes,
+                answerId: message.id,
+              ).toMessageData()),
             );
         }
 
-      case 'cancel':
+      case CallActionType.cancel:
         // caller canceled asking
         if (_callStatus.value == VoiceCallStatusType.callIn &&
-            message.quoteId == _callingRequestBusiness.requestMessageId) {
+            data.answerId == _callingRequestBusiness.requestMessageId) {
           _callStatus.value = VoiceCallStatusType.none;
           _callingRequestBusiness.requestMessageId = null;
         }
 
-      case 'yes':
+      case CallActionType.yes:
         // my request has been accepted!
         if (_callStatus.value == VoiceCallStatusType.callOut &&
-            message.quoteId == _callingRequestBusiness.requestMessageId) {
+            data.answerId == _callingRequestBusiness.requestMessageId) {
           myRequestHasBeenAccepted();
         }
 
-      case 'no':
+      case CallActionType.no:
         // someone rejected me
         if (_callStatus.value == VoiceCallStatusType.callOut &&
-            message.quoteId == _callingRequestBusiness.requestMessageId) {
+            data.answerId == _callingRequestBusiness.requestMessageId) {
           _callingRequestBusiness.myRequestIsRejectedBy(message.sender);
         }
 

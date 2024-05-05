@@ -3,7 +3,6 @@ import 'dart:convert';
 
 import 'package:bunga_player/bunga_server/client.dart';
 import 'package:bunga_player/chat/models/channel_data.dart';
-import 'package:bunga_player/chat/models/message.dart';
 import 'package:bunga_player/chat/models/user.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/utils/models/network_progress.dart';
@@ -44,16 +43,19 @@ class _TencentGroup extends Channel {
     final leaverStream = groupManager.leaverStreamByGroupId(groupId);
     final joinerStreamController = StreamController<JoinEvent>.broadcast();
 
-    final userInfoString = '${currentUser.colorHue} ${currentUser.name}';
     final alohaSubscription = messageStream
+        .map((rawMessage) => rawMessage.toMessage())
         .where((message) =>
-            message.text.startsWith('aloha ') &&
+            message.data['type'] == 'aloha' &&
             message.sender.id != currentUser.id)
         .listen((_) {
       messageManager.sendMessage(
         currentUser,
         groupId,
-        'hereis $userInfoString',
+        jsonEncode({
+          'type': 'hereIs',
+          ...currentUser.toJson(),
+        }),
       );
     });
 
@@ -64,21 +66,15 @@ class _TencentGroup extends Channel {
       // init joiner stream
       joinerStreamController.add((user: currentUser, isNew: false));
       final joinerStream = messageStream
+          .map((rawMessage) => rawMessage.toMessage())
           .where((message) =>
-              message.text.startsWith('aloha ') ||
-              message.text.startsWith('hereis '))
+              message.data['type'] == 'aloha' ||
+              message.data['type'] == 'hereIs')
           .map<JoinEvent>(
         (message) {
-          final isNew = message.text.startsWith('aloha ');
-
-          final splits = message.text.split(' ');
-          final userId = message.sender.id;
-          final userHue = int.parse(splits[1]);
-          final userName = splits.sublist(2).join(' ');
-
-          final user = User(id: userId, name: userName, colorHue: userHue);
-          _userInfoCache[userId] = user;
-
+          final isNew = message.data['type'] == 'aloha';
+          final user = User.fromJson(message.data);
+          _userInfoCache[user.id] = user;
           return (user: user, isNew: isNew);
         },
       );
@@ -88,7 +84,10 @@ class _TencentGroup extends Channel {
       messageManager.sendMessage(
         currentUser,
         groupId,
-        'aloha $userInfoString',
+        jsonEncode({
+          'type': 'aloha',
+          ...currentUser.toJson(),
+        }),
       );
     });
 
@@ -101,11 +100,10 @@ class _TencentGroup extends Channel {
         joinEvents: joinerStreamController.stream,
         leaver: leaverStream,
       ),
-      sendMessage: (text, {quoteId}) => messageManager.sendMessage(
+      sendMessage: (text) => messageManager.sendMessage(
         currentUser,
         groupId,
         text,
-        quoteId: quoteId,
       ),
       updateData: (data) => groupManager.updateGroupData(groupId, data),
       uploadFile: (filePath, {description, title}) => messageManager.sendFile(
@@ -227,11 +225,9 @@ class TencentClient extends ChatClient {
 }
 
 class _MessageManager {
-  static const quotePrefix = 'quote ';
-
   final _messageStreamController =
-      StreamController<({String? groupId, Message message})>.broadcast();
-  Stream<Message> messageStreamByGroupId(String groupId) =>
+      StreamController<({String? groupId, RawMessage message})>.broadcast();
+  Stream<RawMessage> messageStreamByGroupId(String groupId) =>
       _messageStreamController.stream
           .where((event) => event.groupId == groupId)
           .map((event) => event.message);
@@ -250,28 +246,17 @@ class _MessageManager {
       listener: V2TimAdvancedMsgListener(
         onRecvNewMessage: (message) async {
           if (message.elemType == MessageElemType.V2TIM_ELEM_TYPE_TEXT) {
-            // deal quote
-            String content = message.textElem!.text!;
-            String? quoteMessageId;
-            if (content.startsWith(quotePrefix)) {
-              final splits = content.split(' ');
-              quoteMessageId = content.split(' ')[1];
-              content = splits.sublist(2).join(' ');
-            }
-
-            final m = Message(
+            final m = RawMessage(
               id: message.msgID!,
-              text: content,
+              text: message.textElem!.text!,
               sender: _userInfoCache[message.sender!] ??
                   User(
                     id: message.sender!,
                     name: message.nickName!,
                   ),
-              quoteId: quoteMessageId,
             );
 
-            logger.i(
-                'Receive message from ${m.sender.name}: ${m.text}, quote id: ${m.quoteId}');
+            logger.i('Receive message from ${m.sender.name}: ${m.text}');
             _messageStreamController
                 .add((groupId: message.groupID, message: m));
           } else if (message.elemType == MessageElemType.V2TIM_ELEM_TYPE_FILE) {
@@ -306,16 +291,13 @@ class _MessageManager {
     );
   }
 
-  Future<Message> sendMessage(
+  Future<RawMessage> sendMessage(
     User sender,
     String groupId,
-    String text, {
-    String? quoteId,
-  }) async {
+    String text,
+  ) async {
     final manager = TencentImSDKPlugin.v2TIMManager.getMessageManager();
-    final createTextMessageRes = await manager.createTextMessage(
-      text: '${quoteId == null ? '' : "$quotePrefix$quoteId "}$text',
-    );
+    final createTextMessageRes = await manager.createTextMessage(text: text);
     assert(createTextMessageRes.code == 0);
 
     final sendMessageRes = await manager.sendMessage(
@@ -326,15 +308,14 @@ class _MessageManager {
     assert(sendMessageRes.code == 0, sendMessageRes.desc);
     final messageId = sendMessageRes.data!.msgID!;
 
-    final message = Message(
+    final message = RawMessage(
       id: messageId,
       text: text,
-      quoteId: quoteId,
       sender: sender,
     );
     _messageStreamController.add((groupId: groupId, message: message));
 
-    logger.i('Send message: $text, quote id: $quoteId');
+    logger.i('Send message: $text');
     return message;
   }
 

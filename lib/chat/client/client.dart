@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:bunga_player/utils/models/network_progress.dart';
 
 import '../models/channel_data.dart';
@@ -15,6 +17,24 @@ class OwnUser extends User {
   });
 }
 
+class RawMessage {
+  final String id;
+  final String text;
+  final User sender;
+
+  RawMessage({
+    required this.id,
+    required this.text,
+    required this.sender,
+  });
+
+  Message toMessage() => Message(
+        id: id,
+        data: jsonDecode(text) as MessageData,
+        sender: sender,
+      );
+}
+
 typedef JoinEvent = ({
   User user,
   bool isNew,
@@ -27,12 +47,12 @@ class Channel {
     Stream<ChannelData> data,
     Stream<JoinEvent> joinEvents,
     Stream<User> leaver,
-    Stream<Message> message,
+    Stream<RawMessage> message,
     Stream<ChannelFile> file,
   }) streams;
 
   final Future<void> Function(ChannelData data) updateData;
-  final Future<Message> Function(String text, {String? quoteId}) sendMessage;
+  final Future<RawMessage> Function(String text) sendMessage;
   final Stream<RequestProgress> Function(
     String filePath, {
     String? title,

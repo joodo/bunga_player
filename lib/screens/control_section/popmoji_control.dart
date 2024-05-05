@@ -1,7 +1,8 @@
 import 'dart:ui';
 
 import 'package:bunga_player/chat/actions.dart';
-import 'package:bunga_player/constants/constants.dart';
+import 'package:bunga_player/popmoji/constants.dart';
+import 'package:bunga_player/popmoji/models.dart';
 import 'package:bunga_player/screens/widgets/scroll_optimizer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -107,7 +108,10 @@ class _EmojiButton extends StatelessWidget {
       icon: svg,
       onPressed: () {
         // send popmoji
-        Actions.invoke(context, SendMessageIntent('popmoji $code'));
+        Actions.invoke(
+          context,
+          SendMessageIntent(PopmojiMessageData(code: code).toMessageData()),
+        );
         _showThrowEmojiAnimation(context);
         Navigator.of(context).pop();
       },

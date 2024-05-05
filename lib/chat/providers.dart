@@ -247,7 +247,7 @@ final chatProviders = MultiProvider(providers: [
         previous!.value = null;
         previous.unbind();
       } else {
-        previous!.bind(channel.streams.message);
+        previous!.bind(channel.streams.message.map((raw) => raw.toMessage()));
       }
       return previous;
     },

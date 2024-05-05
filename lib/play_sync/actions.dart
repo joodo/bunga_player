@@ -37,7 +37,7 @@ class AskPositionAction extends ContextAction<AskPositionIntent> {
   Future<void> invoke(AskPositionIntent intent, [BuildContext? context]) async {
     final message = await (Actions.invoke(
       context!,
-      const SendMessageIntent('where'),
+      SendMessageIntent(WhereAskingMessageData().toMessageData()),
     ) as Future<Message>);
     positionAskingBusiness.askingMessageId = message.id;
 
@@ -59,17 +59,13 @@ class AskPositionAction extends ContextAction<AskPositionIntent> {
 }
 
 class ApplyRemotePlayingStatusIntent extends Intent {
-  final PlayStatusType status;
-  final int position;
   final User sender;
-  final String? answerId;
+  final PlayStatusMessageData data;
 
-  const ApplyRemotePlayingStatusIntent(
-    this.status,
-    this.position,
-    this.sender,
-    this.answerId,
-  );
+  const ApplyRemotePlayingStatusIntent({
+    required this.sender,
+    required this.data,
+  });
 }
 
 class ApplyRemotePlayingStatusAction
@@ -88,10 +84,10 @@ class ApplyRemotePlayingStatusAction
 
     bool canShowToast = true;
     // If apply status is because asking where, then don't show snack bar
-    if (intent.answerId != null) canShowToast = false;
+    if (intent.data.answerId != null) canShowToast = false;
 
     final isPlaying = read<PlayStatus>().isPlaying;
-    if (intent.status == PlayStatusType.pause && isPlaying) {
+    if (intent.data.status == PlayStatusType.pause && isPlaying) {
       getIt<Player>().pause();
       if (canShowToast) {
         getIt<Toast>().show('${intent.sender.name} 暂停了视频');
@@ -99,7 +95,7 @@ class ApplyRemotePlayingStatusAction
         context.read<JustToggleByRemote>().mark();
       }
     }
-    if (intent.status == PlayStatusType.play && !isPlaying) {
+    if (intent.data.status == PlayStatusType.play && !isPlaying) {
       getIt<Player>().play();
       if (canShowToast) {
         getIt<Toast>().show('${intent.sender.name} 播放了视频');
@@ -109,7 +105,7 @@ class ApplyRemotePlayingStatusAction
     }
 
     final position = read<PlayPosition>().value;
-    final remotePosition = Duration(milliseconds: intent.position);
+    final remotePosition = intent.data.position;
     if ((position - remotePosition).inMilliseconds.abs() > 1000) {
       getIt<Player>().seek(remotePosition);
       if (canShowToast) {
@@ -128,7 +124,7 @@ class ApplyRemotePlayingStatusAction
 
     // Answering me or just normal tell
     final isAnsweringMe =
-        intent.answerId == positionAskingBusiness.askingMessageId;
+        intent.data.answerId == positionAskingBusiness.askingMessageId;
     final isFromMe = intent.sender.id == context!.read<ChatUser>().value?.id;
     return isAnsweringMe && !isFromMe && context.isVideoSameWithChannel;
   }
@@ -136,7 +132,7 @@ class ApplyRemotePlayingStatusAction
 
 class SendPlayingStatusIntent extends Intent {
   final PlayStatusType playingStatus;
-  final int position;
+  final Duration position;
   final String? answerId;
 
   const SendPlayingStatusIntent(
@@ -153,13 +149,14 @@ class SendPlayingStatusAction extends ContextAction<SendPlayingStatusIntent> {
 
   @override
   Future<void> invoke(SendPlayingStatusIntent intent, [BuildContext? context]) {
-    final messageText = '${intent.playingStatus.name} at ${intent.position}';
-
     return Actions.invoke(
         context!,
         SendMessageIntent(
-          messageText,
-          quoteId: intent.answerId,
+          PlayStatusMessageData(
+            status: intent.playingStatus,
+            position: intent.position,
+            answerId: intent.answerId,
+          ).toMessageData(),
         )) as Future<void>;
   }
 
@@ -292,28 +289,21 @@ class _PlaySyncActionsState extends SingleChildState<PlaySyncActions> {
     final message = read<ChatChannelLastMessage>().value;
     if (message == null) return;
 
-    final splits = message.text.split(' ');
-    switch (splits.first) {
-      case 'pause':
-      case 'play':
-        context.read<ActionsLeaf>().mayBeInvoke(
-              ApplyRemotePlayingStatusIntent(
-                splits.first == 'pause'
-                    ? PlayStatusType.pause
-                    : PlayStatusType.play,
-                int.parse(splits.last),
-                message.sender,
-                message.quoteId,
-              ),
-            );
-      case 'where':
-        context.read<ActionsLeaf>().mayBeInvoke(
-              SendPlayingStatusIntent(
-                read<PlayStatus>().value,
-                read<PlayPosition>().value.inMilliseconds,
-                answerId: message.id,
-              ),
-            );
+    if (message.data.isWhereAsking) {
+      context.read<ActionsLeaf>().mayBeInvoke(
+            SendPlayingStatusIntent(
+              read<PlayStatus>().value,
+              read<PlayPosition>().value,
+              answerId: message.id,
+            ),
+          );
+    } else if (message.data.isPlayStatus) {
+      context.read<ActionsLeaf>().mayBeInvoke(
+            ApplyRemotePlayingStatusIntent(
+              sender: message.sender,
+              data: message.data.toPlayStatus(),
+            ),
+          );
     }
   }
 }
