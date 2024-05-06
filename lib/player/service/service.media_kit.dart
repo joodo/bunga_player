@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:bunga_player/services/exit_callbacks.dart';
 import 'package:bunga_player/utils/models/volume.dart';
 import 'package:bunga_player/player/providers.dart';
 import 'package:bunga_player/services/logger.dart';
@@ -388,6 +389,8 @@ class MediaKitPlayer implements Player {
       logger.w('Load watch progress failed');
       _watchProgress = {};
     }
+
+    getIt<ExitCallbacks>().add(_saveWatchProgress);
   }
 
   void _saveCurrentProgress() {
@@ -399,7 +402,7 @@ class MediaKitPlayer implements Player {
     }
   }
 
-  Future<void> saveWatchProgress() async {
+  Future<void> _saveWatchProgress() async {
     _saveCurrentProgress();
     await getIt<Preferences>().set(
       'watch_progress',

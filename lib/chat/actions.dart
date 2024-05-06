@@ -5,9 +5,9 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:bunga_player/play_sync/models.dart';
 import 'package:bunga_player/play_sync/providers.dart';
 import 'package:bunga_player/screens/wrappers/actions.dart';
+import 'package:bunga_player/services/exit_callbacks.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
-import 'package:bunga_player/ui/providers.dart';
 import 'package:bunga_player/voice_call/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
@@ -122,7 +122,7 @@ class _ChannelActionsState extends SingleChildState<ChannelActions> {
     _lastMessage.addListener(_updateWatchers);
     _lastMessage.addListener(_answerAloha);
 
-    context.read<ExitCallbacks>().add(() async {
+    getIt<ExitCallbacks>().add(() async {
       return context.read<ActionsLeaf>().maybeInvoke(
             const LeaveChannelIntent(),
           ) as Future?;
