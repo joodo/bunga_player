@@ -13,9 +13,9 @@ Widget wrap(SingleChildStatelessWidget app, Widget child) {
     children: [
       const RestartWrapper(),
       const ProvidersWrapper(),
-      ActionsWrapper(),
       const ToastWrapper(),
       app,
+      ActionsWrapper(),
       const UpdateAndCleanWrapper(),
       const ConsoleWrapper(),
     ],
