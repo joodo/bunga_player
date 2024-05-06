@@ -212,14 +212,18 @@ class _VariablesViewState extends State<_VariablesView> {
     'App Keys': (context) {
       final bunga = context.read<BungaClient?>();
       if (bunga == null) return 'null';
-      return 'StreamIO: ${bunga.chatClientInfo.appKey}, Agora: ${bunga.agoraClientAppKey}, Bili sess: ${bunga.biliSess}';
+      return '''Chat:
+${bunga.chatClientInfo.runtimeType}: ${bunga.chatClientInfo.appKey}, ${bunga.chatClientInfo.userToken}
+Agora key:
+${bunga.agoraClientAppKey}
+Bili sess:
+${bunga.biliSess}''';
     },
     'Current verion': (context) => getIt<PackageInfo>().version,
     'Chat User': (context) => context.read<ChatUser>().toString(),
     'Chat Channel': (context) => '''id: ${context.read<ChatChannel>().value?.id}
 data: ${context.read<ChatChannelData>().value}
-watchers:${context.read<ChatChannelWatchers>().value}
-last message: ${context.read<ChatChannelLastMessage>().value}''',
+watchers:${context.read<ChatChannelWatchers>().value}''',
     'Voice Call': (context) =>
         '''status: ${context.read<VoiceCallStatus>().value.name}
 talkers: ${context.read<VoiceCallTalkers>().value}''',
