@@ -113,7 +113,6 @@ class _EmojiButton extends StatelessWidget {
           SendMessageIntent(PopmojiMessageData(code: code).toMessageData()),
         );
         _showThrowEmojiAnimation(context);
-        Navigator.of(context).pop();
       },
     );
 
