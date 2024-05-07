@@ -28,7 +28,7 @@ class ActionsWrapper extends Nested {
           const UIActions(),
           const PlayActions(),
           const BungaServerActions(),
-          const ChannelActions(),
+          const ChatActions(),
           const PlaySyncActions(),
           const VoiceCallActions(),
           const DanmakuActions(),

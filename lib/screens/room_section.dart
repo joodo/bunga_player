@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:animations/animations.dart';
+import 'package:bunga_player/chat/actions.dart';
 import 'package:bunga_player/play_sync/models.dart';
 import 'package:bunga_player/play_sync/providers.dart';
 import 'package:bunga_player/player/actions.dart';
@@ -110,8 +111,16 @@ class _RoomSectionState extends State<RoomSection> {
 
     return Row(
       children: [
-        const SizedBox(width: 12),
-        const Text('当前观看：'),
+        TextButton(
+          onPressed: Actions.handler(
+            context,
+            const RefreshWatchersIntent(),
+          ),
+          child: Text(
+            '当前观众',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+        ),
         _UserLabel(currentUser),
         ...others.map((user) => _UserLabel(user)),
       ],

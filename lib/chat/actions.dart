@@ -103,21 +103,44 @@ class SendMessageAction extends ContextAction<SendMessageIntent> {
   }
 }
 
-class ChannelActions extends SingleChildStatefulWidget {
-  const ChannelActions({super.key, super.child});
-  @override
-  State<ChannelActions> createState() => _ChannelActionsState();
+class RefreshWatchersIntent extends Intent {
+  const RefreshWatchersIntent();
 }
 
-class _ChannelActionsState extends SingleChildState<ChannelActions> {
+class RefreshWatchersAction extends ContextAction<RefreshWatchersIntent> {
+  @override
+  Future<void> invoke(RefreshWatchersIntent intent, [BuildContext? context]) {
+    final read = context!.read;
+
+    read<ChatChannelWatchers>().clear();
+    return read<ActionsLeaf>().invoke(SendMessageIntent(
+      AlohaMessageData(
+        user: read<ChatUser>().value!,
+      ).toMessageData(),
+    )) as Future;
+  }
+
+  @override
+  bool isEnabled(RefreshWatchersIntent intent, [BuildContext? context]) {
+    return context?.read<ChatChannel>().value != null;
+  }
+}
+
+class ChatActions extends SingleChildStatefulWidget {
+  const ChatActions({super.key, super.child});
+  @override
+  State<ChatActions> createState() => _ChannelActionsState();
+}
+
+class _ChannelActionsState extends SingleChildState<ChatActions> {
   late final _currentWatchers = context.read<ChatChannelWatchers>();
   late final _currentChannel = context.read<ChatChannel>();
   late final _lastMessage = context.read<ChatChannelLastMessage>();
 
   @override
   void initState() {
-    _currentWatchers.addJoinListener(_onUserJoin);
-    _currentWatchers.addLeaveListener(_onUserLeave);
+    _currentWatchers.addJoinListener(_notifyUserJoin);
+    _currentWatchers.addLeaveListener(_notifyUserLeave);
     _currentChannel.addListener(_sendAloha);
     _lastMessage.addListener(_updateWatchers);
     _lastMessage.addListener(_answerAloha);
@@ -133,8 +156,8 @@ class _ChannelActionsState extends SingleChildState<ChannelActions> {
 
   @override
   void dispose() {
-    _currentWatchers.removeJoinListener(_onUserJoin);
-    _currentWatchers.removeLeaveListener(_onUserLeave);
+    _currentWatchers.removeJoinListener(_notifyUserJoin);
+    _currentWatchers.removeLeaveListener(_notifyUserLeave);
     _currentChannel.removeListener(_sendAloha);
     _lastMessage.removeListener(_updateWatchers);
     _lastMessage.removeListener(_answerAloha);
@@ -150,12 +173,13 @@ class _ChannelActionsState extends SingleChildState<ChannelActions> {
         SendMessageIntent: SendMessageAction(),
         JoinChannelIntent: JoinChannelAction(),
         LeaveChannelIntent: LeaveChannelAction(),
+        RefreshWatchersIntent: RefreshWatchersAction(),
       },
       child: child!,
     );
   }
 
-  void _onUserJoin({required User user, required bool isNew}) {
+  void _notifyUserJoin({required User user, required bool isNew}) {
     final currentId = context.read<ChatUser>().value!.id;
     if (user.id == currentId) return;
 
@@ -164,7 +188,7 @@ class _ChannelActionsState extends SingleChildState<ChannelActions> {
     AudioPlayer().play(AssetSource('sounds/user_join.wav'));
   }
 
-  void _onUserLeave({required User user}) {
+  void _notifyUserLeave({required User user}) {
     getIt<Toast>().show('${user.name} 已离开');
     AudioPlayer().play(AssetSource('sounds/user_leave.wav'));
   }
