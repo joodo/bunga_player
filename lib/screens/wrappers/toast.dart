@@ -79,6 +79,11 @@ class _ToastWrapperState extends SingleChildState<ToastWrapper>
       child: card,
     );
 
+    final clickable = GestureDetector(
+      onTap: _visibleNotifier.reset,
+      child: animedCard,
+    );
+
     final body = Stack(
       alignment: Alignment.center,
       children: [
@@ -87,7 +92,7 @@ class _ToastWrapperState extends SingleChildState<ToastWrapper>
           bottom: 80,
           child: Visibility(
             visible: _controller.status != AnimationStatus.dismissed,
-            child: animedCard,
+            child: clickable,
           ),
         ),
       ],
