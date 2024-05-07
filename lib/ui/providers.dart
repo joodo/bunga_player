@@ -27,6 +27,20 @@ class WindowTitle extends ValueNotifierWithReset<String> {
   }
 }
 
+class AlwaysOnTop extends ValueNotifier<bool> {
+  AlwaysOnTop() : super(false) {
+    addListener(() {
+      windowManager.setAlwaysOnTop(value);
+    });
+    bindPreference<bool>(
+      preferences: getIt<Preferences>(),
+      key: 'always_on_top',
+      load: (pref) => pref,
+      update: (value) => value,
+    );
+  }
+}
+
 class ShouldShowHUD extends AutoResetNotifier {
   ShouldShowHUD() : super(const Duration(seconds: 3));
 }
@@ -163,6 +177,10 @@ final uiProviders = MultiProvider(
     ChangeNotifierProvider(create: (context) => IsFullScreen()),
     ChangeNotifierProvider(
       create: (context) => WindowTitle(),
+      lazy: false,
+    ),
+    ChangeNotifierProvider(
+      create: (context) => AlwaysOnTop(),
       lazy: false,
     ),
     ChangeNotifierProvider(create: (context) => DanmakuMode()),

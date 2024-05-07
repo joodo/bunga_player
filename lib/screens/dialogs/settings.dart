@@ -48,6 +48,11 @@ class _SettingsDialogState extends State<SettingsDialog> {
                   label: Text('网络'),
                 ),
                 NavigationRailDestination(
+                  icon: Icon(Icons.palette_outlined),
+                  selectedIcon: Icon(Icons.palette),
+                  label: Text('外观'),
+                ),
+                NavigationRailDestination(
                   icon: Icon(Icons.chat_outlined),
                   selectedIcon: Icon(Icons.chat),
                   label: Text('互动'),
@@ -70,6 +75,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
                 sizing: StackFit.expand,
                 children: const [
                   _NetworkSettings(),
+                  _AppearanceSettings(),
                   _ReactionSettings(),
                   _ShortcutSettings(),
                   _AboutSetting(),
@@ -234,6 +240,32 @@ class _NetworkSettingsState extends State<_NetworkSettings> {
     } finally {
       pendingNotifier.value = false;
     }
+  }
+}
+
+class _AppearanceSettings extends StatelessWidget {
+  const _AppearanceSettings();
+
+  @override
+  Widget build(BuildContext context) {
+    return _SettingStack(
+      content: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const _SectionText('窗口'),
+          _SectionContainer(
+            padding: EdgeInsets.zero,
+            child: Consumer<AlwaysOnTop>(
+              builder: (context, alwaysOnTopNotifier, child) => SwitchListTile(
+                title: const Text('总在最前'),
+                value: alwaysOnTopNotifier.value,
+                onChanged: (value) => alwaysOnTopNotifier.value = value,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
