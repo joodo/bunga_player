@@ -9,10 +9,34 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
 
-class IsFullScreen extends ValueNotifier<bool> {
-  IsFullScreen() : super(false) {
+class AlwaysOnTop extends ValueNotifier<bool> {
+  AlwaysOnTop() : super(false) {
     addListener(() async {
-      windowManager.setFullScreen(value);
+      final fullscreen = await windowManager.isFullScreen();
+      if (fullscreen) return;
+
+      windowManager.setAlwaysOnTop(value);
+    });
+    bindPreference<bool>(
+      preferences: getIt<Preferences>(),
+      key: 'always_on_top',
+      load: (pref) => pref,
+      update: (value) => value,
+    );
+  }
+}
+
+class IsFullScreen extends ValueNotifier<bool> {
+  final AlwaysOnTop alwaysOnTop;
+  IsFullScreen(this.alwaysOnTop) : super(false) {
+    addListener(() async {
+      if (value) {
+        await windowManager.setAlwaysOnTop(false);
+        await windowManager.setFullScreen(true);
+      } else {
+        await windowManager.setFullScreen(false);
+        await windowManager.setAlwaysOnTop(alwaysOnTop.value);
+      }
     });
     windowManager.isFullScreen().then((value) => this.value = value);
   }
@@ -24,20 +48,6 @@ class WindowTitle extends ValueNotifierWithReset<String> {
       windowManager.setTitle(value);
     });
     notifyListeners();
-  }
-}
-
-class AlwaysOnTop extends ValueNotifier<bool> {
-  AlwaysOnTop() : super(false) {
-    addListener(() {
-      windowManager.setAlwaysOnTop(value);
-    });
-    bindPreference<bool>(
-      preferences: getIt<Preferences>(),
-      key: 'always_on_top',
-      load: (pref) => pref,
-      update: (value) => value,
-    );
   }
 }
 
@@ -174,13 +184,15 @@ class ShortcutMapping
 final uiProviders = MultiProvider(
   providers: [
     ChangeNotifierProvider(create: (context) => CatIndicator()),
-    ChangeNotifierProvider(create: (context) => IsFullScreen()),
     ChangeNotifierProvider(
-      create: (context) => WindowTitle(),
+      create: (context) => AlwaysOnTop(),
       lazy: false,
     ),
     ChangeNotifierProvider(
-      create: (context) => AlwaysOnTop(),
+      create: (context) => IsFullScreen(context.read<AlwaysOnTop>()),
+    ),
+    ChangeNotifierProvider(
+      create: (context) => WindowTitle(),
       lazy: false,
     ),
     ChangeNotifierProvider(create: (context) => DanmakuMode()),
