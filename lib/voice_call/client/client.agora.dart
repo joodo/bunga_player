@@ -77,7 +77,10 @@ class AgoraClient extends VoiceCallClient {
       RtcEngineEventHandler(
         onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
           logger.i('Voice call: Local user uid:${connection.localUid} joined.');
-          AudioPlayer().play(AssetSource('sounds/user_speak.wav'));
+          AudioPlayer().play(
+            AssetSource('sounds/user_speak.wav'),
+            mode: PlayerMode.lowLatency,
+          );
         },
         onUserJoined: (RtcConnection connection, int remoteUid, int elapsed) {
           logger.i('Voice call: Remote user uid:$remoteUid joined.');

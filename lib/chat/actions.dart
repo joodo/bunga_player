@@ -185,12 +185,18 @@ class _ChannelActionsState extends SingleChildState<ChatActions> {
 
     if (!isNew) return;
     getIt<Toast>().show('${user.name} 已加入');
-    AudioPlayer().play(AssetSource('sounds/user_join.wav'));
+    AudioPlayer().play(
+      AssetSource('sounds/user_join.wav'),
+      mode: PlayerMode.lowLatency,
+    );
   }
 
   void _notifyUserLeave({required User user}) {
     getIt<Toast>().show('${user.name} 已离开');
-    AudioPlayer().play(AssetSource('sounds/user_leave.wav'));
+    AudioPlayer().play(
+      AssetSource('sounds/user_leave.wav'),
+      mode: PlayerMode.lowLatency,
+    );
   }
 
   void _updateWatchers() {

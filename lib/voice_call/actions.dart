@@ -181,7 +181,10 @@ class HangUpAction extends ContextAction<HangUpIntent> {
     final read = context!.read;
 
     read<VoiceCallStatus>().value = VoiceCallStatusType.none;
-    AudioPlayer().play(AssetSource('sounds/hang_up.wav'));
+    AudioPlayer().play(
+      AssetSource('sounds/hang_up.wav'),
+      mode: PlayerMode.lowLatency,
+    );
 
     final actionsLeaf = read<ActionsLeaf>();
     actionsLeaf.invoke(const VoiceCallMuteMicIntent(false));
@@ -279,7 +282,10 @@ class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
   }
 
   // Call ring
-  final _callRinger = AudioPlayer()..setSource(AssetSource('sounds/call.wav'));
+  final _callRinger = AudioPlayer()
+    ..setSource(AssetSource('sounds/call.wav'))
+    ..setReleaseMode(ReleaseMode.loop)
+    ..setPlayerMode(PlayerMode.lowLatency);
   void _soundCallRing() {
     if (_callStatus.value == VoiceCallStatusType.callIn ||
         _callStatus.value == VoiceCallStatusType.callOut) {
