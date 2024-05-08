@@ -6,6 +6,8 @@ import 'package:bunga_player/screens/control_section/dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../widgets/divider.dart';
+
 class TuneControl extends StatelessWidget {
   const TuneControl({super.key});
 
@@ -21,7 +23,7 @@ class TuneControl extends StatelessWidget {
         ),
 
         // Contrast button
-        const VerticalDivider(indent: 8, endIndent: 8),
+        const ControlDivider(),
         const SizedBox(width: 8),
         const Text('视频亮度'),
         const SizedBox(width: 12),
@@ -54,7 +56,7 @@ class TuneControl extends StatelessWidget {
         const SizedBox(width: 8),
 
         // Audio tracks section
-        const VerticalDivider(indent: 8, endIndent: 8),
+        const ControlDivider(),
         Consumer2<PlayAudioTracks, PlayAudioTrackID>(
           builder: (context, tracks, currentID, child) {
             return Row(
@@ -91,7 +93,7 @@ class TuneControl extends StatelessWidget {
             );
           },
         ),
-        const VerticalDivider(indent: 8, endIndent: 8),
+        const ControlDivider(),
       ],
     );
   }

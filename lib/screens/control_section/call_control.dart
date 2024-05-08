@@ -7,6 +7,8 @@ import 'package:bunga_player/voice_call/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../widgets/divider.dart';
+
 class CallControl extends StatefulWidget {
   const CallControl({super.key});
 
@@ -67,7 +69,7 @@ class _CallControlState extends State<CallControl> {
           const SizedBox(width: 8),
 
           // Call control
-          const VerticalDivider(indent: 8, endIndent: 8),
+          const ControlDivider(),
           Consumer<VoiceCallVolume>(
             builder: (context, callVolume, child) => IconButton(
               icon: callVolume.value.mute

@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
+import '../widgets/divider.dart';
 import 'channel_required_wrap.dart';
 import 'dropdown.dart';
 
@@ -228,7 +229,7 @@ class _SubtitleControlState extends State<SubtitleControl> {
                 );
               },
             ),
-            const VerticalDivider(indent: 8, endIndent: 8),
+            const ControlDivider(),
             const SizedBox(width: 8),
 
             // Subtitle adjust

@@ -11,6 +11,8 @@ import 'package:lottie/lottie.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 
+import '../widgets/divider.dart';
+
 class PopmojiControl extends StatefulWidget {
   const PopmojiControl({super.key});
 
@@ -92,11 +94,7 @@ class _PopmojiControlState extends State<PopmojiControl> {
                     ),
                   ),
               if (recent.isNotEmpty)
-                const VerticalDivider(
-                  indent: 8,
-                  endIndent: 8,
-                  key: ValueKey('barDivicer'),
-                ),
+                const ControlDivider(key: ValueKey('barDivicer')),
               ...recent.asMap().entries.map((entry) => _DragWrapper(
                     index: entry.key + pinned.length + 1,
                     child: _EmojiButton(

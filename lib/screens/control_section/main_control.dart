@@ -19,6 +19,7 @@ import 'package:bunga_player/voice_call/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../widgets/divider.dart';
 import 'channel_required_wrap.dart';
 
 class MainControl extends StatelessWidget {
@@ -41,12 +42,11 @@ class MainControl extends StatelessWidget {
           ),
           child: const Icon(Icons.sync),
         ),
-
-        const VerticalDivider(indent: 8, endIndent: 8),
+        const ControlDivider(),
 
         // Volume section
         const _SliderSection(),
-        const VerticalDivider(indent: 8, endIndent: 8),
+        const ControlDivider(),
 
         // Duration button
         const Spacer(),
@@ -54,7 +54,7 @@ class MainControl extends StatelessWidget {
         const Spacer(),
 
         // Call Button
-        const VerticalDivider(indent: 8, endIndent: 8),
+        const ControlDivider(),
         const SizedBox(width: 8),
         const _CallButton(),
         const SizedBox(width: 8),
