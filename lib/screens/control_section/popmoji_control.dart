@@ -4,7 +4,6 @@ import 'package:bunga_player/chat/actions.dart';
 import 'package:bunga_player/popmoji/models/data.dart';
 import 'package:bunga_player/popmoji/models/message_data.dart';
 import 'package:bunga_player/popmoji/providers.dart';
-import 'package:bunga_player/screens/widgets/scroll_optimizer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:bunga_player/mocks/tooltip.dart' as mock;
@@ -20,56 +19,102 @@ class PopmojiControl extends StatefulWidget {
 }
 
 class _PopmojiControlState extends State<PopmojiControl> {
-  final _scrollController = ScrollController();
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
+  final _buttonSize = 40.0;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        const SizedBox(width: 8),
-        // Back button
-        IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: Navigator.of(context).pop,
-        ),
-        const SizedBox(width: 8),
+    return LayoutBuilder(builder: (context, constraints) {
+      final maxButtons = constraints.maxWidth ~/ _buttonSize - 3;
 
-        Expanded(
-          child: ScrollOptimizer(
-            scrollController: _scrollController,
-            child: SingleChildScrollView(
-              controller: _scrollController,
-              scrollDirection: Axis.horizontal,
-              child: Consumer<RecentEmojis>(
-                builder: (context, emojisNotifier, child) => Row(
-                  children: [
-                    ...emojisNotifier.value.map((emoji) => _EmojiButton(
-                          emoji,
-                          onPressed: () => _sendEmoji(emoji),
-                        )),
-                    IconButton(
-                      onPressed: _showAllEmojis,
-                      icon: const Icon(Icons.more_horiz),
-                    ),
-                  ],
+      return Consumer<PopmojiBarItems>(
+        builder: (context, emojisNotifier, child) {
+          late final List<String> pinned, recent;
+          if (emojisNotifier.value.pinned.length > maxButtons) {
+            pinned = emojisNotifier.value.pinned.sublist(0, maxButtons);
+            recent = [];
+          } else {
+            pinned = emojisNotifier.value.pinned;
+
+            final remainCount = maxButtons - pinned.length;
+            final allRecent = emojisNotifier.value.recent;
+            recent = allRecent.length <= remainCount
+                ? allRecent
+                : allRecent.sublist(0, remainCount);
+          }
+
+          return ReorderableListView(
+            scrollDirection: Axis.horizontal,
+            buildDefaultDragHandles: false,
+            onReorder: (int oldIndex, int newIndex) {
+              EmojiIndex toEmojiIndex(int index) {
+                if (index <= pinned.length) {
+                  return (
+                    list: EmojiListType.pinned,
+                    index: index,
+                  );
+                } else {
+                  return (
+                    list: EmojiListType.recent,
+                    index: index - pinned.length - 1,
+                  );
+                }
+              }
+
+              emojisNotifier.move(
+                toEmojiIndex(oldIndex),
+                toEmojiIndex(newIndex),
+              );
+            },
+            header: Padding(
+              padding: const EdgeInsets.only(left: 12.0),
+              child: Center(
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: Navigator.of(context).pop,
                 ),
               ),
             ),
-          ),
-        ),
-        const SizedBox(width: 8),
-      ],
-    );
+            footer: Center(
+              child: IconButton(
+                onPressed: _showAllEmojis,
+                icon: const Icon(Icons.more_horiz),
+              ),
+            ),
+            children: [
+              ...pinned.asMap().entries.map(
+                    (entry) => _DragWrapper(
+                      index: entry.key,
+                      child: _EmojiButton(
+                        entry.value,
+                        onPressed: () => _sendEmoji(entry.value),
+                        size: _buttonSize,
+                      ),
+                    ),
+                  ),
+              if (recent.isNotEmpty)
+                const VerticalDivider(
+                  indent: 8,
+                  endIndent: 8,
+                  key: ValueKey('barDivicer'),
+                ),
+              ...recent.asMap().entries.map((entry) => _DragWrapper(
+                    index: entry.key + pinned.length + 1,
+                    child: _EmojiButton(
+                      entry.value,
+                      onPressed: () => _sendEmoji(entry.value),
+                      size: _buttonSize,
+                    ),
+                  )),
+            ],
+          );
+        },
+      );
+    });
   }
 
   void _showAllEmojis() async {
+    final barItems = context.read<PopmojiBarItems>();
+
     final selected = await showModalBottomSheet<String?>(
       context: context,
       useRootNavigator: true,
@@ -78,6 +123,8 @@ class _PopmojiControlState extends State<PopmojiControl> {
     if (selected == null) return;
 
     _sendEmoji(selected);
+
+    barItems.addRecent(selected);
   }
 
   void _sendEmoji(String emoji) {
@@ -87,6 +134,21 @@ class _PopmojiControlState extends State<PopmojiControl> {
       SendMessageIntent(PopmojiMessageData(
         code: EmojiData.codePoint(emoji),
       ).toMessageData()),
+    );
+  }
+}
+
+class _DragWrapper extends SingleChildStatelessWidget {
+  final int index;
+
+  _DragWrapper({required this.index, super.child})
+      : super(key: ValueKey(index));
+
+  @override
+  Widget buildWithChild(BuildContext context, Widget? child) {
+    return ReorderableDragStartListener(
+      index: index,
+      child: Center(child: child),
     );
   }
 }
@@ -163,6 +225,7 @@ class _EmojiSheetState extends State<_EmojiSheet> {
                             .map<Widget>(
                               (emoji) => _EmojiButton(
                                 emoji,
+                                waitDuration: const Duration(seconds: 1),
                                 onPressed: () =>
                                     Navigator.of(context).pop(emoji),
                                 size: _EmojiSheet.emojiSize,
@@ -226,10 +289,12 @@ class _EmojiButton extends StatelessWidget {
   final String emoji;
   final double size;
   final VoidCallback onPressed;
+  final Duration? waitDuration;
 
   const _EmojiButton(
     this.emoji, {
     this.size = 40,
+    this.waitDuration,
     required this.onPressed,
   });
 
@@ -251,7 +316,7 @@ class _EmojiButton extends StatelessWidget {
     );
 
     return mock.Tooltip(
-      waitDuration: const Duration(milliseconds: 1000),
+      waitDuration: waitDuration,
       margin: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: Theme.of(context).shadowColor.withOpacity(0.7),
