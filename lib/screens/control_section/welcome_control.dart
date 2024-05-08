@@ -93,8 +93,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
     );
   }
 
-  void _onVideoOpened(VideoEntry entry) {
-    if (!mounted) throw Exception('Context unmounted');
+  void _onVideoOpened(BuildContext context, VideoEntry entry) {
     if (context.read<AutoJoinChannel>().value) {
       Actions.invoke(
         context,

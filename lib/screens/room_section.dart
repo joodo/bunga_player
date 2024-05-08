@@ -12,7 +12,6 @@ import 'package:bunga_player/chat/providers.dart';
 import 'package:bunga_player/player/providers.dart';
 import 'package:bunga_player/screens/dialogs/local_video_entry.dart';
 import 'package:bunga_player/screens/widgets/loading_text.dart';
-import 'package:bunga_player/screens/wrappers/providers.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
 import 'package:bunga_player/voice_call/providers.dart';

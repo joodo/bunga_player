@@ -1,4 +1,5 @@
 import 'package:bunga_player/chat/actions.dart';
+import 'package:bunga_player/play_sync/providers.dart';
 import 'package:bunga_player/player/actions.dart';
 import 'package:bunga_player/play_sync/actions.dart';
 import 'package:bunga_player/voice_call/actions.dart';
@@ -10,8 +11,6 @@ import 'package:bunga_player/player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/chat/providers.dart';
 import 'package:bunga_player/player/providers.dart';
 import 'package:bunga_player/ui/providers.dart';
-import 'package:bunga_player/screens/wrappers/providers.dart';
-import 'package:bunga_player/screens/control_section/popmoji_control.dart';
 import 'package:bunga_player/screens/widgets/video_open_menu_items.dart';
 import 'package:bunga_player/utils/extensions/comparable.dart';
 import 'package:bunga_player/utils/extensions/duration.dart';
@@ -22,19 +21,8 @@ import 'package:provider/provider.dart';
 
 import 'channel_required_wrap.dart';
 
-class MainControl extends StatefulWidget {
+class MainControl extends StatelessWidget {
   const MainControl({super.key});
-
-  @override
-  State<MainControl> createState() => _MainControlState();
-}
-
-class _MainControlState extends State<MainControl> {
-  @override
-  void didChangeDependencies() {
-    PopmojiControl.cacheSvgs();
-    super.didChangeDependencies();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -173,7 +161,7 @@ class _MainControlState extends State<MainControl> {
             // Leave Button
             mock.MenuItemButton(
               leadingIcon: const Icon(Icons.logout),
-              onPressed: _leaveChannel,
+              onPressed: () => _leaveChannel(context),
               child: const Text('离开房间'),
             ),
           ],
@@ -208,15 +196,13 @@ class _MainControlState extends State<MainControl> {
     );
   }
 
-  void _leaveChannel() async {
+  void _leaveChannel(BuildContext context) async {
     Actions.invoke(context, const StopPlayIntent());
     Actions.maybeInvoke(context, const LeaveChannelIntent());
     Navigator.of(context).popAndPushNamed('control:welcome');
   }
 
-  void _onVideoOpened(VideoEntry entry) {
-    if (!mounted) throw Exception('Context unmounted');
-
+  void _onVideoOpened(BuildContext context, VideoEntry entry) {
     final currentUser = context.read<ChatUser>().value;
     if (!context.isVideoSameWithChannel && currentUser != null) {
       Actions.maybeInvoke(

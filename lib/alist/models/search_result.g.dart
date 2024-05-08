@@ -9,7 +9,7 @@ part of 'search_result.dart';
 AListSearchResult _$AListSearchResultFromJson(Map<String, dynamic> json) =>
     AListSearchResult(
       name: json['name'] as String,
-      size: json['size'] as int,
+      size: (json['size'] as num).toInt(),
       type: $enumDecode(_$AListFileTypeEnumMap, json['type']),
       parent: json['parent'] as String,
     );

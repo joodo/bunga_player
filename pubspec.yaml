@@ -105,7 +105,8 @@ flutter:
 
   assets:
     - assets/images/
-    - assets/images/emojis/
+    - assets/emojis/
+    - assets/emojis/emojis/
     - assets/sounds/
 
 #  emoji loading too slow 

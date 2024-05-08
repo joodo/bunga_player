@@ -1,6 +1,6 @@
 import 'package:bunga_player/chat/actions.dart';
 import 'package:bunga_player/danmaku/actions.dart';
-import 'package:bunga_player/popmoji/models.dart';
+import 'package:bunga_player/popmoji/models/message_data.dart';
 import 'package:bunga_player/ui/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

@@ -1,36 +1,18 @@
 import 'dart:ui';
 
 import 'package:bunga_player/chat/actions.dart';
-import 'package:bunga_player/popmoji/constants.dart';
-import 'package:bunga_player/popmoji/models.dart';
+import 'package:bunga_player/popmoji/models/data.dart';
+import 'package:bunga_player/popmoji/models/message_data.dart';
+import 'package:bunga_player/popmoji/providers.dart';
 import 'package:bunga_player/screens/widgets/scroll_optimizer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:bunga_player/mocks/tooltip.dart' as mock;
 import 'package:lottie/lottie.dart';
 import 'package:nested/nested.dart';
+import 'package:provider/provider.dart';
 
 class PopmojiControl extends StatefulWidget {
-  static Future<void> cacheSvgs() async {
-    String? previousCode;
-    for (var rune in emojis.runes) {
-      var code = rune.toRadixString(16);
-      if (code.length < 5) {
-        if (previousCode == null) {
-          previousCode = code;
-          continue;
-        } else {
-          code = '${previousCode}_$code';
-          previousCode = null;
-        }
-      }
-
-      final icon = SvgAssetLoader(_assetPathByCode(code));
-      await svg.cache
-          .putIfAbsent(icon.cacheKey(null), () => icon.loadBytes(null));
-    }
-  }
-
   const PopmojiControl({super.key});
 
   @override
@@ -48,23 +30,6 @@ class _PopmojiControlState extends State<PopmojiControl> {
 
   @override
   Widget build(BuildContext context) {
-    final List<Widget> emojiButtons = [];
-    String? previousCode;
-    for (var rune in emojis.runes) {
-      var code = rune.toRadixString(16);
-      if (code.length < 5) {
-        if (previousCode == null) {
-          previousCode = code;
-          continue;
-        } else {
-          code = '${previousCode}_$code';
-          previousCode = null;
-        }
-      }
-
-      emojiButtons.add(_EmojiButton(code: code));
-    }
-
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -82,7 +47,13 @@ class _PopmojiControlState extends State<PopmojiControl> {
             child: SingleChildScrollView(
               controller: _scrollController,
               scrollDirection: Axis.horizontal,
-              child: Row(children: [...emojiButtons]),
+              child: Consumer<RecentEmojis>(
+                builder: (context, emojisNotifier, child) => Row(
+                  children: emojisNotifier.value
+                      .map((emoji) => _EmojiButton(emoji))
+                      .toList(),
+                ),
+              ),
             ),
           ),
         ),
@@ -93,14 +64,14 @@ class _PopmojiControlState extends State<PopmojiControl> {
 }
 
 class _EmojiButton extends StatelessWidget {
-  final String code;
+  final String emoji;
 
-  const _EmojiButton({required this.code});
+  const _EmojiButton(this.emoji);
 
   @override
   Widget build(BuildContext context) {
     final svg = SvgPicture.asset(
-      _assetPathByCode(code),
+      EmojiData.svgPath(emoji),
       height: 24,
     );
 
@@ -110,7 +81,9 @@ class _EmojiButton extends StatelessWidget {
         // send popmoji
         Actions.invoke(
           context,
-          SendMessageIntent(PopmojiMessageData(code: code).toMessageData()),
+          SendMessageIntent(PopmojiMessageData(
+            code: EmojiData.codePoint(emoji),
+          ).toMessageData()),
         );
         _showThrowEmojiAnimation(context);
       },
@@ -125,7 +98,7 @@ class _EmojiButton extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(8),
           child: Lottie.asset(
-            'assets/images/emojis/u$code.json',
+            EmojiData.lottiePath(emoji),
             repeat: true,
             height: 64,
           ),
@@ -160,7 +133,7 @@ class _EmojiButton extends StatelessWidget {
             0,
           ),
           overlay: overlayEntry,
-          child: SvgPicture.asset('assets/images/emojis/u$code.svg'),
+          child: SvgPicture.asset(EmojiData.svgPath(emoji)),
         );
       },
     );
@@ -248,5 +221,3 @@ class _ThrowAnimationState extends SingleChildState<_ThrowAnimation>
     _position = pathMetric.getTangentForOffset(tween)!.position;
   }
 }
-
-String _assetPathByCode(String code) => 'assets/images/emojis/u$code.svg';

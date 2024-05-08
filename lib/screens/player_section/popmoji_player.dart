@@ -3,7 +3,8 @@ import 'dart:math';
 import 'package:async/async.dart';
 import 'package:bunga_player/chat/models/user.dart';
 import 'package:bunga_player/chat/providers.dart';
-import 'package:bunga_player/popmoji/models.dart';
+import 'package:bunga_player/popmoji/models/data.dart';
+import 'package:bunga_player/popmoji/models/message_data.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
 import 'package:fireworks/fireworks.dart';
@@ -289,7 +290,7 @@ class _EmojiAnimationState extends State<_EmojiAnimation>
         ],
       ),
       child: Lottie.asset(
-        'assets/images/emojis/u${widget.info.code}.json',
+        EmojiData.lottiePath(EmojiData.emojiString(widget.info.code)),
         repeat: false,
         onLoaded: (composition) {
           _animationController.duration = composition.duration * 1.25;

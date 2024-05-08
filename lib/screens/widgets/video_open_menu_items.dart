@@ -15,7 +15,7 @@ import 'package:provider/provider.dart';
 
 class VideoOpenMenuItemsCreator {
   final BuildContext context;
-  final ValueSetter<VideoEntry>? onVideoOpened;
+  final Function(BuildContext context, VideoEntry entry)? onVideoOpened;
   const VideoOpenMenuItemsCreator(this.context, {this.onVideoOpened});
 
   List<Widget> create() {
@@ -83,7 +83,10 @@ class VideoOpenMenuItemsCreator {
       ) as Future?;
       await response;
 
-      onVideoOpened?.call(result);
+      if (!context.mounted) {
+        throw Exception('Context unmounted! Fall to call video open callback.');
+      }
+      onVideoOpened?.call(context, result);
     } catch (e) {
       getIt<Toast>().show('解析失败');
       rethrow;

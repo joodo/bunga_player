@@ -9,7 +9,7 @@ part of 'file_info.dart';
 AListFileInfo _$AListFileInfoFromJson(Map<String, dynamic> json) =>
     AListFileInfo(
       name: json['name'] as String,
-      size: json['size'] as int,
+      size: (json['size'] as num).toInt(),
       type: $enumDecode(_$AListFileTypeEnumMap, json['type']),
       created: DateTime.parse(json['created'] as String),
       modified: DateTime.parse(json['modified'] as String),

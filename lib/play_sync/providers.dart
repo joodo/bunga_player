@@ -1,9 +1,16 @@
 import 'package:bunga_player/chat/providers.dart';
 import 'package:bunga_player/chat/client/client.dart';
-import 'package:flutter/foundation.dart';
+import 'package:bunga_player/player/providers.dart';
+import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 
 import 'models.dart';
+
+extension IsVideoSameWithChannel on BuildContext {
+  bool get isVideoSameWithChannel =>
+      read<ChatChannelData>().value?.videoHash ==
+      read<PlayVideoEntry>().value?.hash;
+}
 
 class ChannelSubtitles extends ValueNotifier<Map<String, ChannelSubtitle>> {
   ChannelSubtitles() : super({});

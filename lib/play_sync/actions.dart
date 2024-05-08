@@ -10,7 +10,6 @@ import 'package:bunga_player/player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/chat/providers.dart';
 import 'package:bunga_player/player/providers.dart';
 import 'package:bunga_player/ui/providers.dart';
-import 'package:bunga_player/screens/wrappers/providers.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/player/service/service.dart';
 import 'package:bunga_player/services/services.dart';
@@ -22,6 +21,7 @@ import 'package:provider/provider.dart';
 import 'package:path/path.dart' as path;
 
 import 'models.dart';
+import 'providers.dart';
 
 class PositionAskingBusiness {
   String? askingMessageId;

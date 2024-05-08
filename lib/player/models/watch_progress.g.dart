@@ -8,8 +8,8 @@ part of 'watch_progress.dart';
 
 WatchProgress _$WatchProgressFromJson(Map<String, dynamic> json) =>
     WatchProgress(
-      progress: json['progress'] as int,
-      duration: json['duration'] as int,
+      progress: (json['progress'] as num).toInt(),
+      duration: (json['duration'] as num).toInt(),
     );
 
 Map<String, dynamic> _$WatchProgressToJson(WatchProgress instance) =>
