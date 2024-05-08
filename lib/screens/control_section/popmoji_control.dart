@@ -175,6 +175,7 @@ class _EmojiSheetState extends State<_EmojiSheet> {
         title: Padding(
           padding: const EdgeInsets.only(left: 24),
           child: TextField(
+            autofocus: true,
             decoration: const InputDecoration(
               hintText: '搜索表情',
               border: OutlineInputBorder(
