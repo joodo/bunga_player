@@ -206,11 +206,14 @@ class _EmojiSheetState extends State<_EmojiSheet> {
           const SizedBox(height: 8),
           Flexible(
             child: LayoutBuilder(builder: (context, constraints) {
-              final items = _sliceItems(
+              var items = _sliceItems(
                 _data,
                 constraints.maxWidth ~/ _EmojiSheet.emojiSize,
-              )..add('');
+              );
+              if (items.isEmpty) items = ['无结果'];
+
               return ListView.builder(
+                padding: const EdgeInsets.only(bottom: 24),
                 itemCount: items.length,
                 prototypeItem: const SizedBox(height: _EmojiSheet.emojiSize),
                 itemBuilder: (context, index) => items[index] is String
