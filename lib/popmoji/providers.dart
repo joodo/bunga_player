@@ -75,7 +75,7 @@ final popmojiProviders = MultiProvider(providers: [
           .loadString('assets/emojis/emojis.json');
       final data = EmojiData.fromJson(jsonDecode(jsonString));
 
-      _cacheEmojis(data);
+      _preCacheEmojis(data);
 
       return data;
     },
@@ -85,7 +85,7 @@ final popmojiProviders = MultiProvider(providers: [
   ChangeNotifierProvider(create: (context) => PopmojiBarItems()),
 ]);
 
-Future<void> _cacheEmojis(EmojiData data) async {
+Future<void> _preCacheEmojis(EmojiData data) async {
   for (var category in data.categories) {
     for (var emoji in category.emojis) {
       final icon = SvgAssetLoader(EmojiData.svgPath(emoji));

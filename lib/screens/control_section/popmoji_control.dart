@@ -225,7 +225,7 @@ class _EmojiSheetState extends State<_EmojiSheet> {
                             .map<Widget>(
                               (emoji) => _EmojiButton(
                                 emoji,
-                                waitDuration: const Duration(seconds: 1),
+                                waitDuration: const Duration(milliseconds: 300),
                                 onPressed: () =>
                                     Navigator.of(context).pop(emoji),
                                 size: _EmojiSheet.emojiSize,
