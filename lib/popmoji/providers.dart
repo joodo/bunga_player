@@ -86,8 +86,10 @@ Future<void> _cacheEmojis(EmojiData data) async {
   for (var category in data.categories) {
     for (var emoji in category.emojis) {
       final icon = SvgAssetLoader(EmojiData.svgPath(emoji));
-      await svg.cache
-          .putIfAbsent(icon.cacheKey(null), () => icon.loadBytes(null));
+      await svg.cache.putIfAbsent(
+        icon.cacheKey(null),
+        () => icon.loadBytes(null),
+      );
     }
   }
 }
