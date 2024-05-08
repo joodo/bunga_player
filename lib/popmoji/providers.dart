@@ -40,8 +40,11 @@ class PopmojiBarItems extends ValueNotifier<
     if (value.pinned.contains(emoji)) return;
     if (value.recent.firstOrNull == emoji) return;
 
-    value.recent.remove(emoji);
-    value.recent.insert(0, emoji);
+    final recent = value.recent;
+    recent.remove(emoji);
+    recent.insert(0, emoji);
+    if (recent.length > 15) recent.removeRange(15, recent.length);
+
     notifyListeners();
   }
 
