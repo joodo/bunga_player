@@ -181,7 +181,6 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
         decoration: InputDecoration(
           hintText: '搜索文件和文件夹',
           border: const OutlineInputBorder(),
-          fillColor: Colors.red,
           suffixIcon: Padding(
             padding: const EdgeInsets.only(right: 8.0),
             child: IconButton(

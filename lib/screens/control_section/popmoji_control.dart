@@ -49,9 +49,16 @@ class _PopmojiControlState extends State<PopmojiControl> {
               scrollDirection: Axis.horizontal,
               child: Consumer<RecentEmojis>(
                 builder: (context, emojisNotifier, child) => Row(
-                  children: emojisNotifier.value
-                      .map((emoji) => _EmojiButton(emoji))
-                      .toList(),
+                  children: [
+                    ...emojisNotifier.value.map((emoji) => _EmojiButton(
+                          emoji,
+                          onPressed: () => _sendEmoji(emoji),
+                        )),
+                    IconButton(
+                      onPressed: _showAllEmojis,
+                      icon: const Icon(Icons.more_horiz),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -61,35 +68,191 @@ class _PopmojiControlState extends State<PopmojiControl> {
       ],
     );
   }
+
+  void _showAllEmojis() async {
+    final selected = await showModalBottomSheet<String?>(
+      context: context,
+      useRootNavigator: true,
+      builder: (context) => const _EmojiSheet(),
+    );
+    if (selected == null) return;
+
+    _sendEmoji(selected);
+  }
+
+  void _sendEmoji(String emoji) {
+    // send popmoji
+    Actions.invoke(
+      context,
+      SendMessageIntent(PopmojiMessageData(
+        code: EmojiData.codePoint(emoji),
+      ).toMessageData()),
+    );
+  }
+}
+
+class _EmojiSheet extends StatefulWidget {
+  static const emojiSize = 52.0;
+
+  const _EmojiSheet();
+
+  @override
+  State<_EmojiSheet> createState() => _EmojiSheetState();
+}
+
+class _EmojiSheetState extends State<_EmojiSheet> {
+  late final _categories = context.read<EmojiData>().categories;
+  late List<EmojiCategory> _data = _categories;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+      child: Column(
+        children: [
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              Flexible(
+                child: TextField(
+                  decoration: const InputDecoration(
+                    hintText: '搜索表情',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(36)),
+                    ),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 24),
+                  ),
+                  onChanged: (value) {
+                    if (value.isEmpty) {
+                      setState(() {
+                        _data = _categories;
+                      });
+                      return;
+                    }
+
+                    setState(() {
+                      _data = _emojisByTag(value);
+                    });
+                  },
+                ),
+              ),
+              const SizedBox(width: 8),
+              IconButton(
+                onPressed: Navigator.of(context).pop,
+                icon: const Icon(Icons.close),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Flexible(
+            child: LayoutBuilder(builder: (context, constraints) {
+              final items = _sliceItems(
+                _data,
+                constraints.maxWidth ~/ _EmojiSheet.emojiSize,
+              )..add('');
+              return ListView.builder(
+                itemCount: items.length,
+                prototypeItem: const SizedBox(height: _EmojiSheet.emojiSize),
+                itemBuilder: (context, index) => items[index] is String
+                    ? Padding(
+                        padding: const EdgeInsets.only(top: 28),
+                        child: Text(items[index]),
+                      )
+                    : Row(
+                        children: items[index]
+                            .map<Widget>(
+                              (emoji) => _EmojiButton(
+                                emoji,
+                                onPressed: () =>
+                                    Navigator.of(context).pop(emoji),
+                                size: _EmojiSheet.emojiSize,
+                              ),
+                            )
+                            .toList(),
+                      ),
+              );
+            }),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List _sliceItems(List<EmojiCategory> categories, int count) {
+    final items = [];
+
+    for (var category in categories) {
+      items.add(category.name);
+
+      var remain = category.emojis;
+      while (remain.length > count) {
+        items.add(remain.sublist(0, count));
+        remain = remain.sublist(count);
+      }
+      if (remain.isNotEmpty) items.add(remain);
+    }
+
+    return items;
+  }
+
+  List<EmojiCategory> _emojisByTag(String keyword) {
+    final data = context.read<EmojiData>();
+
+    final result = <EmojiCategory>[];
+    for (var category in data.categories) {
+      final emojis = category.emojis.where(
+        (emoji) => _tagsContainKeyword(data.tags[emoji]!, keyword),
+      );
+      if (emojis.isNotEmpty) {
+        result.add(EmojiCategory(
+          name: category.name,
+          emojis: emojis.toList(),
+        ));
+      }
+    }
+
+    return result;
+  }
+
+  bool _tagsContainKeyword(List<String> tags, String keyword) {
+    for (var tag in tags) {
+      if (tag.contains(keyword)) return true;
+    }
+    return false;
+  }
 }
 
 class _EmojiButton extends StatelessWidget {
   final String emoji;
+  final double size;
+  final VoidCallback onPressed;
 
-  const _EmojiButton(this.emoji);
+  const _EmojiButton(
+    this.emoji, {
+    this.size = 40,
+    required this.onPressed,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final iconSize = size - 16;
     final svg = SvgPicture.asset(
       EmojiData.svgPath(emoji),
-      height: 24,
+      width: iconSize,
+      height: iconSize,
     );
 
     final button = IconButton(
       icon: svg,
       onPressed: () {
-        // send popmoji
-        Actions.invoke(
-          context,
-          SendMessageIntent(PopmojiMessageData(
-            code: EmojiData.codePoint(emoji),
-          ).toMessageData()),
-        );
         _showThrowEmojiAnimation(context);
+        onPressed();
       },
     );
 
     return mock.Tooltip(
+      waitDuration: const Duration(milliseconds: 1000),
+      margin: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: Theme.of(context).shadowColor.withOpacity(0.7),
         borderRadius: const BorderRadius.all(Radius.circular(12)),
@@ -97,10 +260,16 @@ class _EmojiButton extends StatelessWidget {
       richMessage: WidgetSpan(
         child: Padding(
           padding: const EdgeInsets.all(8),
-          child: Lottie.asset(
-            EmojiData.lottiePath(emoji),
-            repeat: true,
-            height: 64,
+          child: Column(
+            children: [
+              Lottie.asset(
+                EmojiData.lottiePath(emoji),
+                repeat: true,
+                height: 64,
+              ),
+              const SizedBox(height: 4),
+              Text(context.read<EmojiData>().tags[emoji]?.first ?? ''),
+            ],
           ),
         ),
       ),
