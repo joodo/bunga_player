@@ -168,7 +168,7 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
     final dirTitleBar = Column(
       children: [
         pathSection,
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         bookmarkSection,
         const SizedBox(height: 8),
       ],
