@@ -116,6 +116,7 @@ class _PopmojiControlState extends State<PopmojiControl> {
     final selected = await showModalBottomSheet<String?>(
       context: context,
       useRootNavigator: true,
+      clipBehavior: Clip.hardEdge,
       builder: (context) => const _EmojiSheet(),
     );
     if (selected == null) return;
@@ -166,79 +167,75 @@ class _EmojiSheetState extends State<_EmojiSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(24)),
-      clipBehavior: Clip.hardEdge,
-      child: Scaffold(
-        appBar: AppBar(
-          toolbarHeight: 72,
-          scrolledUnderElevation: 11,
-          automaticallyImplyLeading: false,
-          title: Padding(
-            padding: const EdgeInsets.only(left: 24),
-            child: TextField(
-              decoration: const InputDecoration(
-                hintText: '搜索表情',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(36)),
-                ),
-                contentPadding: EdgeInsets.symmetric(horizontal: 24),
+    return Scaffold(
+      appBar: AppBar(
+        toolbarHeight: 72,
+        scrolledUnderElevation: 11,
+        automaticallyImplyLeading: false,
+        title: Padding(
+          padding: const EdgeInsets.only(left: 24),
+          child: TextField(
+            decoration: const InputDecoration(
+              hintText: '搜索表情',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(36)),
               ),
-              onChanged: (value) {
-                if (value.isEmpty) {
-                  setState(() {
-                    _data = _categories;
-                  });
-                  return;
-                }
-
-                setState(() {
-                  _data = _emojisByTag(value);
-                });
-              },
+              contentPadding: EdgeInsets.symmetric(horizontal: 24),
             ),
-          ),
-          actions: [
-            Padding(
-              padding: const EdgeInsets.only(right: 24),
-              child: IconButton(
-                onPressed: Navigator.of(context).pop,
-                icon: const Icon(Icons.close),
-              ),
-            )
-          ],
-        ),
-        body: LayoutBuilder(builder: (context, constraints) {
-          var items = _sliceItems(
-            _data,
-            (constraints.maxWidth - 48) ~/ _EmojiSheet.emojiSize,
-          );
-          if (items.isEmpty) items = ['无结果'];
+            onChanged: (value) {
+              if (value.isEmpty) {
+                setState(() {
+                  _data = _categories;
+                });
+                return;
+              }
 
-          return ListView.builder(
-            padding: const EdgeInsets.only(bottom: 24, left: 24, right: 24),
-            itemCount: items.length,
-            prototypeItem: const SizedBox(height: _EmojiSheet.emojiSize),
-            itemBuilder: (context, index) => items[index] is String
-                ? Padding(
-                    padding: const EdgeInsets.only(top: 28),
-                    child: Text(items[index]),
-                  )
-                : Row(
-                    children: items[index]
-                        .map<Widget>(
-                          (emoji) => _EmojiButton(
-                            emoji,
-                            waitDuration: const Duration(milliseconds: 500),
-                            onPressed: () => Navigator.of(context).pop(emoji),
-                            size: _EmojiSheet.emojiSize,
-                          ),
-                        )
-                        .toList(),
-                  ),
-          );
-        }),
+              setState(() {
+                _data = _emojisByTag(value);
+              });
+            },
+          ),
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 24),
+            child: IconButton(
+              onPressed: Navigator.of(context).pop,
+              icon: const Icon(Icons.close),
+            ),
+          )
+        ],
       ),
+      body: LayoutBuilder(builder: (context, constraints) {
+        var items = _sliceItems(
+          _data,
+          (constraints.maxWidth - 48) ~/ _EmojiSheet.emojiSize,
+        );
+        if (items.isEmpty) items = ['无结果'];
+
+        return ListView.builder(
+          padding: const EdgeInsets.only(bottom: 24, left: 24, right: 24),
+          itemCount: items.length,
+          prototypeItem: const SizedBox(height: _EmojiSheet.emojiSize),
+          itemBuilder: (context, index) => items[index] is String
+              ? Padding(
+                  padding: const EdgeInsets.only(top: 28),
+                  child: Text(items[index]),
+                )
+              : Row(
+                  children: items[index]
+                      .map<Widget>(
+                        (emoji) => _EmojiButton(
+                          emoji,
+                          waitDuration: const Duration(milliseconds: 500),
+                          onPressed: () => Navigator.of(context).pop(emoji),
+                          size: _EmojiSheet.emojiSize,
+                        ),
+                      )
+                      .toList(),
+                ),
+        );
+      }),
     );
   }
 
