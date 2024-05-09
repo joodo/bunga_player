@@ -2,7 +2,6 @@ import 'package:window_manager/window_manager.dart';
 
 typedef ExitCallback = Future<void> Function();
 
-// HACK: AppLifecycleListener.onExitRequested not work on Windows
 class ExitCallbacks with WindowListener {
   ExitCallbacks() {
     windowManager.setPreventClose(true);
@@ -20,6 +19,7 @@ class ExitCallbacks with WindowListener {
   ExitCallback? _shutter;
   void setShutter(ExitCallback shutter) => _shutter = shutter;
 
+  // HACK: AppLifecycleListener.onExitRequested not work on Windows
   @override
   void onWindowClose() async {
     await Future.any([
