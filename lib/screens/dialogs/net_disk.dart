@@ -96,7 +96,7 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
                         _cd('$cdPath/');
                       },
                       child: Text(
-                        index == 0 ? '所有文件' : pathSplits[index],
+                        index == 0 ? '网盘文件' : pathSplits[index],
                         style: themeData.textTheme.bodyLarge,
                       ),
                     ),
