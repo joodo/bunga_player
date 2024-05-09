@@ -318,7 +318,7 @@ class _EmojiButton extends StatelessWidget {
       waitDuration: waitDuration,
       margin: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: Theme.of(context).shadowColor.withOpacity(0.7),
+        color: Theme.of(context).shadowColor.withOpacity(0.85),
         borderRadius: const BorderRadius.all(Radius.circular(12)),
       ),
       richMessage: WidgetSpan(
