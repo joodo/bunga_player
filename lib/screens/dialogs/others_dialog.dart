@@ -74,8 +74,7 @@ class OthersDialogState extends State<OthersDialog> {
         ),
       ),
     );
-    // HACK: cannot use listview because issue, same as popmoji
-    // https://github.com/flutter/flutter/issues/26527
+
     final channelsView = Container(
       clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(color: themeData.colorScheme.surface),
