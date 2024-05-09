@@ -26,7 +26,7 @@ class _ToastWrapperState extends SingleChildState<ToastWrapper>
     });
 
   late final _visibleNotifier = AutoResetNotifier(
-    const Duration(milliseconds: 3000),
+    const Duration(milliseconds: 2000),
   );
   late final _textNotifier = ValueNotifier<String>('');
 
@@ -85,11 +85,12 @@ class _ToastWrapperState extends SingleChildState<ToastWrapper>
     );
 
     final body = Stack(
-      alignment: Alignment.center,
+      alignment: Alignment.centerLeft,
       children: [
         if (child != null) child,
         Positioned(
-          bottom: 80,
+          bottom: 72,
+          left: 12,
           child: Visibility(
             visible: _controller.status != AnimationStatus.dismissed,
             child: clickable,
