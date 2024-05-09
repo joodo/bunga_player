@@ -258,26 +258,25 @@ class _PlaySyncActionsState extends SingleChildState<PlaySyncActions> {
 
   void _tryToFollowRemoteVideo() {
     final read = context.read;
-    final currentUser = read<ChatUser>();
-    final currentChannelData = read<ChatChannelData>();
-    final currentData = currentChannelData.value;
+    final currentUser = read<ChatUser>().value;
     final currentEntry = read<PlayVideoEntry>().value;
+    final newChannelData = read<ChatChannelData>().value;
 
     // Leave channel
-    if (currentData == null) return;
+    if (newChannelData == null) return;
 
     // I did this
-    if (currentUser.value?.id == currentData.sharer.id) return;
+    if (currentUser?.id == newChannelData.sharer.id) return;
 
     // Not changing video
-    if (currentEntry!.hash == currentData.videoHash) return;
+    if (currentEntry!.hash == newChannelData.videoHash) return;
 
-    getIt<Toast>().show('${currentData.sharer.name} 更换了影片');
+    getIt<Toast>().show('${newChannelData.sharer.name} 更换了影片');
 
     // Only follow online video
-    if (currentChannelData.value!.videoType != VideoType.online) return;
+    if (newChannelData.videoType != VideoType.online) return;
 
-    final videoEntry = VideoEntry.fromChannelData(currentData);
+    final videoEntry = VideoEntry.fromChannelData(newChannelData);
     context
         .read<ActionsLeaf>()
         .mayBeInvoke(OpenVideoIntent(videoEntry: videoEntry));
