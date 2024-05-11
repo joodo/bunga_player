@@ -177,7 +177,9 @@ class SendPlayingStatusAction extends ContextAction<SendPlayingStatusIntent> {
     if (progress == null) return false;
 
     // I have play record, but it's from before, I'm not started play this time
-    if (intent.position.inMilliseconds < progress.progress) return false;
+    if (intent.position.inMilliseconds - progress.progress < -1000) {
+      return false;
+    }
 
     return true;
   }
