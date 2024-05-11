@@ -2,7 +2,6 @@ import 'package:bunga_player/chat/actions.dart';
 import 'package:bunga_player/play_sync/providers.dart';
 import 'package:bunga_player/player/actions.dart';
 import 'package:bunga_player/play_sync/actions.dart';
-import 'package:bunga_player/screens/wrappers/toast.dart';
 import 'package:bunga_player/voice_call/actions.dart';
 import 'package:bunga_player/chat/models/channel_data.dart';
 import 'package:bunga_player/utils/models/volume.dart';
@@ -200,7 +199,6 @@ class MainControl extends StatelessWidget {
   void _leaveChannel(BuildContext context) async {
     Actions.invoke(context, const StopPlayIntent());
     Actions.maybeInvoke(context, const LeaveChannelIntent());
-    ToastWrapper.of(context).hide();
     Navigator.of(context).popAndPushNamed('control:welcome');
   }
 

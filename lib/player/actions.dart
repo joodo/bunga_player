@@ -91,6 +91,7 @@ class StopPlayAction extends ContextAction<StopPlayIntent> {
   @override
   Future<void> invoke(StopPlayIntent intent, [BuildContext? context]) {
     context!.read<WindowTitle>().reset();
+    ToastWrapper.of(context).hide();
     return getIt<Player>().stop();
   }
 }
@@ -113,12 +114,14 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
     assert(context != null);
 
     final cat = context!.read<CatIndicator>();
+    final actionLeaf = context.read<ActionsLeaf>();
+
+    actionLeaf.invoke(const StopPlayIntent());
 
     await cat.run(() async {
       cat.title = '正在鬼鬼祟祟';
 
       final videoPlayer = getIt<Player>();
-      final actionLeaf = context.read<ActionsLeaf>();
 
       await intent.videoEntry.fetch(context.read);
       await videoPlayer.stop();
