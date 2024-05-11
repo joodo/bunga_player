@@ -5,14 +5,26 @@ import 'package:bunga_player/utils/business/value_listenable.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 
+import 'theme.dart';
+
 class ToastWrapper extends SingleChildStatefulWidget {
   const ToastWrapper({super.key, super.child});
 
+  static ToastWrapperState of(BuildContext context) {
+    return context.findAncestorStateOfType<ToastWrapperState>()!;
+  }
+
   @override
-  State<ToastWrapper> createState() => _ToastWrapperState();
+  State<ToastWrapper> createState() => ToastWrapperState();
 }
 
-class _ToastWrapperState extends SingleChildState<ToastWrapper>
+typedef ToastPayload = ({
+  String text,
+  Widget? action,
+  bool withCloseButton,
+});
+
+class ToastWrapperState extends SingleChildState<ToastWrapper>
     with SingleTickerProviderStateMixin {
   late final _service = getIt<Toast>();
 
@@ -26,9 +38,9 @@ class _ToastWrapperState extends SingleChildState<ToastWrapper>
     });
 
   late final _visibleNotifier = AutoResetNotifier(
-    const Duration(milliseconds: 2000),
+    const Duration(milliseconds: 1500),
   );
-  late final _textNotifier = ValueNotifier<String>('');
+  late final _payloadNotifier = ValueNotifier<ToastPayload?>(null);
 
   @override
   void initState() {
@@ -50,7 +62,7 @@ class _ToastWrapperState extends SingleChildState<ToastWrapper>
     _controller.dispose();
     _service.unregister(show);
     _visibleNotifier.dispose();
-    _textNotifier.dispose();
+    _payloadNotifier.dispose();
     super.dispose();
   }
 
@@ -59,13 +71,35 @@ class _ToastWrapperState extends SingleChildState<ToastWrapper>
     final card = Card(
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(2.0))),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-        child: ValueListenableBuilder(
-          valueListenable: _textNotifier,
-          builder: (context, value, child) => Text(value),
-        ),
+      child: ValueListenableBuilder(
+        valueListenable: _payloadNotifier,
+        builder: (context, payload, child) => payload != null
+            ? Row(
+                children: [
+                  const SizedBox(width: 16),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    child: Text(payload.text),
+                  ),
+                  const SizedBox(width: 8),
+                  if (payload.action != null) payload.action!,
+                  if (payload.withCloseButton)
+                    IconButton(
+                      onPressed: hide,
+                      icon: const Icon(Icons.close),
+                    ),
+                  const SizedBox(width: 8),
+                ],
+              )
+            : const SizedBox.shrink(),
       ),
+    );
+
+    final themedCard = Theme(
+      data: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: ThemeWrapper.seedColor),
+      ),
+      child: card,
     );
 
     final animedCard = AnimatedBuilder(
@@ -76,12 +110,7 @@ class _ToastWrapperState extends SingleChildState<ToastWrapper>
           child: child,
         );
       },
-      child: card,
-    );
-
-    final clickable = GestureDetector(
-      onTap: _visibleNotifier.reset,
-      child: animedCard,
+      child: themedCard,
     );
 
     final body = Stack(
@@ -93,7 +122,7 @@ class _ToastWrapperState extends SingleChildState<ToastWrapper>
           left: 12,
           child: Visibility(
             visible: _controller.status != AnimationStatus.dismissed,
-            child: clickable,
+            child: animedCard,
           ),
         ),
       ],
@@ -105,8 +134,31 @@ class _ToastWrapperState extends SingleChildState<ToastWrapper>
     );
   }
 
-  void show(String text) {
-    _textNotifier.value = text;
-    _visibleNotifier.mark();
+  void show(
+    String text, {
+    Widget? action,
+    bool withCloseButton = false,
+    bool behold = false,
+  }) {
+    if (_visibleNotifier.locked) return;
+
+    _payloadNotifier.value = (
+      text: text,
+      action: action,
+      withCloseButton: withCloseButton,
+    );
+
+    if (!behold) {
+      _visibleNotifier.unlock('behold');
+      _visibleNotifier.mark();
+    } else {
+      _visibleNotifier.mark();
+      _visibleNotifier.lock('behold');
+    }
+  }
+
+  void hide() {
+    _visibleNotifier.unlock('behold');
+    _visibleNotifier.reset();
   }
 }

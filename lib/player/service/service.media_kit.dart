@@ -161,11 +161,6 @@ class MediaKitPlayer implements Player {
       play: false,
     );
 
-    // load saved progress
-    if (_watchProgress.containsKey(entry.hash)) {
-      seek(Duration(milliseconds: _watchProgress[entry.hash]!.progress));
-    }
-
     // load audio if exist
     if (entry.sources.audios != null) {
       _mpvCommand('audio-add ${entry.sources.audios![0]} select audio');
@@ -394,12 +389,12 @@ class MediaKitPlayer implements Player {
   }
 
   void _saveCurrentProgress() {
-    if (_videoEntry != null) {
-      _watchProgress[_videoEntry!.hash] = WatchProgress(
-        progress: _player.state.position.inMilliseconds,
-        duration: _player.state.duration.inMilliseconds,
-      );
-    }
+    if (_player.state.position == Duration.zero || _videoEntry == null) return;
+
+    _watchProgress[_videoEntry!.hash] = WatchProgress(
+      progress: _player.state.position.inMilliseconds,
+      duration: _player.state.duration.inMilliseconds,
+    );
   }
 
   Future<void> _saveWatchProgress() async {

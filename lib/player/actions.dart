@@ -3,10 +3,13 @@ import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:bunga_player/play_sync/actions.dart';
+import 'package:bunga_player/screens/wrappers/actions.dart';
+import 'package:bunga_player/screens/wrappers/toast.dart';
 import 'package:bunga_player/ui/providers.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
 import 'package:bunga_player/utils/extensions/comparable.dart';
+import 'package:bunga_player/utils/extensions/duration.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:path_provider/path_provider.dart';
@@ -110,13 +113,35 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
     assert(context != null);
 
     final cat = context!.read<CatIndicator>();
+
     await cat.run(() async {
       cat.title = '正在鬼鬼祟祟';
 
       final videoPlayer = getIt<Player>();
+      final actionLeaf = context.read<ActionsLeaf>();
+
       await intent.videoEntry.fetch(context.read);
       await videoPlayer.stop();
       await videoPlayer.open(intent.videoEntry, intent.sourceIndex);
+
+      final watchProgress =
+          videoPlayer.watchProgresses.get(intent.videoEntry.hash);
+      if (watchProgress != null && context.mounted) {
+        final position = Duration(milliseconds: watchProgress.progress);
+        final toast = ToastWrapper.of(context);
+        toast.show(
+          '上回看到 ${position.hhmmss}',
+          action: TextButton(
+            onPressed: () {
+              actionLeaf.mayBeInvoke(SeekIntent(position));
+              toast.hide();
+            },
+            child: const Text('跳转'),
+          ),
+          withCloseButton: true,
+          behold: true,
+        );
+      }
 
       if (context.mounted) {
         context.read<WindowTitle>().value = intent.videoEntry.title;

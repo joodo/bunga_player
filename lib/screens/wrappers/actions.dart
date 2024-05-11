@@ -21,20 +21,27 @@ class ActionsLeaf {
       Actions.maybeInvoke(_leafContext, intent);
 }
 
-class ActionsWrapper extends Nested {
-  ActionsWrapper({super.key, super.child})
-      : super(children: [
-          Provider(create: (context) => ActionsLeaf()),
-          const UIActions(),
-          const PlayActions(),
-          const BungaServerActions(),
-          const ChatActions(),
-          const PlaySyncActions(),
-          const VoiceCallActions(),
-          const DanmakuActions(),
-          SingleChildBuilder(builder: (context, child) {
-            context.read<ActionsLeaf>().registerContext(context);
-            return child!;
-          }),
-        ]);
+class ActionsWrapper extends SingleChildStatelessWidget {
+  const ActionsWrapper({super.key, super.child});
+
+  @override
+  Widget buildWithChild(BuildContext context, Widget? child) {
+    return Nested(
+      children: [
+        Provider(create: (context) => ActionsLeaf()),
+        const UIActions(),
+        const PlayActions(),
+        const BungaServerActions(),
+        const ChatActions(),
+        const PlaySyncActions(),
+        const VoiceCallActions(),
+        const DanmakuActions(),
+        SingleChildBuilder(builder: (context, child) {
+          context.read<ActionsLeaf>().registerContext(context);
+          return child!;
+        }),
+      ],
+      child: child,
+    );
+  }
 }
