@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:async/async.dart';
 import 'package:bunga_player/services/exit_callbacks.dart';
 import 'package:bunga_player/utils/models/volume.dart';
 import 'package:bunga_player/player/providers.dart';
@@ -178,10 +179,7 @@ class MediaKitPlayer implements Player {
   @override
   Future<void> play() => _player.play();
   @override
-  Future<void> pause() async {
-    await _player.pause();
-    _saveCurrentProgress();
-  }
+  Future<void> pause() => _player.pause();
 
   @override
   Future<void> toggle() => _player.playOrPause();
@@ -191,8 +189,6 @@ class MediaKitPlayer implements Player {
 
   @override
   Future<void> stop() {
-    _saveCurrentProgress();
-
     _statusController.add(PlayStatusType.stop);
 
     _videoEntry = null;
@@ -372,6 +368,14 @@ class MediaKitPlayer implements Player {
         clearAll: _watchProgress.clear,
       );
 
+  late final RestartableTimer _saveWatchProgressTimer = RestartableTimer(
+    const Duration(seconds: 3),
+    () {
+      _saveCurrentProgress();
+      _saveWatchProgressTimer.reset();
+    },
+  );
+
   void _loadWatchProgress() {
     final rawData = getIt<Preferences>().get<String>('watch_progress');
 
@@ -386,10 +390,18 @@ class MediaKitPlayer implements Player {
     }
 
     getIt<ExitCallbacks>().add(_saveWatchProgress);
+
+    _player.stream.playing.listen(
+      (isPlay) {
+        isPlay
+            ? _saveWatchProgressTimer.reset()
+            : _saveWatchProgressTimer.cancel();
+      },
+    );
   }
 
   void _saveCurrentProgress() {
-    if (_player.state.position == Duration.zero || _videoEntry == null) return;
+    if (_videoEntry == null) return;
 
     _watchProgress[_videoEntry!.hash] = WatchProgress(
       progress: _player.state.position.inMilliseconds,
@@ -398,7 +410,6 @@ class MediaKitPlayer implements Player {
   }
 
   Future<void> _saveWatchProgress() async {
-    _saveCurrentProgress();
     await getIt<Preferences>().set(
       'watch_progress',
       jsonEncode(_watchProgress),
