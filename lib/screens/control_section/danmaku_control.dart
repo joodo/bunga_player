@@ -16,7 +16,6 @@ class _DanmakuControlState extends State<DanmakuControl> {
   late final _danmakuMode = context.read<DanmakuMode>();
 
   final _controller = TextEditingController();
-  final _focusNode = FocusNode();
 
   @override
   void initState() {
@@ -31,6 +30,7 @@ class _DanmakuControlState extends State<DanmakuControl> {
     Future.microtask(() {
       _danmakuMode.value = false;
     });
+    _controller.dispose();
     super.dispose();
   }
 
@@ -53,8 +53,8 @@ class _DanmakuControlState extends State<DanmakuControl> {
             child: TextField(
               style: const TextStyle(height: 1.0),
               controller: _controller,
-              focusNode: _focusNode,
               autofocus: true,
+              onTapOutside: (event) {},
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 labelText: '按回车键发送弹幕',
@@ -71,7 +71,6 @@ class _DanmakuControlState extends State<DanmakuControl> {
                   Actions.invoke(context, SendDanmakuIntent(value));
                 }
                 _controller.clear();
-                _focusNode.requestFocus();
               },
             ),
           ),
