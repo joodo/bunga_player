@@ -37,7 +37,7 @@ class MainControl extends StatelessWidget {
         // Ask position button
         Consumer3<ChatUser, ChatChannel, ChatChannelWatchers>(
           builder: (context, _, __, ___, child) => IconButton(
-            onPressed: Actions.handler(context, AskPositionIntent()),
+            onPressed: Actions.handler(context, const AskPositionIntent()),
             icon: child!,
           ),
           child: const Icon(Icons.sync),

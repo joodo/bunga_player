@@ -27,7 +27,9 @@ class PositionAskingBusiness {
   String? askingMessageId;
 }
 
-class AskPositionIntent extends Intent {}
+class AskPositionIntent extends Intent {
+  const AskPositionIntent();
+}
 
 class AskPositionAction extends ContextAction<AskPositionIntent> {
   final PositionAskingBusiness positionAskingBusiness;
@@ -51,10 +53,7 @@ class AskPositionAction extends ContextAction<AskPositionIntent> {
 
   @override
   bool isEnabled(AskPositionIntent intent, [BuildContext? context]) {
-    final read = context!.read;
-    return read<ChatUser>().value != null &&
-        read<ChatChannel>().value != null &&
-        read<ChatChannelWatchers>().value.length > 1;
+    return context!.read<ChatChannel>().value != null;
   }
 }
 
@@ -163,10 +162,24 @@ class SendPlayingStatusAction extends ContextAction<SendPlayingStatusIntent> {
   @override
   bool isEnabled(SendPlayingStatusIntent intent, [BuildContext? context]) {
     assert(context != null);
-    final notAsking = positionAskingBusiness.askingMessageId == null;
-    final notMyQuestion = positionAskingBusiness.askingMessageId !=
-        context!.read<ChatUser>().value!.id;
-    return notAsking && notMyQuestion && context.isVideoSameWithChannel;
+
+    final read = context!.read;
+
+    // I'm asking too
+    if (positionAskingBusiness.askingMessageId != null) return false;
+
+    // I'm not playing the same video
+    if (!context.isVideoSameWithChannel) return false;
+
+    // I'm not even played
+    final currentHash = read<PlayVideoEntry>().value!.hash;
+    final progress = getIt<Player>().watchProgresses.get(currentHash);
+    if (progress == null) return false;
+
+    // I have play record, but it's from before, I'm not started play this time
+    if (intent.position.inMilliseconds < progress.progress) return false;
+
+    return true;
   }
 }
 
@@ -219,20 +232,25 @@ class PlaySyncActions extends SingleChildStatefulWidget {
 class _PlaySyncActionsState extends SingleChildState<PlaySyncActions> {
   final _positionAskingBusiness = PositionAskingBusiness();
 
+  late final _channel = context.read<ChatChannel>();
   late final _channelData = context.read<ChatChannelData>();
   late final _channelMessage = context.read<ChatChannelLastMessage>();
 
   @override
   void initState() {
+    _channel.addListener(_askWhere);
     _channelData.addListener(_tryToFollowRemoteVideo);
-    _channelMessage.addListener(_dealChannelMessage);
+    _channelMessage.addListener(_answerWhereAsking);
+    _channelMessage.addListener(_applyRemotePlayingStatus);
     super.initState();
   }
 
   @override
   void dispose() {
+    _channel.removeListener(_askWhere);
     _channelData.removeListener(_tryToFollowRemoteVideo);
-    _channelData.removeListener(_dealChannelMessage);
+    _channelMessage.removeListener(_answerWhereAsking);
+    _channelData.removeListener(_applyRemotePlayingStatus);
     super.dispose();
   }
 
@@ -282,27 +300,36 @@ class _PlaySyncActionsState extends SingleChildState<PlaySyncActions> {
         .mayBeInvoke(OpenVideoIntent(videoEntry: videoEntry));
   }
 
-  void _dealChannelMessage() {
+  void _applyRemotePlayingStatus() {
     final read = context.read;
 
     final message = read<ChatChannelLastMessage>().value;
-    if (message == null) return;
+    if (message == null || !message.data.isPlayStatus) return;
 
-    if (message.data.isWhereAsking) {
-      context.read<ActionsLeaf>().mayBeInvoke(
-            SendPlayingStatusIntent(
-              read<PlayStatus>().value,
-              read<PlayPosition>().value,
-              answerId: message.id,
-            ),
-          );
-    } else if (message.data.isPlayStatus) {
-      context.read<ActionsLeaf>().mayBeInvoke(
-            ApplyRemotePlayingStatusIntent(
-              sender: message.sender,
-              data: message.data.toPlayStatus(),
-            ),
-          );
-    }
+    context.read<ActionsLeaf>().mayBeInvoke(
+          ApplyRemotePlayingStatusIntent(
+            sender: message.sender,
+            data: message.data.toPlayStatus(),
+          ),
+        );
+  }
+
+  void _askWhere() {
+    context.read<ActionsLeaf>().mayBeInvoke(const AskPositionIntent());
+  }
+
+  void _answerWhereAsking() {
+    final read = context.read;
+
+    final message = read<ChatChannelLastMessage>().value;
+    if (message == null || !message.data.isWhereAsking) return;
+
+    context.read<ActionsLeaf>().mayBeInvoke(
+          SendPlayingStatusIntent(
+            read<PlayStatus>().value,
+            read<PlayPosition>().value,
+            answerId: message.id,
+          ),
+        );
   }
 }
