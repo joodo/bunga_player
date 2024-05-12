@@ -1,0 +1,59 @@
+<html>
+
+<head>
+    <title>Bunga Player</title>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            text-align: center;
+        }
+
+        p {
+            margin-bottom: 30pt;
+        }
+
+        p.nav {
+            text-align: right;
+            margin-top: 10pt;
+            margin-right: 10pt;
+        }
+
+        @keyframes rotating {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .rotating {
+            animation: rotating 2s linear infinite;
+        }
+
+        .screenshot {
+            width: 400pt;
+            margin: 10pt;
+        }
+    </style>
+</head>
+
+<body>
+    <p class="nav"><a href="https://github.com/joodo/bunga_player">Github</a></p>
+    <img class="rotating" src="imgs/logo.png" />
+    <h1>棒嘎大影院，你我来相见</h1>
+    <p>一起看片，语音、弹幕和表情。支持网盘、B 站等视频分享。</p>
+    <h2>截图</h2>
+    <p>
+        <img class="screenshot" src="imgs/screenshot1.jpg" />
+        <img class="screenshot" src="imgs/screenshot2.jpg" />
+    </p>
+    <h2>下载</h2>
+    <p>
+        <a href="https://gitee.com/joodo2/bunga_player/releases/latest">Gitee</a>
+    </p>
+</body>
+
+</html>
