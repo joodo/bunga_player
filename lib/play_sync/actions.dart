@@ -132,12 +132,12 @@ class ApplyRemotePlayingStatusAction
 class SendPlayingStatusIntent extends Intent {
   final PlayStatusType playingStatus;
   final Duration position;
-  final String? answerId;
+  final String? answeringMessageId;
 
   const SendPlayingStatusIntent(
     this.playingStatus,
     this.position, {
-    this.answerId,
+    this.answeringMessageId,
   });
 }
 
@@ -154,7 +154,7 @@ class SendPlayingStatusAction extends ContextAction<SendPlayingStatusIntent> {
           PlayStatusMessageData(
             status: intent.playingStatus,
             position: intent.position,
-            answerId: intent.answerId,
+            answerId: intent.answeringMessageId,
           ).toMessageData(),
         )) as Future<void>;
   }
@@ -165,20 +165,23 @@ class SendPlayingStatusAction extends ContextAction<SendPlayingStatusIntent> {
 
     final read = context!.read;
 
-    // I'm asking too
-    if (positionAskingBusiness.askingMessageId != null) return false;
-
     // I'm not playing the same video
     if (!context.isVideoSameWithChannel) return false;
 
-    // I'm not even played
-    final currentHash = read<PlayVideoEntry>().value!.hash;
-    final progress = getIt<Player>().watchProgresses.get(currentHash);
-    if (progress == null) return false;
+    // If answering someone's "where"
+    if (intent.answeringMessageId != null) {
+      // I'm asking too
+      if (positionAskingBusiness.askingMessageId != null) return false;
 
-    // I have play record, but it's from before, I'm not started play this time
-    if (intent.position.inMilliseconds - progress.progress < -1000) {
-      return false;
+      // I'm not even played
+      final currentHash = read<PlayVideoEntry>().value!.hash;
+      final progress = getIt<Player>().watchProgresses.get(currentHash);
+      if (progress == null) return false;
+
+      // I have play record, but it's from before, I'm not started play this time
+      if (intent.position.inMilliseconds - progress.progress < -1000) {
+        return false;
+      }
     }
 
     return true;
@@ -330,7 +333,7 @@ class _PlaySyncActionsState extends SingleChildState<PlaySyncActions> {
           SendPlayingStatusIntent(
             read<PlayStatus>().value,
             read<PlayPosition>().value,
-            answerId: message.id,
+            answeringMessageId: message.id,
           ),
         );
   }
