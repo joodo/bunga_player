@@ -1,40 +1,44 @@
 PODS:
   - agora_rtc_engine (0.0.1):
-    - AgoraIrisRTC_macOS (= 4.3.0-build.2)
-    - AgoraRtcEngine_macOS (= 4.3.0)
+    - AgoraIrisRTC_macOS (= 4.3.1-build.1)
+    - AgoraRtcEngine_macOS (= 4.3.1)
     - FlutterMacOS
-  - AgoraIrisRTC_macOS (4.3.0-build.2)
-  - AgoraRtcEngine_macOS (4.3.0):
-    - AgoraRtcEngine_macOS/AIAEC (= 4.3.0)
-    - AgoraRtcEngine_macOS/AINS (= 4.3.0)
-    - AgoraRtcEngine_macOS/AudioBeauty (= 4.3.0)
-    - AgoraRtcEngine_macOS/ClearVision (= 4.3.0)
-    - AgoraRtcEngine_macOS/ContentInspect (= 4.3.0)
-    - AgoraRtcEngine_macOS/FaceCapture (= 4.3.0)
-    - AgoraRtcEngine_macOS/FaceDetection (= 4.3.0)
-    - AgoraRtcEngine_macOS/RtcBasic (= 4.3.0)
-    - AgoraRtcEngine_macOS/ScreenCapture (= 4.3.0)
-    - AgoraRtcEngine_macOS/SpatialAudio (= 4.3.0)
-    - AgoraRtcEngine_macOS/VideoAv1CodecDec (= 4.3.0)
-    - AgoraRtcEngine_macOS/VideoCodecDec (= 4.3.0)
-    - AgoraRtcEngine_macOS/VideoCodecEnc (= 4.3.0)
-    - AgoraRtcEngine_macOS/VirtualBackground (= 4.3.0)
-    - AgoraRtcEngine_macOS/VQA (= 4.3.0)
-  - AgoraRtcEngine_macOS/AIAEC (4.3.0)
-  - AgoraRtcEngine_macOS/AINS (4.3.0)
-  - AgoraRtcEngine_macOS/AudioBeauty (4.3.0)
-  - AgoraRtcEngine_macOS/ClearVision (4.3.0)
-  - AgoraRtcEngine_macOS/ContentInspect (4.3.0)
-  - AgoraRtcEngine_macOS/FaceCapture (4.3.0)
-  - AgoraRtcEngine_macOS/FaceDetection (4.3.0)
-  - AgoraRtcEngine_macOS/RtcBasic (4.3.0)
-  - AgoraRtcEngine_macOS/ScreenCapture (4.3.0)
-  - AgoraRtcEngine_macOS/SpatialAudio (4.3.0)
-  - AgoraRtcEngine_macOS/VideoAv1CodecDec (4.3.0)
-  - AgoraRtcEngine_macOS/VideoCodecDec (4.3.0)
-  - AgoraRtcEngine_macOS/VideoCodecEnc (4.3.0)
-  - AgoraRtcEngine_macOS/VirtualBackground (4.3.0)
-  - AgoraRtcEngine_macOS/VQA (4.3.0)
+  - AgoraIrisRTC_macOS (4.3.1-build.1)
+  - AgoraRtcEngine_macOS (4.3.1):
+    - AgoraRtcEngine_macOS/AIAEC (= 4.3.1)
+    - AgoraRtcEngine_macOS/AINS (= 4.3.1)
+    - AgoraRtcEngine_macOS/AudioBeauty (= 4.3.1)
+    - AgoraRtcEngine_macOS/ClearVision (= 4.3.1)
+    - AgoraRtcEngine_macOS/ContentInspect (= 4.3.1)
+    - AgoraRtcEngine_macOS/FaceCapture (= 4.3.1)
+    - AgoraRtcEngine_macOS/FaceDetection (= 4.3.1)
+    - AgoraRtcEngine_macOS/LipSync (= 4.3.1)
+    - AgoraRtcEngine_macOS/RtcBasic (= 4.3.1)
+    - AgoraRtcEngine_macOS/ScreenCapture (= 4.3.1)
+    - AgoraRtcEngine_macOS/SpatialAudio (= 4.3.1)
+    - AgoraRtcEngine_macOS/VideoAv1CodecDec (= 4.3.1)
+    - AgoraRtcEngine_macOS/VideoAv1CodecEnc (= 4.3.1)
+    - AgoraRtcEngine_macOS/VideoCodecDec (= 4.3.1)
+    - AgoraRtcEngine_macOS/VideoCodecEnc (= 4.3.1)
+    - AgoraRtcEngine_macOS/VirtualBackground (= 4.3.1)
+    - AgoraRtcEngine_macOS/VQA (= 4.3.1)
+  - AgoraRtcEngine_macOS/AIAEC (4.3.1)
+  - AgoraRtcEngine_macOS/AINS (4.3.1)
+  - AgoraRtcEngine_macOS/AudioBeauty (4.3.1)
+  - AgoraRtcEngine_macOS/ClearVision (4.3.1)
+  - AgoraRtcEngine_macOS/ContentInspect (4.3.1)
+  - AgoraRtcEngine_macOS/FaceCapture (4.3.1)
+  - AgoraRtcEngine_macOS/FaceDetection (4.3.1)
+  - AgoraRtcEngine_macOS/LipSync (4.3.1)
+  - AgoraRtcEngine_macOS/RtcBasic (4.3.1)
+  - AgoraRtcEngine_macOS/ScreenCapture (4.3.1)
+  - AgoraRtcEngine_macOS/SpatialAudio (4.3.1)
+  - AgoraRtcEngine_macOS/VideoAv1CodecDec (4.3.1)
+  - AgoraRtcEngine_macOS/VideoAv1CodecEnc (4.3.1)
+  - AgoraRtcEngine_macOS/VideoCodecDec (4.3.1)
+  - AgoraRtcEngine_macOS/VideoCodecEnc (4.3.1)
+  - AgoraRtcEngine_macOS/VirtualBackground (4.3.1)
+  - AgoraRtcEngine_macOS/VQA (4.3.1)
   - audioplayers_darwin (0.0.1):
     - FlutterMacOS
   - file_selector_macos (0.0.1):
@@ -141,9 +145,9 @@ EXTERNAL SOURCES:
     :path: Flutter/ephemeral/.symlinks/plugins/window_manager/macos
 
 SPEC CHECKSUMS:
-  agora_rtc_engine: 69f23015669c4a4e91f268c5ed192aec026905c9
-  AgoraIrisRTC_macOS: f575979d2de182f24e4f18778dae71ecccc9b576
-  AgoraRtcEngine_macOS: d52d4a49cf17225c7973c51d05e496d348f43913
+  agora_rtc_engine: 57f0c0180828df6d3bb984a1a4582acd2c782cfb
+  AgoraIrisRTC_macOS: 5a6e28fc749c54359243a20635d15ad4d3aa7bb7
+  AgoraRtcEngine_macOS: 19a91a205031a5731f0ca69f7926796a0184c234
   audioplayers_darwin: dcad41de4fbd0099cb3749f7ab3b0cb8f70b810c
   file_selector_macos: 54fdab7caa3ac3fc43c9fac4d7d8d231277f8cf2
   FlutterMacOS: 8f6f14fa908a6fb3fba0cd85dbd81ec4b251fb24
@@ -160,7 +164,7 @@ SPEC CHECKSUMS:
   shared_preferences_foundation: fcdcbc04712aee1108ac7fda236f363274528f78
   tencent_cloud_chat_sdk: e002158feee3a9737c517ed82461aa7d5b4dc9ea
   TXIMSDK_Plus_Mac: 1f42d23f49fbf8357a77b7a2bb0195ff7e72c083
-  url_launcher_macos: d2691c7dd33ed713bf3544850a623080ec693d95
+  url_launcher_macos: 5f437abeda8c85500ceb03f5c1938a8c5a705399
   wakelock_plus: 4783562c9a43d209c458cb9b30692134af456269
   window_manager: 3a1844359a6295ab1e47659b1a777e36773cd6e8
 
