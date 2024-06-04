@@ -77,7 +77,7 @@ class OthersDialogState extends State<OthersDialog> {
 
     final channelsView = Container(
       clipBehavior: Clip.hardEdge,
-      decoration: BoxDecoration(color: themeData.colorScheme.surface),
+      decoration: BoxDecoration(color: themeData.colorScheme.surfaceContainer),
       child: Stack(
         children: [
           if (_channels != null) channelsScroll,

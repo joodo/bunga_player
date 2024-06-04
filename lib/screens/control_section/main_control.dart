@@ -397,7 +397,7 @@ class _CallButtonState extends State<_CallButton>
         VoiceCallStatusType.talking =>
           IconButton(
             style: const ButtonStyle(
-              backgroundColor: MaterialStatePropertyAll<Color>(Colors.green),
+              backgroundColor: WidgetStatePropertyAll<Color>(Colors.green),
             ),
             color: Colors.white70,
             icon: const Icon(Icons.call),
@@ -407,7 +407,7 @@ class _CallButtonState extends State<_CallButton>
             turns: _animation,
             child: IconButton(
               style: const ButtonStyle(
-                backgroundColor: MaterialStatePropertyAll<Color>(Colors.green),
+                backgroundColor: WidgetStatePropertyAll<Color>(Colors.green),
               ),
               color: Colors.white70,
               icon: const Icon(Icons.call),

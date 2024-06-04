@@ -55,7 +55,7 @@ class _CallControlState extends State<CallControl> {
               style: muteMic.value
                   ? const ButtonStyle(
                       backgroundColor:
-                          MaterialStatePropertyAll<Color>(Colors.red),
+                          WidgetStatePropertyAll<Color>(Colors.red),
                     )
                   : null,
               color: muteMic.value ? Colors.white70 : null,
@@ -168,8 +168,8 @@ class _CallControlState extends State<CallControl> {
           required final IconData icon}) =>
       IconButton(
         style: ButtonStyle(
-          fixedSize: const MaterialStatePropertyAll<Size>(Size(100, 36)),
-          backgroundColor: MaterialStatePropertyAll<Color>(color),
+          fixedSize: const WidgetStatePropertyAll<Size>(Size(100, 36)),
+          backgroundColor: WidgetStatePropertyAll<Color>(color),
         ),
         color: Colors.white70,
         icon: Icon(icon),

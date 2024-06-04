@@ -307,7 +307,7 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
       width: NetDiskDialog.dialogWidth,
       child: Scaffold(
         body: Ink(
-          color: themeData.colorScheme.surface,
+          color: themeData.colorScheme.surfaceContainer,
           child: _pending
               ? pendingIndicator
               : itemCount == 0
