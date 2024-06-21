@@ -1,4 +1,3 @@
-import 'package:bunga_player/player/providers.dart';
 import 'package:bunga_player/ui/providers.dart';
 import 'package:bunga_player/screens/progress_section/video_progress_indicator.dart';
 import 'package:flutter/material.dart';
@@ -9,10 +8,9 @@ class ProgressSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer2<CatIndicator, PlayIsBuffering>(
-      builder: (context, bi, isBuffering, child) {
-        final busy = bi.busy || isBuffering.value;
-        return busy
+    return Consumer<CatIndicator>(
+      builder: (context, bi, child) {
+        return bi.busy
             ? const Center(
                 child: SizedBox(
                   height: 4,
