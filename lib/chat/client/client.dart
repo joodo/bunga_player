@@ -68,6 +68,12 @@ class Channel {
   });
 }
 
+typedef ChannelInfo = ({
+  ChannelData data,
+  String id,
+  DateTime createAt,
+});
+
 class ChannelFile {
   final String id;
   final String title;
@@ -91,7 +97,7 @@ class ChannelFile {
 
 abstract class ChatClient {
   Future<OwnUser> login(String id, String token, String? name, {int? colorHue});
-  Future<List<({String id, ChannelData data})>> queryOnlineChannels();
+  Future<List<ChannelInfo>> queryOnlineChannels();
   Future<Channel> joinChannelById(String id);
   Future<Channel> joinChannelByData(ChannelData data);
 }

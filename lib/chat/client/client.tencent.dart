@@ -161,14 +161,18 @@ class TencentClient extends ChatClient {
   }
 
   @override
-  Future<List<({ChannelData data, String id})>> queryOnlineChannels() async {
+  Future<List<ChannelInfo>> queryOnlineChannels() async {
     final response = await bungaClient.get('tencent/online-channels');
     final channels = jsonDecode(response) as List;
     return channels
-        .map<({ChannelData data, String id})>(
+        .map<ChannelInfo>(
           (e) => (
             id: e['id'] as String,
             data: ChannelData.fromJson(e['data']),
+            createAt: DateTime.fromMillisecondsSinceEpoch(
+              e['data']['created_at'] * 1000,
+              isUtc: true,
+            ),
           ),
         )
         .toList();

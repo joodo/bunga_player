@@ -1,13 +1,13 @@
 import 'dart:async';
 import 'dart:typed_data';
 
-import 'package:bunga_player/chat/models/channel_data.dart';
 import 'package:bunga_player/player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/alist/client.dart';
 import 'package:bunga_player/bunga_server/client.dart';
 import 'package:bunga_player/chat/client/client.dart';
 import 'package:bunga_player/screens/widgets/scroll_optimizer.dart';
 import 'package:bunga_player/services/logger.dart';
+import 'package:bunga_player/utils/extensions/datetime.dart';
 import 'package:bunga_player/utils/extensions/http_response.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -21,7 +21,7 @@ class OthersDialog extends StatefulWidget {
 }
 
 class OthersDialogState extends State<OthersDialog> {
-  List<({String id, ChannelData data})>? _channels;
+  List<ChannelInfo>? _channelInfos;
   late final Timer _timer;
 
   final _scrollController = ScrollController();
@@ -53,16 +53,16 @@ class OthersDialogState extends State<OthersDialog> {
             child: Row(
               children: [
                 const SizedBox(width: 8),
-                if (_channels != null)
-                  ..._channels!.map((channel) => _ChannelCard(
-                        channelData: channel.data,
+                if (_channelInfos != null)
+                  ..._channelInfos!.map((info) => _ChannelCard(
+                        channelInfo: info,
                         onTapped: () =>
                             SchedulerBinding.instance.addPostFrameCallback((_) {
                           Navigator.of(context)
                               .pop<({String id, VideoEntry entry})>(
                             (
-                              id: channel.id,
-                              entry: VideoEntry.fromChannelData(channel.data),
+                              id: info.id,
+                              entry: VideoEntry.fromChannelData(info.data),
                             ),
                           );
                         }),
@@ -80,10 +80,10 @@ class OthersDialogState extends State<OthersDialog> {
       decoration: BoxDecoration(color: themeData.colorScheme.surfaceContainer),
       child: Stack(
         children: [
-          if (_channels != null) channelsScroll,
-          if (_channels == null)
+          if (_channelInfos != null) channelsScroll,
+          if (_channelInfos == null)
             const Center(child: CircularProgressIndicator()),
-          if (_channels?.isEmpty ?? false)
+          if (_channelInfos?.isEmpty ?? false)
             Center(
               child: Text(
                 '暂时没有其他人分享视频',
@@ -117,7 +117,7 @@ class OthersDialogState extends State<OthersDialog> {
       final channels = await chatClient.queryOnlineChannels();
       if (mounted) {
         setState(() {
-          _channels = channels;
+          _channelInfos = channels;
         });
       }
     }
@@ -129,10 +129,10 @@ class OthersDialogState extends State<OthersDialog> {
 }
 
 class _ChannelCard extends StatefulWidget {
-  final ChannelData channelData;
+  final ChannelInfo channelInfo;
   final VoidCallback onTapped;
 
-  const _ChannelCard({required this.channelData, required this.onTapped});
+  const _ChannelCard({required this.channelInfo, required this.onTapped});
 
   @override
   State<_ChannelCard> createState() => _ChannelCardState();
@@ -144,7 +144,7 @@ class _ChannelCardState extends State<_ChannelCard> {
   @override
   void initState() {
     super.initState();
-    _getNetworkImageData(widget.channelData.image ?? '');
+    _getNetworkImageData(widget.channelInfo.data.image ?? '');
   }
 
   @override
@@ -178,13 +178,13 @@ class _ChannelCardState extends State<_ChannelCard> {
               children: [
                 Flexible(
                   child: Text(
-                    widget.channelData.sharer.name,
+                    widget.channelInfo.data.sharer.name,
                     style: themeData.textTheme.labelSmall,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 Text(
-                  '分享',
+                  ' ${widget.channelInfo.createAt.relativeString} 分享',
                   style: themeData.textTheme.labelSmall,
                 ),
               ],
@@ -196,9 +196,9 @@ class _ChannelCardState extends State<_ChannelCard> {
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
             child: Tooltip(
-              message: widget.channelData.name,
+              message: widget.channelInfo.data.name,
               child: Text(
-                widget.channelData.name,
+                widget.channelInfo.data.name,
                 overflow: TextOverflow.ellipsis,
                 style: themeData.textTheme.titleSmall,
               ),
