@@ -14,6 +14,7 @@ import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/player/service/service.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
+import 'package:bunga_player/utils/extensions/duration.dart';
 import 'package:bunga_player/utils/models/network_progress.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
@@ -105,7 +106,7 @@ class ApplyRemotePlayingStatusAction
 
     final position = read<PlayPosition>().value;
     final remotePosition = intent.data.position;
-    if ((position - remotePosition).inMilliseconds.abs() > 1000) {
+    if (!position.near(remotePosition)) {
       getIt<Player>().seek(remotePosition);
       if (canShowToast) {
         getIt<Toast>().show('${intent.sender.name} 调整了进度');
@@ -163,10 +164,8 @@ class SendPlayingStatusAction extends ContextAction<SendPlayingStatusIntent> {
   bool isEnabled(SendPlayingStatusIntent intent, [BuildContext? context]) {
     assert(context != null);
 
-    final read = context!.read;
-
     // I'm not playing the same video
-    if (!context.isVideoSameWithChannel) return false;
+    if (!context!.isVideoSameWithChannel) return false;
 
     // If answering someone's "where"
     if (intent.answeringMessageId != null) {
@@ -174,14 +173,8 @@ class SendPlayingStatusAction extends ContextAction<SendPlayingStatusIntent> {
       if (positionAskingBusiness.askingMessageId != null) return false;
 
       // I'm not even played
-      final currentHash = read<PlayVideoEntry>().value!.hash;
-      final progress = getIt<Player>().watchProgresses.get(currentHash);
+      final progress = getIt<Player>().currentWatchProgress;
       if (progress == null) return false;
-
-      // I have play record, but it's from before, I'm not started play this time
-      if (intent.position.inMilliseconds - progress.progress < -1000) {
-        return false;
-      }
     }
 
     return true;

@@ -4,12 +4,10 @@ import 'dart:io';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:bunga_player/play_sync/actions.dart';
 import 'package:bunga_player/screens/wrappers/actions.dart';
-import 'package:bunga_player/screens/wrappers/toast.dart';
 import 'package:bunga_player/ui/providers.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
 import 'package:bunga_player/utils/extensions/comparable.dart';
-import 'package:bunga_player/utils/extensions/duration.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:path_provider/path_provider.dart';
@@ -61,13 +59,14 @@ class TogglePlayAction extends ContextAction<TogglePlayIntent> {
   Future<void>? invoke(TogglePlayIntent intent, [BuildContext? context]) {
     final read = context!.read;
 
-    final playStatus = read<PlayStatus>();
-    final position = read<PlayPosition>();
+    // Send status
+    final isPlaying = read<PlayStatus>().isPlaying;
+    final position = read<PlayPosition>().value;
     Actions.maybeInvoke(
       context,
       SendPlayingStatusIntent(
-        !playStatus.isPlaying ? PlayStatusType.play : PlayStatusType.pause,
-        position.value,
+        !isPlaying ? PlayStatusType.play : PlayStatusType.pause,
+        position,
       ),
     );
 
@@ -90,8 +89,10 @@ class StopPlayIntent extends Intent {
 class StopPlayAction extends ContextAction<StopPlayIntent> {
   @override
   Future<void> invoke(StopPlayIntent intent, [BuildContext? context]) {
-    context!.read<WindowTitle>().reset();
-    ToastWrapper.of(context).hide();
+    final read = context!.read;
+    read<WindowTitle>().reset();
+    read<PlaySavedPosition>().value = null;
+
     return getIt<Player>().stop();
   }
 }
@@ -124,27 +125,19 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
       final videoPlayer = getIt<Player>();
 
       await intent.videoEntry.fetch(context.read);
-      await videoPlayer.stop();
-      await videoPlayer.open(intent.videoEntry, intent.sourceIndex);
+      videoPlayer.open(intent.videoEntry, intent.sourceIndex).then(
+        (_) {
+          final watchProgress = videoPlayer.currentWatchProgress;
+          if (watchProgress != null) {
+            final position = Duration(milliseconds: watchProgress.progress);
+            videoPlayer.seek(position);
 
-      final watchProgress =
-          videoPlayer.watchProgresses.get(intent.videoEntry.hash);
-      if (watchProgress != null && context.mounted) {
-        final position = Duration(milliseconds: watchProgress.progress);
-        final toast = ToastWrapper.of(context);
-        toast.show(
-          '上回看到 ${position.hhmmss}',
-          action: TextButton(
-            onPressed: () {
-              actionLeaf.mayBeInvoke(SeekIntent(position));
-              toast.hide();
-            },
-            child: const Text('跳转'),
-          ),
-          withCloseButton: true,
-          behold: true,
-        );
-      }
+            if (context.mounted) {
+              context.read<PlaySavedPosition>().value = position;
+            }
+          }
+        },
+      );
 
       if (context.mounted) {
         context.read<WindowTitle>().value = intent.videoEntry.title;

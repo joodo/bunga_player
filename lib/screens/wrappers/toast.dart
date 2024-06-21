@@ -10,19 +10,9 @@ import 'theme.dart';
 class ToastWrapper extends SingleChildStatefulWidget {
   const ToastWrapper({super.key, super.child});
 
-  static ToastWrapperState of(BuildContext context) {
-    return context.findAncestorStateOfType<ToastWrapperState>()!;
-  }
-
   @override
   State<ToastWrapper> createState() => ToastWrapperState();
 }
-
-typedef ToastPayload = ({
-  String text,
-  Widget? action,
-  bool withCloseButton,
-});
 
 class ToastWrapperState extends SingleChildState<ToastWrapper>
     with SingleTickerProviderStateMixin {
@@ -40,7 +30,7 @@ class ToastWrapperState extends SingleChildState<ToastWrapper>
   late final _visibleNotifier = AutoResetNotifier(
     const Duration(milliseconds: 1500),
   );
-  late final _payloadNotifier = ValueNotifier<ToastPayload?>(null);
+  late final _textNotifer = ValueNotifier<String?>(null);
 
   @override
   void initState() {
@@ -62,7 +52,7 @@ class ToastWrapperState extends SingleChildState<ToastWrapper>
     _controller.dispose();
     _service.unregister(show);
     _visibleNotifier.dispose();
-    _payloadNotifier.dispose();
+    _textNotifer.dispose();
     super.dispose();
   }
 
@@ -72,24 +62,14 @@ class ToastWrapperState extends SingleChildState<ToastWrapper>
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(2.0))),
       child: ValueListenableBuilder(
-        valueListenable: _payloadNotifier,
-        builder: (context, payload, child) => payload != null
-            ? Row(
-                children: [
-                  const SizedBox(width: 16),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    child: Text(payload.text),
-                  ),
-                  const SizedBox(width: 8),
-                  if (payload.action != null) payload.action!,
-                  if (payload.withCloseButton)
-                    IconButton(
-                      onPressed: hide,
-                      icon: const Icon(Icons.close),
-                    ),
-                  const SizedBox(width: 8),
-                ],
+        valueListenable: _textNotifer,
+        builder: (context, text, child) => text != null
+            ? Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 16,
+                ),
+                child: Text(text),
               )
             : const SizedBox.shrink(),
       ),
@@ -134,31 +114,8 @@ class ToastWrapperState extends SingleChildState<ToastWrapper>
     );
   }
 
-  void show(
-    String text, {
-    Widget? action,
-    bool withCloseButton = false,
-    bool behold = false,
-  }) {
-    if (_visibleNotifier.locked) return;
-
-    _payloadNotifier.value = (
-      text: text,
-      action: action,
-      withCloseButton: withCloseButton,
-    );
-
-    if (!behold) {
-      _visibleNotifier.unlock('behold');
-      _visibleNotifier.mark();
-    } else {
-      _visibleNotifier.mark();
-      _visibleNotifier.lock('behold');
-    }
-  }
-
-  void hide() {
-    _visibleNotifier.unlock('behold');
-    _visibleNotifier.reset();
+  void show(String text) {
+    _textNotifer.value = text;
+    _visibleNotifier.mark();
   }
 }

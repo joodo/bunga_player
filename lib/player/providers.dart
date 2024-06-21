@@ -1,3 +1,4 @@
+import 'package:bunga_player/utils/extensions/duration.dart';
 import 'package:bunga_player/utils/models/volume.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
@@ -86,15 +87,30 @@ class PlaySourceIndex extends ValueNotifier<int?> {
   PlaySourceIndex() : super(null);
 }
 
+class PlaySavedPosition extends ValueNotifier<Duration?> {
+  PlaySavedPosition() : super(null);
+}
+
 final playerProviders = MultiProvider(
   providers: [
     ChangeNotifierProvider(create: (context) => PlayVideoEntry(), lazy: false),
     ChangeNotifierProvider(create: (context) => PlaySourceIndex(), lazy: false),
     ChangeNotifierProvider(create: (context) => PlayStatus(), lazy: false),
     ChangeNotifierProvider(create: (context) => PlayDuration()),
+    ChangeNotifierProvider(create: (context) => PlayPosition()),
+    ChangeNotifierProxyProvider2<PlayStatus, PlayPosition, PlaySavedPosition>(
+      create: (context) => PlaySavedPosition(),
+      update: (context, status, position, previous) {
+        if (previous!.value != null &&
+            position.value.near(previous.value!) &&
+            status.value == PlayStatusType.play) previous.value = null;
+
+        return previous;
+      },
+      lazy: false,
+    ),
     ChangeNotifierProvider(create: (context) => PlayBuffer()),
     ChangeNotifierProvider(create: (context) => PlayIsBuffering(), lazy: false),
-    ChangeNotifierProvider(create: (context) => PlayPosition()),
     ChangeNotifierProvider(create: (context) => PlayAudioTracks(), lazy: false),
     ChangeNotifierProvider(
         create: (context) => PlayAudioTrackID(), lazy: false),

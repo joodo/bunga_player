@@ -1,12 +1,7 @@
 import 'package:bunga_player/services/logger.dart';
 import 'package:flutter/widgets.dart';
 
-typedef ToastShowCallback = Function(
-  String text, {
-  Widget? action,
-  bool withCloseButton,
-  bool behold,
-});
+typedef ToastShowCallback = Function(String text);
 
 class Toast {
   ToastShowCallback? _showMethod;
@@ -26,11 +21,6 @@ class Toast {
           'Toast: show method is not registered yet, can not show message: $text');
       return;
     }
-    _showMethod!(
-      text,
-      action: action,
-      withCloseButton: withCloseButton,
-      behold: behold,
-    );
+    _showMethod!(text);
   }
 }

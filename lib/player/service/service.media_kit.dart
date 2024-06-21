@@ -58,6 +58,11 @@ class MediaKitPlayer implements Player {
         _player.seek(_seekCache!);
         _seekCache = null;
       }
+
+      if (_openCompleter != null) {
+        _openCompleter!.complete();
+        _openCompleter = null;
+      }
     });
 
     _player.stream.log.listen((log) => logger.w('Media kit log: ${log.text}'));
@@ -135,6 +140,7 @@ class MediaKitPlayer implements Player {
 
   final _videoEntryController = StreamController<VideoEntry?>.broadcast();
   VideoEntry? _videoEntry;
+  Completer<Null>? _openCompleter;
   @override
   Stream<VideoEntry?> get videoEntryStream => _videoEntryController.stream;
   @override
@@ -169,6 +175,9 @@ class MediaKitPlayer implements Player {
 
     // update play status
     _statusController.add(PlayStatusType.pause);
+
+    _openCompleter = Completer();
+    await _openCompleter!.future;
   }
 
   // Play status
@@ -367,6 +376,9 @@ class MediaKitPlayer implements Player {
         count: () => _watchProgress.length,
         clearAll: _watchProgress.clear,
       );
+
+  @override
+  WatchProgress? get currentWatchProgress => _watchProgress[_videoEntry?.hash];
 
   late final RestartableTimer _saveWatchProgressTimer = RestartableTimer(
     const Duration(seconds: 3),
