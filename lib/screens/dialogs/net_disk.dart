@@ -4,7 +4,7 @@ import 'package:bunga_player/alist/models/file_info.dart';
 import 'package:bunga_player/alist/models/search_result.dart';
 import 'package:bunga_player/player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/alist/client.dart';
-import 'package:bunga_player/player/service/service.dart';
+import 'package:bunga_player/player/providers.dart';
 import 'package:bunga_player/screens/widgets/scroll_optimizer.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
@@ -266,7 +266,8 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
 
         final info = _currentFiles[index];
         final videoHash = AListEntry('$_currentPath${info.name}').hash;
-        final percent = getIt<Player>().watchProgresses.get(videoHash)?.percent;
+        final percent =
+            context.read<PlayVideoSessions>().get(videoHash)?.progress?.percent;
         final tile = ListTile(
           leading: Icon(switch (info.type) {
             AListFileType.folder => Icons.folder,

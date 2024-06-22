@@ -230,7 +230,7 @@ class _ChannelCardState extends State<_ChannelCard> {
           : null,
       initialData: themeData.colorScheme,
       builder: (context, snapshot) => Theme(
-        data: themeData.copyWith(colorScheme: snapshot.data!),
+        data: themeData.copyWith(colorScheme: snapshot.data),
         child: card,
       ),
     );

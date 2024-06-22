@@ -1,14 +1,10 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:async/async.dart';
-import 'package:bunga_player/services/exit_callbacks.dart';
 import 'package:bunga_player/utils/models/volume.dart';
 import 'package:bunga_player/player/providers.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/network/service.dart';
-import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:collection/collection.dart';
 import 'package:ffi/ffi.dart';
@@ -18,7 +14,6 @@ import 'package:media_kit_video/media_kit_video.dart' as media_kit;
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 
-import '../models/watch_progress.dart';
 import '../models/video_entries/video_entry.dart';
 import 'service.dart';
 
@@ -66,8 +61,6 @@ class MediaKitPlayer implements Player {
     });
 
     _player.stream.log.listen((log) => logger.w('Media kit log: ${log.text}'));
-
-    _loadWatchProgress();
   }
 
   late final _player = media_kit.Player(
@@ -367,67 +360,7 @@ class MediaKitPlayer implements Player {
     return _setProperty('contrast', contrast.toString());
   }
 
-  // Watch progress
-  late final Map<String, WatchProgress> _watchProgress;
-
-  @override
-  WatchProgresses get watchProgresses => WatchProgresses(
-        get: (videoEntryId) => _watchProgress[videoEntryId],
-        count: () => _watchProgress.length,
-        clearAll: _watchProgress.clear,
-      );
-
-  @override
-  WatchProgress? get currentWatchProgress => _watchProgress[_videoEntry?.hash];
-
-  late final RestartableTimer _saveWatchProgressTimer = RestartableTimer(
-    const Duration(seconds: 3),
-    () {
-      _saveCurrentProgress();
-      _saveWatchProgressTimer.reset();
-    },
-  );
-
-  void _loadWatchProgress() {
-    final rawData = getIt<Preferences>().get<String>('watch_progress');
-
-    try {
-      final o = jsonDecode(rawData!);
-      final d = Map.castFrom(o);
-      _watchProgress =
-          d.map((key, value) => MapEntry(key, WatchProgress.fromJson(value)));
-    } catch (e) {
-      logger.w('Load watch progress failed');
-      _watchProgress = {};
-    }
-
-    getIt<ExitCallbacks>().add(_saveWatchProgress);
-
-    _player.stream.playing.listen(
-      (isPlay) {
-        isPlay
-            ? _saveWatchProgressTimer.reset()
-            : _saveWatchProgressTimer.cancel();
-      },
-    );
-  }
-
-  void _saveCurrentProgress() {
-    if (_videoEntry == null) return;
-
-    _watchProgress[_videoEntry!.hash] = WatchProgress(
-      progress: _player.state.position.inMilliseconds,
-      duration: _player.state.duration.inMilliseconds,
-    );
-  }
-
-  Future<void> _saveWatchProgress() async {
-    await getIt<Preferences>().set(
-      'watch_progress',
-      jsonEncode(_watchProgress),
-    );
-  }
-
+  // MPV command
   Future<void> _setProperty(String key, String value) {
     final platfromPlayer = _player.platform!;
     if (platfromPlayer is media_kit.NativePlayer) {

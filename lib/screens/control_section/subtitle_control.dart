@@ -154,8 +154,18 @@ class _SubtitleControlState extends State<SubtitleControl> {
                   },
                 );
 
-                final localTracks = tracks.value
-                    .where((track) => !(track.uri?.startsWith('http') ?? true));
+                final localTracks = tracks.value.where((track) {
+                  if (track.uri == null) return false;
+
+                  if (!track.uri!.startsWith('http')) return true;
+
+                  final channelIds = channelSubtitles.value.values
+                      .map((e) => e.track?.id)
+                      .toList();
+                  if (!channelIds.contains(track.id)) return true;
+
+                  return false;
+                });
                 final localEntries = localTracks.map(
                   (track) => mock.DropdownMenuItem<String>(
                     value: track.id,

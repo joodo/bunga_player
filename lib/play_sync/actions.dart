@@ -173,7 +173,7 @@ class SendPlayingStatusAction extends ContextAction<SendPlayingStatusIntent> {
       if (positionAskingBusiness.askingMessageId != null) return false;
 
       // I'm not even played
-      final progress = getIt<Player>().currentWatchProgress;
+      final progress = context.read<PlayVideoSessions>().current?.progress;
       if (progress == null) return false;
     }
 
@@ -214,8 +214,10 @@ class FetchChannelSubtitleAction
   @override
   Future<void> invoke(FetchChannelSubtitleIntent intent,
       [BuildContext? context]) async {
+    final currentSession = context!.read<PlayVideoSessions>().currentOrCreate();
     final track =
         await getIt<Player>().loadSubtitleTrack(intent.channelSubtitle.url);
+    currentSession.subtitleUri = track.uri;
     intent.channelSubtitle.track = track;
   }
 }

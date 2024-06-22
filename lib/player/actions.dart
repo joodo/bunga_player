@@ -119,6 +119,7 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
     actionLeaf.invoke(const StopPlayIntent());
 
     final savedPositionNotifer = read<PlaySavedPosition>();
+    final videoSessions = read<PlayVideoSessions>();
 
     final cat = read<CatIndicator>();
     await cat.run(() async {
@@ -127,13 +128,20 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
       final videoPlayer = getIt<Player>();
 
       await intent.videoEntry.fetch(read);
+
       videoPlayer.open(intent.videoEntry, intent.sourceIndex).then(
-        (_) {
-          final watchProgress = videoPlayer.currentWatchProgress;
-          if (watchProgress != null) {
-            final position = Duration(milliseconds: watchProgress.progress);
+        (_) async {
+          final progress = videoSessions.current?.progress;
+          if (progress != null) {
+            final position = Duration(milliseconds: progress.position);
             videoPlayer.seek(position);
             savedPositionNotifer.value = position;
+          }
+
+          final subtitleUri = videoSessions.current?.subtitleUri;
+          if (subtitleUri != null) {
+            final track = await videoPlayer.loadSubtitleTrack(subtitleUri);
+            videoPlayer.setSubtitleTrackID(track.id);
           }
         },
       );
@@ -173,11 +181,18 @@ class ReloadAction extends ContextAction<ReloadIntent> {
       cat.title = '正在鬼鬼祟祟';
 
       final videoPlayer = getIt<Player>();
+      final videoSessions = read<PlayVideoSessions>();
 
       await currentEntry.fetch(read);
       videoPlayer.open(currentEntry, currentIndex).then(
-        (_) {
+        (_) async {
           videoPlayer.seek(currentPosition);
+
+          final subtitleUri = videoSessions.current?.subtitleUri;
+          if (subtitleUri != null) {
+            final track = await videoPlayer.loadSubtitleTrack(subtitleUri);
+            videoPlayer.setSubtitleTrackID(track.id);
+          }
         },
       );
 
@@ -363,11 +378,18 @@ class LoadLocalSubtitleIntent extends Intent {
   const LoadLocalSubtitleIntent(this.path);
 }
 
-class LoadLocalSubtitleAction extends Action<LoadLocalSubtitleIntent> {
+class LoadLocalSubtitleAction extends ContextAction<LoadLocalSubtitleIntent> {
   @override
-  Future<SubtitleTrack?> invoke(LoadLocalSubtitleIntent intent) async {
+  Future<SubtitleTrack?> invoke(
+    LoadLocalSubtitleIntent intent, [
+    BuildContext? context,
+  ]) async {
     try {
-      return await getIt<Player>().loadSubtitleTrack(intent.path!);
+      final currentSession =
+          context!.read<PlayVideoSessions>().currentOrCreate();
+      final track = await getIt<Player>().loadSubtitleTrack(intent.path!);
+      currentSession.subtitleUri = track.uri!;
+      return track;
     } catch (e) {
       getIt<Toast>().show('字幕加载失败');
       return null;

@@ -8,7 +8,6 @@ import 'package:bunga_player/player/providers.dart';
 import 'package:bunga_player/client_info/providers.dart';
 import 'package:bunga_player/alist/client.dart';
 import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/player/service/service.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
@@ -105,11 +104,9 @@ class _ConsoleWrapperState extends SingleChildState<ConsoleWrapper> {
         ),
         const SizedBox(height: 8),
         FilledButton(
-          onPressed: () => setState(() {
-            getIt<Player>().watchProgresses.clearAll();
-          }),
+          onPressed: () => setState(context.read<PlayVideoSessions>().clearAll),
           child: Text(
-              'Clear all watch progress (${getIt<Player>().watchProgresses.count})'),
+              'Clear all watch progress (${context.read<PlayVideoSessions>().count})'),
         ),
       ],
     );
@@ -229,7 +226,8 @@ watchers:${context.read<ChatChannelWatchers>().value}''',
 talkers: ${context.read<VoiceCallTalkers>().value}''',
     'Player': (context) =>
         '''Video Entry: ${context.read<PlayVideoEntry>().value}
-Status: ${context.read<PlayStatus>().value}''',
+Status: ${context.read<PlayStatus>().value}
+Current session: ${context.read<PlayVideoSessions>().current?.toJson().toString()}''',
     'AList': (context) => '${context.read<AListClient?>()}',
   };
 
@@ -261,9 +259,7 @@ Status: ${context.read<PlayStatus>().value}''',
         1: FlexColumnWidth(),
       },
       children: pref.keys.map((key) {
-        final content = key == 'watch_progress'
-            ? const Text('...')
-            : SelectableText(pref.get(key).toString());
+        final content = SelectableText(pref.get(key).toString());
         return TableRow(
           children: [
             _padding(SelectableText(key)),

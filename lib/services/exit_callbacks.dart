@@ -10,6 +10,7 @@ class ExitCallbacks with WindowListener {
 
   final _callbacks = <ExitCallback>[];
   void add(ExitCallback callback) => _callbacks.add(callback);
+  bool remove(ExitCallback callback) => _callbacks.remove(callback);
   Future<void> _runAll() async {
     for (final callback in _callbacks) {
       await callback();
