@@ -118,6 +118,8 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
     final actionLeaf = read<ActionsLeaf>();
     actionLeaf.invoke(const StopPlayIntent());
 
+    final savedPositionNotifer = read<PlaySavedPosition>();
+
     final cat = read<CatIndicator>();
     await cat.run(() async {
       cat.title = '正在鬼鬼祟祟';
@@ -131,10 +133,7 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
           if (watchProgress != null) {
             final position = Duration(milliseconds: watchProgress.progress);
             videoPlayer.seek(position);
-
-            if (context.mounted) {
-              read<PlaySavedPosition>().value = position;
-            }
+            savedPositionNotifer.value = position;
           }
         },
       );
