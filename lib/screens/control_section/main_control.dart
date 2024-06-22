@@ -7,6 +7,7 @@ import 'package:bunga_player/chat/models/channel_data.dart';
 import 'package:bunga_player/utils/models/volume.dart';
 import 'package:bunga_player/mocks/menu_anchor.dart' as mock;
 import 'package:bunga_player/mocks/slider.dart' as mock;
+import 'package:bunga_player/mocks/tooltip.dart' as mock;
 import 'package:bunga_player/player/models/video_entries/video_entry.dart';
 import 'package:bunga_player/chat/providers.dart';
 import 'package:bunga_player/player/providers.dart';
@@ -35,12 +36,16 @@ class MainControl extends StatelessWidget {
         const SizedBox(width: 8),
 
         // Ask position button
-        Consumer3<ChatUser, ChatChannel, ChatChannelWatchers>(
-          builder: (context, _, __, ___, child) => IconButton(
-            onPressed: Actions.handler(context, const AskPositionIntent()),
-            icon: child!,
+        mock.Tooltip(
+          rootOverlay: true,
+          message: '拉取远程进度',
+          child: Consumer3<ChatUser, ChatChannel, ChatChannelWatchers>(
+            builder: (context, _, __, ___, child) => IconButton(
+              onPressed: Actions.handler(context, const AskPositionIntent()),
+              icon: child!,
+            ),
+            child: const Icon(Icons.sync),
           ),
-          child: const Icon(Icons.sync),
         ),
         const ControlDivider(),
 

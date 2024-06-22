@@ -110,14 +110,17 @@ class _RoomSectionState extends State<RoomSection> {
 
     return Row(
       children: [
-        TextButton(
-          onPressed: Actions.handler(
-            context,
-            const RefreshWatchersIntent(),
-          ),
-          child: Text(
-            '当前观众',
-            style: Theme.of(context).textTheme.bodyMedium,
+        Tooltip(
+          message: '刷新',
+          child: TextButton(
+            onPressed: Actions.handler(
+              context,
+              const RefreshWatchersIntent(),
+            ),
+            child: Text(
+              '当前观众',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
           ),
         ),
         _UserLabel(currentUser),
