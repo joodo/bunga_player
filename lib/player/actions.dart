@@ -113,18 +113,18 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
   @override
   Future<void> invoke(OpenVideoIntent intent, [BuildContext? context]) async {
     assert(context != null);
+    final read = context!.read;
 
-    final cat = context!.read<CatIndicator>();
-    final actionLeaf = context.read<ActionsLeaf>();
-
+    final actionLeaf = read<ActionsLeaf>();
     actionLeaf.invoke(const StopPlayIntent());
 
+    final cat = read<CatIndicator>();
     await cat.run(() async {
       cat.title = '正在鬼鬼祟祟';
 
       final videoPlayer = getIt<Player>();
 
-      await intent.videoEntry.fetch(context.read);
+      await intent.videoEntry.fetch(read);
       videoPlayer.open(intent.videoEntry, intent.sourceIndex).then(
         (_) {
           final watchProgress = videoPlayer.currentWatchProgress;
@@ -133,18 +133,67 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
             videoPlayer.seek(position);
 
             if (context.mounted) {
-              context.read<PlaySavedPosition>().value = position;
+              read<PlaySavedPosition>().value = position;
             }
           }
         },
       );
 
       if (context.mounted) {
-        context.read<WindowTitle>().value = intent.videoEntry.title;
+        read<WindowTitle>().value = intent.videoEntry.title;
       }
 
       cat.title = null;
     });
+  }
+}
+
+class ReloadIntent extends Intent {
+  const ReloadIntent();
+}
+
+class ReloadAction extends ContextAction<ReloadIntent> {
+  @override
+  Future<void> invoke(ReloadIntent intent, [BuildContext? context]) async {
+    final read = context!.read;
+
+    final currentEntry = read<PlayVideoEntry>().value!;
+    final currentIndex = read<PlaySourceIndex>().value!;
+    final currentPosition = read<PlayPosition>().value;
+
+    Actions.maybeInvoke(
+      context,
+      SendPlayingStatusIntent(
+        PlayStatusType.pause,
+        currentPosition,
+      ),
+    );
+
+    final cat = read<CatIndicator>();
+    await cat.run(() async {
+      cat.title = '正在鬼鬼祟祟';
+
+      final videoPlayer = getIt<Player>();
+
+      await currentEntry.fetch(read);
+      videoPlayer.open(currentEntry, currentIndex).then(
+        (_) {
+          videoPlayer.seek(currentPosition);
+        },
+      );
+
+      cat.title = null;
+    });
+  }
+
+  @override
+  bool isEnabled(ReloadIntent intent, [BuildContext? context]) {
+    if (context == null) return false;
+
+    final entry = context.read<PlayVideoEntry>().value;
+    if (entry == null) return false;
+
+    return true;
   }
 }
 
@@ -486,6 +535,7 @@ class _PlayActionsState extends SingleChildState<PlayActions> {
         TogglePlayIntent: TogglePlayAction(),
         StopPlayIntent: StopPlayAction(),
         OpenVideoIntent: OpenVideoAction(),
+        ReloadIntent: ReloadAction(),
         SeekIntent: SeekAction(),
         StartDraggingProgressIntent:
             StartDraggingProgressAction(dragBusiness: _dragBusiness),

@@ -99,18 +99,8 @@ class MainControl extends StatelessWidget {
               // Reload button
               mock.MenuItemButton(
                 leadingIcon: const Icon(Icons.refresh),
+                onPressed: Actions.handler(context, const ReloadIntent()),
                 child: const Text('重新载入'),
-                onPressed: () {
-                  final index = context.read<PlaySourceIndex>().value!;
-                  final onlineEntry = context.read<PlayVideoEntry>().value!;
-                  Actions.invoke(
-                    context,
-                    OpenVideoIntent(
-                      videoEntry: VideoEntry.copy(onlineEntry),
-                      sourceIndex: index,
-                    ),
-                  );
-                },
               ),
 
               // Source button
