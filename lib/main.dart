@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart' as services;
@@ -17,8 +18,10 @@ void main() {
 
       await services.init();
 
-      await windowManager.ensureInitialized();
-      windowManager.setMinimumSize(const Size(800, 600));
+      if (Platform.isMacOS || Platform.isWindows) {
+        await windowManager.ensureInitialized();
+        windowManager.setMinimumSize(const Size(800, 600));
+      }
 
       runApp(WrappedWidget());
     },

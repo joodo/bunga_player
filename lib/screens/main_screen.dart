@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:ffi';
+import 'dart:io';
 
 import 'package:bunga_player/ui/providers.dart';
 import 'package:bunga_player/screens/progress_section/progress_section.dart';
@@ -10,7 +11,6 @@ import 'package:ffi/ffi.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
-import 'package:platform/platform.dart';
 import 'package:provider/provider.dart';
 import 'package:win32/win32.dart';
 
@@ -194,7 +194,7 @@ class _HUDWrapperState extends SingleChildState<_HUDWrapper> {
   void _hideCursorOnWindows() {
     // HACK: Hide cursor issue under windows
     // see https://stackoverflow.com/questions/74963577/how-to-hide-mouse-cursor-in-flutter
-    if (!shouldShowHUD.value && const LocalPlatform().isWindows) {
+    if (!shouldShowHUD.value && Platform.isWindows) {
       Timer(const Duration(milliseconds: 100), () {
         Pointer<POINT> point = malloc();
         GetCursorPos(point);

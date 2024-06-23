@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
@@ -29,6 +30,11 @@ class AlwaysOnTop extends ValueNotifier<bool> {
 class IsFullScreen extends ValueNotifier<bool> {
   final AlwaysOnTop alwaysOnTop;
   IsFullScreen(this.alwaysOnTop) : super(false) {
+    if (!Platform.isMacOS && !Platform.isWindows) {
+      value = true;
+      return;
+    }
+
     addListener(() async {
       if (value) {
         await windowManager.setAlwaysOnTop(false);
@@ -44,6 +50,7 @@ class IsFullScreen extends ValueNotifier<bool> {
 
 class WindowTitle extends ValueNotifierWithReset<String> {
   WindowTitle() : super('👍 棒嘎大影院，你我来相见') {
+    if (!Platform.isMacOS && !Platform.isWindows) return;
     addListener(() {
       windowManager.setTitle(value);
     });

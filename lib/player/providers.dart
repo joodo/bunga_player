@@ -172,9 +172,7 @@ class PlayVideoSessions {
 
   Future<void> _save() {
     final rawData = jsonEncode(_data.values.toList());
-    print(rawData.length);
     final compressed = rawData.compress();
-    print(compressed.length);
     return getIt<Preferences>().set('video_sessions', compressed);
   }
 

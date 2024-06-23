@@ -1,11 +1,17 @@
+import 'dart:io';
+
 import 'package:window_manager/window_manager.dart';
 
 typedef ExitCallback = Future<void> Function();
 
 class ExitCallbacks with WindowListener {
   ExitCallbacks() {
-    windowManager.setPreventClose(true);
-    windowManager.addListener(this);
+    if (Platform.isMacOS || Platform.isWindows) {
+      windowManager.setPreventClose(true);
+      windowManager.addListener(this);
+    } else {
+      // TODO: exit call for ios
+    }
   }
 
   final _callbacks = <ExitCallback>[];
