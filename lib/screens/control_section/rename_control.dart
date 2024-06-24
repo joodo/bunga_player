@@ -12,6 +12,7 @@ class RenameControl extends StatefulWidget {
 
 class _RenameControlState extends State<RenameControl> {
   final _textController = TextEditingController();
+  late final _shouldShowHudNotifier = context.read<ShouldShowHUD>();
 
   @override
   void initState() {
@@ -20,6 +21,7 @@ class _RenameControlState extends State<RenameControl> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       context.read<CatIndicator>().title = '怎样称呼你？';
 
+      // Get default nickname
       final args =
           ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
       final name = args?['name'];
@@ -28,11 +30,14 @@ class _RenameControlState extends State<RenameControl> {
         baseOffset: 0,
         extentOffset: _textController.text.length,
       );
+
+      _shouldShowHudNotifier.lock('rename control');
     });
   }
 
   @override
   void dispose() {
+    _shouldShowHudNotifier.unlock('rename control');
     _textController.dispose();
     super.dispose();
   }

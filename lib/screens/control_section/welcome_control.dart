@@ -27,13 +27,23 @@ class WelcomeControl extends StatefulWidget {
 }
 
 class _WelcomeControlState extends State<WelcomeControl> {
+  late final _shouldShowHudNotifier = context.read<ShouldShowHUD>();
+
   @override
   void initState() {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<CatIndicator>().title = _title;
+
+      _shouldShowHudNotifier.lock('welcome control');
     });
+  }
+
+  @override
+  void dispose() {
+    _shouldShowHudNotifier.unlock('welcome control');
+    super.dispose();
   }
 
   @override
