@@ -110,6 +110,10 @@ class BungaClient {
       _host.resolve('alist/thumb?path=${Uri.encodeFull(path)}'),
       headers: {'alist-token': alistToken},
     );
+    if (!response.isSuccess) {
+      throw Exception(
+          '[Bunga] Get AList thumbtail failed (${response.statusCode}): ${response.body}');
+    }
     return response.bodyBytes;
   }
 

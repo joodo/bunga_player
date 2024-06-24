@@ -221,21 +221,21 @@ class _ChannelCardState extends State<_ChannelCard> {
       );
     });
 
-    final themedCard = FutureBuilder(
-      future: _imageData != null
-          ? ColorScheme.fromImageProvider(
-              provider: MemoryImage(_imageData!),
-              brightness: Brightness.dark,
-            )
-          : null,
-      initialData: themeData.colorScheme,
-      builder: (context, snapshot) => Theme(
-        data: themeData.copyWith(colorScheme: snapshot.data),
-        child: card,
-      ),
-    );
-
-    return themedCard;
+    try {
+      return FutureBuilder(
+        future: ColorScheme.fromImageProvider(
+          provider: MemoryImage(_imageData!),
+          brightness: Brightness.dark,
+        ),
+        initialData: themeData.colorScheme,
+        builder: (context, snapshot) => Theme(
+          data: themeData.copyWith(colorScheme: snapshot.data),
+          child: card,
+        ),
+      );
+    } catch (e) {
+      return card;
+    }
   }
 
   void _getNetworkImageData(String uriString) async {
