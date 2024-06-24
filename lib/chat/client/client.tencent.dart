@@ -117,7 +117,9 @@ class TencentClient extends ChatClient {
         selfSignature: colorHue.toString(),
       ),
     );
-    assert(setSelfInfoRes.code == 0);
+    if (setSelfInfoRes.code != 0) {
+      throw Exception('Login failed ${setSelfInfoRes.code}');
+    }
 
     _currentUser = OwnUser(
       id: id,

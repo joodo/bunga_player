@@ -65,7 +65,6 @@ class _RenameControlState extends State<RenameControl> {
           valueListenable: _textController,
           builder: (context, value, child) {
             return FilledButton(
-              style: FilledButton.styleFrom(minimumSize: const Size(120, 48)),
               onPressed:
                   value.text.isNotEmpty ? () => _onSubmit(value.text) : null,
               child: const Text('就这么定'),
