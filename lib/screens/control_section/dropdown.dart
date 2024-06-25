@@ -20,7 +20,7 @@ class ControlDropdown<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     return InputDecorator(
       decoration: InputDecoration(
-        contentPadding: const EdgeInsets.symmetric(vertical: 4),
+        contentPadding: const EdgeInsets.all(0),
         border: const OutlineInputBorder(),
         enabled: this.enabled,
       ),
