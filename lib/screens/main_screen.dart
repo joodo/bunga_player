@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ffi';
 import 'dart:io';
 
+import 'package:bunga_player/screens/player_section/saved_position_hint.dart';
 import 'package:bunga_player/ui/providers.dart';
 import 'package:bunga_player/screens/progress_section/progress_section.dart';
 import 'package:bunga_player/screens/room_section.dart';
@@ -68,6 +69,11 @@ class MainScreenState extends State<MainScreen> {
             children: [
               playerSection,
               _HUDWrapper(child: hideableUI),
+              const Positioned(
+                bottom: 72,
+                right: 12,
+                child: SavedPositionHint(),
+              ),
             ],
           );
         } else {
@@ -102,6 +108,11 @@ class MainScreenState extends State<MainScreen> {
                 left: 0,
                 right: 0,
                 child: progressSection,
+              ),
+              const Positioned(
+                bottom: 72,
+                right: 12,
+                child: SavedPositionHint(),
               ),
             ],
           );

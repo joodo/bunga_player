@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:bunga_player/player/actions.dart';
-import 'package:bunga_player/screens/player_section/saved_position_hint.dart';
 import 'package:bunga_player/ui/actions.dart';
 import 'package:bunga_player/ui/providers.dart';
 import 'package:bunga_player/player/providers.dart';
@@ -44,11 +43,6 @@ class _PlayerSectionState extends State<PlayerSection> {
           top: 48,
           left: 24,
           child: _VolumePopup(),
-        ),
-        const Positioned(
-          bottom: 8,
-          right: 12,
-          child: SavedPositionHint(),
         ),
       ],
     );
