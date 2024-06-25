@@ -29,6 +29,14 @@ class MainControl extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final showHud = context.read<ShouldShowHUD>();
+
+    Future<void> _pushNamed(String path) async {
+      showHud.lockUp('control pushed');
+      await Navigator.of(context).pushNamed(path);
+      showHud.unlock('control pushed');
+    }
+
     final body = Row(
       children: [
         const SizedBox(width: 8),
@@ -62,7 +70,7 @@ class MainControl extends StatelessWidget {
         // Call Button
         const ControlDivider(),
         const SizedBox(width: 8),
-        const _CallButton(),
+        _CallButton(onPressed: () => _pushNamed('control:call')),
         const SizedBox(width: 8),
 
         // Danmaku Button
@@ -71,7 +79,7 @@ class MainControl extends StatelessWidget {
             icon: const Icon(Icons.chat),
             onPressed: action,
           ),
-          action: () => Navigator.of(context).pushNamed('control:danmaku'),
+          action: () => _pushNamed('control:danmaku'),
         ),
         const SizedBox(width: 8),
 
@@ -81,7 +89,7 @@ class MainControl extends StatelessWidget {
             icon: const Icon(Icons.mood),
             onPressed: action,
           ),
-          action: () => Navigator.of(context).pushNamed('control:popmoji'),
+          action: () => _pushNamed('control:popmoji'),
         ),
         const SizedBox(width: 8),
 
@@ -96,6 +104,8 @@ class MainControl extends StatelessWidget {
             },
             icon: const Icon(Icons.more_horiz),
           ),
+          onOpen: () => showHud.lockUp('popup menu'),
+          onClose: () => showHud.unlock('popup menu'),
           style: Theme.of(context).menuTheme.style,
           alignmentOffset: const Offset(-50, 8),
           rootOverlay: true,
@@ -114,7 +124,7 @@ class MainControl extends StatelessWidget {
                 leadingIcon: const Icon(Icons.rss_feed),
                 child: const Text('片源'),
                 onPressed: () {
-                  Navigator.of(context).pushNamed('control:source_selection');
+                  _pushNamed('control:source_selection');
                 },
               ),
 
@@ -126,22 +136,17 @@ class MainControl extends StatelessWidget {
               leadingIcon: const Icon(Icons.tune),
               child: const Text('音视频调整    '),
               onPressed: () {
-                Navigator.of(context).pushNamed('control:tune');
+                _pushNamed('control:tune');
               },
             ),
 
             // Subtitle Button
             mock.MenuItemButton(
-              child: const Row(
-                children: [
-                  Icon(Icons.subtitles),
-                  SizedBox(width: 12),
-                  Text('字幕'),
-                ],
-              ),
+              leadingIcon: const Icon(Icons.subtitles),
               onPressed: () {
-                Navigator.of(context).pushNamed('control:subtitle');
+                _pushNamed('control:subtitle');
               },
+              child: const Text('字幕'),
             ),
 
             // Change Video Button
@@ -187,7 +192,7 @@ class MainControl extends StatelessWidget {
         },
         child: Focus(autofocus: true, child: child!),
       ),
-      action: () => Navigator.of(context).pushNamed('control:danmaku'),
+      action: () => _pushNamed('control:danmaku'),
       child: body,
     );
   }
@@ -345,7 +350,8 @@ class _SliderSection extends StatelessWidget {
 }
 
 class _CallButton extends StatefulWidget {
-  const _CallButton();
+  final VoidCallback onPressed;
+  const _CallButton({required this.onPressed});
 
   @override
   State<_CallButton> createState() => _CallButtonState();
@@ -388,7 +394,7 @@ class _CallButtonState extends State<_CallButton>
               onPressed: loaded
                   ? () {
                       Actions.invoke(context, StartCallingRequestIntent());
-                      _pushNavigate();
+                      widget.onPressed();
                     }
                   : null,
             ),
@@ -401,7 +407,7 @@ class _CallButtonState extends State<_CallButton>
             ),
             color: Colors.white70,
             icon: const Icon(Icons.call),
-            onPressed: _pushNavigate,
+            onPressed: widget.onPressed,
           ),
         VoiceCallStatusType.callIn => RotationTransition(
             turns: _animation,
@@ -411,15 +417,11 @@ class _CallButtonState extends State<_CallButton>
               ),
               color: Colors.white70,
               icon: const Icon(Icons.call),
-              onPressed: _pushNavigate,
+              onPressed: widget.onPressed,
             ),
           ),
       },
     );
-  }
-
-  void _pushNavigate() {
-    Navigator.of(context).pushNamed('control:call');
   }
 }
 

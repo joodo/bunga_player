@@ -59,7 +59,7 @@ class WindowTitle extends ValueNotifierWithReset<String> {
 }
 
 class ShouldShowHUD extends AutoResetNotifier {
-  ShouldShowHUD() : super(const Duration(seconds: 3));
+  ShouldShowHUD() : super(Duration(seconds: kIsDesktop ? 3 : 5));
 }
 
 class JustToggleByRemote extends AutoResetNotifier {

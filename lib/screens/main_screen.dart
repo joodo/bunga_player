@@ -147,24 +147,22 @@ class _HUDWrapperState extends SingleChildState<_HUDWrapper> {
             ? SystemMouseCursors.basic
             : SystemMouseCursors.none,
         onEnter: (event) => shouldShowHUD.unlock('interactive'),
-        onExit: (event) {
-          if (!_isLeaveFromEdge(context, event)) {
-            // When mouse region blocked by popup menu
-            shouldShowHUD.lockUp('interactive');
-          }
-        },
         onHover: (event) {
           if (_isInUISection(context, event)) {
             shouldShowHUD.lockUp('interactive');
           } else {
             shouldShowHUD.unlock('interactive');
+            shouldShowHUD.mark();
           }
         },
         child: AnimatedOpacity(
           opacity: shouldShowHUD.value ? 1.0 : 0.0,
           curve: Curves.easeOutCubic,
           duration: const Duration(milliseconds: 250),
-          child: child,
+          child: IgnorePointer(
+            ignoring: !shouldShowHUD.value,
+            child: child,
+          ),
         ),
       ),
       child: child,

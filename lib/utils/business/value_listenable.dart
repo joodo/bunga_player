@@ -84,7 +84,7 @@ class AutoResetNotifier extends ChangeNotifier
   }
 
   void reset() {
-    assert(_locks.isEmpty);
+    if (_locks.isNotEmpty) return;
     _value = false;
     _resetTimer.cancel();
   }
