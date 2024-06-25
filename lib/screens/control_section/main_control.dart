@@ -2,6 +2,7 @@ import 'package:bunga_player/chat/actions.dart';
 import 'package:bunga_player/play_sync/providers.dart';
 import 'package:bunga_player/player/actions.dart';
 import 'package:bunga_player/play_sync/actions.dart';
+import 'package:bunga_player/utils/business/platform.dart';
 import 'package:bunga_player/voice_call/actions.dart';
 import 'package:bunga_player/chat/models/channel_data.dart';
 import 'package:bunga_player/utils/models/volume.dart';
@@ -192,6 +193,10 @@ class MainControl extends StatelessWidget {
   }
 
   void _leaveChannel(BuildContext context) async {
+    if (!kIsDesktop) {
+      context.read<PlayVideoSessions>().save();
+    }
+
     Actions.invoke(context, const StopPlayIntent());
     Actions.maybeInvoke(context, const LeaveChannelIntent());
     Navigator.of(context).popAndPushNamed('control:welcome');

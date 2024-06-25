@@ -108,11 +108,11 @@ class PlayVideoSessions {
     });
 
     // Register save progress when quit
-    getIt<ExitCallbacks>().add(_save);
+    getIt<ExitCallbacks>().add(save);
   }
 
   void dispose() {
-    getIt<ExitCallbacks>().remove(_save);
+    getIt<ExitCallbacks>().remove(save);
   }
 
   Future<void> _load() async {
@@ -160,7 +160,7 @@ class PlayVideoSessions {
         );
       }
 
-      await _save();
+      await save();
       await getIt<Preferences>().remove('watch_progress');
     } catch (e) {
       logger.w('Load watch progress failed');
@@ -170,7 +170,7 @@ class PlayVideoSessions {
     return true;
   }
 
-  Future<void> _save() {
+  Future<void> save() {
     final rawData = jsonEncode(_data.values.toList());
     final compressed = rawData.compress();
     return getIt<Preferences>().set('video_sessions', compressed);
