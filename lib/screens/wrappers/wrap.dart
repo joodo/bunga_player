@@ -21,7 +21,7 @@ class WrappedWidget extends Nested {
             const AppWrapper(),
             const ActionsWrapper(),
             const UpdateAndCleanWrapper(),
-            const ConsoleWrapper(),
+            const Console(),
           ],
           child: const MainScreen(),
         );

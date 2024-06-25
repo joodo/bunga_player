@@ -18,15 +18,14 @@ import 'package:nested/nested.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 
-class ConsoleWrapper extends SingleChildStatefulWidget {
-  const ConsoleWrapper({super.key, super.child});
+class Console extends SingleChildStatefulWidget {
+  const Console({super.key, super.child});
 
   @override
-  State<ConsoleWrapper> createState() => _ConsoleWrapperState();
+  State<Console> createState() => ConsoleState();
 }
 
-class _ConsoleWrapperState extends SingleChildState<ConsoleWrapper> {
-  bool _show = false;
+class ConsoleState extends SingleChildState<Console> {
   final _logTextController = TextEditingController();
   late final StreamSubscription _subscribe;
 
@@ -41,13 +40,55 @@ class _ConsoleWrapperState extends SingleChildState<ConsoleWrapper> {
   @override
   void dispose() {
     _subscribe.cancel();
+    _logTextController.dispose();
     super.dispose();
   }
 
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
+    return FocusScope(
+      autofocus: true,
+      onKeyEvent: (node, event) {
+        if (event is KeyDownEvent &&
+            event.logicalKey == LogicalKeyboardKey.f12) {
+          show();
+          return KeyEventResult.handled;
+        }
+
+        return KeyEventResult.ignored;
+      },
+      child: Provider(
+        create: (context) => this,
+        child: child,
+      ),
+    );
+  }
+
+  void show() {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog.fullscreen(
+        child: _ConsoleDialogContent(
+          logTextController: _logTextController,
+        ),
+      ),
+    );
+  }
+}
+
+class _ConsoleDialogContent extends StatefulWidget {
+  final TextEditingController logTextController;
+  const _ConsoleDialogContent({required this.logTextController});
+
+  @override
+  State<_ConsoleDialogContent> createState() => _ConsoleDialogContentState();
+}
+
+class _ConsoleDialogContentState extends State<_ConsoleDialogContent> {
+  @override
+  Widget build(BuildContext context) {
     final logView = TextField(
-      controller: _logTextController,
+      controller: widget.logTextController,
       decoration: const InputDecoration(
         border: OutlineInputBorder(),
       ),
@@ -114,25 +155,12 @@ class _ConsoleWrapperState extends SingleChildState<ConsoleWrapper> {
     final consoleView = DefaultTabController(
       length: 3,
       child: Scaffold(
-        backgroundColor: const Color(0xA0000000),
         appBar: AppBar(
-          title: Row(
-            children: [
-              const Expanded(
-                child: TabBar(
-                  tabs: [
-                    Tab(text: 'Logs'),
-                    Tab(text: 'Variables'),
-                    Tab(text: 'Actions'),
-                  ],
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.close),
-                onPressed: () => setState(() {
-                  _show = false;
-                }),
-              )
+          title: const TabBar(
+            tabs: [
+              Tab(text: 'Logs'),
+              Tab(text: 'Variables'),
+              Tab(text: 'Actions'),
             ],
           ),
         ),
@@ -155,30 +183,7 @@ class _ConsoleWrapperState extends SingleChildState<ConsoleWrapper> {
       ),
     );
 
-    return FocusScope(
-      autofocus: true,
-      onKeyEvent: (node, event) {
-        if (event is KeyDownEvent &&
-            event.logicalKey == LogicalKeyboardKey.f12) {
-          setState(() {
-            _show = !_show;
-          });
-          return KeyEventResult.handled;
-        }
-
-        return KeyEventResult.ignored;
-      },
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          if (child != null) child,
-          Visibility(
-            visible: _show,
-            child: consoleView,
-          ),
-        ],
-      ),
-    );
+    return consoleView;
   }
 
   String _randomSentence() {

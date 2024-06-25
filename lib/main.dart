@@ -1,9 +1,9 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart' as services;
 import 'package:bunga_player/screens/wrappers/wrap.dart';
+import 'package:bunga_player/utils/business/platform.dart';
 import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -18,7 +18,7 @@ void main() {
 
       await services.init();
 
-      if (Platform.isMacOS || Platform.isWindows) {
+      if (kIsDesktop) {
         await windowManager.ensureInitialized();
         windowManager.setMinimumSize(const Size(800, 600));
       }

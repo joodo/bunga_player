@@ -1,12 +1,11 @@
-import 'dart:io';
-
+import 'package:bunga_player/utils/business/platform.dart';
 import 'package:window_manager/window_manager.dart';
 
 typedef ExitCallback = Future<void> Function();
 
 class ExitCallbacks with WindowListener {
   ExitCallbacks() {
-    if (Platform.isMacOS || Platform.isWindows) {
+    if (kIsDesktop) {
       windowManager.setPreventClose(true);
       windowManager.addListener(this);
     } else {

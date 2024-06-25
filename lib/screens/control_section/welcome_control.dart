@@ -255,7 +255,8 @@ class _SettingButtonWrapper extends StatelessWidget {
       ),
       closedColor: theme.primaryColor,
       closedShape: const CircleBorder(),
-      openBuilder: (dialogContext, closeContainer) => const SettingsDialog(),
+      openBuilder: (dialogContext, closeContainer) =>
+          SettingsDialog(read: context.read),
       openColor: theme.primaryColor,
     );
   }

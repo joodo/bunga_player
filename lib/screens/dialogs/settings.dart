@@ -2,11 +2,13 @@ import 'package:bunga_player/bunga_server/client.dart';
 import 'package:bunga_player/bunga_server/providers.dart';
 import 'package:bunga_player/network/providers.dart';
 import 'package:bunga_player/client_info/providers.dart';
+import 'package:bunga_player/screens/wrappers/console.dart';
 import 'package:bunga_player/ui/providers.dart';
 import 'package:bunga_player/screens/player_section/danmaku_player.dart';
 import 'package:bunga_player/screens/widgets/loading_button_icon.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart';
+import 'package:bunga_player/utils/business/platform.dart';
 import 'package:bunga_player/utils/extensions/iterable.dart';
 import 'package:bunga_player/utils/extensions/single_activator.dart';
 import 'package:bunga_player/screens/widgets/slider_dense_track_shape.dart';
@@ -19,7 +21,8 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 
 class SettingsDialog extends StatefulWidget {
-  const SettingsDialog({super.key});
+  final Locator read;
+  const SettingsDialog({super.key, required this.read});
 
   @override
   State<SettingsDialog> createState() => _SettingsDialogState();
@@ -27,6 +30,34 @@ class SettingsDialog extends StatefulWidget {
 
 class _SettingsDialogState extends State<SettingsDialog> {
   int _selectedIndex = 0;
+  late final _tabs = <NavigationRailDestination, Widget>{
+    const NavigationRailDestination(
+      icon: Icon(Icons.lan_outlined),
+      selectedIcon: Icon(Icons.lan),
+      label: Text('网络'),
+    ): const _NetworkSettings(),
+    if (kIsDesktop)
+      const NavigationRailDestination(
+        icon: Icon(Icons.palette_outlined),
+        selectedIcon: Icon(Icons.palette),
+        label: Text('外观'),
+      ): const _AppearanceSettings(),
+    const NavigationRailDestination(
+      icon: Icon(Icons.chat_outlined),
+      selectedIcon: Icon(Icons.chat),
+      label: Text('互动'),
+    ): const _ReactionSettings(),
+    const NavigationRailDestination(
+      icon: Icon(Icons.keyboard_outlined),
+      selectedIcon: Icon(Icons.keyboard),
+      label: Text('快捷键'),
+    ): const _ShortcutSettings(),
+    const NavigationRailDestination(
+      icon: Icon(Icons.info_outline),
+      selectedIcon: Icon(Icons.info),
+      label: Text('关于'),
+    ): _AboutSetting(read: widget.read),
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -41,45 +72,13 @@ class _SettingsDialogState extends State<SettingsDialog> {
                 _selectedIndex = value;
               }),
               labelType: NavigationRailLabelType.all,
-              destinations: const [
-                NavigationRailDestination(
-                  icon: Icon(Icons.lan_outlined),
-                  selectedIcon: Icon(Icons.lan),
-                  label: Text('网络'),
-                ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.palette_outlined),
-                  selectedIcon: Icon(Icons.palette),
-                  label: Text('外观'),
-                ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.chat_outlined),
-                  selectedIcon: Icon(Icons.chat),
-                  label: Text('互动'),
-                ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.keyboard_outlined),
-                  selectedIcon: Icon(Icons.keyboard),
-                  label: Text('快捷键'),
-                ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.info_outline),
-                  selectedIcon: Icon(Icons.info),
-                  label: Text('关于'),
-                ),
-              ],
+              destinations: _tabs.keys.toList(),
             ),
             Expanded(
               child: LazyIndexedStack(
                 index: _selectedIndex,
                 sizing: StackFit.expand,
-                children: const [
-                  _NetworkSettings(),
-                  _AppearanceSettings(),
-                  _ReactionSettings(),
-                  _ShortcutSettings(),
-                  _AboutSetting(),
-                ],
+                children: _tabs.values.toList(),
               ),
             )
           ],
@@ -716,7 +715,8 @@ class _VirtualKeyView extends StatelessWidget {
 }
 
 class _AboutSetting extends StatelessWidget {
-  const _AboutSetting();
+  final Locator read;
+  const _AboutSetting({required this.read});
   @override
   Widget build(BuildContext context) {
     return _SettingStack(
@@ -742,6 +742,10 @@ class _AboutSetting extends StatelessWidget {
               applicationName: getIt<PackageInfo>().appName,
             ),
             child: const Text('查看许可'),
+          ),
+          TextButton(
+            onPressed: read<ConsoleState>().show,
+            child: const Text('控制台'),
           ),
         ],
       ),
