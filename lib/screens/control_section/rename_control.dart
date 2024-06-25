@@ -31,7 +31,7 @@ class _RenameControlState extends State<RenameControl> {
         extentOffset: _textController.text.length,
       );
 
-      _shouldShowHudNotifier.lock('rename control');
+      _shouldShowHudNotifier.lockUp('rename control');
     });
   }
 

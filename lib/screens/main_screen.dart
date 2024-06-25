@@ -150,15 +150,14 @@ class _HUDWrapperState extends SingleChildState<_HUDWrapper> {
         onExit: (event) {
           if (!_isLeaveFromEdge(context, event)) {
             // When mouse region blocked by popup menu
-            shouldShowHUD.lock('interactive');
+            shouldShowHUD.lockUp('interactive');
           }
         },
         onHover: (event) {
           if (_isInUISection(context, event)) {
-            shouldShowHUD.lock('interactive');
+            shouldShowHUD.lockUp('interactive');
           } else {
             shouldShowHUD.unlock('interactive');
-            shouldShowHUD.mark();
           }
         },
         child: AnimatedOpacity(

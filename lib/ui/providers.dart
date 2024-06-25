@@ -211,20 +211,20 @@ final uiProviders = MultiProvider(
       create: (context) {
         final result = ShouldShowHUD();
 
-        if (!context.read<FoldLayout>().value) result.lock('fold');
-        if (!context.read<CatIndicator>().busy) result.lock('busy');
+        if (!context.read<FoldLayout>().value) result.lockUp('fold');
+        if (!context.read<CatIndicator>().busy) result.lockUp('busy');
 
         return result..mark();
       },
       update: (context, foldLayout, businessIndicator, previous) {
         if (!foldLayout.value) {
-          previous!.lock('fold');
+          previous!.lockUp('fold');
         } else {
           previous!.unlock('fold');
         }
 
         if (businessIndicator.busy) {
-          previous.lock('busy');
+          previous.lockUp('busy');
         } else {
           previous.unlock('busy');
         }

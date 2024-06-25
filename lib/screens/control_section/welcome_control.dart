@@ -36,7 +36,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<CatIndicator>().title = _title;
 
-      _shouldShowHudNotifier.lock('welcome control');
+      _shouldShowHudNotifier.lockUp('welcome control');
     });
   }
 
