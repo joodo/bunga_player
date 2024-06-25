@@ -165,14 +165,15 @@ class MainControl extends StatelessWidget {
         const SizedBox(width: 16),
 
         // Full screen button
-        Consumer<IsFullScreen>(
-          builder: (context, isFullScreen, child) => IconButton(
-            icon: isFullScreen.value
-                ? const Icon(Icons.fullscreen_exit)
-                : const Icon(Icons.fullscreen),
-            onPressed: () => isFullScreen.value = !isFullScreen.value,
+        if (kIsDesktop)
+          Consumer<IsFullScreen>(
+            builder: (context, isFullScreen, child) => IconButton(
+              icon: isFullScreen.value
+                  ? const Icon(Icons.fullscreen_exit)
+                  : const Icon(Icons.fullscreen),
+              onPressed: () => isFullScreen.value = !isFullScreen.value,
+            ),
           ),
-        ),
 
         const SizedBox(width: 8),
       ],
