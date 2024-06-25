@@ -201,7 +201,11 @@ class _UpdateWrapperState extends SingleChildState<UpdateAndCleanWrapper> {
     final tempDir = await getApplicationCacheDirectory();
     await for (final entry in tempDir.list().where((entry) => entry is File)) {
       logger.i('Update: clean temp file ${entry.path}');
-      await entry.delete();
+      try {
+        await entry.delete();
+      } catch (e) {
+        logger.i(e);
+      }
     }
   }
 
