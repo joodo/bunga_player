@@ -4,6 +4,7 @@ import 'package:file_selector/file_selector.dart';
 class LocalVideoEntryDialog {
   static const typeGroup = XTypeGroup(
     label: 'videos',
+    uniformTypeIdentifiers: ['public.movie'],
     extensions: <String>[
       'webm',
       'mkv',

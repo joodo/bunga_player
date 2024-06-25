@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:animations/animations.dart';
 import 'package:bunga_player/player/actions.dart';
 import 'package:bunga_player/player/models/video_entries/video_entry.dart';
@@ -42,12 +40,11 @@ class VideoOpenMenuItemsCreator {
           child: const Text('在线视频'),
         ),
       ),
-      if (Platform.isMacOS || Platform.isWindows)
-        mock.MenuItemButton(
-          leadingIcon: const Icon(Icons.folder_outlined),
-          onPressed: _openLocalVideo,
-          child: const Text('本地文件    '),
-        ),
+      mock.MenuItemButton(
+        leadingIcon: const Icon(Icons.folder_outlined),
+        onPressed: _openLocalVideo,
+        child: const Text('本地文件    '),
+      ),
     ];
   }
 
