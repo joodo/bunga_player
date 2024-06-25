@@ -11,9 +11,7 @@ class ExitCallbacks with WindowListener {
       windowManager.addListener(this);
     } else {
       AppLifecycleListener(
-        onDetach: () async {
-          await _runAll();
-        },
+        onDetach: _runAll,
       );
     }
   }
