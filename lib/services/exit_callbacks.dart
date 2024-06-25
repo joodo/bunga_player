@@ -1,4 +1,5 @@
 import 'package:bunga_player/utils/business/platform.dart';
+import 'package:flutter/widgets.dart';
 import 'package:window_manager/window_manager.dart';
 
 typedef ExitCallback = Future<void> Function();
@@ -9,7 +10,11 @@ class ExitCallbacks with WindowListener {
       windowManager.setPreventClose(true);
       windowManager.addListener(this);
     } else {
-      // TODO: exit call for ios
+      AppLifecycleListener(
+        onDetach: () async {
+          await _runAll();
+        },
+      );
     }
   }
 
