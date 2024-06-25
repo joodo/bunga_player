@@ -12,7 +12,6 @@ class RenameControl extends StatefulWidget {
 
 class _RenameControlState extends State<RenameControl> {
   final _textController = TextEditingController();
-  late final _shouldShowHudNotifier = context.read<ShouldShowHUD>();
 
   @override
   void initState() {
@@ -30,14 +29,11 @@ class _RenameControlState extends State<RenameControl> {
         baseOffset: 0,
         extentOffset: _textController.text.length,
       );
-
-      _shouldShowHudNotifier.lockUp('rename control');
     });
   }
 
   @override
   void dispose() {
-    _shouldShowHudNotifier.unlock('rename control');
     _textController.dispose();
     super.dispose();
   }

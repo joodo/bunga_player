@@ -22,10 +22,37 @@ class ControlSection extends StatefulWidget {
   State<ControlSection> createState() => _ControlSectionState();
 }
 
+class LockObserver extends RouteObserver {
+  final ShouldShowHUD showHud;
+  LockObserver(this.showHud);
+
+  @override
+  void didPop(Route route, Route? previousRoute) {
+    if (previousRoute?.settings.name == 'control:main') {
+      showHud.unlock('not main control');
+    } else {
+      showHud.lockUp('not main control');
+    }
+    super.didPop(route, previousRoute);
+  }
+
+  @override
+  void didPush(Route route, Route? previousRoute) {
+    if (route.settings.name == 'control:main') {
+      showHud.unlock('not main control');
+    } else {
+      showHud.lockUp('not main control');
+    }
+    super.didPush(route, previousRoute);
+  }
+}
+
 class _ControlSectionState extends State<ControlSection> {
   final _navigatorStateKey = GlobalKey<NavigatorState>();
   late final _showHUD = context.read<ShouldShowHUD>();
   late final _callStatus = context.read<VoiceCallStatus>();
+
+  late final _routeObserver = LockObserver(_showHUD);
 
   @override
   void initState() {
@@ -67,22 +94,25 @@ class _ControlSectionState extends State<ControlSection> {
     final navigator = Navigator(
       initialRoute: initialRouteName,
       key: _navigatorStateKey,
-      onGenerateRoute: (settings) => PageRouteBuilder<void>(
-        pageBuilder: (context, _, __) => GestureDetector(
-          onTap: () {},
-          onDoubleTap: () {},
-          child: Container(
-            color: Theme.of(context).colorScheme.surface,
-            child: buildByName(settings.name ?? 'unknown'),
+      observers: [_routeObserver],
+      onGenerateRoute: (settings) {
+        return PageRouteBuilder<void>(
+          pageBuilder: (context, _, __) => GestureDetector(
+            onTap: () {},
+            onDoubleTap: () {},
+            child: Container(
+              color: Theme.of(context).colorScheme.surface,
+              child: buildByName(settings.name ?? 'unknown'),
+            ),
           ),
-        ),
-        transitionDuration: const Duration(milliseconds: 150),
-        transitionsBuilder: (_, animation, __, child) => FadeTransition(
-          opacity: CurveTween(curve: Curves.easeOutCubic).animate(animation),
-          child: child,
-        ),
-        settings: settings,
-      ),
+          transitionDuration: const Duration(milliseconds: 150),
+          transitionsBuilder: (_, animation, __, child) => FadeTransition(
+            opacity: CurveTween(curve: Curves.easeOutCubic).animate(animation),
+            child: child,
+          ),
+          settings: settings,
+        );
+      },
     );
 
     return _ShortcutsWrapper(child: navigator);
