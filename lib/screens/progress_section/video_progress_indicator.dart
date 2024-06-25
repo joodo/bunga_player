@@ -1,5 +1,6 @@
 import 'package:bunga_player/player/actions.dart';
 import 'package:bunga_player/player/providers.dart';
+import 'package:bunga_player/utils/business/platform.dart';
 import 'package:bunga_player/utils/extensions/duration.dart';
 import 'package:bunga_player/screens/widgets/slider_dense_track_shape.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +16,14 @@ class VideoProgressIndicator extends StatefulWidget {
 class _VideoProgressIndicatorState extends State<VideoProgressIndicator> {
   bool _isHovered = false;
   bool _isChanging = false;
-  double _slideThemeLerpT = 0;
+
+  @override
+  void initState() {
+    if (!kIsDesktop) {
+      _isHovered = true;
+    }
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +42,6 @@ class _VideoProgressIndicatorState extends State<VideoProgressIndicator> {
           onChangeStart: (value) {
             setState(() {
               _isChanging = true;
-              _slideThemeLerpT = 1.0;
             });
             Actions.invoke(
               context,
@@ -54,7 +61,6 @@ class _VideoProgressIndicatorState extends State<VideoProgressIndicator> {
           onChangeEnd: (value) {
             setState(() {
               _isChanging = false;
-              if (!_isHovered) _slideThemeLerpT = 0;
             });
 
             Actions.maybeInvoke(
@@ -67,7 +73,10 @@ class _VideoProgressIndicatorState extends State<VideoProgressIndicator> {
         );
 
         return TweenAnimationBuilder(
-          tween: Tween<double>(begin: 0, end: _slideThemeLerpT),
+          tween: Tween<double>(
+            begin: 0,
+            end: _isHovered || _isChanging ? 1.0 : 0.0,
+          ),
           duration: const Duration(milliseconds: 100),
           curve: Curves.easeInCubic,
           builder: (context, value, child) {
@@ -136,16 +145,18 @@ class _VideoProgressIndicatorState extends State<VideoProgressIndicator> {
       },
     );
 
-    return MouseRegion(
-      onEnter: (event) => setState(() {
-        _isHovered = true;
-        _slideThemeLerpT = 1.0;
-      }),
-      onExit: (event) => setState(() {
-        _isHovered = false;
-        if (!_isChanging) _slideThemeLerpT = 0;
-      }),
-      child: tweenAnimation,
-    );
+    if (!kIsDesktop) {
+      return tweenAnimation;
+    } else {
+      return MouseRegion(
+        onEnter: (event) => setState(() {
+          _isHovered = true;
+        }),
+        onExit: (event) => setState(() {
+          _isHovered = false;
+        }),
+        child: tweenAnimation,
+      );
+    }
   }
 }

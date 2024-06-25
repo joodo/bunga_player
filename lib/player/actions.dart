@@ -31,7 +31,9 @@ class SetVolumeAction extends ContextAction<SetVolumeIntent> {
     var volume = intent.volume;
     if (intent.offset) {
       volume += context!.read<PlayVolume>().value.volume;
-      context.read<JustAdjustedVolumeByKey>().mark();
+      context
+          .read<JustAdjustedByShortHand>()
+          .markWithAction(ShortHandAction.volume);
     }
     return getIt<Player>().setVolume(volume);
   }

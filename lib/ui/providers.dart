@@ -66,8 +66,18 @@ class JustToggleByRemote extends AutoResetNotifier {
   JustToggleByRemote() : super(const Duration(seconds: 2));
 }
 
-class JustAdjustedVolumeByKey extends AutoResetNotifier {
-  JustAdjustedVolumeByKey() : super(const Duration(seconds: 2));
+enum ShortHandAction { volume, deviceVolume, deviceBrightness }
+
+class JustAdjustedByShortHand extends AutoResetNotifier {
+  JustAdjustedByShortHand() : super(const Duration(seconds: 2));
+
+  ShortHandAction? _action;
+  ShortHandAction? get action => _action;
+  void markWithAction(ShortHandAction action) {
+    _action = action;
+    notifyListeners();
+    mark();
+  }
 }
 
 class DanmakuMode extends ValueNotifier<bool> {
@@ -233,7 +243,7 @@ final uiProviders = MultiProvider(
       },
     ),
     ChangeNotifierProvider(create: (context) => JustToggleByRemote()),
-    ChangeNotifierProvider(create: (context) => JustAdjustedVolumeByKey()),
+    ChangeNotifierProvider(create: (context) => JustAdjustedByShortHand()),
     ChangeNotifierProvider(create: (context) => PendingBungaHost()),
     ChangeNotifierProvider(
       create: (context) => ShowRemainDuration(),

@@ -31,7 +31,7 @@ class MainControl extends StatelessWidget {
   Widget build(BuildContext context) {
     final showHud = context.read<ShouldShowHUD>();
 
-    Future<void> _pushNamed(String path) async {
+    Future<void> pushNamed(String path) async {
       showHud.lockUp('control pushed');
       await Navigator.of(context).pushNamed(path);
       showHud.unlock('control pushed');
@@ -70,7 +70,7 @@ class MainControl extends StatelessWidget {
         // Call Button
         const ControlDivider(),
         const SizedBox(width: 8),
-        _CallButton(onPressed: () => _pushNamed('control:call')),
+        _CallButton(onPressed: () => pushNamed('control:call')),
         const SizedBox(width: 8),
 
         // Danmaku Button
@@ -79,7 +79,7 @@ class MainControl extends StatelessWidget {
             icon: const Icon(Icons.chat),
             onPressed: action,
           ),
-          action: () => _pushNamed('control:danmaku'),
+          action: () => pushNamed('control:danmaku'),
         ),
         const SizedBox(width: 8),
 
@@ -89,7 +89,7 @@ class MainControl extends StatelessWidget {
             icon: const Icon(Icons.mood),
             onPressed: action,
           ),
-          action: () => _pushNamed('control:popmoji'),
+          action: () => pushNamed('control:popmoji'),
         ),
         const SizedBox(width: 8),
 
@@ -124,7 +124,7 @@ class MainControl extends StatelessWidget {
                 leadingIcon: const Icon(Icons.rss_feed),
                 child: const Text('片源'),
                 onPressed: () {
-                  _pushNamed('control:source_selection');
+                  pushNamed('control:source_selection');
                 },
               ),
 
@@ -136,7 +136,7 @@ class MainControl extends StatelessWidget {
               leadingIcon: const Icon(Icons.tune),
               child: const Text('音视频调整    '),
               onPressed: () {
-                _pushNamed('control:tune');
+                pushNamed('control:tune');
               },
             ),
 
@@ -144,7 +144,7 @@ class MainControl extends StatelessWidget {
             mock.MenuItemButton(
               leadingIcon: const Icon(Icons.subtitles),
               onPressed: () {
-                _pushNamed('control:subtitle');
+                pushNamed('control:subtitle');
               },
               child: const Text('字幕'),
             ),
@@ -192,7 +192,7 @@ class MainControl extends StatelessWidget {
         },
         child: Focus(autofocus: true, child: child!),
       ),
-      action: () => _pushNamed('control:danmaku'),
+      action: () => pushNamed('control:danmaku'),
       child: body,
     );
   }

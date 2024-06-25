@@ -169,12 +169,6 @@ class _HUDWrapperState extends SingleChildState<_HUDWrapper> {
     );
   }
 
-  bool _isLeaveFromEdge(BuildContext context, PointerExitEvent event) {
-    final offset = event.localPosition;
-    final widgetSize = (context.findRenderObject()! as RenderBox).size;
-    return !widgetSize.contains(offset);
-  }
-
   bool _isInUISection(BuildContext context, PointerHoverEvent event) {
     final y = event.localPosition.dy;
     final widgetHeight = (context.findRenderObject()! as RenderBox).size.height;
