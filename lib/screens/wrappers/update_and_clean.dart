@@ -50,6 +50,8 @@ class _UpdateWrapperState extends SingleChildState<UpdateAndCleanWrapper> {
 
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
+    if (Platform.isIOS) return child!;
+
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -110,6 +112,8 @@ class _UpdateWrapperState extends SingleChildState<UpdateAndCleanWrapper> {
   }
 
   Future<void> _checkUpdate() async {
+    if (Platform.isIOS) return;
+
     final response = await http.get(Uri.parse(
       'https://gitee.com/api/v5/repos/joodo2/bunga_player/releases/latest',
     ));
