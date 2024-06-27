@@ -106,7 +106,8 @@ class ApplyRemotePlayingStatusAction
 
     final position = read<PlayPosition>().value;
     final remotePosition = intent.data.position;
-    if (!position.near(remotePosition)) {
+    if (isPlaying && !position.near(remotePosition) ||
+        position != remotePosition) {
       getIt<Player>().seek(remotePosition);
       if (canShowToast) {
         getIt<Toast>().show('${intent.sender.name} 调整了进度');
