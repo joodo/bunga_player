@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:bunga_player/bunga_server/client.dart';
 import 'package:bunga_player/chat/models/channel_data.dart';
@@ -356,7 +357,8 @@ class _GroupManager {
       info: V2TimGroupInfo(
         groupID: groupId,
         groupType: 'Work',
-        groupName: data.name,
+        groupName: data.name.substring(0, min(data.name.length, 15)),
+        introduction: data.name,
         faceUrl: jsonEncode(data.image),
         customInfo: {
           'video_type': jsonEncode(data.videoType.name),
