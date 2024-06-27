@@ -117,7 +117,11 @@ class MainControl extends StatelessWidget {
               // Source button
               mock.MenuItemButton(
                 leadingIcon: const Icon(Icons.rss_feed),
-                child: const Text('片源'),
+                child: Selector<PlayVideoEntry, int>(
+                  selector: (context, videoEntryNotifier) =>
+                      videoEntryNotifier.value?.sources.videos.length ?? 0,
+                  builder: (context, count, child) => Text('片源 ($count)'),
+                ),
                 onPressed: () {
                   Navigator.of(context).pushNamed('control:source_selection');
                 },
