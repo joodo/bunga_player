@@ -4,6 +4,7 @@ import 'package:bunga_player/chat/actions.dart';
 import 'package:bunga_player/popmoji/models/data.dart';
 import 'package:bunga_player/popmoji/models/message_data.dart';
 import 'package:bunga_player/popmoji/providers.dart';
+import 'package:bunga_player/utils/business/platform.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:bunga_player/mocks/tooltip.dart' as mock;
@@ -175,7 +176,7 @@ class _EmojiSheetState extends State<_EmojiSheet> {
         title: Padding(
           padding: const EdgeInsets.only(left: 24),
           child: TextField(
-            autofocus: true,
+            autofocus: kIsDesktop,
             decoration: const InputDecoration(
               hintText: '搜索表情',
               border: OutlineInputBorder(

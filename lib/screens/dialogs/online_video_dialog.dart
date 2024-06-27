@@ -78,6 +78,7 @@ class _OnlineVideoDialogState extends State<OnlineVideoDialog> {
             const SizedBox(height: 24),
             TextField(
               focusNode: _focusNode,
+              autofocus: true,
               controller: _textController,
               decoration: InputDecoration(
                 border: const OutlineInputBorder(),
