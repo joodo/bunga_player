@@ -6,6 +6,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   agora_rtc_engine
   audioplayers_windows
   file_selector_windows
+  flutter_volume_controller
   iris_method_channel
   media_kit_libs_windows_video
   media_kit_video

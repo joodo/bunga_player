@@ -6,7 +6,7 @@ import 'package:bunga_player/utils/business/platform.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:screen_brightness/screen_brightness.dart';
-import 'package:volume_controller/volume_controller.dart';
+import 'package:flutter_volume_controller/flutter_volume_controller.dart';
 
 class PlayGestureDetector extends StatefulWidget {
   const PlayGestureDetector({super.key});
@@ -27,6 +27,7 @@ class _PlayGestureDetectorState extends State<PlayGestureDetector> {
   @override
   void initState() {
     ScreenBrightness().setAnimate(false);
+    FlutterVolumeController.updateShowSystemUI(false);
     super.initState();
   }
 
@@ -113,7 +114,7 @@ class _PlayGestureDetectorState extends State<PlayGestureDetector> {
           _dragStartDeviceValue = await ScreenBrightness().current;
         } else {
           // Adjust volume
-          _dragStartDeviceValue = await VolumeController().getVolume();
+          _dragStartDeviceValue = await FlutterVolumeController.getVolume();
         }
       },
       onVerticalDragUpdate: (details) {
@@ -137,10 +138,7 @@ class _PlayGestureDetectorState extends State<PlayGestureDetector> {
           context
               .read<JustAdjustedByShortHand>()
               .markWithAction(ShortHandAction.deviceVolume);
-          VolumeController().setVolume(
-            _dragUpdatedDeviceValue!,
-            showSystemUI: false,
-          );
+          FlutterVolumeController.setVolume(_dragUpdatedDeviceValue!);
         }
       },
       onVerticalDragEnd: (details) {
