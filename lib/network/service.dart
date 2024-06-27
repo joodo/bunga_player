@@ -7,11 +7,14 @@ import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/extensions/http_response.dart';
 import 'package:bunga_player/utils/models/network_progress.dart';
 import 'package:dart_ping/dart_ping.dart';
+import 'package:dart_ping_ios/dart_ping_ios.dart';
 import 'package:http/http.dart' as http;
 
 class NetworkService {
   NetworkService() {
     HttpOverrides.global = _BungaHttpOverrides(_findProxy);
+
+    if (Platform.isIOS) DartPingIOS.register();
   }
 
   String? _proxyHost = getIt<Preferences>().get<String>('proxy');
