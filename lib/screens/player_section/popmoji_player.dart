@@ -7,6 +7,7 @@ import 'package:bunga_player/popmoji/models/data.dart';
 import 'package:bunga_player/popmoji/models/message_data.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
+import 'package:bunga_player/utils/business/platform.dart';
 import 'package:fireworks/fireworks.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
@@ -19,7 +20,10 @@ class PopmojiPlayer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Overlay(
       initialEntries: [
-        OverlayEntry(builder: (context) => const _FireworkOverlay()),
+        OverlayEntry(
+          builder: (context) => const _FireworkOverlay(),
+          maintainState: true,
+        ),
         OverlayEntry(builder: (context) => const _PopmojiOverlay()),
       ],
     );
@@ -38,6 +42,7 @@ class _FireworkOverlayState extends State<_FireworkOverlay>
     vsync: this,
     withStars: false,
     withSky: false,
+    explosionParticleCount: kIsDesktop ? 80 : 20,
     rocketSpawnTimeout: Duration.zero,
     autoLaunchDuration: Duration.zero,
   )..start();
@@ -76,7 +81,8 @@ class _FireworkOverlayState extends State<_FireworkOverlay>
         message.sender.id == context.read<ChatUser>().value!.id;
     if (!isCurrentUser) getIt<Toast>().show('${message.sender.name} 在放大呲花');
 
-    _fireworkController.autoLaunchDuration = const Duration(milliseconds: 100);
+    _fireworkController.autoLaunchDuration =
+        Duration(milliseconds: kIsDesktop ? 100 : 400);
     _fireworkTimer.reset();
   }
 }
