@@ -22,12 +22,16 @@ void main() {
 
       if (kIsDesktop) {
         await windowManager.ensureInitialized();
-        windowManager.setMinimumSize(const Size(800, 600));
+        windowManager.setMinimumSize(const Size(800, 480));
       } else if (Platform.isAndroid) {
         await SystemChrome.setEnabledSystemUIMode(
           SystemUiMode.manual,
           overlays: [],
         );
+        await SystemChrome.setPreferredOrientations([
+          DeviceOrientation.landscapeLeft,
+          DeviceOrientation.landscapeRight,
+        ]);
       }
 
       runApp(WrappedWidget());

@@ -12,7 +12,25 @@ class PlayerPlaceholder extends StatefulWidget {
 }
 
 class _PlayerPlaceholderState extends State<PlayerPlaceholder> {
-  late final SMIBool _isCatAwakeInput;
+  SMIBool? _isCatAwakeInput;
+  late final _cat = RiveAnimation.asset(
+    key: UniqueKey(),
+    'assets/images/wake_up_the_black_cat.riv',
+    onInit: (Artboard artboard) {
+      final controller =
+          StateMachineController.fromArtboard(artboard, 'State Machine 1');
+      artboard.addController(controller!);
+
+      if (_isCatAwakeInput == null) {
+        _isCatAwakeInput = controller.findInput<bool>('isWaken') as SMIBool;
+        _isCatAwakeInput!.value = false;
+      } else {
+        final last = _isCatAwakeInput!.value;
+        _isCatAwakeInput = controller.findInput<bool>('isWaken') as SMIBool;
+        _isCatAwakeInput!.value = last;
+      }
+    },
+  );
 
   @override
   void initState() {
@@ -20,7 +38,7 @@ class _PlayerPlaceholderState extends State<PlayerPlaceholder> {
 
     final currentUser = context.read<ChatUser>();
     currentUser.addListener(() {
-      _isCatAwakeInput.value = currentUser.value != null;
+      _isCatAwakeInput!.value = currentUser.value != null;
     });
   }
 
@@ -29,40 +47,49 @@ class _PlayerPlaceholderState extends State<PlayerPlaceholder> {
     return Container(
       color: Colors.black,
       child: Center(
-        child: Stack(
-          alignment: Alignment.center,
-          clipBehavior: Clip.none,
-          children: [
-            Column(
+        child: LayoutBuilder(builder: (context, constraints) {
+          if (constraints.maxHeight >= 500) {
+            return Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 SizedBox(
-                  height: 370,
-                  child: RiveAnimation.asset(
-                    'assets/images/wake_up_the_black_cat.riv',
-                    onInit: (Artboard artboard) {
-                      final controller = StateMachineController.fromArtboard(
-                          artboard, 'State Machine 1');
-                      artboard.addController(controller!);
-
-                      _isCatAwakeInput =
-                          controller.findInput<bool>('isWaken') as SMIBool;
-                      _isCatAwakeInput.value = false;
-                    },
+                  height: 230,
+                  child: OverflowBox(
+                    alignment: const Alignment(0, 0.3),
+                    maxHeight: 400,
+                    child: _cat,
                   ),
                 ),
-                const SizedBox(height: 100),
+                Text(
+                  context.select<CatIndicator, String?>((bi) => bi.title) ?? '',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
               ],
-            ),
-            Positioned(
-              top: 320,
-              child: Text(
-                context.select<CatIndicator, String?>((bi) => bi.title) ?? '',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-            ),
-          ],
-        ),
+            );
+          } else {
+            return Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  width: 200,
+                  child: OverflowBox(
+                    alignment: const Alignment(0, -1),
+                    maxWidth: 330,
+                    child: _cat,
+                  ),
+                ),
+                SizedBox(
+                  width: 300,
+                  child: Text(
+                    context.select<CatIndicator, String?>((bi) => bi.title) ??
+                        '',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                ),
+              ],
+            );
+          }
+        }),
       ),
     );
   }
