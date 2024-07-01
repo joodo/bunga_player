@@ -91,23 +91,6 @@ dev_dependencies:
   yaml: ^3.1.2
 
 
-flutter_launcher_icons:
-  android: false
-  ios: true
-  image_path: "assets/images/icons/ios/AppIcon~ios-marketing.png"
-  min_sdk_android: 21 # android min sdk min:16, default 21
-  web:
-    generate: false
-    image_path: "images/icons/web/icon-512.png"
-  windows:
-    generate: true
-    image_path: "images/icons/windows.png"
-    icon_size: 256 # min:48, max:256, default: 48
-  macos:
-    generate: true
-    image_path: "images/icons/macos.png"
-
-
 flutter:
   uses-material-design: true
 
@@ -123,4 +106,23 @@ flutter:
 #    - family: noto_emoji
 #      fonts:
 #        - asset: assets/NotoColorEmoji-Regular.ttf
-      
+
+
+flutter_launcher_icons:
+  android: true
+  image_path_android: "assets/images/icons/android/play_store_512.png"
+  min_sdk_android: 21 # android min sdk min:16, default 21
+
+  ios: true
+  image_path_ios: "assets/images/icons/ios/AppIcon~ios-marketing.png"
+  
+  web:
+    generate: false
+    image_path: "assets/images/icons/web/icon-512.png"
+  windows:
+    generate: true
+    image_path: "assets/images/icons/windows.png"
+    icon_size: 256 # min:48, max:256, default: 48
+  macos:
+    generate: true
+    image_path: "assets/images/icons/macos.png"
