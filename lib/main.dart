@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart' as services;
 import 'package:bunga_player/screens/wrappers/wrap.dart';
 import 'package:bunga_player/utils/business/platform.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:window_manager/window_manager.dart';
 
 void main() {
@@ -21,6 +23,11 @@ void main() {
       if (kIsDesktop) {
         await windowManager.ensureInitialized();
         windowManager.setMinimumSize(const Size(800, 600));
+      } else if (Platform.isAndroid) {
+        await SystemChrome.setEnabledSystemUIMode(
+          SystemUiMode.manual,
+          overlays: [],
+        );
       }
 
       runApp(WrappedWidget());
