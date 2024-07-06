@@ -29,6 +29,7 @@ dependencies:
 
   # Update
   package_info_plus: ^5.0.1
+  version: ^3.0.2
 
   # Chatroom
   crclib: ^3.0.0
