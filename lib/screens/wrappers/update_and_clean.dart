@@ -137,14 +137,7 @@ class _UpdateWrapperState extends SingleChildState<UpdateAndCleanWrapper> {
       body: responseData['body'],
     );
 
-    final ext = switch (Platform.operatingSystem) {
-      'windows' => 'exe',
-      'macos' => 'dmg',
-      String() =>
-        throw Exception('Update: unknown platform ${Platform.operatingSystem}'),
-    };
-    final fileName =
-        'bunga_player_installer_${_latestVersion.replaceAll('.', '_')}_${Platform.operatingSystem}.$ext';
+    final fileName = _updateFileName();
     final tempDir = await getApplicationCacheDirectory();
     _installFilePath = '${tempDir.path}/$fileName';
 
@@ -178,6 +171,22 @@ class _UpdateWrapperState extends SingleChildState<UpdateAndCleanWrapper> {
   Future<void> _install() async {
     await _openPath(_installFilePath);
     await ServicesBinding.instance.exitApplication(AppExitType.cancelable);
+  }
+
+  String _updateFileName() {
+    const prefix = 'bunga_player_installer';
+
+    final suffix = switch (Platform.operatingSystem) {
+      'windows' => 'windows.exe',
+      'macos' => 'macos.dmg',
+      'android' => 'android_arm64_v8a.apk',
+      String() =>
+        throw Exception('Update: unknown platform ${Platform.operatingSystem}'),
+    };
+
+    final version = _latestVersion.replaceAll('.', '_');
+
+    return '${prefix}_${version}_$suffix';
   }
 
   void _showUpdateDetail() {
