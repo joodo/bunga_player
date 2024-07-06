@@ -467,10 +467,10 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_markdown
-      sha256: "85cc6f7daeae537844c92e2d56e2aff61b00095f8f77913b529ea4be12fc45ea"
+      sha256: "2e8a801b1ded5ea001a4529c97b1f213dcb11c6b20668e081cafb23468593514"
       url: "https://pub.dev"
     source: hosted
-    version: "0.7.2+1"
+    version: "0.7.3"
   flutter_plugin_android_lifecycle:
     dependency: transitive
     description:
@@ -577,6 +577,15 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.2.0"
+  innosetup:
+    dependency: "direct dev"
+    description:
+      path: "."
+      ref: HEAD
+      resolved-ref: "837c8cba2e04fa19a8caf40e30feec7f79c684aa"
+      url: "https://github.com/joodo/flutter_innosetup"
+    source: git
+    version: "0.1.4"
   io:
     dependency: transitive
     description:
@@ -1202,10 +1211,10 @@ packages:
     dependency: "direct main"
     description:
       name: tencent_cloud_chat_sdk
-      sha256: "3639667fb1838c51a9b2edaa9f7a192437c27505ba623309343337e68d9483e5"
+      sha256: "2810b969c09e0eddcada4fe8877aaf72d4d21078a4757584354631dbe3c4a18f"
       url: "https://pub.dev"
     source: hosted
-    version: "7.9.5690"
+    version: "7.9.5695"
   tencent_im_sdk_plugin_desktop:
     dependency: "direct main"
     description:
