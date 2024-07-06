@@ -36,7 +36,7 @@ void main() async {
       InnoSetupLanguages().english,
       InnoSetupLanguage.custom(
         'chinesesimplified',
-        File('compiler:Languages/ChineseSimplified.isl'),
+        File('windows/installer/ChineseSimplified.isl'),
       ),
     ],
     icon: InnoSetupIcon(

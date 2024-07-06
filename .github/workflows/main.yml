@@ -19,7 +19,7 @@ jobs:
     - name: Generate inno setup script
       run: dart windows/installer/generate_inno.dart
     - name: Compile .ISS to .EXE Installer
-      uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
+      uses: Minionguyjpro/Inno-Setup-Action@v1.2.4
       with:
         path: build/innosetup.iss
         options: /O+
