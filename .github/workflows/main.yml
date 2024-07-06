@@ -2,6 +2,7 @@ name: Build App
 on:
   release:
     types: [published]
+  workflow_dispatch:
 jobs:
   build-windows:
     name: Build Windows
