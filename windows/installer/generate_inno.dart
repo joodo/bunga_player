@@ -9,7 +9,7 @@ void main() async {
 
   InnoSetup(
     name: InnoSetupName(
-      'bunga_player_installer_${version.replaceAll('.', '_')}_windows',
+      'bunga_player_v$version',
     ),
     app: InnoSetupApp(
       id: '{{059ED6DF-8FFF-4F1F-A617-AC5D812BE383}',

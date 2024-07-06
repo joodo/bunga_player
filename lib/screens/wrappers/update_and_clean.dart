@@ -174,17 +174,17 @@ class _UpdateWrapperState extends SingleChildState<UpdateAndCleanWrapper> {
   }
 
   String _updateFileName() {
-    const prefix = 'bunga_player_installer';
+    const prefix = 'bunga_player';
 
     final suffix = switch (Platform.operatingSystem) {
-      'windows' => 'windows.exe',
-      'macos' => 'macos.dmg',
-      'android' => 'android_arm64_v8a.apk',
+      'windows' => '.exe',
+      'macos' => '.dmg',
+      'android' => 'arm64_v8a.apk',
       String() =>
         throw Exception('Update: unknown platform ${Platform.operatingSystem}'),
     };
 
-    final version = _latestVersion.replaceAll('.', '_');
+    final version = 'v$_latestVersion';
 
     return '${prefix}_${version}_$suffix';
   }
