@@ -14,6 +14,10 @@ class Permissions {
     await _require(Permission.microphone);
   }
 
+  Future<void> requestInstallPackage() async {
+    await _require(Permission.requestInstallPackages);
+  }
+
   Future<void> _require(Permission permission) async {
     if (!(Platform.isAndroid || Platform.isIOS || Platform.isWindows)) return;
 

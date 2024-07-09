@@ -14,11 +14,9 @@ import 'package:bunga_player/screens/dialogs/others_dialog.dart';
 import 'package:bunga_player/screens/dialogs/settings.dart';
 import 'package:bunga_player/screens/widgets/loading_button_icon.dart';
 import 'package:bunga_player/screens/widgets/video_open_menu_items.dart';
-import 'package:file_selector/file_selector.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
-import 'package:open_file/open_file.dart';
 import 'package:provider/provider.dart';
 
 class WelcomeControl extends StatefulWidget {
@@ -45,14 +43,6 @@ class _WelcomeControlState extends State<WelcomeControl> {
       builder: (context, isBusy, child) => Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          FilledButton(
-            onPressed: () async {
-              final file = await openFile();
-              if (file == null) return;
-              OpenFile.open(file.path);
-            },
-            child: const Text('t'),
-          ),
           OutlinedButton(
             onPressed: isBusy ? null : _onChangeName,
             child: const Text('换个名字'),

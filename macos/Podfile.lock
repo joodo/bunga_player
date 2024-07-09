@@ -39,6 +39,8 @@ PODS:
   - AgoraRtcEngine_macOS/VideoCodecEnc (4.3.2)
   - AgoraRtcEngine_macOS/VirtualBackground (4.3.2)
   - AgoraRtcEngine_macOS/VQA (4.3.2)
+  - audio_session (0.0.1):
+    - FlutterMacOS
   - audioplayers_darwin (0.0.1):
     - FlutterMacOS
   - file_selector_macos (0.0.1):
@@ -83,6 +85,7 @@ PODS:
 
 DEPENDENCIES:
   - agora_rtc_engine (from `Flutter/ephemeral/.symlinks/plugins/agora_rtc_engine/macos`)
+  - audio_session (from `Flutter/ephemeral/.symlinks/plugins/audio_session/macos`)
   - audioplayers_darwin (from `Flutter/ephemeral/.symlinks/plugins/audioplayers_darwin/macos`)
   - file_selector_macos (from `Flutter/ephemeral/.symlinks/plugins/file_selector_macos/macos`)
   - flutter_volume_controller (from `Flutter/ephemeral/.symlinks/plugins/flutter_volume_controller/macos`)
@@ -112,6 +115,8 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   agora_rtc_engine:
     :path: Flutter/ephemeral/.symlinks/plugins/agora_rtc_engine/macos
+  audio_session:
+    :path: Flutter/ephemeral/.symlinks/plugins/audio_session/macos
   audioplayers_darwin:
     :path: Flutter/ephemeral/.symlinks/plugins/audioplayers_darwin/macos
   file_selector_macos:
@@ -153,6 +158,7 @@ SPEC CHECKSUMS:
   agora_rtc_engine: 4a1ade5822e2e2756d02e9f85d96c7fcf2cfce3d
   AgoraIrisRTC_macOS: b5997a1d17bedcea8871b3c57b3768a45e940507
   AgoraRtcEngine_macOS: 418a85d7e4a32f6314d9ced51228a330b71f8015
+  audio_session: dea1f41890dbf1718f04a56f1d6150fd50039b72
   audioplayers_darwin: dcad41de4fbd0099cb3749f7ab3b0cb8f70b810c
   file_selector_macos: 54fdab7caa3ac3fc43c9fac4d7d8d231277f8cf2
   flutter_volume_controller: 25d09126b0d695560f11c80b1311d5063fed882f

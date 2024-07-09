@@ -4,12 +4,15 @@ import 'dart:ui';
 
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/network/service.dart';
+import 'package:bunga_player/services/permissions.dart';
 import 'package:bunga_player/services/services.dart';
+import 'package:bunga_player/utils/business/platform.dart';
 import 'package:bunga_player/utils/models/network_progress.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:nested/nested.dart';
+import 'package:open_file/open_file.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
@@ -160,17 +163,14 @@ class _UpdateWrapperState extends SingleChildState<UpdateAndCleanWrapper> {
     });
   }
 
-  Future<void> _openPath(String path) async {
-    if (Platform.isWindows) {
-      await Process.start('start', [path], runInShell: true);
-    } else if (Platform.isMacOS) {
-      await Process.start('open', [path]);
-    }
-  }
-
   Future<void> _install() async {
-    await _openPath(_installFilePath);
-    await ServicesBinding.instance.exitApplication(AppExitType.cancelable);
+    await getIt<Permissions>().requestInstallPackage();
+
+    await OpenFile.open(_installFilePath);
+
+    if (kIsDesktop) {
+      await ServicesBinding.instance.exitApplication(AppExitType.cancelable);
+    }
   }
 
   String _updateFileName() {
