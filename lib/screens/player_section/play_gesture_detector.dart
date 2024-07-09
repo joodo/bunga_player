@@ -54,7 +54,7 @@ class _PlayGestureDetectorState extends State<PlayGestureDetector> {
     final gestureDetector = GestureDetector(
       onDoubleTap: () {
         if (context.read<PlayStatus>().isPlaying) {
-          context.read<ShouldShowHUD>().mark();
+          showHud.mark();
         }
         Actions.maybeInvoke(context, const TogglePlayIntent());
       },

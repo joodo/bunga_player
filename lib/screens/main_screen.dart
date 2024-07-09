@@ -8,6 +8,7 @@ import 'package:bunga_player/screens/progress_section/progress_section.dart';
 import 'package:bunga_player/screens/room_section.dart';
 import 'package:bunga_player/screens/control_section/control_section.dart';
 import 'package:bunga_player/screens/player_section/player_section.dart';
+import 'package:bunga_player/utils/business/platform.dart';
 import 'package:ffi/ffi.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -152,21 +153,8 @@ class _HUDWrapperState extends SingleChildState<_HUDWrapper> {
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
     return Consumer<ShouldShowHUD>(
-      builder: (context, shouldShowHUD, child) => MouseRegion(
-        opaque: false,
-        cursor: shouldShowHUD.value
-            ? SystemMouseCursors.basic
-            : SystemMouseCursors.none,
-        onEnter: (event) => shouldShowHUD.unlock('interactive'),
-        onHover: (event) {
-          if (_isInUISection(context, event)) {
-            shouldShowHUD.lockUp('interactive');
-          } else {
-            shouldShowHUD.unlock('interactive');
-            shouldShowHUD.mark();
-          }
-        },
-        child: AnimatedOpacity(
+      builder: (context, shouldShowHUD, child) {
+        final animatedOpacity = AnimatedOpacity(
           opacity: shouldShowHUD.value ? 1.0 : 0.0,
           curve: Curves.easeOutCubic,
           duration: const Duration(milliseconds: 250),
@@ -174,8 +162,26 @@ class _HUDWrapperState extends SingleChildState<_HUDWrapper> {
             ignoring: !shouldShowHUD.value,
             child: child,
           ),
-        ),
-      ),
+        );
+        if (!kIsDesktop) return animatedOpacity;
+
+        return MouseRegion(
+          opaque: false,
+          cursor: shouldShowHUD.value
+              ? SystemMouseCursors.basic
+              : SystemMouseCursors.none,
+          onEnter: (event) => shouldShowHUD.unlock('interactive'),
+          onHover: (event) {
+            if (_isInUISection(context, event)) {
+              shouldShowHUD.lockUp('interactive');
+            } else {
+              shouldShowHUD.unlock('interactive');
+              shouldShowHUD.mark();
+            }
+          },
+          child: animatedOpacity,
+        );
+      },
       child: child,
     );
   }
