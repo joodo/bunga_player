@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:audio_session/audio_session.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:bunga_player/play_sync/actions.dart';
 import 'package:bunga_player/screens/wrappers/actions.dart';
+import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/ui/providers.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
@@ -502,6 +504,7 @@ class _PlayActionsState extends SingleChildState<PlayActions> {
   final _streamSubscriptions = <StreamSubscription>[];
 
   late final _playRate = context.read<PlayRate>();
+  late final _videoEntryNotifer = context.read<PlayVideoEntry>();
 
   @override
   void initState() {
@@ -514,6 +517,9 @@ class _PlayActionsState extends SingleChildState<PlayActions> {
     player.setVolume(read<PlayVolume>().value.volume);
 
     _playRate.addListener(_applyRate);
+
+    _preventAudioDucking();
+    _videoEntryNotifer.addListener(_requestSession);
 
     _streamSubscriptions.addAll(
       <(Stream, ValueNotifier)>[
@@ -543,6 +549,7 @@ class _PlayActionsState extends SingleChildState<PlayActions> {
   @override
   void dispose() async {
     _playRate.removeListener(_applyRate);
+    _videoEntryNotifer.removeListener(_requestSession);
     super.dispose();
     for (final subscription in _streamSubscriptions) {
       await subscription.cancel();
@@ -588,5 +595,26 @@ class _PlayActionsState extends SingleChildState<PlayActions> {
 
   void _applyRate() {
     getIt<Player>().setRate(_playRate.value);
+  }
+
+  void _preventAudioDucking() async {
+    if (!Platform.isAndroid && !Platform.isIOS && !Platform.isWindows) return;
+
+    final session = await AudioSession.instance;
+    await session.configure(const AudioSessionConfiguration.speech());
+  }
+
+  void _requestSession() async {
+    if (!Platform.isAndroid && !Platform.isIOS && !Platform.isWindows) return;
+
+    final session = await AudioSession.instance;
+    if (_videoEntryNotifer.value != null) {
+      bool success = await session.setActive(true);
+      if (!success) {
+        logger.w("Failed to activate audio session");
+      }
+    } else {
+      await session.setActive(false);
+    }
   }
 }

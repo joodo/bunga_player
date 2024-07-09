@@ -21,6 +21,7 @@ dependencies:
   media_kit_video: ^1.2.4
   media_kit_libs_video: ^1.0.4
   wakelock_plus: ^1.2.5
+  audio_session: ^0.1.19
   ffi: ^2.1.2
 
   # Communication
