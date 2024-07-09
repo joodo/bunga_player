@@ -1,7 +1,3 @@
-import 'dart:async';
-import 'dart:ffi';
-import 'dart:io';
-
 import 'package:bunga_player/screens/player_section/saved_position_hint.dart';
 import 'package:bunga_player/ui/providers.dart';
 import 'package:bunga_player/screens/progress_section/progress_section.dart';
@@ -9,12 +5,10 @@ import 'package:bunga_player/screens/room_section.dart';
 import 'package:bunga_player/screens/control_section/control_section.dart';
 import 'package:bunga_player/screens/player_section/player_section.dart';
 import 'package:bunga_player/utils/business/platform.dart';
-import 'package:ffi/ffi.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
-import 'package:win32/win32.dart';
 
 class MainScreen extends StatefulWidget {
   static const roomSectionHeight = 36.0;
@@ -128,27 +122,8 @@ class MainScreenState extends State<MainScreen> {
   }
 }
 
-class _HUDWrapper extends SingleChildStatefulWidget {
+class _HUDWrapper extends SingleChildStatelessWidget {
   const _HUDWrapper({super.child});
-
-  @override
-  State<_HUDWrapper> createState() => _HUDWrapperState();
-}
-
-class _HUDWrapperState extends SingleChildState<_HUDWrapper> {
-  late final shouldShowHUD = context.read<ShouldShowHUD>();
-
-  @override
-  void initState() {
-    super.initState();
-    shouldShowHUD.addListener(_hideCursorOnWindows);
-  }
-
-  @override
-  void dispose() {
-    shouldShowHUD.removeListener(_hideCursorOnWindows);
-    super.dispose();
-  }
 
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
@@ -197,18 +172,5 @@ class _HUDWrapperState extends SingleChildState<_HUDWrapper> {
     if (y > widgetHeight - MainScreen.controlSectionHeight) return true;
 
     return false;
-  }
-
-  void _hideCursorOnWindows() {
-    // HACK: Hide cursor issue under windows
-    // see https://stackoverflow.com/questions/74963577/how-to-hide-mouse-cursor-in-flutter
-    if (!shouldShowHUD.value && Platform.isWindows) {
-      Timer(const Duration(milliseconds: 100), () {
-        Pointer<POINT> point = malloc();
-        GetCursorPos(point);
-        SetCursorPos(point.ref.x, point.ref.y);
-        free(point);
-      });
-    }
   }
 }
