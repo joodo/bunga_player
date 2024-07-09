@@ -8,6 +8,7 @@ import 'package:bunga_player/screens/wrappers/actions.dart';
 import 'package:bunga_player/chat/models/message.dart';
 import 'package:bunga_player/chat/models/user.dart';
 import 'package:bunga_player/chat/providers.dart';
+import 'package:bunga_player/services/permissions.dart';
 import 'package:bunga_player/voice_call/client/client.agora.dart';
 import 'package:bunga_player/voice_call/client/client.dart';
 import 'package:bunga_player/services/logger.dart';
@@ -436,6 +437,8 @@ class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
 }
 
 Future<void> _startTalking(Locator read) async {
+  await getIt<Permissions>().requestMicrophone();
+
   read<VoiceCallStatus>().value = VoiceCallStatusType.talking;
   await read<VoiceCallClient>().joinChannel(
     userId: read<ChatUser>().value!.id,

@@ -57,15 +57,6 @@ class AgoraClient extends VoiceCallClient {
 
   bool _initiated = false;
   Future<void> _asyncInit(String appId) async {
-    // Mic permission
-    /*
-    try {
-      await [Permission.microphone].request();
-    } catch (e) {
-      logger.e(e);
-    }
-    */
-
     // Engine
     await _engine.initialize(RtcEngineContext(
       appId: appId,

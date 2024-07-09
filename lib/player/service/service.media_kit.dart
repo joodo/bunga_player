@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:bunga_player/services/permissions.dart';
 import 'package:bunga_player/utils/models/volume.dart';
 import 'package:bunga_player/player/providers.dart';
 import 'package:bunga_player/services/logger.dart';
@@ -20,6 +21,8 @@ import 'service.dart';
 class MediaKitPlayer implements Player {
   MediaKitPlayer() {
     media_kit.MediaKit.ensureInitialized();
+
+    getIt<Permissions>().requestVideoAndAudio();
 
     // set mpv auto reconnect
     // from https://github.com/mpv-player/mpv/issues/5793#issuecomment-553877261
