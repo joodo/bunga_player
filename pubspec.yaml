@@ -20,15 +20,14 @@ dependencies:
   media_kit: ^1.1.10
   media_kit_video: ^1.2.4
   media_kit_libs_video: ^1.0.4
+  wakelock_plus: ^1.2.5
   ffi: ^2.1.2
 
   # Communication
-  tencent_cloud_chat_sdk: ^7.9.5686
-  tencent_im_sdk_plugin_desktop: ^0.2.22
-  agora_rtc_engine: ^6.3.1
+  tencent_cloud_chat_sdk: ^7.9.5695
+  agora_rtc_engine: ^6.3.2
 
   # Update
-  package_info_plus: ^5.0.1
   version: ^3.0.2
 
   # Chatroom
@@ -41,7 +40,7 @@ dependencies:
   animations: ^2.0.11
   file_selector: ^1.0.3
   window_manager: ^0.3.9
-  flutter_markdown: ^0.7.2
+  flutter_markdown: ^0.7.3
   flutter_lazy_indexed_stack: ^0.0.6
   chinese_font_library: ^1.2.0
 
@@ -81,6 +80,8 @@ dependencies:
 dependency_overrides:
   # media_kit_video 1.2.4 depends on screen_brightness ^0.2.2
   screen_brightness: ^1.0.1
+  # tencent_im_sdk_plugin_desktop 0.2.22 depends on package_info_plus ^5.0.1
+  package_info_plus: ^8.0.0
 
 
 dev_dependencies:

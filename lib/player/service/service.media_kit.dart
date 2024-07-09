@@ -76,7 +76,7 @@ class MediaKitPlayer implements Player {
     // use mpv subtitle
     subtitleViewConfiguration:
         const media_kit.SubtitleViewConfiguration(visible: false),
-    wakelock: true,
+    wakelock: false,
     controls: media_kit.NoVideoControls,
   );
   @override
