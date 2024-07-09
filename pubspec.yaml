@@ -26,7 +26,7 @@ dependencies:
 
   # Communication
   tencent_cloud_chat_sdk: ^7.9.5695
-  agora_rtc_engine: ^6.3.2
+  agora_rtc_engine: 6.3.1
 
   # Update
   version: ^3.0.2
