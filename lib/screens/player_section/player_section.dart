@@ -9,9 +9,9 @@ import 'package:bunga_player/screens/player_section/popmoji_player.dart';
 import 'package:bunga_player/player/service/service.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_volume_controller/flutter_volume_controller.dart';
 import 'package:provider/provider.dart';
 import 'package:screen_brightness/screen_brightness.dart';
-import 'package:volume_controller/volume_controller.dart';
 
 class PlayerSection extends StatefulWidget {
   const PlayerSection({super.key});
@@ -60,7 +60,7 @@ class _VolumePopupState extends State<_VolumePopup> {
 
   @override
   void initState() {
-    _subscription = VolumeController().listener(
+    _subscription = FlutterVolumeController.addListener(
       (value) => _deviceVolumeStreamController.add(value),
     );
     super.initState();
