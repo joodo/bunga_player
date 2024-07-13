@@ -3,6 +3,7 @@ on:
   workflow_dispatch:
 jobs:
   build-windows:
+    if: false
     name: Build Windows
     runs-on: windows-latest
     steps:
@@ -21,8 +22,6 @@ jobs:
       with:
         path: build/innosetup.iss
         options: /O+
-    - name: Upload release asset
-      run: ls build/windows
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
@@ -30,3 +29,54 @@ jobs:
         path: "build/windows/*.exe"
         retention-days: 5
         overwrite: true
+  
+  build-android:
+    name: Build Android
+    runs-on: ubuntu-latest
+    steps:
+    - name: Clone repository
+      uses: actions/checkout@v4
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+          channel: stable
+    - name: Start building
+      run: |
+        flutter build apk --split-per-abi
+    - name: Rename outputs
+      run: |
+        version=yq -r .version pubspec.yaml
+        cd build/app/outputs/apk/release/
+        ls -al
+        mmv "app-*-release-unsigned.apk" "bunga_player_v$(version)_#1.apk"
+        ls -al
+
+    - name: Create the Keystore
+      env:
+        KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+      run: |
+        # import keystore from secrets
+        echo $KEYSTORE_BASE64 | base64 -d > $RUNNER_TEMP/my_production.keystore
+    - name: Sign Android App Bundle
+      run: >
+        for i in build/app/outputs/apk/release/*.apk; do
+
+        jarsigner
+        -keystore $RUNNER_TEMP/my_production.keystore
+        -storepass ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        -keypass ${{ secrets.ANDROID_KEYSTORE_PASSWORD_ALIAS }}
+        -sigalg SHA256withRSA
+        -digestalg SHA-256
+        "$i"
+        upload
+
+        done
+        
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: release-android
+        path: "build/app/outputs/apk/release/*.apk"
+        retention-days: 5
+        overwrite: true
+
