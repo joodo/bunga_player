@@ -51,7 +51,7 @@ jobs:
         flutter build apk --split-per-abi
     - name: Rename outputs
       run: |
-        version=yq -r .version pubspec.yaml
+        version=$(yq -r .version pubspec.yaml)
         cd build/app/outputs/apk/release/
         ls -al
         mmv "app-*-release-unsigned.apk" "bunga_player_v$(version)_#1.apk"
