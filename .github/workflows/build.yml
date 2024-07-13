@@ -54,7 +54,9 @@ jobs:
         version=$(yq -r .version pubspec.yaml)
         cd build/app/outputs/apk/release/
         ls -al
-        mmv "app-*-release-unsigned.apk" "bunga_player_v$(version)_#1.apk"
+        sudo apt-get update
+        sudo apt-get install mmv
+        mmv -m "app-*-release-unsigned.apk" "bunga_player_v$(version)_#1.apk"
         ls -al
 
     - name: Create the Keystore
