@@ -1,7 +1,5 @@
 name: Build App
 on:
-  release:
-    types: [published]
   workflow_dispatch:
 jobs:
   build-windows:
@@ -25,3 +23,10 @@ jobs:
         options: /O+
     - name: Upload release asset
       run: ls build/windows
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: release-windows
+        path: "build/windows/*.exe"
+        retention-days: 5
+        overwrite: true
