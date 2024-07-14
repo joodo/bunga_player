@@ -124,7 +124,7 @@ jobs:
         npm install --global appdmg
         # Generate dmg
         appdmg 'macos/deploy/deploy.json' "$OUTPUT_FILE"
-        ls -al
+        ls . -al
         ls build/macos/Build/Products/Release -al
     
     - name: Upload artifacts
