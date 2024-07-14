@@ -17,19 +17,19 @@ jobs:
     - name: Clone repository
       uses: actions/checkout@v4
 
-    - name: Make dir for assets
-      run: mkdir assets
+    - name: Make dir for release-assets
+      run: mkdir release-assets
     - name: Download artifacts
       uses: actions/download-artifact@v4
       with:
         run_id: ${{ needs.build.outputs.workflow_id }}
-        path: "$GITHUB_WORKSPACE/assets/"
+        path: "$GITHUB_WORKSPACE/release-assets/"
         merge-multiple: true
-    - run: ls "$GITHUB_WORKSPACE/assets/"
-    
+    - run: ls "$GITHUB_WORKSPACE/release-assets/"
+
     - name: Upload release binaries
       env:
           GH_TOKEN: ${{ github.token }}
       run: |
-          gh release upload ${{ github.event.release.tag_name }} assets/*
+          gh release upload ${{ github.event.release.tag_name }} release-assets/*
     
