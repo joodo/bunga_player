@@ -88,9 +88,13 @@ jobs:
         | jq -r '.id'
         | read release_id
 
+        echo "$release_id"
+
         echo "release_id=$release_id" >> $GITHUB_ENV
     - name: Upload assets to Gitee release
       run: >
+        echo "$release_id"
+        
         for i in release-assets/*; do
 
         curl -X POST
