@@ -106,7 +106,7 @@ jobs:
       uses: actions/checkout@v4
     
     - name: Build macOS
-      run: flutter build macOS --release
+      run: flutter build macos --release
     - name: Codesign executable
       run: >
         codesign --force --deep
