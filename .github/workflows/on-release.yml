@@ -12,6 +12,8 @@ jobs:
   deal-release:
     name: Upload release assets and sync Gitee
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     needs: build
     steps:
     - name: Clone repository
