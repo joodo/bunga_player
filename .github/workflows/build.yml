@@ -31,6 +31,7 @@ jobs:
         overwrite: true
   
   build-android:
+    if: false
     name: Build Android
     runs-on: ubuntu-latest
     steps:
@@ -51,11 +52,11 @@ jobs:
         flutter build apk --split-per-abi
     - name: Rename outputs
       run: |
-        version=$(yq -r .version pubspec.yaml)
+        VERSION=$(yq -r .version pubspec.yaml)
         cd build/app/outputs/apk/release/
         sudo apt-get update
         sudo apt-get install mmv
-        mmv -m "app-*-release-unsigned.apk" "bunga_player_v${version}_#1.apk"
+        mmv -m "app-*-release-unsigned.apk" "bunga_player_v${VERSION}_#1.apk"
 
     - name: Create the Keystore
       env:
@@ -83,5 +84,51 @@ jobs:
       with:
         name: release-android
         path: "build/app/outputs/apk/release/*.apk"
+        retention-days: 5
+        overwrite: true
+
+  build-macos-ios:
+    name: Build macOS
+    runs-on: macos-latest
+    steps:
+    - name: Install Apple Certificate
+      uses: apple-actions/import-codesign-certs@v3
+      with: 
+        p12-file-base64: ${{ secrets.IOS_P12_BASE64 }}
+        p12-password: ${{ secrets.IOS_P12_PASSWORD }}
+
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+          channel: stable
+
+    - name: Clone repository
+      uses: actions/checkout@v4
+    
+    - name: Build macOS
+      run: flutter build macOS --release
+    - name: Codesign executable
+      run: >
+        codesign --force --deep
+        -s ${{ secrets.IOS_IDENTITY_ID }}
+        ./build/macos/Build/Products/Release/bunga_player.app
+    - name: Generate dmg
+      run: |
+        # Rename app
+        mv 'build/macos/Build/Products/Release/bunga_player.app' 'build/macos/Build/Products/Release/Bunga Player.app'
+        # Generate dmg file name
+        VERSION=$(yq -r .version pubspec.yaml)
+        OUTPUT_FILE=bunga_player_v${VERSION}.dmg
+        # Install appdmg
+        curl "https://nodejs.org/dist/latest/$(curl -s https://nodejs.org/dist/latest/ | grep "pkg" | cut -d'"' -f 2)" -o "$HOME/Downloads/node-latest.pkg" && sudo installer -store -pkg "$HOME/Downloads/node-latest.pkg" -target "/"
+        npm install --global appdmg
+        # Generate dmg
+        appdmg 'macos/deploy/deploy.json' "$OUTPUT_FILE"
+    
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: release-macos
+        path: "build/macos/Build/Products/Release/*.dmg"
         retention-days: 5
         overwrite: true
