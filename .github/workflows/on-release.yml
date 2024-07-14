@@ -23,7 +23,7 @@ jobs:
     - name: Download artifacts
       uses: actions/download-artifact@v4
       with:
-        run_id: ${{ needs.build.outputs.workflow_id }}
+        run-id: ${{ needs.build.outputs.workflow_id }}
         path: release-assets
         merge-multiple: true
 
@@ -41,7 +41,7 @@ jobs:
     - name: Download artifacts
       uses: actions/download-artifact@v4
       with:
-        run_id: ${{ needs.build.outputs.workflow_id }}
+        run-id: ${{ needs.build.outputs.workflow_id }}
         path: release-assets
         merge-multiple: true
 
