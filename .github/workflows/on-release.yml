@@ -51,6 +51,11 @@ jobs:
         username: ${{ secrets.GITEE_USERNAME }}
         password: ${{ secrets.GITEE_PASSWORD }}
 
+    - name: Install jq
+      run: |
+        curl -sS https://webi.sh/jq | sh
+        source ~/.config/envman/PATH.env
+
     - name: Remove Gitee latest release
       run: >
         shopt -s lastpipe;
@@ -94,7 +99,7 @@ jobs:
     - name: Upload assets to Gitee release
       run: >
         echo "$release_id"
-        
+
         for i in release-assets/*; do
 
         curl -X POST
