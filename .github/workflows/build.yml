@@ -144,7 +144,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Create file
-      run: touch 1.txt
+      run: |
+        touch 1.txt
+        echo 123 >> 1.txt
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
