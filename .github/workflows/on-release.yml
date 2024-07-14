@@ -50,7 +50,7 @@ jobs:
         repository: joodo2/bunga_player
         username: ${{ secrets.GITEE_USERNAME }}
         password: ${{ secrets.GITEE_PASSWORD }}
-        
+
     - name: Remove Gitee latest release
       run: >
         shopt -s lastpipe
@@ -61,9 +61,13 @@ jobs:
         | jq -r '.id'
         | read latest_id
         
+        if [[ -n "$latest_id" ]]; then
+
         curl -X DELETE
         --header 'Content-Type: application/json;charset=UTF-8'
         'https://gitee.com/api/v5/repos/joodo2/bunga_player/releases/$latest_id?access_token=${{ secrets.GITEE_TOKEN }}' 
+
+        fi
     - name: Create Gitee release
       run: >
         shopt -s lastpipe
