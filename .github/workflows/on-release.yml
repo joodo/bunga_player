@@ -19,7 +19,8 @@ jobs:
       with:
         run_id: ${{ needs.build.outputs.workflow_id }}
         path: "$GITHUB_WORKSPACE/assets/"
-    - run: ls assets
+        merge-multiple: true
+    - run: ls "$GITHUB_WORKSPACE/assets/"
     - name: Clone repository
       uses: actions/checkout@v4
     - name: Upload release binaries
