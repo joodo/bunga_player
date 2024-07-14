@@ -9,7 +9,6 @@ on:
 
 jobs:
   build-windows:
-    if: false
     name: Build Windows
     runs-on: windows-latest
     steps:
@@ -37,7 +36,6 @@ jobs:
         overwrite: true
   
   build-android:
-    if: false
     name: Build Android
     runs-on: ubuntu-latest
     steps:
@@ -94,7 +92,6 @@ jobs:
         overwrite: true
 
   build-macos-ios:
-    if: false
     name: Build macOS
     runs-on: macos-latest
     steps:
@@ -137,20 +134,5 @@ jobs:
       with:
         name: release-macos
         path: "./*.dmg"
-        retention-days: 5
-        overwrite: true
-
-  test-call:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Create file
-      run: |
-        touch 1.txt
-        echo 123 >> 1.txt
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: release-android
-        path: "1.txt"
         retention-days: 5
         overwrite: true
