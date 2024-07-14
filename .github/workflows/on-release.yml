@@ -60,6 +60,8 @@ jobs:
         'https://gitee.com/api/v5/repos/joodo2/bunga_player/releases/latest?access_token=${{ secrets.GITEE_TOKEN }}' 
         | jq -r '.id'
         | read latest_id
+
+        echo $latest_id
         
         if [[ -n "$latest_id" ]]; then
 
