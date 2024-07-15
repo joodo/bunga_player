@@ -9,6 +9,10 @@ on:
 
 jobs:
   build-windows:
+    # FIXME: Github runner image issue cause Windows build crash
+    # See https://github.com/actions/runner-images/issues/10004
+    # Affected plugins are: media_kit (https://github.com/media-kit/media-kit/issues/892), audio_players
+    if: false
     name: Build Windows
     runs-on: windows-latest
     steps:
