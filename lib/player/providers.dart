@@ -116,8 +116,6 @@ class PlayVideoSessions {
   }
 
   Future<void> _load() async {
-    if (await _upgrade()) return;
-
     final compressed = getIt<Preferences>().get<String>('video_sessions');
 
     try {
@@ -143,31 +141,6 @@ class PlayVideoSessions {
     for (var session in sorted) {
       _data.remove(session.hash);
     }
-  }
-
-  @Deprecated('For upgrade data, remove it next version')
-  Future<bool> _upgrade() async {
-    final rawData = getIt<Preferences>().get<String>('watch_progress');
-    if (rawData == null) return false;
-
-    try {
-      final o = jsonDecode(rawData);
-      final d = Map.castFrom(o);
-      for (var entry in d.entries) {
-        _data[entry.key] = VideoSession(
-          entry.key,
-          progress: WatchProgress.fromJson(entry.value),
-        );
-      }
-
-      await save();
-      await getIt<Preferences>().remove('watch_progress');
-    } catch (e) {
-      logger.w('Load watch progress failed');
-      return false;
-    }
-
-    return true;
   }
 
   Future<void> save() {
