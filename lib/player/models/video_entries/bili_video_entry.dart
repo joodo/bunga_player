@@ -33,7 +33,9 @@ class BiliVideoEntry extends VideoEntry {
 
     // fetch video info
     var response = await http.get(
-        Uri.parse('https://api.bilibili.com/x/web-interface/view?bvid=$bvid'));
+      Uri.parse('https://api.bilibili.com/x/web-interface/view?bvid=$bvid'),
+      headers: sess == null ? null : {"Cookie": 'SESSDATA=$sess'},
+    );
     var responseData = jsonDecode(response.body);
     if (responseData['code'] != 0) {
       throw 'Cannot get video info';
