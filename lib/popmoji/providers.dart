@@ -5,6 +5,7 @@ import 'package:bunga_player/services/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
+import 'package:vector_graphics/vector_graphics.dart';
 
 import 'models/data.dart';
 
@@ -86,9 +87,10 @@ final popmojiProviders = MultiProvider(providers: [
 ]);
 
 Future<void> _preCacheEmojis(EmojiData data) async {
+  svg.cache.maximumSize = 400;
   for (var category in data.categories) {
     for (var emoji in category.emojis) {
-      final icon = SvgAssetLoader(EmojiData.svgPath(emoji));
+      final icon = AssetBytesLoader(EmojiData.svgPath(emoji));
       await svg.cache.putIfAbsent(
         icon.cacheKey(null),
         () => icon.loadBytes(null),

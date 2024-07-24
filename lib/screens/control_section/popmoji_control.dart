@@ -11,6 +11,7 @@ import 'package:bunga_player/mocks/tooltip.dart' as mock;
 import 'package:lottie/lottie.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
+import 'package:vector_graphics/vector_graphics.dart';
 
 import '../widgets/divider.dart';
 
@@ -301,8 +302,8 @@ class _EmojiButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final iconSize = size - 16;
-    final svg = SvgPicture.asset(
-      EmojiData.svgPath(emoji),
+    final svg = SvgPicture(
+      AssetBytesLoader(EmojiData.svgPath(emoji)),
       width: iconSize,
       height: iconSize,
     );

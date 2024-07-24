@@ -22,7 +22,7 @@ class EmojiData {
       String.fromCharCodes(
           codePoint.split(seperator).map<int>((e) => int.parse(e, radix: 16)));
   static String svgPath(String emoji) =>
-      'assets/emojis/emojis/${codePoint(emoji, seperator: '-')}.svg';
+      'assets/emojis/emojis/${codePoint(emoji, seperator: '-')}.svg.vec';
   static String lottiePath(String emoji) =>
       'assets/emojis/emojis/${codePoint(emoji)}.json';
 
