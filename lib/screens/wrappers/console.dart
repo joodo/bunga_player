@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:bunga_player/bunga_server/providers.dart';
 import 'package:bunga_player/chat/providers.dart';
 import 'package:bunga_player/bunga_server/client.dart';
@@ -148,6 +149,14 @@ class _ConsoleDialogContentState extends State<_ConsoleDialogContent> {
           onPressed: () => setState(context.read<PlayVideoSessions>().clearAll),
           child: Text(
               'Clear all watch progress (${context.read<PlayVideoSessions>().count})'),
+        ),
+        const SizedBox(height: 8),
+        FilledButton(
+          onPressed: () => AudioPlayer().play(
+            AssetSource('sounds/call.mp3'),
+            mode: PlayerMode.lowLatency,
+          ),
+          child: const Text('Play sound'),
         ),
       ],
     );

@@ -478,7 +478,7 @@ class ScreenshotAction extends ContextAction<ScreenshotIntent> {
 
     getIt<Toast>().show('已截图 $fileName');
     AudioPlayer().play(
-      AssetSource('sounds/screenshot.wav'),
+      AssetSource('sounds/screenshot.mp3'),
       mode: PlayerMode.lowLatency,
     );
 

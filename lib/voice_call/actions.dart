@@ -183,7 +183,7 @@ class HangUpAction extends ContextAction<HangUpIntent> {
 
     read<VoiceCallStatus>().value = VoiceCallStatusType.none;
     AudioPlayer().play(
-      AssetSource('sounds/hang_up.wav'),
+      AssetSource('sounds/hang_up.mp3'),
       mode: PlayerMode.lowLatency,
     );
 
@@ -284,7 +284,7 @@ class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
 
   // Call ring
   final _callRinger = AudioPlayer()
-    ..setSource(AssetSource('sounds/call.wav'))
+    ..setSource(AssetSource('sounds/call.mp3'))
     ..setReleaseMode(ReleaseMode.loop)
     ..setPlayerMode(PlayerMode.lowLatency);
   void _soundCallRing() {

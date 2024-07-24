@@ -69,7 +69,7 @@ class AgoraClient extends VoiceCallClient {
         onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
           logger.i('Voice call: Local user uid:${connection.localUid} joined.');
           AudioPlayer().play(
-            AssetSource('sounds/user_speak.wav'),
+            AssetSource('sounds/user_speak.mp3'),
             mode: PlayerMode.lowLatency,
           );
         },
