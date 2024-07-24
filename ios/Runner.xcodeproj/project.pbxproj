@@ -140,6 +140,7 @@
 				3B06AD1E1E4923F5004D2608 /* Thin Binary */,
 				03A9C465203F1EF7072747C7 /* [CP] Embed Pods Frameworks */,
 				0A7166D6ED1BA30D926244FB /* [CP] Copy Pods Resources */,
+				AD04B8712C50EA3200B6DA70 /* Removing Unnecessary Agora Frameworks */,
 			);
 			buildRules = (
 			);
@@ -262,6 +263,24 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" build";
+		};
+		AD04B8712C50EA3200B6DA70 /* Removing Unnecessary Agora Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Removing Unnecessary Agora Frameworks";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /usr/bin/ruby;
+			shellScript = "$stderr.puts \"Removing Unnecessary Agora Frameworks\"\nframeworks_to_weaklink=[\"AgoraAudioBeautyExtension\", \"AgoraClearVisionExtension\", \"AgoraContentInspectExtension\", \"AgoraDrmLoaderExtension\", \"AgoraSpatialAudioExtension\", \"AgoraVideoSegmentationExtension\", \"AgoraFaceCaptureExtension\", \"AgoraFaceDetectionExtension\", \"AgoraSuperResolutionExtension\", \"AgoraReplayKitExtension\", \"AgoraVideoQualityAnalyzerExtension\", \"AgoraVideoEncoderExtension\", \"video_enc\", \"AgoraVideoDecoderExtension\", \"video_dec\", \"AgoraVideoAv1DecoderExtension\"]\nfor framework in frameworks_to_weaklink\n   framework_path = \"#{ENV['BUILT_PRODUCTS_DIR']}/#{ENV['FRAMEWORKS_FOLDER_PATH']}/#{framework}.framework\"\n   `rm -Rf \"#{framework_path}\"`\nend\n";
 		};
 		DF9B85239DD614BA738EC962 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;

@@ -24,6 +24,9 @@ jobs:
           channel: stable
     - name: Start building
       run: flutter build windows
+    - name: Remove unnecessary files
+      run: dart windows/installer/remove_unnecessary_files.dart
+
     - name: Generate inno setup script
       run: dart windows/installer/generate_inno.dart
     - name: Compile .ISS to .EXE Installer
@@ -31,6 +34,7 @@ jobs:
       with:
         path: build/innosetup.iss
         options: /O+
+        
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
