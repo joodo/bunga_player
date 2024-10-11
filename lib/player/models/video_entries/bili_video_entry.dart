@@ -52,9 +52,11 @@ class BiliVideoEntry extends VideoEntry {
 
     // fetch video url with cookie and video info
     response = await http.get(
+      // FIXME: change to wbi api
+      // see https://github.com/SocialSisterYi/bilibili-API-collect/blob/master/docs/video/videostream_url.md
       Uri.parse(
           'https://api.bilibili.com/x/player/playurl?bvid=$bvid&cid=$cid&qn=112'),
-      headers: sess == null ? null : {"Cookie": 'SESSDATA=$sess'},
+      // headers: sess == null ? null : {"Cookie": 'SESSDATA=$sess'},
     );
     responseData = jsonDecode(response.body);
     if (responseData['code'] == 0) {
