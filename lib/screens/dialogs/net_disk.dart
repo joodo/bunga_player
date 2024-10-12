@@ -64,11 +64,11 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
         _searchMode ? _searchResults.length : _currentFiles.length;
 
     final pathSplits = _currentPath.split('/');
-    final pathSection = Row(
-      children: [
-        Expanded(
-          child: SizedBox(
-            height: 42,
+    final pathSection = SizedBox(
+      height: 42,
+      child: Row(
+        children: [
+          Expanded(
             child: ShaderMask(
               shaderCallback: (Rect rect) {
                 return const LinearGradient(
@@ -108,18 +108,18 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
               ),
             ),
           ),
-        ),
-        IconButton.filled(
-          onPressed: () {
-            setState(() {
-              _searchMode = true;
-            });
-            _searchFieldFocusNode.requestFocus();
-          },
-          icon: const Icon(Icons.search),
-        ),
-        const SizedBox(width: 24),
-      ],
+          IconButton.filled(
+            onPressed: () {
+              setState(() {
+                _searchMode = true;
+              });
+              _searchFieldFocusNode.requestFocus();
+            },
+            icon: const Icon(Icons.search),
+          ),
+          const SizedBox(width: 24),
+        ],
+      ),
     );
     final bookmarkSection = SizedBox(
       height: 36,
