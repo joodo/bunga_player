@@ -109,6 +109,9 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
             ),
           ),
           IconButton.filled(
+            style: IconButton.styleFrom(
+              backgroundColor: themeData.colorScheme.tertiary,
+            ),
             onPressed: () {
               setState(() {
                 _searchMode = true;
@@ -316,6 +319,7 @@ class _NetDiskDialogState extends State<NetDiskDialog> {
                   : listView,
         ),
         floatingActionButton: FloatingActionButton.small(
+          backgroundColor: themeData.colorScheme.tertiaryContainer,
           onPressed: _refresh,
           tooltip: '刷新',
           child: const Icon(Icons.refresh),

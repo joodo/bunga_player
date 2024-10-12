@@ -6,7 +6,7 @@ TextSpan createHyperText(BuildContext context,
     {required String text, required String url}) {
   return TextSpan(
     text: text,
-    style: TextStyle(color: Theme.of(context).colorScheme.primary),
+    style: TextStyle(color: Theme.of(context).colorScheme.secondary),
     recognizer: TapGestureRecognizer()..onTap = () => launchUrlString(url),
   );
 }

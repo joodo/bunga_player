@@ -132,7 +132,7 @@ class _OnlineVideoDialogState extends State<OnlineVideoDialog> {
         ),
         ValueListenableBuilder(
           valueListenable: _textController,
-          builder: (context, value, child) => TextButton(
+          builder: (context, value, child) => FilledButton(
             onPressed: _pending || value.text.isEmpty ? null : _onSubmitUrl,
             child: _pending
                 ? const SizedBox(
