@@ -380,9 +380,6 @@ class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
             data.answerId == _callingRequestBusiness.requestMessageId) {
           _callingRequestBusiness.myRequestIsRejectedBy(message.sender);
         }
-
-      default:
-        logger.w('Unknown call message: $message');
     }
   }
 
