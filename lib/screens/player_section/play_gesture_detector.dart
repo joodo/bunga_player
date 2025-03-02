@@ -1,5 +1,5 @@
-import 'package:bunga_player/player/actions.dart';
-import 'package:bunga_player/player/providers.dart';
+import 'package:bunga_player/play/actions.dart';
+import 'package:bunga_player/play/providers.dart';
 import 'package:bunga_player/ui/actions.dart';
 import 'package:bunga_player/ui/providers.dart';
 import 'package:bunga_player/utils/business/platform.dart';
@@ -53,9 +53,10 @@ class _PlayGestureDetectorState extends State<PlayGestureDetector> {
     final showHud = context.read<ShouldShowHUD>();
     final gestureDetector = GestureDetector(
       onDoubleTap: () {
+        /* TODO::
         if (context.read<PlayStatus>().isPlaying) {
           showHud.mark();
-        }
+        }*/
         Actions.maybeInvoke(context, const TogglePlayIntent());
       },
       onTap: () {

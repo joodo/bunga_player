@@ -1,10 +1,9 @@
 import 'package:animations/animations.dart';
-import 'package:bunga_player/player/actions.dart';
-import 'package:bunga_player/player/models/video_entries/video_entry.dart';
-import 'package:bunga_player/alist/client.dart';
+import 'package:bunga_player/play/actions.dart';
+import 'package:bunga_player/play/models/video_entries/video_entry.dart';
 import 'package:bunga_player/online_video/client.dart';
 import 'package:bunga_player/screens/dialogs/local_video_entry.dart';
-import 'package:bunga_player/screens/dialogs/net_disk.dart';
+import 'package:bunga_player/screens/dialogs/open_video/alist.dart';
 import 'package:bunga_player/screens/dialogs/online_video_dialog.dart';
 import 'package:bunga_player/screens/widgets/loading_button_icon.dart';
 import 'package:bunga_player/services/services.dart';
@@ -20,16 +19,6 @@ class VideoOpenMenuItemsCreator {
 
   List<Widget> create() {
     return [
-      Selector<AListClient?, bool>(
-        selector: (context, client) => client != null,
-        builder: (context, initiated, child) => mock.MenuItemButton(
-          onPressed: initiated ? _openNetDisk : null,
-          leadingIcon: initiated
-              ? const Icon(Icons.cloud_outlined)
-              : const LoadingButtonIcon(),
-          child: const Text('网盘'),
-        ),
-      ),
       Selector<OnlineVideoClient?, bool>(
         selector: (context, client) => client != null,
         builder: (context, initiated, child) => mock.MenuItemButton(
@@ -65,7 +54,7 @@ class VideoOpenMenuItemsCreator {
     _openChannel(
       entryGetter: () => showModal<VideoEntry?>(
         context: context,
-        builder: (context) => const NetDiskDialog(),
+        builder: (context) => const AListTab(),
       ),
     );
   }
@@ -77,12 +66,6 @@ class VideoOpenMenuItemsCreator {
     if (result == null || !context.mounted) return;
 
     try {
-      final response = Actions.invoke(
-        context,
-        OpenVideoIntent(videoEntry: result),
-      ) as Future?;
-      await response;
-
       if (!context.mounted) {
         throw Exception('Context unmounted! Fall to call video open callback.');
       }

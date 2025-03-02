@@ -9,7 +9,7 @@ class AppWrapper extends SingleChildStatelessWidget {
     return SafeArea(
       child: MaterialApp(
         theme: Theme.of(context),
-        home: Material(child: child),
+        home: child,
       ),
     );
   }

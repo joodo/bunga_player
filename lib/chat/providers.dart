@@ -125,8 +125,8 @@ final chatProviders = MultiProvider(providers: [
   ),
 
   // User
-  ChangeNotifierProxyProvider3<ChatClient?, ClientUserName, ClientColorHue,
-      ChatUser>(
+  ChangeNotifierProxyProvider3<ChatClient?, ClientNicknameNotifier,
+      ClientColorHue, ChatUser>(
     create: (context) => ChatUser(),
     update: (
       context,

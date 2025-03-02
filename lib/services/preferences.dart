@@ -63,6 +63,15 @@ class Preferences {
         return _pref.get(key) as T?;
     }
   }
+
+  T getOrCreate<T>(String key, T defaultValue) {
+    if (_pref.containsKey(key)) {
+      return get<T>(key)!;
+    } else {
+      set(key, defaultValue);
+      return defaultValue;
+    }
+  }
 }
 
 extension BindPreference<R> on ValueNotifier<R> {

@@ -1,5 +1,5 @@
-import 'package:bunga_player/player/actions.dart';
-import 'package:bunga_player/player/providers.dart';
+import 'package:bunga_player/play/actions.dart';
+import 'package:bunga_player/play/providers.dart';
 import 'package:bunga_player/screens/control_section/dropdown.dart';
 import 'package:bunga_player/mocks/dropdown.dart' as mock;
 import 'package:bunga_player/services/logger.dart';
@@ -26,11 +26,7 @@ class _SourceSelectionControlState extends State<SourceSelectionControl> {
     final entry = context.read<PlayVideoEntry>().value!;
     for (final (index, source) in entry.sources.videos.indexed) {
       network.ipInfo(source).then((result) {
-        if (mounted) {
-          setState(
-            () => _sourceInfo[index] = result,
-          );
-        }
+        if (mounted) {}
       }).catchError((e) {
         logger.w('[Network] Get ip info failed: $source');
       });
@@ -67,15 +63,7 @@ class _SourceSelectionControlState extends State<SourceSelectionControl> {
                             ),
                         ],
                         value: sourceIndex.value!,
-                        onChanged: (index) {
-                          Actions.invoke(
-                            context,
-                            OpenVideoIntent(
-                              videoEntry: videoEntry.value!,
-                              sourceIndex: index!,
-                            ),
-                          );
-                        },
+                        onChanged: (index) {},
                       ),
                     )
                   : const Text('载入中'),

@@ -1,8 +1,8 @@
 import 'package:bunga_player/chat/models/message.dart';
 import 'package:bunga_player/chat/models/user.dart';
-import 'package:bunga_player/player/models/video_entries/video_entry.dart';
-import 'package:bunga_player/player/providers.dart';
-import 'package:bunga_player/player/service/service.dart';
+import 'package:bunga_player/play/models/track.dart';
+import 'package:bunga_player/play/models/video_entries/video_entry.dart';
+import 'package:bunga_player/play/providers.dart';
 
 // Subtitle
 class ChannelSubtitle {

@@ -1,17 +1,17 @@
 import 'dart:async';
 
 import 'package:bunga_player/chat/actions.dart';
-import 'package:bunga_player/player/actions.dart';
+import 'package:bunga_player/play/actions.dart';
 import 'package:bunga_player/screens/wrappers/actions.dart';
 import 'package:bunga_player/chat/models/channel_data.dart';
 import 'package:bunga_player/chat/models/message.dart';
 import 'package:bunga_player/chat/models/user.dart';
-import 'package:bunga_player/player/models/video_entries/video_entry.dart';
+import 'package:bunga_player/play/models/video_entries/video_entry.dart';
 import 'package:bunga_player/chat/providers.dart';
-import 'package:bunga_player/player/providers.dart';
+import 'package:bunga_player/play/providers.dart';
 import 'package:bunga_player/ui/providers.dart';
 import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/player/service/service.dart';
+import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
 import 'package:bunga_player/utils/extensions/duration.dart';
@@ -88,7 +88,7 @@ class ApplyRemotePlayingStatusAction
 
     final isPlaying = read<PlayStatus>().isPlaying;
     if (intent.data.status == PlayStatusType.pause && isPlaying) {
-      getIt<Player>().pause();
+      getIt<PlayService>().pause();
       if (canShowToast) {
         getIt<Toast>().show('${intent.sender.name} 暂停了视频');
         canShowToast = false;
@@ -96,7 +96,7 @@ class ApplyRemotePlayingStatusAction
       }
     }
     if (intent.data.status == PlayStatusType.play && !isPlaying) {
-      getIt<Player>().play();
+      getIt<PlayService>().play();
       if (canShowToast) {
         getIt<Toast>().show('${intent.sender.name} 播放了视频');
         canShowToast = false;
@@ -108,7 +108,7 @@ class ApplyRemotePlayingStatusAction
     final remotePosition = intent.data.position;
     if (isPlaying && !position.near(remotePosition) ||
         position != remotePosition) {
-      getIt<Player>().seek(remotePosition);
+      getIt<PlayService>().seek(remotePosition);
       if (canShowToast) {
         getIt<Toast>().show('${intent.sender.name} 调整了进度');
         canShowToast = false;
@@ -216,8 +216,8 @@ class FetchChannelSubtitleAction
   Future<void> invoke(FetchChannelSubtitleIntent intent,
       [BuildContext? context]) async {
     final currentSession = context!.read<PlayVideoSessions>().currentOrCreate();
-    final track =
-        await getIt<Player>().loadSubtitleTrack(intent.channelSubtitle.url);
+    final track = await getIt<PlayService>()
+        .loadSubtitleTrack(intent.channelSubtitle.url);
     currentSession.subtitleUri = track.uri;
     intent.channelSubtitle.track = track;
   }
@@ -296,9 +296,12 @@ class _PlaySyncActionsState extends SingleChildState<PlaySyncActions> {
     if (newChannelData.videoType != VideoType.online) return;
 
     final videoEntry = VideoEntry.fromChannelData(newChannelData);
+    // TODO: onprogress
+    /*
     context
         .read<ActionsLeaf>()
-        .mayBeInvoke(OpenVideoIntent(videoEntry: videoEntry));
+        .mayBeInvoke(OpenVideoIntent(payload: videoEntry));
+        */
   }
 
   void _applyRemotePlayingStatus() {
@@ -324,13 +327,13 @@ class _PlaySyncActionsState extends SingleChildState<PlaySyncActions> {
 
     final message = read<ChatChannelLastMessage>().value;
     if (message == null || !message.data.isWhereAsking) return;
-
+/* TODO::
     context.read<ActionsLeaf>().mayBeInvoke(
           SendPlayingStatusIntent(
             read<PlayStatus>().value,
             read<PlayPosition>().value,
             answeringMessageId: message.id,
           ),
-        );
+        );*/
   }
 }

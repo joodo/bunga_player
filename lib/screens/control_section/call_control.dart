@@ -1,4 +1,4 @@
-import 'package:animated_text_kit/animated_text_kit.dart';
+import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:bunga_player/voice_call/actions.dart';
 import 'package:bunga_player/mocks/slider.dart' as mock;
 import 'package:bunga_player/utils/models/volume.dart';
@@ -138,11 +138,7 @@ class _CallControlState extends State<CallControl> {
         const SizedBox(width: 8),
         child!,
         const SizedBox(width: 16),
-        AnimatedTextKit(
-          animatedTexts: [FadeAnimatedText('收到语音通话请求')],
-          repeatForever: true,
-          pause: Duration.zero,
-        ),
+        const Text('收到语音通话请求').breath(),
         const Spacer(),
         _createCallOperateButton(
           color: Colors.green,

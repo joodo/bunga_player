@@ -77,7 +77,7 @@ class _RenameControlState extends State<RenameControl> {
   }
 
   void _onSubmit(String userName) {
-    context.read<ClientUserName>().value = userName;
+    context.read<ClientNicknameNotifier>().value = userName;
     Navigator.of(context).popAndPushNamed('control:welcome');
   }
 }

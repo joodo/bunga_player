@@ -1,6 +1,6 @@
-import 'package:bunga_player/screens/player_section/saved_position_hint.dart';
+import 'package:bunga_player/screens/player_screen/player/saved_position_hint.dart';
 import 'package:bunga_player/ui/providers.dart';
-import 'package:bunga_player/screens/progress_section/progress_section.dart';
+import 'package:bunga_player/screens/progress_bar/progress_section.dart';
 import 'package:bunga_player/screens/room_section.dart';
 import 'package:bunga_player/screens/control_section/control_section.dart';
 import 'package:bunga_player/screens/player_section/player_section.dart';
@@ -30,7 +30,7 @@ class MainScreenState extends State<MainScreen> {
     final playerSection = PlayerSection(key: _playerSectionKey);
     final controlSection = ControlSection(key: _controlSectionKey);
     final roomSection = RoomSection(key: _roomSectionKey);
-    const progressSection = ProgressSection();
+    const progressSection = ProgressBar();
 
     final body = Consumer<FoldLayout>(
       builder: (context, foldLayout, child) {

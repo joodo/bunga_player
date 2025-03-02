@@ -1,3 +1,5 @@
+import 'package:bunga_player/alist/actions.dart';
+import 'package:bunga_player/console/actions.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
@@ -5,7 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:bunga_player/bunga_server/actions.dart';
 import 'package:bunga_player/chat/actions.dart';
 import 'package:bunga_player/danmaku/actions.dart';
-import 'package:bunga_player/player/actions.dart';
+import 'package:bunga_player/play/actions.dart';
 import 'package:bunga_player/ui/actions.dart';
 import 'package:bunga_player/play_sync/actions.dart';
 import 'package:bunga_player/voice_call/actions.dart';
@@ -36,6 +38,8 @@ class ActionsWrapper extends SingleChildStatelessWidget {
         const PlaySyncActions(),
         const VoiceCallActions(),
         const DanmakuActions(),
+        const AListActions(),
+        const ConsoleActions(),
         SingleChildBuilder(builder: (context, child) {
           context.read<ActionsLeaf>().registerContext(context);
           return child!;

@@ -7,9 +7,12 @@ import 'package:bunga_player/screens/wrappers/wrap.dart';
 import 'package:bunga_player/utils/business/platform.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:window_manager/window_manager.dart';
 
 void main() {
+  Animate.restartOnHotReload = true;
+
   FlutterError.onError = (FlutterErrorDetails details) {
     logger.e(details);
   };

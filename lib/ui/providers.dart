@@ -165,8 +165,7 @@ class ShortcutMapping
     ShortcutKey.forward5Sec: SingleActivator(LogicalKeyboardKey.arrowRight),
     ShortcutKey.backward5Sec: SingleActivator(LogicalKeyboardKey.arrowLeft),
     ShortcutKey.togglePlay: SingleActivator(LogicalKeyboardKey.space),
-    ShortcutKey.screenshot:
-        SingleActivator(LogicalKeyboardKey.keyS, control: true),
+    ShortcutKey.screenshot: SingleActivator(LogicalKeyboardKey.keyS),
     ShortcutKey.danmaku: SingleActivator(LogicalKeyboardKey.keyT),
   };
 

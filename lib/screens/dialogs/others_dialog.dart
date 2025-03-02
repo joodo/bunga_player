@@ -1,8 +1,7 @@
 import 'dart:async';
 import 'dart:typed_data';
 
-import 'package:bunga_player/player/models/video_entries/video_entry.dart';
-import 'package:bunga_player/alist/client.dart';
+import 'package:bunga_player/play/models/video_entries/video_entry.dart';
 import 'package:bunga_player/bunga_server/client.dart';
 import 'package:bunga_player/chat/client/client.dart';
 import 'package:bunga_player/screens/widgets/scroll_optimizer.dart';
@@ -244,10 +243,13 @@ class _ChannelCardState extends State<_ChannelCard> {
 
       if (uri.scheme == 'alist') {
         final bungaClient = context.read<BungaClient>();
+        // TODO: on progress
+        /*
         _imageData = await bungaClient.getAlistThumb(
           path: uri.path,
           alistToken: context.read<AListClient>().token,
         );
+        */
       } else {
         final response = await http.get(uri);
         if (!response.isSuccess) {

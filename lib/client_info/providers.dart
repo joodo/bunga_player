@@ -1,18 +1,29 @@
-import 'package:bunga_player/services/preferences.dart';
-import 'package:bunga_player/services/services.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
+import 'package:bunga_player/services/preferences.dart';
+import 'package:bunga_player/services/services.dart';
+import 'package:bunga_player/utils/business/generate_password.dart';
+
+import 'models/client_account.dart';
+
 class ClientId extends ValueNotifier<String> {
-  ClientId() : super(const Uuid().v4()) {
-    final pref = getIt<Preferences>();
-    final prefId = pref.get<String>('client_id');
-    if (prefId == null) {
-      pref.set('client_id', value);
-    } else {
-      value = prefId;
-    }
+  ClientId()
+      : super(getIt<Preferences>().getOrCreate(
+          'client_id',
+          const Uuid().v4(),
+        ));
+}
+
+class ClientNicknameNotifier extends ValueNotifier<String> {
+  ClientNicknameNotifier() : super('') {
+    bindPreference<String>(
+      preferences: getIt<Preferences>(),
+      key: 'user_name',
+      load: (pref) => pref,
+      update: (value) => value,
+    );
   }
 }
 
@@ -27,19 +38,21 @@ class ClientColorHue extends ValueNotifier<int> {
   }
 }
 
-class ClientUserName extends ValueNotifier<String> {
-  ClientUserName() : super('') {
-    bindPreference<String>(
-      preferences: getIt<Preferences>(),
-      key: 'user_name',
-      load: (pref) => pref,
-      update: (value) => value,
-    );
-  }
-}
-
 final clientInfoProviders = MultiProvider(
   providers: [
+    Provider(
+      create: (context) => ClientAccount(
+        id: getIt<Preferences>().getOrCreate(
+          'client_id',
+          const Uuid().v4(),
+        ),
+        password: getIt<Preferences>().getOrCreate(
+          'client_pwd',
+          generatePassword(),
+        ),
+      ),
+      lazy: false,
+    ),
     ChangeNotifierProvider(create: (context) => ClientId(), lazy: false),
     ChangeNotifierProxyProvider<ClientId, ClientColorHue?>(
       create: (context) => null,
@@ -51,6 +64,7 @@ final clientInfoProviders = MultiProvider(
         }
       },
     ),
-    ChangeNotifierProvider(create: (context) => ClientUserName(), lazy: false),
+    ChangeNotifierProvider(
+        create: (context) => ClientNicknameNotifier(), lazy: false),
   ],
 );

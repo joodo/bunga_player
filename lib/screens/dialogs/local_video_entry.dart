@@ -1,4 +1,4 @@
-import 'package:bunga_player/player/models/video_entries/video_entry.dart';
+import 'package:bunga_player/play/models/video_entries/video_entry.dart';
 import 'package:file_selector/file_selector.dart';
 
 class LocalVideoEntryDialog {

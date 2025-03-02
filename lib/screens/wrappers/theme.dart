@@ -1,4 +1,4 @@
-import 'package:bunga_player/screens/widgets/slider_dense_track_shape.dart';
+import 'package:animations/animations.dart';
 import 'package:chinese_font_library/chinese_font_library.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
@@ -12,24 +12,21 @@ class ThemeWrapper extends SingleChildStatelessWidget {
   Widget buildWithChild(BuildContext context, Widget? child) {
     assert(child != null);
 
-    final colorScheme = ColorScheme.fromSeed(
-      seedColor: seedColor,
-      brightness: Brightness.dark,
-    );
-
     final themeData = ThemeData(
       useMaterial3: true,
-      colorScheme: colorScheme,
-      menuTheme: const MenuThemeData(
-        style: MenuStyle(visualDensity: VisualDensity.standard),
+      pageTransitionsTheme: PageTransitionsTheme(builders: {
+        for (final platform in TargetPlatform.values)
+          platform: const SharedAxisPageTransitionsBuilder(
+            transitionType: SharedAxisTransitionType.horizontal,
+          ),
+      }),
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: seedColor,
+        brightness: Brightness.dark,
       ),
-      sliderTheme: SliderThemeData(
-        activeTrackColor: colorScheme.secondary,
-        thumbColor: colorScheme.secondary,
-        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
-        valueIndicatorColor: colorScheme.secondary,
-        trackShape: SliderDenseTrackShape(),
+      sliderTheme: const SliderThemeData(
         showValueIndicator: ShowValueIndicator.always,
+        year2023: false,
       ),
     ).useSystemChineseFont(Brightness.dark);
 

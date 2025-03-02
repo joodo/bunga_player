@@ -1,14 +1,73 @@
-import 'package:bunga_player/client_info/providers.dart';
-import 'package:bunga_player/ui/providers.dart';
-import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/services/toast.dart';
-import 'package:bunga_player/utils/business/auto_retry.dart';
+import 'dart:convert';
+
+import 'package:bunga_player/bunga_server/models/bunga_client_info.dart';
+import 'package:bunga_player/client_info/models/client_account.dart';
+import 'package:bunga_player/utils/business/preference_notifier.dart';
+import 'package:bunga_player/utils/business/value_listenable.dart';
+import 'package:bunga_player/utils/extensions/http_response.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 
-import 'client.dart';
-import 'providers.dart';
+@immutable
+class FetchingBungaClient {
+  final bool value;
+  const FetchingBungaClient(this.value);
+}
+
+@immutable
+class BungaHostAddress {
+  final String value;
+  const BungaHostAddress(this.value);
+  Uri get uri => Uri.parse(value);
+}
+
+@immutable
+class ConnectToHostIntent extends Intent {
+  final String url;
+  const ConnectToHostIntent(this.url);
+}
+
+class ConnectToHostAction extends ContextAction<ConnectToHostIntent> {
+  final ValueNotifier<bool> fetchingNotifier;
+  final ValueNotifier<BungaClientInfo?> infoNotifier;
+  final ValueNotifier<String> hostNotifier;
+
+  ConnectToHostAction({
+    required this.fetchingNotifier,
+    required this.infoNotifier,
+    required this.hostNotifier,
+  });
+
+  @override
+  Future<void> invoke(
+    ConnectToHostIntent intent, [
+    BuildContext? context,
+  ]) async {
+    final read = context!.read;
+    final account = read<ClientAccount>();
+
+    late final http.Response response;
+    try {
+      fetchingNotifier.value = true;
+      response = await http.post(
+        Uri.parse(intent.url),
+        body: account.toJson(),
+      );
+      if (!response.isSuccess) {
+        throw Exception('Login failed: ${response.body}');
+      }
+
+      final responseData = jsonDecode(response.body);
+      infoNotifier.value = BungaClientInfo.fromJson(responseData);
+
+      hostNotifier.value = intent.url;
+    } finally {
+      fetchingNotifier.value = false;
+    }
+  }
+}
 
 class BungaServerActions extends SingleChildStatefulWidget {
   const BungaServerActions({super.key, super.child});
@@ -18,6 +77,18 @@ class BungaServerActions extends SingleChildStatefulWidget {
 }
 
 class _BungaServerActionsState extends SingleChildState<BungaServerActions> {
+  final _infoNotifier = ValueNotifier<BungaClientInfo?>(null);
+  final _fetchingNotifier = ValueNotifier<bool>(false);
+  final _hostAddressNotifier = createPreferenceNotifier<String>(
+    key: 'bunga_host',
+    initValue: '',
+  );
+  late final _connectToHostAction = ConnectToHostAction(
+    fetchingNotifier: _fetchingNotifier,
+    infoNotifier: _infoNotifier,
+    hostNotifier: _hostAddressNotifier,
+  );
+
   @override
   void initState() {
     super.initState();
@@ -29,40 +100,42 @@ class _BungaServerActionsState extends SingleChildState<BungaServerActions> {
 
   @override
   void dispose() {
+    _infoNotifier.dispose();
+    _fetchingNotifier.dispose();
+    _hostAddressNotifier.dispose();
     super.dispose();
   }
 
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
-    return Actions(
-      actions: const <Type, Action<Intent>>{},
-      child: child!,
+    return MultiProvider(
+      providers: [
+        ValueListenableProvider.value(value: _infoNotifier),
+        ValueListenableProvider.value(
+          value: ProxyValueNotifier(
+            from: _fetchingNotifier,
+            proxy: (originValue) => FetchingBungaClient(originValue),
+          ),
+        ),
+        ValueListenableProvider.value(
+          value: ProxyValueNotifier(
+            from: _hostAddressNotifier,
+            proxy: (originValue) => BungaHostAddress(originValue),
+          ),
+        ),
+      ],
+      child: Actions(
+        actions: <Type, Action<Intent>>{
+          ConnectToHostIntent: _connectToHostAction,
+        },
+        child: child ?? const SizedBox.shrink(),
+      ),
     );
   }
 
   void _tryToCreateBungaClient() async {
-    final read = context.read;
-    final bungaHost = read<BungaServerHost>().value;
+    final bungaHost = _hostAddressNotifier.value;
     if (bungaHost.isEmpty) return;
-
-    final clientID = read<ClientId>().value;
-    final bungaClient = BungaClient(bungaHost);
-    final pending = read<PendingBungaHost>();
-    final job = AutoRetryJob(
-      () => bungaClient.register(clientID),
-      jobName: 'Create Bunga Client',
-      alive: () => context.mounted,
-      maxTries: 3,
-    );
-
-    try {
-      pending.value = true;
-      await job.run();
-      read<BungaClientNotifier>().value = bungaClient;
-    } catch (e) {
-      getIt<Toast>().show('无法连接到服务器，请检查设置');
-    } finally {
-      pending.value = false;
-    }
+    _connectToHostAction.invoke(ConnectToHostIntent(bungaHost), context);
   }
 }

@@ -2,12 +2,10 @@ import 'dart:async';
 
 import 'package:bunga_player/screens/player_section/play_gesture_detector.dart';
 import 'package:bunga_player/ui/providers.dart';
-import 'package:bunga_player/player/providers.dart';
+import 'package:bunga_player/play/providers.dart';
 import 'package:bunga_player/screens/player_section/danmaku_player.dart';
 import 'package:bunga_player/screens/player_section/placeholder.dart';
 import 'package:bunga_player/screens/player_section/popmoji_player.dart';
-import 'package:bunga_player/player/service/service.dart';
-import 'package:bunga_player/services/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_volume_controller/flutter_volume_controller.dart';
 import 'package:provider/provider.dart';
@@ -26,7 +24,6 @@ class _PlayerSectionState extends State<PlayerSection> {
     return Stack(
       fit: StackFit.expand,
       children: [
-        getIt<Player>().videoWidget,
         const DanmakuPlayer(),
         const PopmojiPlayer(),
         AnimatedOpacity(

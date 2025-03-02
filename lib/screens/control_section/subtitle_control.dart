@@ -1,12 +1,13 @@
-import 'package:bunga_player/player/actions.dart';
+import 'package:bunga_player/play/actions.dart';
 import 'package:bunga_player/play_sync/actions.dart';
 import 'package:bunga_player/mocks/slider.dart' as mock;
 import 'package:bunga_player/mocks/dropdown.dart' as mock;
 import 'package:bunga_player/mocks/tooltip.dart' as mock;
-import 'package:bunga_player/player/providers.dart';
+import 'package:bunga_player/play/models/track.dart';
+import 'package:bunga_player/play/providers.dart';
 import 'package:bunga_player/play_sync/providers.dart';
 import 'package:bunga_player/screens/widgets/loading_button_icon.dart';
-import 'package:bunga_player/player/service/service.dart';
+import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/utils/models/network_progress.dart';
 import 'package:collection/collection.dart';
 import 'package:file_selector/file_selector.dart';
@@ -107,7 +108,7 @@ class _SubtitleControlState extends State<SubtitleControl> {
               onPressed: Navigator.of(context).pop,
             ),
             const SizedBox(width: 8),
-
+/* TODO: onprogress
             // Subtitle dropbox
             Consumer3<PlaySubtitleTracks, PlaySubtitleTrackID,
                 ChannelSubtitles>(
@@ -241,7 +242,7 @@ class _SubtitleControlState extends State<SubtitleControl> {
             ),
             const ControlDivider(),
             const SizedBox(width: 8),
-
+*/
             // Subtitle adjust
             SegmentedButton<SubtitleControlUIState>(
               showSelectedIcon: false,

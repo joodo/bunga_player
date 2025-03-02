@@ -33,6 +33,15 @@ class ScrollOptimizer extends SingleChildStatelessWidget {
   }
 }
 
+extension ScrollOptimizerStyler on Widget {
+  Widget scrollOptimizer(ScrollController controller) {
+    return ScrollOptimizer(
+      scrollController: controller,
+      child: this,
+    );
+  }
+}
+
 class _AllowAllDeviceDrag extends MaterialScrollBehavior {
   @override
   Set<PointerDeviceKind> get dragDevices => PointerDeviceKind.values.toSet();

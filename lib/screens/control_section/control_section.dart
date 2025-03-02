@@ -1,12 +1,12 @@
-import 'package:bunga_player/player/actions.dart';
-import 'package:bunga_player/player/providers.dart';
+import 'package:bunga_player/play/actions.dart';
 import 'package:bunga_player/client_info/providers.dart';
+import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/ui/providers.dart';
 import 'package:bunga_player/screens/control_section/danmaku_control.dart';
 import 'package:bunga_player/screens/control_section/source_selection_control.dart';
 import 'package:bunga_player/screens/control_section/call_control.dart';
 import 'package:bunga_player/screens/control_section/rename_control.dart';
-import 'package:bunga_player/screens/control_section/main_control.dart';
+import 'package:bunga_player/screens/player_screen/player/video_control.dart';
 import 'package:bunga_player/screens/control_section/popmoji_control.dart';
 import 'package:bunga_player/screens/control_section/subtitle_control.dart';
 import 'package:bunga_player/screens/control_section/tune_control.dart';
@@ -74,7 +74,7 @@ class _ControlSectionState extends State<ControlSection> {
     return switch (name) {
       'control:rename' => const RenameControl(),
       'control:welcome' => const WelcomeControl(),
-      'control:main' => const MainControl(),
+      'control:main' => const VideoControl(),
       'control:call' => const CallControl(),
       'control:popmoji' => const PopmojiControl(),
       'control:subtitle' => const SubtitleControl(),
@@ -87,7 +87,7 @@ class _ControlSectionState extends State<ControlSection> {
 
   @override
   Widget build(BuildContext context) {
-    final name = context.read<ClientUserName>().value;
+    final name = context.read<ClientNicknameNotifier>().value;
     final initialRouteName =
         'control:${name.isNotEmpty ? 'welcome' : 'rename'}';
 
@@ -130,7 +130,7 @@ class _ControlSectionState extends State<ControlSection> {
     // When show again during fullscreen, route to main control
     if (context.read<ShouldShowHUD>().value == false &&
         // Avoid change login control to main control
-        context.read<PlayStatus>().value != PlayStatusType.stop) {
+        context.read<PlayStatus>() != PlayStatus.stop) {
       final navigator = _navigatorStateKey.currentState!;
       Future.delayed(
         const Duration(milliseconds: 500),

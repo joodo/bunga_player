@@ -3,15 +3,15 @@ import 'dart:async';
 import 'package:animations/animations.dart';
 import 'package:bunga_player/chat/actions.dart';
 import 'package:bunga_player/play_sync/models.dart';
-import 'package:bunga_player/player/actions.dart';
+import 'package:bunga_player/play/actions.dart';
 import 'package:bunga_player/mocks/menu_anchor.dart' as mock;
-import 'package:bunga_player/player/models/video_entries/video_entry.dart';
+import 'package:bunga_player/play/models/video_entries/video_entry.dart';
 import 'package:bunga_player/chat/providers.dart';
 import 'package:bunga_player/bunga_server/client.dart';
 import 'package:bunga_player/client_info/providers.dart';
 import 'package:bunga_player/ui/providers.dart';
 import 'package:bunga_player/screens/dialogs/others_dialog.dart';
-import 'package:bunga_player/screens/dialogs/settings.dart';
+import 'package:bunga_player/screens/dialogs/settings/settings.dart';
 import 'package:bunga_player/screens/widgets/loading_button_icon.dart';
 import 'package:bunga_player/screens/widgets/video_open_menu_items.dart';
 import 'package:flutter/foundation.dart';
@@ -111,12 +111,6 @@ class _WelcomeControlState extends State<WelcomeControl> {
     );
     if (result == null || !mounted) return;
 
-    final response = Actions.invoke(
-      context,
-      OpenVideoIntent(videoEntry: result.entry),
-    ) as Future<void>;
-    await response;
-
     if (!mounted) throw Exception('context unmounted');
     Actions.invoke(
       context,
@@ -132,7 +126,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
   }
 
   void _onChangeName() async {
-    final notifier = context.read<ClientUserName>();
+    final notifier = context.read<ClientNicknameNotifier>();
     final name = notifier.value;
 
     notifier.value = '';
@@ -142,7 +136,7 @@ class _WelcomeControlState extends State<WelcomeControl> {
     );
   }
 
-  late final _userNameNotifer = context.read<ClientUserName>();
+  late final _userNameNotifer = context.read<ClientNicknameNotifier>();
   String get _title => '${_userNameNotifer.value}, 你好！';
 }
 
@@ -245,8 +239,7 @@ class _SettingButtonWrapper extends StatelessWidget {
       ),
       closedColor: theme.primaryColor,
       closedShape: const CircleBorder(),
-      openBuilder: (dialogContext, closeContainer) =>
-          SettingsDialog(read: context.read),
+      openBuilder: (dialogContext, closeContainer) => const SettingsDialog(),
       openColor: theme.primaryColor,
     );
   }

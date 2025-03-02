@@ -1,7 +1,7 @@
-import 'package:bunga_player/player/actions.dart';
+import 'package:bunga_player/play/actions.dart';
 import 'package:bunga_player/mocks/slider.dart' as mock;
 import 'package:bunga_player/mocks/dropdown.dart' as mock;
-import 'package:bunga_player/player/providers.dart';
+import 'package:bunga_player/play/providers.dart';
 import 'package:bunga_player/screens/control_section/dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -27,23 +27,7 @@ class TuneControl extends StatelessWidget {
         const SizedBox(width: 8),
         const Text('视频亮度'),
         const SizedBox(width: 12),
-        Consumer<PlayContrast>(
-          builder: (context, contrast, child) => SizedBox(
-            width: 100,
-            child: mock.MySlider(
-              value: contrast.value.toDouble(),
-              max: 100,
-              min: -30,
-              label: '${contrast.value}%',
-              onChanged: (value) => Actions.invoke(
-                context,
-                SetContrastIntent(value.toInt()),
-              ),
-              focusNode: FocusNode(canRequestFocus: false),
-              useRootOverlay: true,
-            ),
-          ),
-        ),
+
         const SizedBox(width: 12),
         IconButton(
           icon: const Icon(Icons.restart_alt),
@@ -57,7 +41,7 @@ class TuneControl extends StatelessWidget {
 
         // Audio tracks section
         const ControlDivider(),
-        Consumer2<PlayAudioTracks, PlayAudioTrackID>(
+        Consumer2<PlayAudioTracksNotifier, PlayAudioTrackIDNotifier>(
           builder: (context, tracks, currentID, child) {
             return Row(
               children: [

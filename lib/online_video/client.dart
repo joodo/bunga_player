@@ -1,4 +1,4 @@
-import 'package:bunga_player/player/models/video_entries/video_entry.dart';
+import 'package:bunga_player/play/models/video_entries/video_entry.dart';
 import 'package:bunga_player/bunga_server/client.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:http/http.dart' as http;

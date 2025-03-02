@@ -10,6 +10,8 @@ import 'package:dart_ping/dart_ping.dart';
 import 'package:dart_ping_ios/dart_ping_ios.dart';
 import 'package:http/http.dart' as http;
 
+typedef IpInfo = ({String location, Duration latency});
+
 class NetworkService {
   NetworkService() {
     HttpOverrides.global = _BungaHttpOverrides(_findProxy);
@@ -27,7 +29,7 @@ class NetworkService {
     return 'PROXY $_proxyHost';
   }
 
-  Future<(String location, Duration latency)> ipInfo(String source) async {
+  Future<IpInfo> ipInfo(String source) async {
     final uri = Uri.parse(source);
     final ping = Ping(uri.host, count: 5, forceCodepage: true);
     final result = await ping.stream.first;
@@ -40,7 +42,7 @@ class NetworkService {
     );
     final location = jsonDecode(response.body)['data'][0]['location'] as String;
 
-    return (location, latency);
+    return (location: location, latency: latency);
   }
 
   Stream<RequestProgress> downloadFile(String url, String path) async* {

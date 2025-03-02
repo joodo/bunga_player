@@ -4,12 +4,12 @@ import 'package:animations/animations.dart';
 import 'package:bunga_player/chat/actions.dart';
 import 'package:bunga_player/play_sync/models.dart';
 import 'package:bunga_player/play_sync/providers.dart';
-import 'package:bunga_player/player/actions.dart';
+import 'package:bunga_player/play/actions.dart';
 import 'package:bunga_player/chat/models/channel_data.dart';
 import 'package:bunga_player/chat/models/user.dart';
-import 'package:bunga_player/player/models/video_entries/video_entry.dart';
+import 'package:bunga_player/play/models/video_entries/video_entry.dart';
 import 'package:bunga_player/chat/providers.dart';
-import 'package:bunga_player/player/providers.dart';
+import 'package:bunga_player/play/providers.dart';
 import 'package:bunga_player/screens/dialogs/local_video_entry.dart';
 import 'package:bunga_player/screens/widgets/loading_text.dart';
 import 'package:bunga_player/services/services.dart';
@@ -78,27 +78,14 @@ class _RoomSectionState extends State<RoomSection> {
   }
 
   void _onOpenVideoPressed(ChannelData channelData) {
-    channelData.videoType == VideoType.local
-        ? _openLocalVideo()
-        : Actions.invoke(
-            context,
-            OpenVideoIntent(
-              videoEntry: VideoEntry.fromChannelData(channelData),
-            ),
-          );
+    channelData.videoType == VideoType.local ? _openLocalVideo() : 1;
   }
 
   void _openLocalVideo() async {
     final entry = await LocalVideoEntryDialog().show();
     if (entry == null || !mounted) return;
 
-    try {
-      final response = Actions.invoke(
-        context,
-        OpenVideoIntent(videoEntry: entry),
-      ) as Future?;
-      await response;
-    } catch (e) {
+    try {} catch (e) {
       getIt<Toast>().show('加载失败');
       rethrow;
     }

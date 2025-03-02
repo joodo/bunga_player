@@ -1,4 +1,4 @@
-import 'package:bunga_player/player/providers.dart';
+import 'package:bunga_player/play/providers.dart';
 import 'package:bunga_player/services/exit_callbacks.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:flutter/material.dart';
