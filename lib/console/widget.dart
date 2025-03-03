@@ -164,10 +164,6 @@ Bili sess:
 ${bunga.biliSess}''';
     },
     'Current verion': (context) => getIt<PackageInfo>().version,
-    'Chat User': (context) => context.read<ChatUser>().toString(),
-    'Chat Channel': (context) => '''id: ${context.read<ChatChannel>().value?.id}
-data: ${context.read<ChatChannelData>().value}
-watchers:${context.read<ChatChannelWatchers>().value}''',
     'Voice Call': (context) =>
         '''status: ${context.read<VoiceCallStatus>().value.name}
 talkers: ${context.read<VoiceCallTalkers>().value}''',

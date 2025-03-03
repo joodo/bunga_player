@@ -3,8 +3,10 @@ import 'package:bunga_player/play/service/service.media_kit.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:flutter/material.dart';
 import 'package:media_kit_video/media_kit_video.dart';
+import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
+import '../business.dart';
 import 'progress_bar.dart';
 import 'saved_position_hint.dart';
 import 'video_control.dart';
@@ -27,7 +29,8 @@ class Player extends StatelessWidget {
         const VideoProgressBar().constrained(height: 16),
         const VideoControl().constrained(height: 64),
       ].toColumn(),
-      const SavedPositionHint().positioned(bottom: 72, right: 12),
+      if (!context.watch<BusyCount>().isBusy)
+        const SavedPositionHint().positioned(bottom: 72, right: 12),
     ].toStack();
   }
 }

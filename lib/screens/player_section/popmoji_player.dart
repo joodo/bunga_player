@@ -77,9 +77,7 @@ class _FireworkOverlayState extends State<_FireworkOverlay>
     final popmojiData = message.data.toPopmojiData();
     if (popmojiData.code != '1f386') return;
 
-    final isCurrentUser =
-        message.sender.id == context.read<ChatUser>().value!.id;
-    if (!isCurrentUser) getIt<Toast>().show('${message.sender.name} 在放大呲花');
+    getIt<Toast>().show('${message.senderId} 在放大呲花');
 
     _fireworkController.autoLaunchDuration =
         Duration(milliseconds: kIsDesktop ? 100 : 400);
@@ -144,17 +142,6 @@ class _PopmojiOverlayState extends State<_PopmojiOverlay> {
 
     final popmojiData = message.data.toPopmojiData();
     if (popmojiData.code == '1f386') return;
-
-    setState(() {
-      _popmojis = [
-        ..._popmojis,
-        (
-          id: _popmojiId++,
-          sender: message.sender,
-          code: message.data.toPopmojiData().code,
-        ),
-      ];
-    });
   }
 }
 
@@ -271,7 +258,7 @@ class _EmojiAnimationState extends State<_EmojiAnimation>
                   maxWidth: _EmojiAnimation.maxSize,
                 ),
                 decoration: BoxDecoration(
-                  color: widget.info.sender.getColor(0.3).withAlpha(220),
+                  color: Colors.red,
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Padding(

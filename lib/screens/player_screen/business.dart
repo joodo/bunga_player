@@ -35,6 +35,13 @@ class PlayScreenBusiness extends SingleChildStatefulWidget {
   State<PlayScreenBusiness> createState() => _PlayScreenBusinessState();
 }
 
+@immutable
+class Watchers {
+  final List<String>? idList;
+  const Watchers(this.idList);
+  bool get isSharing => idList != null;
+}
+
 class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
   // Play payload
   final _playPayloadNotifier = ValueNotifier<PlayPayload?>(null);
@@ -44,6 +51,7 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
     payloadNotifer: _playPayloadNotifier,
     dirInfoNotifier: _dirInfoNotifier,
     savedPositionNotifier: _savedPositionNotifier,
+    watchersNotifier: _watchersNotifier,
   );
 
   // Progress indicator
@@ -93,6 +101,9 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
   final _savedPositionNotifier =
       SavedPositionNotifier(); // For saved postion toast
 
+  // Chat
+  final _watchersNotifier = ValueNotifier<Watchers>(const Watchers(null));
+
   @override
   void initState() {
     super.initState();
@@ -103,7 +114,10 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final openResult =
           ModalRoute.of(context)?.settings.arguments as OpenVideoDialogResult;
-      _openVideoAction.invoke(OpenVideoIntent.url(openResult.url), context);
+      _openVideoAction.invoke(
+        OpenVideoIntent.url(openResult.url, share: !openResult.onlyForMe),
+        context,
+      );
     });
 
     _history;
@@ -133,8 +147,10 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
         ValueListenableProvider.value(value: _dirInfoNotifier),
         ValueListenableProvider.value(value: _busyCountNotifer),
         ValueListenableProvider.value(value: _panelNotifier),
+        ValueListenableProvider<Watchers>.value(value: _watchersNotifier),
       ],
-      child: child?.actions(
+      //builder: (context, child) => child!,
+      child: child!.actions(
         actions: {
           RefreshDirIntent: RefreshDirAction(dirInfoNotifier: _dirInfoNotifier),
           ShowPanelIntent: ShowPanelAction(widgetNotifier: _panelNotifier),

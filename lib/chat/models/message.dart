@@ -1,15 +1,12 @@
-import 'package:bunga_player/chat/models/user.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-typedef MessageData = Map<String, dynamic>;
+part 'message.freezed.dart';
 
-class Message {
-  final String id;
-  final MessageData data;
-  final User sender;
-
-  Message({
-    required this.id,
-    required this.data,
-    required this.sender,
-  });
+@freezed
+abstract class Message with _$Message {
+  const factory Message({
+    required String id,
+    required Map<String, dynamic> data,
+    required String senderId,
+  }) = _Message;
 }

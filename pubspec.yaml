@@ -55,8 +55,6 @@ dependencies:
 
   # Network
   url_launcher: ^6.3.0
-  dart_ping: ^9.0.1
-  dart_ping_ios: ^4.0.2
   http: ^1.1.0
 
   # Utils

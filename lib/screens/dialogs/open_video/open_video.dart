@@ -14,14 +14,19 @@ typedef OpenVideoDialogResult = ({Uri url, bool onlyForMe});
 
 class OpenVideoDialog extends StatefulWidget {
   final bool forceShareToChannel;
-  const OpenVideoDialog({super.key, this.forceShareToChannel = false});
+  final bool shareToChannel;
+  const OpenVideoDialog({
+    super.key,
+    this.shareToChannel = true,
+    this.forceShareToChannel = false,
+  });
 
   @override
   State<OpenVideoDialog> createState() => _OpenVideoDialogState();
 }
 
 class _OpenVideoDialogState extends State<OpenVideoDialog> {
-  bool _onlyForMe = false;
+  late bool _onlyForMe = !widget.shareToChannel;
 
   @override
   Widget build(BuildContext context) {

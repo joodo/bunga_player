@@ -46,9 +46,11 @@ class _UpdateWrapperState extends SingleChildState<UpdateAndCleanWrapper> {
 
     _checkUpdate().onError((error, stackTrace) {
       logger.e('Update: error: $error');
-      setState(() {
-        _status = UpdateStatus.error;
-      });
+      if (mounted) {
+        setState(() {
+          _status = UpdateStatus.error;
+        });
+      }
     });
   }
 

@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:bunga_player/play/models/play_payload.dart';
 import 'package:bunga_player/play/payload_parser.dart';
 import 'package:bunga_player/screens/player_screen/actions.dart';
+import 'package:bunga_player/screens/player_screen/business.dart';
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -74,7 +75,10 @@ class _PlaylistPanelState extends State<PlaylistPanel> {
                               ? null
                               : Actions.handler(
                                   context,
-                                  OpenVideoIntent.url(epInfo.url),
+                                  OpenVideoIntent.url(
+                                    epInfo.url,
+                                    share: context.read<Watchers>().isSharing,
+                                  ),
                                 ),
                         ).animatedSize(
                           duration: const Duration(milliseconds: 200),

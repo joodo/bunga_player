@@ -8,9 +8,7 @@ import 'package:bunga_player/screens/control_section/call_control.dart';
 import 'package:bunga_player/screens/control_section/rename_control.dart';
 import 'package:bunga_player/screens/player_screen/player/video_control.dart';
 import 'package:bunga_player/screens/control_section/popmoji_control.dart';
-import 'package:bunga_player/screens/control_section/subtitle_control.dart';
 import 'package:bunga_player/screens/control_section/tune_control.dart';
-import 'package:bunga_player/screens/control_section/welcome_control.dart';
 import 'package:bunga_player/voice_call/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
@@ -73,11 +71,9 @@ class _ControlSectionState extends State<ControlSection> {
   Widget buildByName(String name) {
     return switch (name) {
       'control:rename' => const RenameControl(),
-      'control:welcome' => const WelcomeControl(),
       'control:main' => const VideoControl(),
       'control:call' => const CallControl(),
       'control:popmoji' => const PopmojiControl(),
-      'control:subtitle' => const SubtitleControl(),
       'control:tune' => const TuneControl(),
       'control:danmaku' => const DanmakuControl(),
       'control:source_selection' => const SourceSelectionControl(),

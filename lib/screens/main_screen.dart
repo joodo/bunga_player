@@ -1,7 +1,6 @@
 import 'package:bunga_player/screens/player_screen/player/saved_position_hint.dart';
 import 'package:bunga_player/ui/providers.dart';
 import 'package:bunga_player/screens/progress_bar/progress_section.dart';
-import 'package:bunga_player/screens/room_section.dart';
 import 'package:bunga_player/screens/control_section/control_section.dart';
 import 'package:bunga_player/screens/player_section/player_section.dart';
 import 'package:bunga_player/utils/business/platform.dart';
@@ -24,12 +23,10 @@ class MainScreen extends StatefulWidget {
 class MainScreenState extends State<MainScreen> {
   final _controlSectionKey = GlobalKey<State<ControlSection>>();
   final _playerSectionKey = GlobalKey<State<PlayerSection>>();
-  final _roomSectionKey = GlobalKey<State<RoomSection>>();
   @override
   Widget build(BuildContext context) {
     final playerSection = PlayerSection(key: _playerSectionKey);
     final controlSection = ControlSection(key: _controlSectionKey);
-    final roomSection = RoomSection(key: _roomSectionKey);
     const progressSection = ProgressBar();
 
     final body = Consumer<FoldLayout>(
@@ -38,10 +35,6 @@ class MainScreenState extends State<MainScreen> {
           final hideableUI = Stack(
             fit: StackFit.loose,
             children: [
-              Container(
-                color: const Color(0xA0000000),
-                child: roomSection,
-              ),
               Positioned(
                 bottom: 0,
                 left: 0,
@@ -75,13 +68,6 @@ class MainScreenState extends State<MainScreen> {
           return Stack(
             fit: StackFit.expand,
             children: [
-              Positioned(
-                top: 0,
-                height: MainScreen.roomSectionHeight,
-                left: 0,
-                right: 0,
-                child: roomSection,
-              ),
               Positioned(
                 top: MainScreen.roomSectionHeight,
                 bottom: MainScreen.controlSectionHeight,

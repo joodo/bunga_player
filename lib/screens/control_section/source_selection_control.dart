@@ -25,7 +25,7 @@ class _SourceSelectionControlState extends State<SourceSelectionControl> {
 
     final entry = context.read<PlayVideoEntry>().value!;
     for (final (index, source) in entry.sources.videos.indexed) {
-      network.ipInfo(source).then((result) {
+      network.sourceInfo(source).then((result) {
         if (mounted) {}
       }).catchError((e) {
         logger.w('[Network] Get ip info failed: $source');

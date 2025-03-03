@@ -4,7 +4,6 @@ import 'package:bunga_player/screens/player_section/play_gesture_detector.dart';
 import 'package:bunga_player/ui/providers.dart';
 import 'package:bunga_player/play/providers.dart';
 import 'package:bunga_player/screens/player_section/danmaku_player.dart';
-import 'package:bunga_player/screens/player_section/placeholder.dart';
 import 'package:bunga_player/screens/player_section/popmoji_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_volume_controller/flutter_volume_controller.dart';
@@ -26,13 +25,6 @@ class _PlayerSectionState extends State<PlayerSection> {
       children: [
         const DanmakuPlayer(),
         const PopmojiPlayer(),
-        AnimatedOpacity(
-          opacity: context.select<CatIndicator, double>(
-              (bi) => bi.title == null ? 0.0 : 1.0),
-          duration: const Duration(milliseconds: 350),
-          curve: Curves.easeOutCubic,
-          child: const PlayerPlaceholder(),
-        ),
         const PlayGestureDetector(),
         const Positioned(
           top: 48,

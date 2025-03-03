@@ -1,4 +1,7 @@
 import 'package:async/async.dart';
+import 'package:bunga_player/chat/actions.dart';
+import 'package:bunga_player/chat/models/message_data.dart';
+import 'package:bunga_player/chat/models/user.dart';
 import 'package:bunga_player/play/models/history.dart';
 import 'package:bunga_player/play/models/play_payload.dart';
 import 'package:bunga_player/play/models/video_record.dart';
@@ -45,14 +48,15 @@ class OpenVideoIntent extends Intent {
   final Uri? url;
   final VideoRecord? record;
   final PlayPayload? payload;
+  final bool share;
 
-  const OpenVideoIntent.url(Uri this.url)
+  const OpenVideoIntent.url(Uri this.url, {required this.share})
       : payload = null,
         record = null;
-  const OpenVideoIntent.record(VideoRecord this.record)
+  const OpenVideoIntent.record(VideoRecord this.record, {required this.share})
       : url = null,
         payload = null;
-  const OpenVideoIntent.payload(PlayPayload this.payload)
+  const OpenVideoIntent.payload(PlayPayload this.payload, {required this.share})
       : url = null,
         record = null;
 }
@@ -62,12 +66,14 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
   final ValueNotifier<BusyCount> busyCountNotifier;
   final ValueNotifier<DirInfo?> dirInfoNotifier;
   final SavedPositionNotifier savedPositionNotifier;
+  final ValueNotifier<Watchers> watchersNotifier;
 
   OpenVideoAction({
     required this.payloadNotifer,
     required this.busyCountNotifier,
     required this.dirInfoNotifier,
     required this.savedPositionNotifier,
+    required this.watchersNotifier,
   });
 
   @override
@@ -101,6 +107,17 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
       busyCountNotifier.value = busyCountNotifier.value.decrease;
     }
 
+    // Send message to channel
+    if (intent.share) {
+      if (!watchersNotifier.value.isSharing) _initShare();
+
+      final messageData = StartProjectionMessageData(
+        sharer: User.fromContext(context),
+        videoRecord: payload.record,
+      ).toJson();
+      Actions.invoke(context, SendMessageIntent(messageData));
+    }
+
     // Load saved position
     if (!context.mounted) throw StateError('Context unmounted.');
     final history = context.read<History>();
@@ -116,6 +133,11 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
     parser.dirInfo(payload.record).then((info) {
       dirInfoNotifier.value = info;
     });
+  }
+
+  void _initShare() {
+    // TODO: aloha
+    watchersNotifier.value = const Watchers([]);
   }
 }
 

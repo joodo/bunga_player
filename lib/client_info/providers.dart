@@ -53,12 +53,11 @@ final clientInfoProviders = MultiProvider(
       ),
       lazy: false,
     ),
-    ChangeNotifierProvider(create: (context) => ClientId(), lazy: false),
-    ChangeNotifierProxyProvider<ClientId, ClientColorHue?>(
+    ChangeNotifierProxyProvider<ClientAccount, ClientColorHue?>(
       create: (context) => null,
-      update: (context, cliendId, previous) {
+      update: (context, cliendAccount, previous) {
         if (previous == null) {
-          return ClientColorHue(cliendId.value.hashCode % 360);
+          return ClientColorHue(cliendAccount.id.hashCode % 360);
         } else {
           return previous;
         }

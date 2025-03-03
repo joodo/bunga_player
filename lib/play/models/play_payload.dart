@@ -3,12 +3,18 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'play_payload.freezed.dart';
 
+@immutable
 class VideoSources {
   final List<String> videos;
   final List<String>? audios;
+  final Map<String, String>? requestHeaders;
 
-  VideoSources({required this.videos, this.audios});
-  VideoSources.single(String url)
+  const VideoSources({
+    required this.videos,
+    this.audios,
+    this.requestHeaders,
+  });
+  VideoSources.single(String url, {this.requestHeaders})
       : videos = [url],
         audios = null;
 

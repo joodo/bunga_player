@@ -1,5 +1,8 @@
-import 'package:flutter/painting.dart';
+import 'package:bunga_player/client_info/models/client_account.dart';
+import 'package:bunga_player/client_info/providers.dart';
+import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:provider/provider.dart';
 
 part 'user.g.dart';
 
@@ -30,24 +33,20 @@ class User {
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
   Map<String, dynamic> toJson() => _$UserToJson(this);
 
+  factory User.fromContext(BuildContext context) {
+    final nickname = context.read<ClientNicknameNotifier>().value;
+    final hue = context.read<ClientColorHue?>()?.value;
+    final id = context.read<ClientAccount>().id;
+    return User(id: id, name: nickname, colorHue: hue);
+  }
+
   /// Based on hsv.
-  /// value 0.0 ~ 1.0, the higher, the lighter
-  Color getColor(double value) {
-    final hsvColor = HSVColor.fromAHSV(1, colorHue.toDouble(), 0.5, value);
+  /// brightness 0.0 ~ 1.0, the higher, the lighter
+  Color getColor({required double brightness}) {
+    final hsvColor = HSVColor.fromAHSV(1, colorHue.toDouble(), 0.5, brightness);
     return hsvColor.toColor();
   }
 
   @override
   String toString() => toJson().toString();
-
-  @override
-  bool operator ==(other) {
-    return other is User &&
-        id == other.id &&
-        name == other.name &&
-        colorHue == other.colorHue;
-  }
-
-  @override
-  int get hashCode => Object.hash(id, name, colorHue);
 }

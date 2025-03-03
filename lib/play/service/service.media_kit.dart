@@ -55,7 +55,6 @@ class MediaKitPlayService implements PlayService {
 
       if (_openCompleter != null) {
         _openCompleter!.complete();
-        _openCompleter = null;
       }
     });
 
@@ -139,11 +138,6 @@ class MediaKitPlayService implements PlayService {
   void seek(Duration position) => positionNotifier.value = position;
 
   // Video loading
-  static const _biliHeaders = {
-    'Referer': 'https://www.bilibili.com/',
-    'User-Agent': 'Mozilla/5.0',
-  };
-  static const _baiduHeaders = {'User-Agent': 'pan.baidu.com'};
 
   final _sourceIndexController = StreamController<int?>.broadcast();
   @override
@@ -160,32 +154,30 @@ class MediaKitPlayService implements PlayService {
   Future<void> open(PlayPayload payload) async {
     assert(payload.sources.videos.length > payload.videoSourceIndex);
 
+    _openCompleter = Completer();
+
     // Update stream
     // TODO: onprogress
     //_videoEntry = entry;
     _videoEntryController.add(_videoEntry);
     _sourceIndexController.add(payload.videoSourceIndex);
 
-    // Set headers
-    final httpHeaders = switch (payload.record.source) {
-      'bilivideo' || 'bilibangumi' => _biliHeaders,
-      'alist' => _baiduHeaders,
-      String() => null,
-    };
-
     // open video
     final videoUrl = payload.sources.videos[payload.videoSourceIndex];
+    final httpHeaders = payload.sources.requestHeaders;
     await _player.open(
       media_kit.Media(videoUrl, httpHeaders: httpHeaders),
       play: false,
     );
 
-    // load audio for bilibili dash
+    // load audio
     if (payload.sources.audios != null) {
-      final headerString =
-          _biliHeaders.entries.map((e) => '${e.key}=${e.value}').join(',');
-      _setProperty('http-header-fields', '"$headerString"');
-      await Future.delayed(const Duration(milliseconds: 300));
+      if (httpHeaders != null) {
+        final headerString =
+            httpHeaders.entries.map((e) => '${e.key}=${e.value}').join(',');
+        _setProperty('http-header-fields', '"$headerString"');
+        await Future.delayed(const Duration(milliseconds: 300));
+      }
       final audio = payload.sources.audios![0];
       _mpvCommand('audio-add $audio select auto');
     }
@@ -193,7 +185,6 @@ class MediaKitPlayService implements PlayService {
     // Avoid open after stop, play status keep Stop
     playStatusNotifier.value = PlayStatus.pause;
 
-    _openCompleter = Completer();
     return _openCompleter!.future;
   }
 

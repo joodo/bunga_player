@@ -4,10 +4,10 @@ class PopmojiMessageData {
   final String code;
   PopmojiMessageData({required this.code});
 
-  MessageData toMessageData() => {'type': 'popmoji', 'code': code};
+  Map<String, dynamic> toMessageData() => {'type': 'popmoji', 'code': code};
 }
 
-extension PopmojiExtension on MessageData {
+extension PopmojiExtension on Map<String, dynamic> {
   bool get isPopmojiData => this['type'] == 'popmoji';
   PopmojiMessageData toPopmojiData() => isPopmojiData
       ? PopmojiMessageData(code: this['code'])

@@ -24,10 +24,12 @@ final danmakuProvider = MultiProvider(
         if (message == null) {
           previous!.value = null;
         } else if (message.data.isDanmakuData) {
+          /* TODO::
           previous!.value = Danmaku(
             sender: message.sender,
             text: message.data.toDanmakuData().text,
           );
+          */
         }
 
         return previous!;

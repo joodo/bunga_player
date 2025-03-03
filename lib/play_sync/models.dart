@@ -54,7 +54,7 @@ class PlayStatusMessageData {
     required this.answerId,
   });
 
-  MessageData toMessageData() => {
+  Map<String, dynamic> toMessageData() => {
         'type': 'playStatus',
         'status': status.name,
         'position': position.inMilliseconds,
@@ -63,10 +63,10 @@ class PlayStatusMessageData {
 }
 
 class WhereAskingMessageData {
-  MessageData toMessageData() => {'type': 'where'};
+  Map<String, dynamic> toMessageData() => {'type': 'where'};
 }
 
-extension PlayStatusExtension on MessageData {
+extension PlayStatusExtension on Map<String, dynamic> {
   bool get isPlayStatus => this['type'] == 'playStatus';
   PlayStatusMessageData toPlayStatus() => isPlayStatus
       ? PlayStatusMessageData(

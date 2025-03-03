@@ -13,7 +13,7 @@ class CallMessageData {
 
   CallMessageData({required this.action, this.answerId});
 
-  MessageData toMessageData() => {
+  Map<String, dynamic> toMessageData() => {
         'type': 'call',
         'action': action.name,
         'answerId': answerId,
@@ -29,13 +29,13 @@ class TalkStatusMessageData {
   final TalkStatusType status;
   TalkStatusMessageData(this.status);
 
-  MessageData toMessageData() => {
+  Map<String, dynamic> toMessageData() => {
         'type': 'talk',
         'status': status.name,
       };
 }
 
-extension CallExtension on MessageData {
+extension CallExtension on Map<String, dynamic> {
   bool get isCallData => this['type'] == 'call';
   CallMessageData toCallData() => isCallData
       ? CallMessageData(

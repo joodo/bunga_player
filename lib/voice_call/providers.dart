@@ -65,24 +65,5 @@ final voiceCallProviders = MultiProvider(providers: [
   ChangeNotifierProvider(create: (context) => VoiceCallVolume()),
   ChangeNotifierProvider(create: (context) => VoiceCallMuteMic()),
   ChangeNotifierProvider(create: (context) => VoiceCallNoiseSuppressionLevel()),
-  ProxyProvider<BungaClient?, VoiceCallClient?>(
-    update: (context, bungaClient, previous) => bungaClient == null
-        ? null
-        : AgoraClient(
-            bungaClient,
-            volume: context.read<VoiceCallVolume>().value.percent,
-            noiseSuppressionLevel:
-                context.read<VoiceCallNoiseSuppressionLevel>().value,
-          ),
-    lazy: false,
-  ),
-  ChangeNotifierProxyProvider<ChatChannel, VoiceCallTalkers>(
-    create: (context) => VoiceCallTalkers(),
-    update: (context, channel, previous) {
-      previous!.value = channel.value == null ? null : [];
-      return previous;
-    },
-    lazy: false,
-  ),
   ChangeNotifierProvider(create: (context) => VoiceCallStatus()),
 ]);

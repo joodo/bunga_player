@@ -4,10 +4,10 @@ class DanmakuMessageData {
   final String text;
   DanmakuMessageData({required this.text});
 
-  MessageData toMessageData() => {'type': 'danmaku', 'text': text};
+  Map<String, dynamic> toMessageData() => {'type': 'danmaku', 'text': text};
 }
 
-extension DanmakuExtension on MessageData {
+extension DanmakuExtension on Map<String, dynamic> {
   bool get isDanmakuData => this['type'] == 'danmaku';
   DanmakuMessageData toDanmakuData() => isDanmakuData
       ? DanmakuMessageData(text: this['text'])

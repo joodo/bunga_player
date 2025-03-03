@@ -36,11 +36,10 @@ class CallingRequestBusiness {
     },
   )..cancel();
 
-  void myRequestIsRejectedBy(User user) {
-    myHopeList.remove(user.id);
+  void myRequestIsRejectedBy(String userId) {
+    myHopeList.remove(userId);
 
-    logger
-        .i('${user.id} rejected call asking or leaved, hope list: $myHopeList');
+    logger.i('$userId rejected call asking or leaved, hope list: $myHopeList');
 
     if (myHopeList.isEmpty) {
       getIt<Toast>().show('呼叫已被拒绝');
@@ -63,11 +62,6 @@ class StartCallingRequestAction
 
     read<VoiceCallStatus>().value = VoiceCallStatusType.callOut;
 
-    callingRequestBusiness.myHopeList
-        .addAll(read<ChatChannelWatchers>().value.map((user) => user.id));
-    callingRequestBusiness.myHopeList
-        .removeWhere((id) => id == read<ChatUser>().value!.id);
-
     final message = await (read<ActionsLeaf>().invoke(
       SendMessageIntent(
           CallMessageData(action: CallActionType.ask).toMessageData()),
@@ -78,11 +72,6 @@ class StartCallingRequestAction
         'start call asking, hope list: ${callingRequestBusiness.myHopeList}');
 
     callingRequestBusiness.requestTimeOutTimer.reset();
-  }
-
-  @override
-  bool isEnabled(StartCallingRequestIntent intent, [BuildContext? context]) {
-    return context?.read<ChatChannel>().value != null;
   }
 }
 
@@ -228,16 +217,15 @@ class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
     providerLocator: context.read,
   );
 
-  late final _chatChannel = context.read<ChatChannel>();
   late final _chatLastMessage = context.read<ChatChannelLastMessage>();
   late final _callStatus = context.read<VoiceCallStatus>();
   late final _volume = context.read<VoiceCallVolume>();
-  late final _channelWatchers = context.read<ChatChannelWatchers>();
   late final _channelMessage = context.read<ChatChannelLastMessage>();
   late final _nsLevel = context.read<VoiceCallNoiseSuppressionLevel>();
 
   @override
   void initState() {
+    /*
     _chatChannel.addListener(_autoHangUp);
     _chatLastMessage.addListener(_updateTalkers);
     _callStatus.addListener(_soundCallRing);
@@ -245,18 +233,16 @@ class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
     _nsLevel.addListener(_applyNoiceSuppress);
     _channelWatchers.addLeaveListener(_leaveMeansRejectBy);
     _channelMessage.addListener(_dealResponse);
-
+*/
     super.initState();
   }
 
   @override
   void dispose() {
-    _chatChannel.removeListener(_autoHangUp);
     _chatLastMessage.removeListener(_updateTalkers);
     _callStatus.removeListener(_soundCallRing);
     _volume.removeListener(_applyCallVolume);
     _nsLevel.removeListener(_applyNoiceSuppress);
-    _channelWatchers.removeLeaveListener(_leaveMeansRejectBy);
     _channelMessage.removeListener(_dealResponse);
 
     super.dispose();
@@ -311,9 +297,9 @@ class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
         .setNoiseSuppression(_nsLevel.value);
   }
 
-  void _leaveMeansRejectBy({required User user}) {
+  void _leaveMeansRejectBy({required String userId}) {
     if (_callStatus.value == VoiceCallStatusType.callOut) {
-      _callingRequestBusiness.myRequestIsRejectedBy(user);
+      _callingRequestBusiness.myRequestIsRejectedBy(userId);
     }
   }
 
@@ -322,8 +308,6 @@ class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
 
     final message = _channelMessage.value;
     if (message == null || !message.data.isCallData) return;
-
-    if (message.sender.id == read<ChatUser>().value?.id) return;
 
     final data = message.data.toCallData();
     switch (data.action) {
@@ -378,7 +362,7 @@ class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
         // someone rejected me
         if (_callStatus.value == VoiceCallStatusType.callOut &&
             data.answerId == _callingRequestBusiness.requestMessageId) {
-          _callingRequestBusiness.myRequestIsRejectedBy(message.sender);
+          _callingRequestBusiness.myRequestIsRejectedBy(message.senderId);
         }
     }
   }
@@ -393,19 +377,13 @@ class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
     return _startTalking(read);
   }
 
-  void _autoHangUp() {
-    if (_chatChannel.value == null) {
-      context.read<ActionsLeaf>().maybeInvoke(const HangUpIntent());
-    }
-  }
-
   void _updateTalkers() {
     final message = _chatLastMessage.value;
     if (message == null) return;
 
     final talkers = context.read<VoiceCallTalkers>();
     void removeAndCheck() {
-      talkers.remove(message.sender.id);
+      talkers.remove(message.senderId);
 
       // Only left me
       if (talkers.value!.length == 1) {
@@ -415,7 +393,7 @@ class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
     }
 
     if (message.data.isHereIsData && message.data.toHereIsData().isTalking) {
-      talkers.add(message.sender.id);
+      talkers.add(message.senderId);
     }
 
     if (message.data.isByeData) {
@@ -425,7 +403,7 @@ class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
     if (message.data.isTalkStatusData) {
       final status = message.data.toTalkStatusData().status;
       if (status == TalkStatusType.start) {
-        talkers.add(message.sender.id);
+        talkers.add(message.senderId);
       } else {
         removeAndCheck();
       }
@@ -438,8 +416,8 @@ Future<void> _startTalking(Locator read) async {
 
   read<VoiceCallStatus>().value = VoiceCallStatusType.talking;
   await read<VoiceCallClient>().joinChannel(
-    userId: read<ChatUser>().value!.id,
-    channelId: read<ChatChannel>().value!.id,
+    userId: 'read<ChatUser>().value!.id',
+    channelId: 'read<ChatChannel>().value!.id',
   );
   return read<ActionsLeaf>().invoke(SendMessageIntent(
     TalkStatusMessageData(TalkStatusType.start).toMessageData(),

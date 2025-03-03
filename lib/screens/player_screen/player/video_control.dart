@@ -1,10 +1,9 @@
 import 'package:animations/animations.dart';
 import 'package:bunga_player/chat/actions.dart';
 import 'package:bunga_player/play_sync/providers.dart';
-import 'package:bunga_player/play/actions.dart' as player_actions;
+import 'package:bunga_player/play/actions.dart' as play_action;
 import 'package:bunga_player/play_sync/actions.dart';
-import 'package:bunga_player/play/models/play_payload.dart';
-import 'package:bunga_player/play/payload_parser.dart';
+import '../../../play/models/play_payload.dart';
 import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/screens/dialogs/open_video/open_video.dart';
 import 'package:bunga_player/screens/player_screen/actions.dart';
@@ -32,7 +31,6 @@ import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
 import '../../widgets/divider.dart';
-import '../../control_section/channel_required_wrap.dart';
 import '../panel/audio_track_panel.dart';
 import '../panel/playlist_panel.dart';
 import '../panel/subtitle_panel.dart';
@@ -44,6 +42,7 @@ class VideoControl extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final showHud = context.read<ShouldShowHUD>();
+    print(context.read<Watchers>());
 
     return LayoutBuilder(
         builder: (context, constraints) => [
@@ -204,7 +203,7 @@ class _SliderSection extends StatelessWidget {
                     : const Icon(Icons.volume_up),
                 onPressed: () => Actions.invoke(
                   context,
-                  player_actions.SetMuteIntent(!volumeData.value.mute),
+                  play_action.SetMuteIntent(!volumeData.value.mute),
                 ),
               ),
             ),
@@ -217,7 +216,7 @@ class _SliderSection extends StatelessWidget {
                           label: '${volumeData.value.volume}%',
                           onChanged: (value) => Actions.invoke(
                             context,
-                            player_actions.SetVolumeIntent(value.toInt()),
+                            play_action.SetVolumeIntent(value.toInt()),
                           ),
                           onChangeEnd: (value) =>
                               context.read<PlayVolume>().save(value.round()),
@@ -291,17 +290,14 @@ class _CallButtonState extends State<_CallButton>
     return Selector<VoiceCallStatus, VoiceCallStatusType>(
       selector: (context, currentCallStatus) => currentCallStatus.value,
       builder: (context, callStatus, child) => switch (callStatus) {
-        VoiceCallStatusType.none => Selector<ChatChannel, bool>(
-            selector: (conext, channelId) => channelId.value != null,
-            builder: (context, loaded, child) => IconButton(
-              icon: const Icon(Icons.call),
-              onPressed: loaded
-                  ? () {
-                      Actions.invoke(context, StartCallingRequestIntent());
-                      widget.onPressed();
-                    }
-                  : null,
-            ),
+        VoiceCallStatusType.none => IconButton(
+            icon: const Icon(Icons.call),
+            onPressed: true
+                ? () {
+                    Actions.invoke(context, StartCallingRequestIntent());
+                    widget.onPressed();
+                  }
+                : null,
           ),
         VoiceCallStatusType.callOut ||
         VoiceCallStatusType.talking =>
@@ -373,7 +369,10 @@ class _MoreActionsButton extends StatelessWidget {
                 leadingIcon: const Icon(Icons.refresh),
                 onPressed: Actions.handler(
                   context,
-                  OpenVideoIntent.record(payload!.record),
+                  OpenVideoIntent.record(
+                    payload!.record,
+                    share: context.read<Watchers>().isSharing,
+                  ),
                 ),
                 child: const Text('重新载入    '),
               ),
@@ -436,7 +435,10 @@ class _MoreActionsButton extends StatelessWidget {
             // Change Video Button
             MenuItemButton(
               leadingIcon: const Icon(Icons.movie_filter),
-              onPressed: _changeVideo(context),
+              onPressed: _changeVideo(
+                context,
+                context.read<Watchers>().isSharing,
+              ),
               child: const Text('换片'),
             ),
 
@@ -452,15 +454,23 @@ class _MoreActionsButton extends StatelessWidget {
     );
   }
 
-  VoidCallback _changeVideo(BuildContext context) {
+  VoidCallback _changeVideo(BuildContext context, bool isCurrentSharing) {
     return () async {
       final result = await showGeneralDialog<OpenVideoDialogResult>(
         context: context,
-        pageBuilder: (BuildContext context, Animation<double> animation,
-                Animation<double> secondaryAnimation) =>
-            const Dialog.fullscreen(
-          child: OpenVideoDialog(forceShareToChannel: true),
-        ),
+        pageBuilder: (
+          BuildContext context,
+          Animation<double> animation,
+          Animation<double> secondaryAnimation,
+        ) {
+          final sharing = isCurrentSharing;
+          return Dialog.fullscreen(
+            child: OpenVideoDialog(
+              shareToChannel: sharing,
+              forceShareToChannel: sharing,
+            ),
+          );
+        },
         transitionBuilder: (context, animation, secondaryAnimation, child) =>
             FadeScaleTransition(
           animation: animation,
@@ -469,7 +479,10 @@ class _MoreActionsButton extends StatelessWidget {
       );
       if (result == null) return;
       if (context.mounted) {
-        Actions.invoke(context, OpenVideoIntent.url(result.url));
+        Actions.invoke(
+          context,
+          OpenVideoIntent.url(result.url, share: !result.onlyForMe),
+        );
       }
     };
   }
@@ -479,23 +492,8 @@ class _MoreActionsButton extends StatelessWidget {
       context.read<PlayVideoSessions>().save();
     }
 
-    Actions.invoke(context, const player_actions.StopPlayIntent());
+    Actions.invoke(context, const play_action.StopPlayIntent());
     //Actions.maybeInvoke(context, const LeaveChannelIntent());
     Navigator.of(context).pop();
-  }
-
-  void _onVideoOpened(BuildContext context, VideoEntry entry) {
-    final currentUser = context.read<ChatUser>().value;
-    if (!context.isVideoSameWithChannel && currentUser != null) {
-      Actions.maybeInvoke(
-        context,
-        UpdateChannelDataIntent(
-          ChannelData.fromShare(
-            currentUser,
-            entry,
-          ),
-        ),
-      );
-    }
   }
 }

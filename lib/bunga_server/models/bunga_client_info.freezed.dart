@@ -21,6 +21,7 @@ IMInfo _$IMInfoFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$IMInfo {
   String get appId => throw _privateConstructorUsedError;
+  String get userId => throw _privateConstructorUsedError;
   String get userSig => throw _privateConstructorUsedError;
 
   /// Serializes this IMInfo to a JSON map.
@@ -37,7 +38,7 @@ abstract class $IMInfoCopyWith<$Res> {
   factory $IMInfoCopyWith(IMInfo value, $Res Function(IMInfo) then) =
       _$IMInfoCopyWithImpl<$Res, IMInfo>;
   @useResult
-  $Res call({String appId, String userSig});
+  $Res call({String appId, String userId, String userSig});
 }
 
 /// @nodoc
@@ -56,12 +57,17 @@ class _$IMInfoCopyWithImpl<$Res, $Val extends IMInfo>
   @override
   $Res call({
     Object? appId = null,
+    Object? userId = null,
     Object? userSig = null,
   }) {
     return _then(_value.copyWith(
       appId: null == appId
           ? _value.appId
           : appId // ignore: cast_nullable_to_non_nullable
+              as String,
+      userId: null == userId
+          ? _value.userId
+          : userId // ignore: cast_nullable_to_non_nullable
               as String,
       userSig: null == userSig
           ? _value.userSig
@@ -78,7 +84,7 @@ abstract class _$$IMInfoImplCopyWith<$Res> implements $IMInfoCopyWith<$Res> {
       __$$IMInfoImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String appId, String userSig});
+  $Res call({String appId, String userId, String userSig});
 }
 
 /// @nodoc
@@ -95,12 +101,17 @@ class __$$IMInfoImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? appId = null,
+    Object? userId = null,
     Object? userSig = null,
   }) {
     return _then(_$IMInfoImpl(
       appId: null == appId
           ? _value.appId
           : appId // ignore: cast_nullable_to_non_nullable
+              as String,
+      userId: null == userId
+          ? _value.userId
+          : userId // ignore: cast_nullable_to_non_nullable
               as String,
       userSig: null == userSig
           ? _value.userSig
@@ -113,7 +124,8 @@ class __$$IMInfoImplCopyWithImpl<$Res>
 /// @nodoc
 @JsonSerializable()
 class _$IMInfoImpl implements _IMInfo {
-  const _$IMInfoImpl({required this.appId, required this.userSig});
+  const _$IMInfoImpl(
+      {required this.appId, required this.userId, required this.userSig});
 
   factory _$IMInfoImpl.fromJson(Map<String, dynamic> json) =>
       _$$IMInfoImplFromJson(json);
@@ -121,11 +133,13 @@ class _$IMInfoImpl implements _IMInfo {
   @override
   final String appId;
   @override
+  final String userId;
+  @override
   final String userSig;
 
   @override
   String toString() {
-    return 'IMInfo(appId: $appId, userSig: $userSig)';
+    return 'IMInfo(appId: $appId, userId: $userId, userSig: $userSig)';
   }
 
   @override
@@ -134,12 +148,13 @@ class _$IMInfoImpl implements _IMInfo {
         (other.runtimeType == runtimeType &&
             other is _$IMInfoImpl &&
             (identical(other.appId, appId) || other.appId == appId) &&
+            (identical(other.userId, userId) || other.userId == userId) &&
             (identical(other.userSig, userSig) || other.userSig == userSig));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, appId, userSig);
+  int get hashCode => Object.hash(runtimeType, appId, userId, userSig);
 
   /// Create a copy of IMInfo
   /// with the given fields replaced by the non-null parameter values.
@@ -160,12 +175,15 @@ class _$IMInfoImpl implements _IMInfo {
 abstract class _IMInfo implements IMInfo {
   const factory _IMInfo(
       {required final String appId,
+      required final String userId,
       required final String userSig}) = _$IMInfoImpl;
 
   factory _IMInfo.fromJson(Map<String, dynamic> json) = _$IMInfoImpl.fromJson;
 
   @override
   String get appId;
+  @override
+  String get userId;
   @override
   String get userSig;
 

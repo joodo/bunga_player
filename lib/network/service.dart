@@ -6,17 +6,13 @@ import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/extensions/http_response.dart';
 import 'package:bunga_player/utils/models/network_progress.dart';
-import 'package:dart_ping/dart_ping.dart';
-import 'package:dart_ping_ios/dart_ping_ios.dart';
 import 'package:http/http.dart' as http;
 
-typedef IpInfo = ({String location, Duration latency});
+typedef SourceInfo = ({String location, int bps});
 
 class NetworkService {
   NetworkService() {
     HttpOverrides.global = _BungaHttpOverrides(_findProxy);
-
-    if (Platform.isIOS) DartPingIOS.register();
   }
 
   String? _proxyHost = getIt<Preferences>().get<String>('proxy');
@@ -29,20 +25,66 @@ class NetworkService {
     return 'PROXY $_proxyHost';
   }
 
-  Future<IpInfo> ipInfo(String source) async {
-    final uri = Uri.parse(source);
-    final ping = Ping(uri.host, count: 5, forceCodepage: true);
-    final result = await ping.stream.first;
-    final latency = result.response!.time!;
+  Future<SourceInfo> sourceInfo(
+    String source, [
+    Map<String, String>? headers,
+  ]) async {
+    late final String location;
+    late final int bps;
 
-    final ip = result.response!.ip!;
+    await Future.wait([
+      _getUrlIpLocation(source).then((value) => location = value),
+      _estimateDownloadSpeed(source, headers).then((value) => bps = value),
+    ]);
+
+    return (location: location, bps: bps);
+  }
+
+  Future<int> _estimateDownloadSpeed(
+    String url,
+    Map<String, String>? headers,
+  ) async {
+    const testMb = 2; // download 500 kb for test
+
+    final client = HttpClient();
+    final request = await client.getUrl(Uri.parse(url));
+    headers?.forEach((key, value) {
+      request.headers.set(key, value);
+    });
+    final response = await request.close().timeout(const Duration(seconds: 5));
+
+    int downloadedBytes = 0;
+    final stopwatch = Stopwatch()..start();
+
+    await for (final chunk in response) {
+      downloadedBytes += chunk.length;
+
+      if (downloadedBytes >= testMb * 1024 * 1024) {
+        stopwatch.stop();
+        break;
+      }
+    }
+    client.close();
+
+    final seconds = stopwatch.elapsedMilliseconds / 1000;
+    final bytesPerSecond = downloadedBytes / seconds;
+    return bytesPerSecond.toInt();
+  }
+
+  Future<String> _getUrlIpLocation(String url) async {
+    final uri = Uri.parse(url);
+    final host = uri.host;
+
+    final addresses = await InternetAddress.lookup(host);
+    final ip =
+        addresses.firstWhere((e) => e.type == InternetAddressType.IPv4).address;
+
     final response = await http.get(
       Uri.parse(
           'https://opendata.baidu.com/api.php?query=$ip&co=&resource_id=6006&oe=utf8'),
     );
     final location = jsonDecode(response.body)['data'][0]['location'] as String;
-
-    return (location: location, latency: latency);
+    return location;
   }
 
   Stream<RequestProgress> downloadFile(String url, String path) async* {

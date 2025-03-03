@@ -7,6 +7,7 @@ part 'bunga_client_info.g.dart';
 abstract class IMInfo with _$IMInfo {
   const factory IMInfo({
     required String appId,
+    required String userId,
     required String userSig,
   }) = _IMInfo;
 

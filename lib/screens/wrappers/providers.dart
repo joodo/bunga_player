@@ -26,10 +26,10 @@ class ProvidersWrapper extends SingleChildStatelessWidget {
         playerProviders,
         onlineVideoProviders,
         channelJoiningProvider,
-        chatProviders,
+        // TODO:: chatProviders,
         danmakuProvider,
         voiceCallProviders,
-        playSyncProvider,
+        // TODO:: playSyncProvider,
       ],
       child: child,
     );

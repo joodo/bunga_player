@@ -30,35 +30,5 @@ final channelJoiningProvider = MultiProvider(
 );
 
 final playSyncProvider = MultiProvider(
-  providers: [
-    ChangeNotifierProxyProvider<ChatChannelFiles, ChannelSubtitles>(
-      create: (context) => ChannelSubtitles(),
-      update: (context, channelFiles, previous) {
-        const prefix = 'subtitle ';
-        final subFiles = channelFiles.value.where((channelFile) =>
-            channelFile.description?.startsWith(prefix) ?? false);
-
-        final m = <String, ChannelFile>{};
-        for (final file in subFiles) {
-          m[file.uploader.id] = file;
-        }
-
-        previous!.value = m.map(
-          (userId, channelFile) => MapEntry<String, ChannelSubtitle>(
-            userId,
-            previous.value[userId]?.id == channelFile.id
-                ? previous.value[userId]!
-                : ChannelSubtitle(
-                    id: channelFile.id,
-                    sharer: channelFile.uploader,
-                    title: channelFile.description!.substring(prefix.length),
-                    url: channelFile.url,
-                  ),
-          ),
-        );
-        return previous;
-      },
-      lazy: false,
-    ),
-  ],
+  providers: [],
 );

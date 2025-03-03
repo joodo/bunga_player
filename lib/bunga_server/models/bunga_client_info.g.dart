@@ -8,12 +8,14 @@ part of 'bunga_client_info.dart';
 
 _$IMInfoImpl _$$IMInfoImplFromJson(Map<String, dynamic> json) => _$IMInfoImpl(
       appId: json['app_id'] as String,
+      userId: json['user_id'] as String,
       userSig: json['user_sig'] as String,
     );
 
 Map<String, dynamic> _$$IMInfoImplToJson(_$IMInfoImpl instance) =>
     <String, dynamic>{
       'app_id': instance.appId,
+      'user_id': instance.userId,
       'user_sig': instance.userSig,
     };
 

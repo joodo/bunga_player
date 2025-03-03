@@ -160,6 +160,8 @@ class _LocalFileParser implements _Parser {
 class _AListParser implements _Parser {
   static const recordSource = 'alist';
 
+  static const _baiduHeaders = {'User-Agent': 'pan.baidu.com'};
+
   // Cache path - dirInfo
   static final _infoResponseCache = <String, List<AListFileDetail>>{};
 
@@ -197,7 +199,10 @@ class _AListParser implements _Parser {
     final info = await act;
     return PlayPayload(
       record: record,
-      sources: VideoSources.single(info.rawUrl!),
+      sources: VideoSources.single(
+        info.rawUrl!,
+        requestHeaders: _baiduHeaders,
+      ),
     );
   }
 
@@ -287,6 +292,11 @@ class _HttpParser implements _Parser {
 }
 
 class _BiliParser implements _Parser {
+  static const _biliHeaders = {
+    'Referer': 'https://www.bilibili.com/',
+    'User-Agent': 'Mozilla/5.0',
+  };
+
   final BuildContext context;
   _BiliParser(this.context);
 
@@ -341,13 +351,17 @@ class _BiliParser implements _Parser {
           audioUrls['base_url'],
           ...audioUrls['backup_url'] ?? [],
         ],
+        requestHeaders: _biliHeaders,
       );
     } else if (data['durl'] != null) {
       final durlData = data['durl'][0];
-      return VideoSources(videos: [
-        durlData['url'],
-        ...durlData['backup_url'] ?? [],
-      ]);
+      return VideoSources(
+        videos: [
+          durlData['url'],
+          ...durlData['backup_url'] ?? [],
+        ],
+        requestHeaders: _biliHeaders,
+      );
     } else {
       throw Exception('Failed to parse bili response data: $data');
     }

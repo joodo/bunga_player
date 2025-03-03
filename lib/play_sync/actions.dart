@@ -51,11 +51,6 @@ class AskPositionAction extends ContextAction<AskPositionIntent> {
       }
     });
   }
-
-  @override
-  bool isEnabled(AskPositionIntent intent, [BuildContext? context]) {
-    return context!.read<ChatChannel>().value != null;
-  }
 }
 
 class ApplyRemotePlayingStatusIntent extends Intent {
@@ -115,20 +110,6 @@ class ApplyRemotePlayingStatusAction
       }
     }
   }
-
-  @override
-  bool isEnabled(
-    ApplyRemotePlayingStatusIntent intent, [
-    BuildContext? context,
-  ]) {
-    assert(context != null);
-
-    // Answering me or just normal tell
-    final isAnsweringMe =
-        intent.data.answerId == positionAskingBusiness.askingMessageId;
-    final isFromMe = intent.sender.id == context!.read<ChatUser>().value?.id;
-    return isAnsweringMe && !isFromMe && context.isVideoSameWithChannel;
-  }
 }
 
 class SendPlayingStatusIntent extends Intent {
@@ -187,24 +168,6 @@ class ShareSubtitleIntent extends Intent {
   const ShareSubtitleIntent(this.path);
 }
 
-class ShareSubtitleAction extends ContextAction<ShareSubtitleIntent> {
-  @override
-  Stream<RequestProgress> invoke(ShareSubtitleIntent intent,
-      [BuildContext? context]) async* {
-    final title = path.basenameWithoutExtension(intent.path);
-    yield* context!.read<ChatChannel>().value!.uploadFile(
-          intent.path,
-          description: 'subtitle $title',
-        );
-    getIt<Toast>().show('分享成功');
-  }
-
-  @override
-  bool isEnabled(ShareSubtitleIntent intent, [BuildContext? context]) {
-    return context?.read<ChatChannel>().value != null;
-  }
-}
-
 class FetchChannelSubtitleIntent extends Intent {
   final ChannelSubtitle channelSubtitle;
   const FetchChannelSubtitleIntent(this.channelSubtitle);
@@ -233,22 +196,22 @@ class PlaySyncActions extends SingleChildStatefulWidget {
 class _PlaySyncActionsState extends SingleChildState<PlaySyncActions> {
   final _positionAskingBusiness = PositionAskingBusiness();
 
-  late final _channel = context.read<ChatChannel>();
   late final _channelData = context.read<ChatChannelData>();
   late final _channelMessage = context.read<ChatChannelLastMessage>();
 
   @override
   void initState() {
+    /*
     _channel.addListener(_askWhere);
     _channelData.addListener(_tryToFollowRemoteVideo);
     _channelMessage.addListener(_answerWhereAsking);
     _channelMessage.addListener(_applyRemotePlayingStatus);
+    */
     super.initState();
   }
 
   @override
   void dispose() {
-    _channel.removeListener(_askWhere);
     _channelData.removeListener(_tryToFollowRemoteVideo);
     _channelMessage.removeListener(_answerWhereAsking);
     _channelData.removeListener(_applyRemotePlayingStatus);
@@ -258,51 +221,12 @@ class _PlaySyncActionsState extends SingleChildState<PlaySyncActions> {
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
     return Actions(
-      actions: <Type, Action<Intent>>{
-        AskPositionIntent: AskPositionAction(
-          positionAskingBusiness: _positionAskingBusiness,
-        ),
-        ApplyRemotePlayingStatusIntent: ApplyRemotePlayingStatusAction(
-          positionAskingBusiness: _positionAskingBusiness,
-        ),
-        SendPlayingStatusIntent: SendPlayingStatusAction(
-          positionAskingBusiness: _positionAskingBusiness,
-        ),
-        ShareSubtitleIntent: ShareSubtitleAction(),
-        FetchChannelSubtitleIntent: FetchChannelSubtitleAction(),
-      },
+      actions: <Type, Action<Intent>>{},
       child: child!,
     );
   }
 
-  void _tryToFollowRemoteVideo() {
-    final read = context.read;
-    final currentUser = read<ChatUser>().value;
-    final currentEntry = read<PlayVideoEntry>().value;
-    final newChannelData = read<ChatChannelData>().value;
-
-    // Leave channel
-    if (newChannelData == null) return;
-
-    // I did this
-    if (currentUser?.id == newChannelData.sharer.id) return;
-
-    // Not changing video
-    if (currentEntry!.hash == newChannelData.videoHash) return;
-
-    getIt<Toast>().show('${newChannelData.sharer.name} 更换了影片');
-
-    // Only follow online video
-    if (newChannelData.videoType != VideoType.online) return;
-
-    final videoEntry = VideoEntry.fromChannelData(newChannelData);
-    // TODO: onprogress
-    /*
-    context
-        .read<ActionsLeaf>()
-        .mayBeInvoke(OpenVideoIntent(payload: videoEntry));
-        */
-  }
+  void _tryToFollowRemoteVideo() {}
 
   void _applyRemotePlayingStatus() {
     final read = context.read;
@@ -310,12 +234,14 @@ class _PlaySyncActionsState extends SingleChildState<PlaySyncActions> {
     final message = read<ChatChannelLastMessage>().value;
     if (message == null || !message.data.isPlayStatus) return;
 
+/* TODO::
     context.read<ActionsLeaf>().mayBeInvoke(
           ApplyRemotePlayingStatusIntent(
             sender: message.sender,
             data: message.data.toPlayStatus(),
           ),
         );
+        */
   }
 
   void _askWhere() {
