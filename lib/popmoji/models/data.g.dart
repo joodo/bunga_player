@@ -30,6 +30,6 @@ EmojiData _$EmojiDataFromJson(Map<String, dynamic> json) => EmojiData(
     );
 
 Map<String, dynamic> _$EmojiDataToJson(EmojiData instance) => <String, dynamic>{
-      'categories': instance.categories,
+      'categories': instance.categories.map((e) => e.toJson()).toList(),
       'tags': instance.tags,
     };

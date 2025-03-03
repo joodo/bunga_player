@@ -6,10 +6,16 @@ import 'user.dart';
 
 part 'message_data.g.dart';
 
+/// Send when sharing video
 @JsonSerializable()
 class StartProjectionMessageData {
+  static const messageType = 'start-projection';
+
   final User sharer;
   final VideoRecord videoRecord;
+  @JsonKey(includeFromJson: false, includeToJson: true)
+  final type = messageType;
+
   StartProjectionMessageData({
     required this.sharer,
     required this.videoRecord,

@@ -31,8 +31,8 @@ _$VideoSessionImpl _$$VideoSessionImplFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$$VideoSessionImplToJson(_$VideoSessionImpl instance) =>
     <String, dynamic>{
       'updated_at': instance.updatedAt.toIso8601String(),
-      'video_record': instance.videoRecord,
-      'progress': instance.progress,
+      'video_record': instance.videoRecord.toJson(),
+      'progress': instance.progress.toJson(),
       'subtitle_uri': instance.subtitleUri,
     };
 
@@ -45,5 +45,5 @@ _$HistoryImpl _$$HistoryImplFromJson(Map<String, dynamic> json) =>
 
 Map<String, dynamic> _$$HistoryImplToJson(_$HistoryImpl instance) =>
     <String, dynamic>{
-      'value': instance.value,
+      'value': instance.value.map((k, e) => MapEntry(k, e.toJson())),
     };

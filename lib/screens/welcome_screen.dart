@@ -1,19 +1,25 @@
 import 'dart:math' as math;
+import 'dart:typed_data';
 
 import 'package:animations/animations.dart';
 import 'package:bunga_player/bunga_server/actions.dart';
 import 'package:bunga_player/bunga_server/models/bunga_client_info.dart';
+import 'package:bunga_player/chat/models/message.dart';
 import 'package:bunga_player/client_info/providers.dart';
 import 'package:bunga_player/screens/dialogs/settings/network.dart';
 import 'package:bunga_player/screens/dialogs/settings/reaction.dart';
 import 'package:bunga_player/screens/player_screen/player_screen.dart';
+import 'package:bunga_player/services/logger.dart';
+import 'package:bunga_player/utils/extensions/http_response.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
 
+import '../chat/models/message_data.dart';
 import 'dialogs/settings/settings.dart';
 import 'dialogs/open_video/open_video.dart';
 import 'widgets/loading_button_icon.dart';
@@ -26,6 +32,29 @@ class WelcomeScreen extends StatefulWidget {
 }
 
 class _WelcomeScreenState extends State<WelcomeScreen> {
+  late final _messageSubscription = context
+      .read<Stream<Message>>()
+      .where(
+        (message) =>
+            message.data['type'] == StartProjectionMessageData.messageType,
+      )
+      .map((message) => StartProjectionMessageData.fromJson(message.data))
+      .listen(_dealWithProjection);
+
+  StartProjectionMessageData? _currentProjection;
+
+  @override
+  void initState() {
+    super.initState();
+    _messageSubscription;
+  }
+
+  @override
+  void dispose() {
+    _messageSubscription.cancel();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return [
@@ -34,27 +63,32 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         const Spacer(),
         const _SettingButton(),
       ].toRow(),
-      Consumer2<BungaClientInfo?, FetchingBungaClient>(
-        builder: (context, infoNotifier, fetchingNotifier, child) =>
-            infoNotifier == null && !fetchingNotifier.value
-                ? _Arrow()
-                : _waitingWidget(),
-      ).flexible(),
+      _getContent().flexible(),
       _OpenVideoButton(onFinished: _onFinished),
     ].toColumn().padding(all: 16.0).material();
   }
 
-  Widget _waitingWidget() {
-    final theme = Theme.of(context);
-    return [
-      Lottie.asset(
-        'assets/images/watch_movie.zip',
-      ),
-      const Text('正在等待其他人放映……')
-          .textStyle(theme.textTheme.headlineLarge!)
-          .breath()
-          .padding(top: 24.0, bottom: 48.0),
-    ].toColumn().fittedBox().padding(vertical: 24.0).center();
+  Widget _getContent() {
+    if (_currentProjection != null) {
+      return _ProjectionCard(
+        _currentProjection!,
+        key: ValueKey(_currentProjection!.videoRecord.id),
+      );
+    }
+
+    return Consumer2<BungaClientInfo?, FetchingBungaClient>(
+      builder: (context, infoNotifier, fetchingNotifier, child) =>
+          infoNotifier == null && !fetchingNotifier.value
+              ? _Arrow()
+              : _WaitWidget(),
+    ).flexible();
+  }
+
+  void _dealWithProjection(StartProjectionMessageData data) {
+    final isCurrent = ModalRoute.of(context)?.isCurrent ?? false;
+    setState(() {
+      _currentProjection = data;
+    });
   }
 
   void _onFinished(OpenVideoDialogResult? result) async {
@@ -119,6 +153,135 @@ class _ArrowState extends State<_Arrow> with SingleTickerProviderStateMixin {
   }
 }
 
+class _WaitWidget extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return [
+      Lottie.asset(
+        'assets/images/watch_movie.zip',
+      ),
+      const Text('正在等待其他人放映……')
+          .textStyle(Theme.of(context).textTheme.headlineLarge!)
+          .breath()
+          .padding(top: 24.0, bottom: 48.0),
+    ].toColumn().fittedBox().padding(vertical: 24.0).center();
+  }
+}
+
+class _ProjectionCard extends StatefulWidget {
+  final StartProjectionMessageData data;
+
+  const _ProjectionCard(this.data, {super.key});
+
+  @override
+  State<_ProjectionCard> createState() => _ProjectionCardState();
+}
+
+class _ProjectionCardState extends State<_ProjectionCard> {
+  Uint8List? _imageData;
+
+  @override
+  void initState() {
+    super.initState();
+    _getNetworkImageData(widget.data.videoRecord.thumbUrl ?? '');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final videoImage = _imageData != null
+        ? Ink.image(
+            image: MemoryImage(_imageData!),
+            fit: BoxFit.cover,
+            width: 300,
+            height: 200,
+          )
+        : const SizedBox(
+            width: 300,
+            height: 200,
+            child: Center(
+              child: Icon(Icons.movie_creation_outlined, size: 80),
+            ),
+          );
+
+    final textTheme = Theme.of(context).textTheme;
+    final content = InkWell(
+      onTap: _joinChannel,
+      child: [
+        const Text('正在播放')
+            .textStyle(textTheme.titleLarge!)
+            .padding(horizontal: 16.0, vertical: 16.0),
+        videoImage,
+        Text(
+          widget.data.videoRecord.title,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ).textStyle(textTheme.bodyLarge!).padding(horizontal: 16.0, top: 8.0),
+        Text('${widget.data.sharer.name} 分享')
+            .textStyle(textTheme.bodySmall!)
+            .padding(horizontal: 16.0, top: 4.0, bottom: 16.0),
+      ]
+          .toColumn(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+          )
+          .constrained(width: 300),
+    );
+
+    final card = Builder(
+      builder: (context) {
+        final colorScheme = Theme.of(context).colorScheme;
+        return content.card(
+          color: colorScheme.primaryContainer,
+          clipBehavior: Clip.hardEdge,
+        );
+      },
+    );
+
+    final themeData = Theme.of(context);
+    try {
+      return FutureBuilder(
+        future: ColorScheme.fromImageProvider(
+          provider: MemoryImage(_imageData!),
+          brightness: Brightness.dark,
+        ),
+        initialData: themeData.colorScheme,
+        builder: (context, snapshot) => Theme(
+          data: themeData.copyWith(colorScheme: snapshot.data),
+          child: card,
+        ),
+      ).center();
+    } catch (e) {
+      return card.center();
+    }
+  }
+
+  void _getNetworkImageData(String uriString) async {
+    try {
+      final uri = Uri.parse(uriString);
+
+      final response = await http.get(uri);
+      if (!response.isSuccess) {
+        throw Exception('image fetch failed: ${response.statusCode}');
+      }
+      _imageData = response.bodyBytes;
+
+      if (mounted) setState(() {});
+    } catch (e) {
+      logger.w(e);
+    }
+  }
+
+  void _joinChannel() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const PlayerScreen(),
+        settings: RouteSettings(arguments: widget.data.videoRecord),
+      ),
+    );
+  }
+}
+
 class _NameButton extends StatelessWidget {
   const _NameButton();
 
@@ -132,7 +295,8 @@ class _NameButton extends StatelessWidget {
           selector: (context, notifier) => notifier.value,
           builder: (context, String nickname, child) =>
               Text(nickname.isNotEmpty ? '你好，$nickname' : '如何称呼你？')
-                  .textStyle(theme.textTheme.titleMedium!),
+                  .textStyle(theme.textTheme.titleMedium!.copyWith(height: 0))
+                  .padding(all: 8.0),
         ),
       ),
       closedColor: theme.primaryColor,

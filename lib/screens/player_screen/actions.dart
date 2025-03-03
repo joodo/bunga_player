@@ -48,15 +48,14 @@ class OpenVideoIntent extends Intent {
   final Uri? url;
   final VideoRecord? record;
   final PlayPayload? payload;
-  final bool share;
 
-  const OpenVideoIntent.url(Uri this.url, {required this.share})
+  const OpenVideoIntent.url(Uri this.url)
       : payload = null,
         record = null;
-  const OpenVideoIntent.record(VideoRecord this.record, {required this.share})
+  const OpenVideoIntent.record(VideoRecord this.record)
       : url = null,
         payload = null;
-  const OpenVideoIntent.payload(PlayPayload this.payload, {required this.share})
+  const OpenVideoIntent.payload(PlayPayload this.payload)
       : url = null,
         record = null;
 }
@@ -66,18 +65,17 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
   final ValueNotifier<BusyCount> busyCountNotifier;
   final ValueNotifier<DirInfo?> dirInfoNotifier;
   final SavedPositionNotifier savedPositionNotifier;
-  final ValueNotifier<Watchers> watchersNotifier;
 
   OpenVideoAction({
     required this.payloadNotifer,
     required this.busyCountNotifier,
     required this.dirInfoNotifier,
     required this.savedPositionNotifier,
-    required this.watchersNotifier,
   });
 
   @override
-  Future<void> invoke(OpenVideoIntent intent, [BuildContext? context]) async {
+  Future<PlayPayload> invoke(OpenVideoIntent intent,
+      [BuildContext? context]) async {
     assert(context != null);
 
     final parser = PlayPayloadParser(context!);
@@ -107,17 +105,6 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
       busyCountNotifier.value = busyCountNotifier.value.decrease;
     }
 
-    // Send message to channel
-    if (intent.share) {
-      if (!watchersNotifier.value.isSharing) _initShare();
-
-      final messageData = StartProjectionMessageData(
-        sharer: User.fromContext(context),
-        videoRecord: payload.record,
-      ).toJson();
-      Actions.invoke(context, SendMessageIntent(messageData));
-    }
-
     // Load saved position
     if (!context.mounted) throw StateError('Context unmounted.');
     final history = context.read<History>();
@@ -133,11 +120,8 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
     parser.dirInfo(payload.record).then((info) {
       dirInfoNotifier.value = info;
     });
-  }
 
-  void _initShare() {
-    // TODO: aloha
-    watchersNotifier.value = const Watchers([]);
+    return payload;
   }
 }
 
@@ -226,5 +210,36 @@ class SeekAction extends ContextAction<SeekIntent> {
   @override
   bool isEnabled(SeekIntent intent, [BuildContext? context]) {
     return getIt<PlayService>().playStatusNotifier.value != PlayStatus.stop;
+  }
+}
+
+@immutable
+class ShareVideoIntent extends Intent {
+  final VideoRecord record;
+  const ShareVideoIntent(this.record);
+}
+
+class ShareVideoAction extends ContextAction<ShareVideoIntent> {
+  final ValueNotifier<Watchers> watchersNotifier;
+
+  ShareVideoAction({required this.watchersNotifier});
+
+  @override
+  Future<void> invoke(ShareVideoIntent intent, [BuildContext? context]) {
+    if (!watchersNotifier.value.isSharing) _initShare();
+
+    final messageData = StartProjectionMessageData(
+      sharer: User.fromContext(context!),
+      videoRecord: intent.record,
+    ).toJson();
+    final act =
+        Actions.invoke(context, SendMessageIntent(messageData)) as Future;
+
+    return act;
+  }
+
+  void _initShare() {
+    // TODO: aloha
+    watchersNotifier.value = const Watchers([]);
   }
 }

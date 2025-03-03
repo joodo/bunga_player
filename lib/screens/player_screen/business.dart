@@ -1,6 +1,7 @@
 import 'package:async/async.dart';
 import 'package:bunga_player/play/models/history.dart';
 import 'package:bunga_player/play/models/play_payload.dart';
+import 'package:bunga_player/play/models/video_record.dart';
 import 'package:bunga_player/play/payload_parser.dart';
 import 'package:bunga_player/play/providers.dart';
 import 'package:bunga_player/play/service/service.dart';
@@ -51,8 +52,9 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
     payloadNotifer: _playPayloadNotifier,
     dirInfoNotifier: _dirInfoNotifier,
     savedPositionNotifier: _savedPositionNotifier,
-    watchersNotifier: _watchersNotifier,
   );
+  late final _shareVideoAction =
+      ShareVideoAction(watchersNotifier: _watchersNotifier);
 
   // Progress indicator
   final _busyCountNotifer = ValueNotifier(const BusyCount(0));
@@ -112,12 +114,29 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
 
     // Play url
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final openResult =
-          ModalRoute.of(context)?.settings.arguments as OpenVideoDialogResult;
-      _openVideoAction.invoke(
-        OpenVideoIntent.url(openResult.url, share: !openResult.onlyForMe),
-        context,
-      );
+      final argument = ModalRoute.of(context)?.settings.arguments;
+      if (argument is OpenVideoDialogResult) {
+        _openVideoAction
+            .invoke(
+          OpenVideoIntent.url(argument.url),
+          context,
+        )
+            .then(
+          (payload) {
+            if (mounted && !argument.onlyForMe) {
+              _shareVideoAction.invoke(
+                ShareVideoIntent(payload.record),
+                context,
+              );
+            }
+          },
+        );
+      } else if (argument is VideoRecord) {
+        _openVideoAction.invoke(
+          OpenVideoIntent.record(argument),
+          context,
+        );
+      }
     });
 
     _history;
@@ -161,6 +180,7 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
             savedPositionNotifier: _savedPositionNotifier,
           ),
           SeekIntent: SeekAction(),
+          ShareVideoIntent: _shareVideoAction,
         },
       ),
     );

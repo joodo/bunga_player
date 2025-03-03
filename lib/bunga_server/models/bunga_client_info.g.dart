@@ -86,9 +86,9 @@ Map<String, dynamic> _$$BungaClientInfoImplToJson(
         _$BungaClientInfoImpl instance) =>
     <String, dynamic>{
       'token': instance.token,
-      'channel': instance.channel,
-      'im': instance.im,
-      'voice_call': instance.voiceCall,
-      'bilibili': instance.bilibili,
-      'alist': instance.alist,
+      'channel': instance.channel.toJson(),
+      'im': instance.im.toJson(),
+      'voice_call': instance.voiceCall?.toJson(),
+      'bilibili': instance.bilibili?.toJson(),
+      'alist': instance.alist?.toJson(),
     };

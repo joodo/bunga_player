@@ -42,7 +42,6 @@ class VideoControl extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final showHud = context.read<ShouldShowHUD>();
-    print(context.read<Watchers>());
 
     return LayoutBuilder(
         builder: (context, constraints) => [
@@ -371,7 +370,6 @@ class _MoreActionsButton extends StatelessWidget {
                   context,
                   OpenVideoIntent.record(
                     payload!.record,
-                    share: context.read<Watchers>().isSharing,
                   ),
                 ),
                 child: const Text('重新载入    '),
@@ -479,10 +477,18 @@ class _MoreActionsButton extends StatelessWidget {
       );
       if (result == null) return;
       if (context.mounted) {
-        Actions.invoke(
+        final act = Actions.invoke(
           context,
-          OpenVideoIntent.url(result.url, share: !result.onlyForMe),
-        );
+          OpenVideoIntent.url(result.url),
+        ) as Future<PlayPayload>;
+
+        final payload = await act;
+        if (context.mounted && !result.onlyForMe) {
+          Actions.invoke(
+            context,
+            ShareVideoIntent(payload.record),
+          );
+        }
       }
     };
   }

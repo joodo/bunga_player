@@ -17,6 +17,7 @@ StartProjectionMessageData _$StartProjectionMessageDataFromJson(
 Map<String, dynamic> _$StartProjectionMessageDataToJson(
         StartProjectionMessageData instance) =>
     <String, dynamic>{
-      'sharer': instance.sharer,
-      'video_record': instance.videoRecord,
+      'sharer': instance.sharer.toJson(),
+      'video_record': instance.videoRecord.toJson(),
+      'type': instance.type,
     };

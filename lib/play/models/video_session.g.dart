@@ -29,6 +29,6 @@ VideoSession _$VideoSessionFromJson(Map<String, dynamic> json) => VideoSession(
 Map<String, dynamic> _$VideoSessionToJson(VideoSession instance) =>
     <String, dynamic>{
       'hash': instance.hash,
-      'progress': instance.progress,
+      'progress': instance.progress?.toJson(),
       'subtitle_uri': instance.subtitleUri,
     };

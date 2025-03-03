@@ -129,10 +129,7 @@ class _ChannelActionsState extends SingleChildState<ChatActions> {
       },
       child: MultiProvider(
         providers: [
-          StreamProvider.value(
-            value: _messageStreamController.stream,
-            initialData: const Message(id: '', data: {}, senderId: ''),
-          ),
+          Provider.value(value: _messageStreamController.stream),
         ],
         child: child,
       ),

@@ -73,13 +73,25 @@ class _PlaylistPanelState extends State<PlaylistPanel> {
                               : null,
                           onTap: current
                               ? null
-                              : Actions.handler(
-                                  context,
-                                  OpenVideoIntent.url(
-                                    epInfo.url,
-                                    share: context.read<Watchers>().isSharing,
-                                  ),
-                                ),
+                              : () async {
+                                  final read = context.read;
+
+                                  final shouldShare =
+                                      read<Watchers>().isSharing;
+
+                                  final act = Actions.invoke(
+                                    context,
+                                    OpenVideoIntent.url(epInfo.url),
+                                  ) as Future<PlayPayload>;
+
+                                  final payload = await act;
+                                  if (context.mounted && shouldShare) {
+                                    Actions.invoke(
+                                      context,
+                                      ShareVideoIntent(payload.record),
+                                    );
+                                  }
+                                },
                         ).animatedSize(
                           duration: const Duration(milliseconds: 200),
                         );

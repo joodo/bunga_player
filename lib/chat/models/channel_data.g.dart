@@ -20,7 +20,7 @@ Map<String, dynamic> _$ChannelDataToJson(ChannelData instance) =>
       'video_type': _$VideoTypeEnumMap[instance.videoType]!,
       'name': instance.name,
       'hash': instance.videoHash,
-      'sharer': instance.sharer,
+      'sharer': instance.sharer.toJson(),
       'image': instance.image,
       'path': instance.path,
     };

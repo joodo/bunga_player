@@ -8,10 +8,13 @@ import 'package:bunga_player/utils/business/platform.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
 
 void main() {
   Animate.restartOnHotReload = true;
+
+  Provider.debugCheckInvalidValueType = null;
 
   FlutterError.onError = (FlutterErrorDetails details) {
     logger.e(details);
