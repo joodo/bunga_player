@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:animations/animations.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:bunga_player/bunga_server/actions.dart';
 import 'package:bunga_player/bunga_server/models/bunga_client_info.dart';
 import 'package:bunga_player/chat/models/message.dart';
@@ -68,7 +69,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         const Spacer(),
         const _SettingButton(),
       ].toRow(),
-      _getContent().flexible(),
+      _getContent().padding(vertical: 16.0).flexible(),
       _OpenVideoButton(onFinished: _videoSelected),
     ].toColumn().padding(all: 16.0).material();
   }
@@ -97,6 +98,13 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
     _currentProjection = data;
     setState(() {});
+
+    if (isCurrent) {
+      AudioPlayer().play(
+        AssetSource('sounds/start_play.mp3'),
+        mode: PlayerMode.lowLatency,
+      );
+    }
 
     if (autoJoin && isCurrent && isFirstShare) _joinChannel();
   }

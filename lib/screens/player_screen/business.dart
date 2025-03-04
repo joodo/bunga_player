@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:animations/animations.dart';
 import 'package:async/async.dart';
 import 'package:bunga_player/chat/models/message.dart';
 import 'package:bunga_player/chat/models/message_data.dart';
+import 'package:bunga_player/client_info/models/client_account.dart';
 import 'package:bunga_player/play/models/history.dart';
 import 'package:bunga_player/play/models/play_payload.dart';
 import 'package:bunga_player/play/models/video_record.dart';
@@ -114,14 +116,7 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
 
   // Chat
   final _watchersNotifier = ValueNotifier<Watchers>(const Watchers(null));
-  late final _messageSubscription = context
-      .read<Stream<Message>>()
-      .where(
-        (message) =>
-            message.data['type'] == StartProjectionMessageData.messageType,
-      )
-      .map((message) => StartProjectionMessageData.fromJson(message.data))
-      .listen(_dealWithProjection);
+  late final StreamSubscription _messageSubscription;
 
   @override
   void initState() {
@@ -155,6 +150,18 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
         );
       }
     });
+
+    // Listen to changing video
+    final myId = context.read<ClientAccount>().id;
+    _messageSubscription = context
+        .read<Stream<Message>>()
+        .where(
+          (message) =>
+              message.data['type'] == StartProjectionMessageData.messageType &&
+              message.senderId != myId,
+        )
+        .map((message) => StartProjectionMessageData.fromJson(message.data))
+        .listen(_dealWithProjection);
 
     // Init late variables
     _history;
