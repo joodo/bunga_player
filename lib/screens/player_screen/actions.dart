@@ -244,6 +244,25 @@ class SeekAction extends ContextAction<SeekIntent> {
 }
 
 @immutable
+class RefreshWatchersIntent extends Intent {
+  const RefreshWatchersIntent();
+}
+
+class RefreshWatchersAction extends ContextAction<RefreshWatchersIntent> {
+  final WatchersNotifier watchersNotifier;
+
+  RefreshWatchersAction({required this.watchersNotifier});
+
+  @override
+  void invoke(RefreshWatchersIntent intent, [BuildContext? context]) {
+    final messageData = AlohaMessageData(user: User.fromContext(context!));
+    Actions.invoke(context, SendMessageIntent(messageData));
+
+    watchersNotifier.value = [User.fromContext(context)];
+  }
+}
+
+@immutable
 class ShareVideoIntent extends Intent {
   final VideoRecord record;
   const ShareVideoIntent(this.record);
@@ -251,13 +270,18 @@ class ShareVideoIntent extends Intent {
 
 class ShareVideoAction extends ContextAction<ShareVideoIntent> {
   final WatchersNotifier watchersNotifier;
-  final VoidCallback initShare;
+  final RefreshWatchersAction refreshAction;
 
-  ShareVideoAction({required this.watchersNotifier, required this.initShare});
+  ShareVideoAction({
+    required this.watchersNotifier,
+    required this.refreshAction,
+  });
 
   @override
   Future<void> invoke(ShareVideoIntent intent, [BuildContext? context]) {
-    if (!watchersNotifier.isSharing) initShare();
+    if (!watchersNotifier.isSharing) {
+      refreshAction.invoke(const RefreshWatchersIntent(), context);
+    }
 
     final messageData = StartProjectionMessageData(
       sharer: User.fromContext(context!),

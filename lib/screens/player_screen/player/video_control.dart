@@ -31,7 +31,6 @@ import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 import 'package:bunga_player/screens/widgets/divider.dart';
 
-import '../models/watcher.dart';
 import '../panel/audio_track_panel.dart';
 import '../panel/playlist_panel.dart';
 import '../panel/subtitle_panel.dart';
@@ -434,7 +433,7 @@ class _MoreActionsButton extends StatelessWidget {
               leadingIcon: const Icon(Icons.movie_filter),
               onPressed: _changeVideo(
                 context,
-                context.read<List<Watcher>?>() != null,
+                context.read<List<User>?>() != null,
               ),
               child: const Text('换片'),
             ),

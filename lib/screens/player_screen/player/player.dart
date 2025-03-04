@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
 import '../business.dart';
+import 'header.dart';
 import 'progress_bar.dart';
 import 'saved_position_hint.dart';
 import 'video_control.dart';
@@ -18,6 +19,7 @@ class Player extends StatelessWidget {
   Widget build(BuildContext context) {
     return [
       [
+        const Header().padding(vertical: 4.0),
         Video(
           controller: (getIt<PlayService>() as MediaKitPlayService).controller,
           // use mpv subtitle

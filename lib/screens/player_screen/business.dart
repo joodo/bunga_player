@@ -27,7 +27,6 @@ import 'package:path/path.dart' as path_tool;
 import 'package:provider/provider.dart';
 
 import 'actions.dart';
-import 'models/watcher.dart';
 import 'panel/panel.dart';
 
 @immutable
@@ -51,20 +50,21 @@ class PlayScreenBusiness extends SingleChildStatefulWidget {
   State<PlayScreenBusiness> createState() => _PlayScreenBusinessState();
 }
 
-class WatchersNotifier extends ValueNotifier<List<Watcher>?> {
+class WatchersNotifier extends ValueNotifier<List<User>?> {
   WatchersNotifier() : super(null);
   bool get isSharing => value != null;
 
-  void addWatcher(Watcher watcher) {
-    value = [...value!, watcher];
+  void addUser(User user) {
+    if (containsId(user.id)) return;
+    value = [...value!, user];
   }
 
-  void removeWatcher(String id) {
-    value = [...value!..removeWhere((e) => e.user.id == id)];
+  void removeUser(String id) {
+    value = [...value!..removeWhere((e) => e.id == id)];
   }
 
-  bool containsUserId(String id) {
-    return value?.any((element) => element.user.id == id) ?? false;
+  bool containsId(String id) {
+    return value?.any((element) => element.id == id) ?? false;
   }
 }
 
@@ -77,10 +77,6 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
     payloadNotifer: _playPayloadNotifier,
     dirInfoNotifier: _dirInfoNotifier,
     savedPositionNotifier: _savedPositionNotifier,
-  );
-  late final _shareVideoAction = ShareVideoAction(
-    watchersNotifier: _watchersNotifier,
-    initShare: _initShare,
   );
 
   // Progress indicator
@@ -132,6 +128,12 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
 
   // Chat
   final _watchersNotifier = WatchersNotifier()..watchInConsole('Watchers');
+  late final _refreshWatchersAction =
+      RefreshWatchersAction(watchersNotifier: _watchersNotifier);
+  late final _shareVideoAction = ShareVideoAction(
+    watchersNotifier: _watchersNotifier,
+    refreshAction: _refreshWatchersAction,
+  );
   late final List<StreamSubscription> _streamSubscriptions;
 
   @override
@@ -164,7 +166,7 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
           OpenVideoIntent.record(argument),
           context,
         );
-        _initShare();
+        _refreshWatchersAction.invoke(RefreshWatchersIntent(), context);
       }
     });
 
@@ -257,22 +259,14 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
           ),
           SeekIntent: SeekAction(),
           ShareVideoIntent: _shareVideoAction,
+          RefreshWatchersIntent: _refreshWatchersAction,
         },
       ),
     );
   }
 
-  void _initShare() {
-    final messageData = AlohaMessageData(user: User.fromContext(context));
-    Actions.invoke(context, SendMessageIntent(messageData));
-
-    _watchersNotifier.value = [
-      Watcher(user: User.fromContext(context), isTalking: false),
-    ];
-  }
-
   void _dealWithAloha(AlohaMessageData data) {
-    _watchersNotifier.addWatcher(Watcher(user: data.user, isTalking: false));
+    _watchersNotifier.addUser(data.user);
 
     final messageData = HereIsMessageData(
       user: User.fromContext(context),
@@ -282,14 +276,11 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
   }
 
   void _dealWithHereIs(HereIsMessageData data) {
-    if (_watchersNotifier.containsUserId(data.user.id)) return;
-    _watchersNotifier.addWatcher(
-      Watcher(user: data.user, isTalking: data.isTalking),
-    );
+    _watchersNotifier.addUser(data.user);
   }
 
   void _dealWithBye(ByeMessageData data) {
-    _watchersNotifier.removeWatcher(data.userId);
+    _watchersNotifier.removeUser(data.userId);
   }
 
   Future<void> _dealWithProjection(StartProjectionMessageData data) async {

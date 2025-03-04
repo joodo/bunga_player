@@ -61,10 +61,6 @@ class SendMessageAction extends ContextAction<SendMessageIntent> {
   }
 }
 
-class RefreshWatchersIntent extends Intent {
-  const RefreshWatchersIntent();
-}
-
 class ChatActions extends SingleChildStatefulWidget {
   const ChatActions({super.key, super.child});
   @override
