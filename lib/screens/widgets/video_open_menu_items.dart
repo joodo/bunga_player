@@ -2,7 +2,6 @@ import 'package:animations/animations.dart';
 import 'package:bunga_player/play/actions.dart';
 import 'package:bunga_player/play/models/video_entries/video_entry.dart';
 import 'package:bunga_player/online_video/client.dart';
-import 'package:bunga_player/screens/dialogs/local_video_entry.dart';
 import 'package:bunga_player/screens/dialogs/open_video/alist.dart';
 import 'package:bunga_player/screens/dialogs/online_video_dialog.dart';
 import 'package:bunga_player/screens/widgets/loading_button_icon.dart';
@@ -38,7 +37,7 @@ class VideoOpenMenuItemsCreator {
   }
 
   void _openLocalVideo() async {
-    _openChannel(entryGetter: LocalVideoEntryDialog().show);
+    //_openChannel(entryGetter: LocalVideoEntryDialog().show);
   }
 
   void _openOnline() {

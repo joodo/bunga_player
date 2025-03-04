@@ -10,6 +10,7 @@ import 'package:bunga_player/client_info/providers.dart';
 import 'package:bunga_player/screens/dialogs/open_video/direct_link.dart';
 import 'package:bunga_player/screens/dialogs/settings/network.dart';
 import 'package:bunga_player/screens/dialogs/settings/reaction.dart';
+import 'package:bunga_player/screens/dialogs/video_conflict.dart';
 import 'package:bunga_player/screens/player_screen/player_screen.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/ui/providers.dart';
@@ -138,23 +139,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       if (!record.id.endsWith(crc)) {
         final confirmOpen = await showModal<bool>(
           context: context,
-          builder: (context) => AlertDialog(
-            icon: const Icon(Icons.difference),
-            title: const Text('文件不匹配'),
-            content: const Text('''你要打开的视频文件和对方不同。
-这通常意味着你们会看到不同的内容。不过，如果你清楚打开的只是同一内容的不同版本（比如 720P 和蓝光版），那么也可以同步播放来试试看。
-确认要打开视频吗？''').constrained(maxWidth: 360.0),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('不了'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text('打开'),
-              ),
-            ],
-          ),
+          builder: (context) => const VideoConflictDialog(),
         );
         if (!mounted || confirmOpen != true) return;
       }
@@ -277,16 +262,13 @@ class _ProjectionCardState extends State<_ProjectionCard> {
     final content = InkWell(
       onTap: widget.onTap,
       child: [
-        const Text('正在播放')
-            .textStyle(textTheme.titleLarge!)
-            .padding(horizontal: 16.0, vertical: 16.0),
         videoImage,
         Text(
           widget.data.videoRecord.title,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
         ).textStyle(textTheme.bodyLarge!).padding(horizontal: 16.0, top: 8.0),
-        Text('${widget.data.sharer.name} 分享')
+        Text('${widget.data.sharer.name} 正在分享')
             .textStyle(textTheme.bodySmall!)
             .padding(horizontal: 16.0, top: 4.0, bottom: 16.0),
       ]
@@ -319,9 +301,9 @@ class _ProjectionCardState extends State<_ProjectionCard> {
           data: themeData.copyWith(colorScheme: snapshot.data),
           child: card,
         ),
-      ).center();
+      ).fittedBox().center();
     } catch (e) {
-      return card.center();
+      return card.fittedBox().center();
     }
   }
 

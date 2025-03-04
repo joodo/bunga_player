@@ -1,15 +1,24 @@
+import 'dart:io';
+
+import 'package:animations/animations.dart';
 import 'package:async/async.dart';
+import 'package:bunga_player/chat/models/message.dart';
+import 'package:bunga_player/chat/models/message_data.dart';
 import 'package:bunga_player/play/models/history.dart';
 import 'package:bunga_player/play/models/play_payload.dart';
 import 'package:bunga_player/play/models/video_record.dart';
 import 'package:bunga_player/play/payload_parser.dart';
 import 'package:bunga_player/play/providers.dart';
 import 'package:bunga_player/play/service/service.dart';
+import 'package:bunga_player/screens/dialogs/open_video/direct_link.dart';
 import 'package:bunga_player/screens/dialogs/open_video/open_video.dart';
+import 'package:bunga_player/screens/dialogs/video_conflict.dart';
 import 'package:bunga_player/services/services.dart';
+import 'package:bunga_player/utils/extensions/file.dart';
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
+import 'package:path/path.dart' as path_tool;
 import 'package:provider/provider.dart';
 
 import 'actions.dart';
@@ -105,6 +114,14 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
 
   // Chat
   final _watchersNotifier = ValueNotifier<Watchers>(const Watchers(null));
+  late final _messageSubscription = context
+      .read<Stream<Message>>()
+      .where(
+        (message) =>
+            message.data['type'] == StartProjectionMessageData.messageType,
+      )
+      .map((message) => StartProjectionMessageData.fromJson(message.data))
+      .listen(_dealWithProjection);
 
   @override
   void initState() {
@@ -139,8 +156,10 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
       }
     });
 
+    // Init late variables
     _history;
     _isVideoBufferingNotifier;
+    _messageSubscription;
   }
 
   @override
@@ -184,6 +203,44 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
         },
       ),
     );
+  }
+
+  Future<void> _dealWithProjection(StartProjectionMessageData data) async {
+    var newRecord = data.videoRecord;
+
+    if (newRecord.source == 'local' && !File(newRecord.path).existsSync()) {
+      // If current playing is local, try to find file in same dir
+      final currentRecord = _playPayloadNotifier.value?.record;
+      if (currentRecord?.source == 'local') {
+        final currentDir = path_tool.dirname(currentRecord!.path);
+        final newBasename = path_tool.basename(newRecord.path);
+        if (!File(path_tool.join(currentDir, newBasename)).existsSync()) {
+          // Same dir file not exist too
+          final selectedPath = await LocalVideoEntryDialog.exec();
+          if (selectedPath == null) return;
+
+          final file = File(selectedPath);
+          final crc = await file.crcString();
+
+          if (!mounted) return;
+          // New selected file conflict, needs confirm
+          if (!currentRecord.id.endsWith(crc)) {
+            final confirmOpen = await showModal<bool>(
+              context: context,
+              builder: VideoConflictDialog.builder,
+            );
+            if (!mounted || confirmOpen != true) return;
+          }
+
+          newRecord = newRecord.copyWith(path: selectedPath);
+        }
+      }
+    }
+
+    return _openVideoAction.invoke(
+      OpenVideoIntent.record(newRecord),
+      context,
+    ) as Future;
   }
 }
 

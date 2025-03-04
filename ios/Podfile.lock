@@ -46,8 +46,6 @@ PODS:
   - file_selector_ios (0.0.1):
     - Flutter
   - Flutter (1.0.0)
-  - flutter_icmp_ping (0.0.1):
-    - Flutter
   - flutter_volume_controller (0.0.1):
     - Flutter
   - HydraAsync (2.0.6)
@@ -59,7 +57,7 @@ PODS:
     - Flutter
   - media_kit_video (0.0.1):
     - Flutter
-  - open_file (0.0.1):
+  - open_file_ios (0.0.1):
     - Flutter
   - package_info_plus (0.4.5):
     - Flutter
@@ -93,13 +91,12 @@ DEPENDENCIES:
   - audioplayers_darwin (from `.symlinks/plugins/audioplayers_darwin/ios`)
   - file_selector_ios (from `.symlinks/plugins/file_selector_ios/ios`)
   - Flutter (from `Flutter`)
-  - flutter_icmp_ping (from `.symlinks/plugins/flutter_icmp_ping/ios`)
   - flutter_volume_controller (from `.symlinks/plugins/flutter_volume_controller/ios`)
   - iris_method_channel (from `.symlinks/plugins/iris_method_channel/ios`)
   - media_kit_libs_ios_video (from `.symlinks/plugins/media_kit_libs_ios_video/ios`)
   - media_kit_native_event_loop (from `.symlinks/plugins/media_kit_native_event_loop/ios`)
   - media_kit_video (from `.symlinks/plugins/media_kit_video/ios`)
-  - open_file (from `.symlinks/plugins/open_file/ios`)
+  - open_file_ios (from `.symlinks/plugins/open_file_ios/ios`)
   - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
@@ -129,8 +126,6 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/file_selector_ios/ios"
   Flutter:
     :path: Flutter
-  flutter_icmp_ping:
-    :path: ".symlinks/plugins/flutter_icmp_ping/ios"
   flutter_volume_controller:
     :path: ".symlinks/plugins/flutter_volume_controller/ios"
   iris_method_channel:
@@ -141,8 +136,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/media_kit_native_event_loop/ios"
   media_kit_video:
     :path: ".symlinks/plugins/media_kit_video/ios"
-  open_file:
-    :path: ".symlinks/plugins/open_file/ios"
+  open_file_ios:
+    :path: ".symlinks/plugins/open_file_ios/ios"
   package_info_plus:
     :path: ".symlinks/plugins/package_info_plus/ios"
   path_provider_foundation:
@@ -165,33 +160,32 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/wakelock_plus/ios"
 
 SPEC CHECKSUMS:
-  agora_rtc_engine: 6753fa324d39ac0e7f65f2b67ea5003a4442e370
+  agora_rtc_engine: 19bb9a47efa158d66d4af6c2a773db100b278496
   AgoraIrisRTC_iOS: 7710d853202eca4900c2916aefc44abd5a139d4e
   AgoraRtcEngine_iOS: f64be00fdda786bb7edd84ab461c31b7b4c93534
-  audio_session: 088d2483ebd1dc43f51d253d4a1c517d9a2e7207
-  audioplayers_darwin: 877d9a4d06331c5c374595e46e16453ac7eafa40
-  file_selector_ios: f0670c1064a8c8450e38145d8043160105d0b97c
+  audio_session: 9bb7f6c970f21241b19f5a3658097ae459681ba0
+  audioplayers_darwin: ccf9c770ee768abb07e26d90af093f7bab1c12ab
+  file_selector_ios: f92e583d43608aebc2e4a18daac30b8902845502
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
-  flutter_icmp_ping: 2b159955eee0c487c766ad83fec224ae35e7c935
-  flutter_volume_controller: e4d5832f08008180f76e30faf671ffd5a425e529
+  flutter_volume_controller: c2be490cb0487e8b88d0d9fc2b7e1c139a4ebccb
   HydraAsync: 8d589bd725b0224f899afafc9a396327405f8063
-  iris_method_channel: 0617c689164d8154c020c50f63ca79f92b8a7b9d
-  media_kit_libs_ios_video: a5fe24bc7875ccd6378a0978c13185e1344651c1
-  media_kit_native_event_loop: e6b2ab20cf0746eb1c33be961fcf79667304fa2a
-  media_kit_video: 5da63f157170e5bf303bf85453b7ef6971218a2e
-  open_file: 02eb5cb6b21264bd3a696876f5afbfb7ca4f4b7d
-  package_info_plus: 58f0028419748fad15bf008b270aaa8e54380b1c
-  path_provider_foundation: 2b6b4c569c0fb62ec74538f866245ac84301af46
-  permission_handler_apple: 9878588469a2b0d0fc1e048d9f43605f92e6cec2
-  rive_common: 3a4c254c6e4db7e4b9e05daeb3d1f47ae4f7bf76
-  screen_brightness_ios: 7437207a2a9bc56553aa10f782afecf830b4c4e2
-  shared_preferences_foundation: fcdcbc04712aee1108ac7fda236f363274528f78
-  tencent_cloud_chat_sdk: 692e2c6b3024086a62a9fbb047441f17f122dab4
+  iris_method_channel: b9db2053dac3dc84e256c8792eff6f11323a53bd
+  media_kit_libs_ios_video: 5a18affdb97d1f5d466dc79988b13eff6c5e2854
+  media_kit_native_event_loop: 5fba1a849a6c87a34985f1e178a0de5bd444a0cf
+  media_kit_video: 1746e198cb697d1ffb734b1d05ec429d1fcd1474
+  open_file_ios: 5ff7526df64e4394b4fe207636b67a95e83078bb
+  package_info_plus: af8e2ca6888548050f16fa2f1938db7b5a5df499
+  path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564
+  permission_handler_apple: 4ed2196e43d0651e8ff7ca3483a069d469701f2d
+  rive_common: daeaa675f575d0a2ce65a2c90d4838d75327047b
+  screen_brightness_ios: 28c5fbdb40634de44f86025d84470158ad4df48c
+  shared_preferences_foundation: 9e1978ff2562383bd5676f64ec4e9aa8fa06a6f7
+  tencent_cloud_chat_sdk: be3d54214e12ab6f16af56fb8f2ebe72e9fc8b3e
   TXIMSDK_Plus_iOS: b7bb4044ec1ec89da5ddf8945dc708b2c7ad6c6e
-  url_launcher_ios: 5334b05cef931de560670eeae103fd3e431ac3fe
-  volume_controller: 531ddf792994285c9b17f9d8a7e4dcdd29b3eae9
-  wakelock_plus: 78ec7c5b202cab7761af8e2b2b3d0671be6c4ae1
+  url_launcher_ios: 694010445543906933d732453a59da0a173ae33d
+  volume_controller: ca1cde542ee70fad77d388f82e9616488110942b
+  wakelock_plus: 04623e3f525556020ebd4034310f20fe7fda8b49
 
-PODFILE CHECKSUM: f70037614ff832436a6375dc19de4c2f698b74f4
+PODFILE CHECKSUM: cb87426556fc580e6202578f98d9147ed01f2525
 
-COCOAPODS: 1.15.2
+COCOAPODS: 1.16.2
