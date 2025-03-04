@@ -88,19 +88,37 @@ class ByeMessageData extends MessageData {
   Map<String, dynamic> toJson() => _$ByeMessageDataToJson(this);
 }
 
-extension AlohaExtension on Map<String, dynamic> {
-  bool get isAlohaData => this['type'] == 'aloha';
-  AlohaMessageData toAlohaData() => isAlohaData
-      ? AlohaMessageData(user: User.fromJson(this))
-      : throw const FormatException();
+/// Send when asking playing position
+@JsonSerializable()
+class WhereMessageData extends MessageData {
+  static const messageType = 'where';
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: true)
+  final type = messageType;
 
-  bool get isHereIsData => this['type'] == 'hereIs';
-  HereIsMessageData toHereIsData() => isHereIsData
-      ? HereIsMessageData(
-          user: User.fromJson(this),
-          isTalking: this['isTalking'],
-        )
-      : throw const FormatException();
+  WhereMessageData();
 
-  bool get isByeData => this['type'] == 'bye';
+  factory WhereMessageData.fromJson(Map<String, dynamic> json) =>
+      _$WhereMessageDataFromJson(json);
+  @override
+  Map<String, dynamic> toJson() => _$WhereMessageDataToJson(this);
+}
+
+/// Send when answering playing position
+@JsonSerializable()
+class PlayAtMessageData extends MessageData {
+  static const messageType = 'play-at';
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: true)
+  final type = messageType;
+
+  final Duration position;
+  final bool isPlaying;
+
+  PlayAtMessageData({required this.position, required this.isPlaying});
+
+  factory PlayAtMessageData.fromJson(Map<String, dynamic> json) =>
+      _$PlayAtMessageDataFromJson(json);
+  @override
+  Map<String, dynamic> toJson() => _$PlayAtMessageDataToJson(this);
 }

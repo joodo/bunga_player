@@ -332,14 +332,6 @@ class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
       }
     }
 
-    if (message.data.isHereIsData && message.data.toHereIsData().isTalking) {
-      talkers.add(message.senderId);
-    }
-
-    if (message.data.isByeData) {
-      removeAndCheck();
-    }
-
     if (message.data.isTalkStatusData) {
       final status = message.data.toTalkStatusData().status;
       if (status == TalkStatusType.start) {

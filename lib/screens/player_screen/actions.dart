@@ -293,3 +293,16 @@ class ShareVideoAction extends ContextAction<ShareVideoIntent> {
     return act;
   }
 }
+
+@immutable
+class AskPositionIntent extends Intent {
+  const AskPositionIntent();
+}
+
+class AskPositionAction extends ContextAction<AskPositionIntent> {
+  @override
+  void invoke(AskPositionIntent intent, [BuildContext? context]) {
+    final messageData = WhereMessageData();
+    Actions.invoke(context!, SendMessageIntent(messageData));
+  }
+}

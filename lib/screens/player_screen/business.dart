@@ -143,9 +143,10 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
     _isVideoBufferingNotifier.addListener(_updateBusyCount);
 
     // Play url
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       final argument = ModalRoute.of(context)?.settings.arguments;
       if (argument is OpenVideoDialogResult) {
+        // Join in by open video from dialog
         _openVideoAction
             .invoke(
           OpenVideoIntent.url(argument.url),
@@ -162,10 +163,14 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
           },
         );
       } else if (argument is VideoRecord) {
-        _openVideoAction.invoke(
+        // Join in by "Channel Card" in Welcome screen
+        await _openVideoAction.invoke(
           OpenVideoIntent.record(argument),
           context,
         );
+
+        if (!mounted) return;
+        AskPositionAction().invoke(AskPositionIntent(), context);
         _refreshWatchersAction.invoke(RefreshWatchersIntent(), context);
       }
     });
@@ -215,7 +220,7 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
   }
 
   @override
-  void dispose() async {
+  void dispose() {
     _playPayloadNotifier.dispose();
     _busyCountNotifer.dispose();
     _panelNotifier.dispose();
@@ -227,7 +232,7 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
     _savedPositionNotifier.dispose();
 
     for (final subscription in _streamSubscriptions) {
-      await subscription.cancel();
+      subscription.cancel();
     }
 
     super.dispose();
@@ -260,6 +265,7 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
           SeekIntent: SeekAction(),
           ShareVideoIntent: _shareVideoAction,
           RefreshWatchersIntent: _refreshWatchersAction,
+          AskPositionIntent: AskPositionAction(),
         },
       ),
     );

@@ -56,3 +56,24 @@ Map<String, dynamic> _$ByeMessageDataToJson(ByeMessageData instance) =>
       'type': instance.type,
       'user_id': instance.userId,
     };
+
+WhereMessageData _$WhereMessageDataFromJson(Map<String, dynamic> json) =>
+    WhereMessageData();
+
+Map<String, dynamic> _$WhereMessageDataToJson(WhereMessageData instance) =>
+    <String, dynamic>{
+      'type': instance.type,
+    };
+
+PlayAtMessageData _$PlayAtMessageDataFromJson(Map<String, dynamic> json) =>
+    PlayAtMessageData(
+      position: Duration(microseconds: (json['position'] as num).toInt()),
+      isPlaying: json['is_playing'] as bool,
+    );
+
+Map<String, dynamic> _$PlayAtMessageDataToJson(PlayAtMessageData instance) =>
+    <String, dynamic>{
+      'type': instance.type,
+      'position': instance.position.inMicroseconds,
+      'is_playing': instance.isPlaying,
+    };
