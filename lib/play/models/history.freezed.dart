@@ -1,3 +1,4 @@
+// dart format width=80
 // coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint
@@ -9,134 +10,30 @@ part of 'history.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
-
-WatchProgress _$WatchProgressFromJson(Map<String, dynamic> json) {
-  return _WatchProgress.fromJson(json);
-}
 
 /// @nodoc
 mixin _$WatchProgress {
-  Duration get position => throw _privateConstructorUsedError;
-  Duration get duration => throw _privateConstructorUsedError;
-
-  /// Serializes this WatchProgress to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  Duration get position;
+  Duration get duration;
 
   /// Create a copy of WatchProgress
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
   $WatchProgressCopyWith<WatchProgress> get copyWith =>
-      throw _privateConstructorUsedError;
-}
+      _$WatchProgressCopyWithImpl<WatchProgress>(
+          this as WatchProgress, _$identity);
 
-/// @nodoc
-abstract class $WatchProgressCopyWith<$Res> {
-  factory $WatchProgressCopyWith(
-          WatchProgress value, $Res Function(WatchProgress) then) =
-      _$WatchProgressCopyWithImpl<$Res, WatchProgress>;
-  @useResult
-  $Res call({Duration position, Duration duration});
-}
-
-/// @nodoc
-class _$WatchProgressCopyWithImpl<$Res, $Val extends WatchProgress>
-    implements $WatchProgressCopyWith<$Res> {
-  _$WatchProgressCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of WatchProgress
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? position = null,
-    Object? duration = null,
-  }) {
-    return _then(_value.copyWith(
-      position: null == position
-          ? _value.position
-          : position // ignore: cast_nullable_to_non_nullable
-              as Duration,
-      duration: null == duration
-          ? _value.duration
-          : duration // ignore: cast_nullable_to_non_nullable
-              as Duration,
-    ) as $Val);
-  }
-}
-
-/// @nodoc
-abstract class _$$WatchProgressImplCopyWith<$Res>
-    implements $WatchProgressCopyWith<$Res> {
-  factory _$$WatchProgressImplCopyWith(
-          _$WatchProgressImpl value, $Res Function(_$WatchProgressImpl) then) =
-      __$$WatchProgressImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({Duration position, Duration duration});
-}
-
-/// @nodoc
-class __$$WatchProgressImplCopyWithImpl<$Res>
-    extends _$WatchProgressCopyWithImpl<$Res, _$WatchProgressImpl>
-    implements _$$WatchProgressImplCopyWith<$Res> {
-  __$$WatchProgressImplCopyWithImpl(
-      _$WatchProgressImpl _value, $Res Function(_$WatchProgressImpl) _then)
-      : super(_value, _then);
-
-  /// Create a copy of WatchProgress
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? position = null,
-    Object? duration = null,
-  }) {
-    return _then(_$WatchProgressImpl(
-      position: null == position
-          ? _value.position
-          : position // ignore: cast_nullable_to_non_nullable
-              as Duration,
-      duration: null == duration
-          ? _value.duration
-          : duration // ignore: cast_nullable_to_non_nullable
-              as Duration,
-    ));
-  }
-}
-
-/// @nodoc
-@JsonSerializable()
-class _$WatchProgressImpl extends _WatchProgress {
-  const _$WatchProgressImpl({required this.position, required this.duration})
-      : super._();
-
-  factory _$WatchProgressImpl.fromJson(Map<String, dynamic> json) =>
-      _$$WatchProgressImplFromJson(json);
-
-  @override
-  final Duration position;
-  @override
-  final Duration duration;
-
-  @override
-  String toString() {
-    return 'WatchProgress(position: $position, duration: $duration)';
-  }
+  /// Serializes this WatchProgress to a JSON map.
+  Map<String, dynamic> toJson();
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$WatchProgressImpl &&
+            other is WatchProgress &&
             (identical(other.position, position) ||
                 other.position == position) &&
             (identical(other.duration, duration) ||
@@ -147,232 +44,162 @@ class _$WatchProgressImpl extends _WatchProgress {
   @override
   int get hashCode => Object.hash(runtimeType, position, duration);
 
-  /// Create a copy of WatchProgress
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  @pragma('vm:prefer-inline')
-  _$$WatchProgressImplCopyWith<_$WatchProgressImpl> get copyWith =>
-      __$$WatchProgressImplCopyWithImpl<_$WatchProgressImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$WatchProgressImplToJson(
-      this,
-    );
+  String toString() {
+    return 'WatchProgress(position: $position, duration: $duration)';
   }
 }
 
-abstract class _WatchProgress extends WatchProgress {
-  const factory _WatchProgress(
-      {required final Duration position,
-      required final Duration duration}) = _$WatchProgressImpl;
-  const _WatchProgress._() : super._();
+/// @nodoc
+abstract mixin class $WatchProgressCopyWith<$Res> {
+  factory $WatchProgressCopyWith(
+          WatchProgress value, $Res Function(WatchProgress) _then) =
+      _$WatchProgressCopyWithImpl;
+  @useResult
+  $Res call({Duration position, Duration duration});
+}
 
-  factory _WatchProgress.fromJson(Map<String, dynamic> json) =
-      _$WatchProgressImpl.fromJson;
+/// @nodoc
+class _$WatchProgressCopyWithImpl<$Res>
+    implements $WatchProgressCopyWith<$Res> {
+  _$WatchProgressCopyWithImpl(this._self, this._then);
 
-  @override
-  Duration get position;
-  @override
-  Duration get duration;
+  final WatchProgress _self;
+  final $Res Function(WatchProgress) _then;
 
   /// Create a copy of WatchProgress
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$WatchProgressImplCopyWith<_$WatchProgressImpl> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-VideoSession _$VideoSessionFromJson(Map<String, dynamic> json) {
-  return _VideoSession.fromJson(json);
-}
-
-/// @nodoc
-mixin _$VideoSession {
-  DateTime get updatedAt => throw _privateConstructorUsedError;
-  VideoRecord get videoRecord => throw _privateConstructorUsedError;
-  WatchProgress get progress => throw _privateConstructorUsedError;
-  String? get subtitleUri => throw _privateConstructorUsedError;
-
-  /// Serializes this VideoSession to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-
-  /// Create a copy of VideoSession
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $VideoSessionCopyWith<VideoSession> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $VideoSessionCopyWith<$Res> {
-  factory $VideoSessionCopyWith(
-          VideoSession value, $Res Function(VideoSession) then) =
-      _$VideoSessionCopyWithImpl<$Res, VideoSession>;
-  @useResult
-  $Res call(
-      {DateTime updatedAt,
-      VideoRecord videoRecord,
-      WatchProgress progress,
-      String? subtitleUri});
-
-  $VideoRecordCopyWith<$Res> get videoRecord;
-  $WatchProgressCopyWith<$Res> get progress;
-}
-
-/// @nodoc
-class _$VideoSessionCopyWithImpl<$Res, $Val extends VideoSession>
-    implements $VideoSessionCopyWith<$Res> {
-  _$VideoSessionCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of VideoSession
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? updatedAt = null,
-    Object? videoRecord = null,
-    Object? progress = null,
-    Object? subtitleUri = freezed,
+    Object? position = null,
+    Object? duration = null,
   }) {
-    return _then(_value.copyWith(
-      updatedAt: null == updatedAt
-          ? _value.updatedAt
-          : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-      videoRecord: null == videoRecord
-          ? _value.videoRecord
-          : videoRecord // ignore: cast_nullable_to_non_nullable
-              as VideoRecord,
-      progress: null == progress
-          ? _value.progress
-          : progress // ignore: cast_nullable_to_non_nullable
-              as WatchProgress,
-      subtitleUri: freezed == subtitleUri
-          ? _value.subtitleUri
-          : subtitleUri // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
-  }
-
-  /// Create a copy of VideoSession
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $VideoRecordCopyWith<$Res> get videoRecord {
-    return $VideoRecordCopyWith<$Res>(_value.videoRecord, (value) {
-      return _then(_value.copyWith(videoRecord: value) as $Val);
-    });
-  }
-
-  /// Create a copy of VideoSession
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $WatchProgressCopyWith<$Res> get progress {
-    return $WatchProgressCopyWith<$Res>(_value.progress, (value) {
-      return _then(_value.copyWith(progress: value) as $Val);
-    });
-  }
-}
-
-/// @nodoc
-abstract class _$$VideoSessionImplCopyWith<$Res>
-    implements $VideoSessionCopyWith<$Res> {
-  factory _$$VideoSessionImplCopyWith(
-          _$VideoSessionImpl value, $Res Function(_$VideoSessionImpl) then) =
-      __$$VideoSessionImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call(
-      {DateTime updatedAt,
-      VideoRecord videoRecord,
-      WatchProgress progress,
-      String? subtitleUri});
-
-  @override
-  $VideoRecordCopyWith<$Res> get videoRecord;
-  @override
-  $WatchProgressCopyWith<$Res> get progress;
-}
-
-/// @nodoc
-class __$$VideoSessionImplCopyWithImpl<$Res>
-    extends _$VideoSessionCopyWithImpl<$Res, _$VideoSessionImpl>
-    implements _$$VideoSessionImplCopyWith<$Res> {
-  __$$VideoSessionImplCopyWithImpl(
-      _$VideoSessionImpl _value, $Res Function(_$VideoSessionImpl) _then)
-      : super(_value, _then);
-
-  /// Create a copy of VideoSession
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? updatedAt = null,
-    Object? videoRecord = null,
-    Object? progress = null,
-    Object? subtitleUri = freezed,
-  }) {
-    return _then(_$VideoSessionImpl(
-      updatedAt: null == updatedAt
-          ? _value.updatedAt
-          : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-      videoRecord: null == videoRecord
-          ? _value.videoRecord
-          : videoRecord // ignore: cast_nullable_to_non_nullable
-              as VideoRecord,
-      progress: null == progress
-          ? _value.progress
-          : progress // ignore: cast_nullable_to_non_nullable
-              as WatchProgress,
-      subtitleUri: freezed == subtitleUri
-          ? _value.subtitleUri
-          : subtitleUri // ignore: cast_nullable_to_non_nullable
-              as String?,
+    return _then(_self.copyWith(
+      position: null == position
+          ? _self.position
+          : position // ignore: cast_nullable_to_non_nullable
+              as Duration,
+      duration: null == duration
+          ? _self.duration
+          : duration // ignore: cast_nullable_to_non_nullable
+              as Duration,
     ));
   }
 }
 
 /// @nodoc
 @JsonSerializable()
-class _$VideoSessionImpl implements _VideoSession {
-  const _$VideoSessionImpl(
-      {required this.updatedAt,
-      required this.videoRecord,
-      required this.progress,
-      this.subtitleUri});
-
-  factory _$VideoSessionImpl.fromJson(Map<String, dynamic> json) =>
-      _$$VideoSessionImplFromJson(json);
+class _WatchProgress extends WatchProgress {
+  const _WatchProgress({required this.position, required this.duration})
+      : super._();
+  factory _WatchProgress.fromJson(Map<String, dynamic> json) =>
+      _$WatchProgressFromJson(json);
 
   @override
-  final DateTime updatedAt;
+  final Duration position;
   @override
-  final VideoRecord videoRecord;
+  final Duration duration;
+
+  /// Create a copy of WatchProgress
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  final WatchProgress progress;
-  @override
-  final String? subtitleUri;
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$WatchProgressCopyWith<_WatchProgress> get copyWith =>
+      __$WatchProgressCopyWithImpl<_WatchProgress>(this, _$identity);
 
   @override
-  String toString() {
-    return 'VideoSession(updatedAt: $updatedAt, videoRecord: $videoRecord, progress: $progress, subtitleUri: $subtitleUri)';
+  Map<String, dynamic> toJson() {
+    return _$WatchProgressToJson(
+      this,
+    );
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$VideoSessionImpl &&
+            other is _WatchProgress &&
+            (identical(other.position, position) ||
+                other.position == position) &&
+            (identical(other.duration, duration) ||
+                other.duration == duration));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, position, duration);
+
+  @override
+  String toString() {
+    return 'WatchProgress(position: $position, duration: $duration)';
+  }
+}
+
+/// @nodoc
+abstract mixin class _$WatchProgressCopyWith<$Res>
+    implements $WatchProgressCopyWith<$Res> {
+  factory _$WatchProgressCopyWith(
+          _WatchProgress value, $Res Function(_WatchProgress) _then) =
+      __$WatchProgressCopyWithImpl;
+  @override
+  @useResult
+  $Res call({Duration position, Duration duration});
+}
+
+/// @nodoc
+class __$WatchProgressCopyWithImpl<$Res>
+    implements _$WatchProgressCopyWith<$Res> {
+  __$WatchProgressCopyWithImpl(this._self, this._then);
+
+  final _WatchProgress _self;
+  final $Res Function(_WatchProgress) _then;
+
+  /// Create a copy of WatchProgress
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? position = null,
+    Object? duration = null,
+  }) {
+    return _then(_WatchProgress(
+      position: null == position
+          ? _self.position
+          : position // ignore: cast_nullable_to_non_nullable
+              as Duration,
+      duration: null == duration
+          ? _self.duration
+          : duration // ignore: cast_nullable_to_non_nullable
+              as Duration,
+    ));
+  }
+}
+
+/// @nodoc
+mixin _$VideoSession {
+  DateTime get updatedAt;
+  VideoRecord get videoRecord;
+  WatchProgress get progress;
+  String? get subtitleUri;
+
+  /// Create a copy of VideoSession
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  $VideoSessionCopyWith<VideoSession> get copyWith =>
+      _$VideoSessionCopyWithImpl<VideoSession>(
+          this as VideoSession, _$identity);
+
+  /// Serializes this VideoSession to a JSON map.
+  Map<String, dynamic> toJson();
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is VideoSession &&
             (identical(other.updatedAt, updatedAt) ||
                 other.updatedAt == updatedAt) &&
             (identical(other.videoRecord, videoRecord) ||
@@ -388,155 +215,245 @@ class _$VideoSessionImpl implements _VideoSession {
   int get hashCode =>
       Object.hash(runtimeType, updatedAt, videoRecord, progress, subtitleUri);
 
-  /// Create a copy of VideoSession
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  @pragma('vm:prefer-inline')
-  _$$VideoSessionImplCopyWith<_$VideoSessionImpl> get copyWith =>
-      __$$VideoSessionImplCopyWithImpl<_$VideoSessionImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$VideoSessionImplToJson(
-      this,
-    );
-  }
-}
-
-abstract class _VideoSession implements VideoSession {
-  const factory _VideoSession(
-      {required final DateTime updatedAt,
-      required final VideoRecord videoRecord,
-      required final WatchProgress progress,
-      final String? subtitleUri}) = _$VideoSessionImpl;
-
-  factory _VideoSession.fromJson(Map<String, dynamic> json) =
-      _$VideoSessionImpl.fromJson;
-
-  @override
-  DateTime get updatedAt;
-  @override
-  VideoRecord get videoRecord;
-  @override
-  WatchProgress get progress;
-  @override
-  String? get subtitleUri;
-
-  /// Create a copy of VideoSession
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$VideoSessionImplCopyWith<_$VideoSessionImpl> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-History _$HistoryFromJson(Map<String, dynamic> json) {
-  return _History.fromJson(json);
-}
-
-/// @nodoc
-mixin _$History {
-  Map<String, VideoSession> get value => throw _privateConstructorUsedError;
-
-  /// Serializes this History to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-
-  /// Create a copy of History
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $HistoryCopyWith<History> get copyWith => throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $HistoryCopyWith<$Res> {
-  factory $HistoryCopyWith(History value, $Res Function(History) then) =
-      _$HistoryCopyWithImpl<$Res, History>;
-  @useResult
-  $Res call({Map<String, VideoSession> value});
-}
-
-/// @nodoc
-class _$HistoryCopyWithImpl<$Res, $Val extends History>
-    implements $HistoryCopyWith<$Res> {
-  _$HistoryCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of History
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? value = null,
-  }) {
-    return _then(_value.copyWith(
-      value: null == value
-          ? _value.value
-          : value // ignore: cast_nullable_to_non_nullable
-              as Map<String, VideoSession>,
-    ) as $Val);
+  String toString() {
+    return 'VideoSession(updatedAt: $updatedAt, videoRecord: $videoRecord, progress: $progress, subtitleUri: $subtitleUri)';
   }
 }
 
 /// @nodoc
-abstract class _$$HistoryImplCopyWith<$Res> implements $HistoryCopyWith<$Res> {
-  factory _$$HistoryImplCopyWith(
-          _$HistoryImpl value, $Res Function(_$HistoryImpl) then) =
-      __$$HistoryImplCopyWithImpl<$Res>;
-  @override
+abstract mixin class $VideoSessionCopyWith<$Res> {
+  factory $VideoSessionCopyWith(
+          VideoSession value, $Res Function(VideoSession) _then) =
+      _$VideoSessionCopyWithImpl;
   @useResult
-  $Res call({Map<String, VideoSession> value});
+  $Res call(
+      {DateTime updatedAt,
+      VideoRecord videoRecord,
+      WatchProgress progress,
+      String? subtitleUri});
+
+  $VideoRecordCopyWith<$Res> get videoRecord;
+  $WatchProgressCopyWith<$Res> get progress;
 }
 
 /// @nodoc
-class __$$HistoryImplCopyWithImpl<$Res>
-    extends _$HistoryCopyWithImpl<$Res, _$HistoryImpl>
-    implements _$$HistoryImplCopyWith<$Res> {
-  __$$HistoryImplCopyWithImpl(
-      _$HistoryImpl _value, $Res Function(_$HistoryImpl) _then)
-      : super(_value, _then);
+class _$VideoSessionCopyWithImpl<$Res> implements $VideoSessionCopyWith<$Res> {
+  _$VideoSessionCopyWithImpl(this._self, this._then);
 
-  /// Create a copy of History
+  final VideoSession _self;
+  final $Res Function(VideoSession) _then;
+
+  /// Create a copy of VideoSession
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? value = null,
+    Object? updatedAt = null,
+    Object? videoRecord = null,
+    Object? progress = null,
+    Object? subtitleUri = freezed,
   }) {
-    return _then(_$HistoryImpl(
-      value: null == value
-          ? _value.value
-          : value // ignore: cast_nullable_to_non_nullable
-              as Map<String, VideoSession>,
+    return _then(_self.copyWith(
+      updatedAt: null == updatedAt
+          ? _self.updatedAt
+          : updatedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
+      videoRecord: null == videoRecord
+          ? _self.videoRecord
+          : videoRecord // ignore: cast_nullable_to_non_nullable
+              as VideoRecord,
+      progress: null == progress
+          ? _self.progress
+          : progress // ignore: cast_nullable_to_non_nullable
+              as WatchProgress,
+      subtitleUri: freezed == subtitleUri
+          ? _self.subtitleUri
+          : subtitleUri // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
+  }
+
+  /// Create a copy of VideoSession
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $VideoRecordCopyWith<$Res> get videoRecord {
+    return $VideoRecordCopyWith<$Res>(_self.videoRecord, (value) {
+      return _then(_self.copyWith(videoRecord: value));
+    });
+  }
+
+  /// Create a copy of VideoSession
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $WatchProgressCopyWith<$Res> get progress {
+    return $WatchProgressCopyWith<$Res>(_self.progress, (value) {
+      return _then(_self.copyWith(progress: value));
+    });
   }
 }
 
 /// @nodoc
 @JsonSerializable()
-class _$HistoryImpl extends _History {
-  const _$HistoryImpl({required this.value}) : super._();
-
-  factory _$HistoryImpl.fromJson(Map<String, dynamic> json) =>
-      _$$HistoryImplFromJson(json);
+class _VideoSession implements VideoSession {
+  const _VideoSession(
+      {required this.updatedAt,
+      required this.videoRecord,
+      required this.progress,
+      this.subtitleUri});
+  factory _VideoSession.fromJson(Map<String, dynamic> json) =>
+      _$VideoSessionFromJson(json);
 
   @override
-  final Map<String, VideoSession> value;
+  final DateTime updatedAt;
+  @override
+  final VideoRecord videoRecord;
+  @override
+  final WatchProgress progress;
+  @override
+  final String? subtitleUri;
+
+  /// Create a copy of VideoSession
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$VideoSessionCopyWith<_VideoSession> get copyWith =>
+      __$VideoSessionCopyWithImpl<_VideoSession>(this, _$identity);
 
   @override
-  String toString() {
-    return 'History(value: $value)';
+  Map<String, dynamic> toJson() {
+    return _$VideoSessionToJson(
+      this,
+    );
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$HistoryImpl &&
+            other is _VideoSession &&
+            (identical(other.updatedAt, updatedAt) ||
+                other.updatedAt == updatedAt) &&
+            (identical(other.videoRecord, videoRecord) ||
+                other.videoRecord == videoRecord) &&
+            (identical(other.progress, progress) ||
+                other.progress == progress) &&
+            (identical(other.subtitleUri, subtitleUri) ||
+                other.subtitleUri == subtitleUri));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, updatedAt, videoRecord, progress, subtitleUri);
+
+  @override
+  String toString() {
+    return 'VideoSession(updatedAt: $updatedAt, videoRecord: $videoRecord, progress: $progress, subtitleUri: $subtitleUri)';
+  }
+}
+
+/// @nodoc
+abstract mixin class _$VideoSessionCopyWith<$Res>
+    implements $VideoSessionCopyWith<$Res> {
+  factory _$VideoSessionCopyWith(
+          _VideoSession value, $Res Function(_VideoSession) _then) =
+      __$VideoSessionCopyWithImpl;
+  @override
+  @useResult
+  $Res call(
+      {DateTime updatedAt,
+      VideoRecord videoRecord,
+      WatchProgress progress,
+      String? subtitleUri});
+
+  @override
+  $VideoRecordCopyWith<$Res> get videoRecord;
+  @override
+  $WatchProgressCopyWith<$Res> get progress;
+}
+
+/// @nodoc
+class __$VideoSessionCopyWithImpl<$Res>
+    implements _$VideoSessionCopyWith<$Res> {
+  __$VideoSessionCopyWithImpl(this._self, this._then);
+
+  final _VideoSession _self;
+  final $Res Function(_VideoSession) _then;
+
+  /// Create a copy of VideoSession
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? updatedAt = null,
+    Object? videoRecord = null,
+    Object? progress = null,
+    Object? subtitleUri = freezed,
+  }) {
+    return _then(_VideoSession(
+      updatedAt: null == updatedAt
+          ? _self.updatedAt
+          : updatedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
+      videoRecord: null == videoRecord
+          ? _self.videoRecord
+          : videoRecord // ignore: cast_nullable_to_non_nullable
+              as VideoRecord,
+      progress: null == progress
+          ? _self.progress
+          : progress // ignore: cast_nullable_to_non_nullable
+              as WatchProgress,
+      subtitleUri: freezed == subtitleUri
+          ? _self.subtitleUri
+          : subtitleUri // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ));
+  }
+
+  /// Create a copy of VideoSession
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $VideoRecordCopyWith<$Res> get videoRecord {
+    return $VideoRecordCopyWith<$Res>(_self.videoRecord, (value) {
+      return _then(_self.copyWith(videoRecord: value));
+    });
+  }
+
+  /// Create a copy of VideoSession
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $WatchProgressCopyWith<$Res> get progress {
+    return $WatchProgressCopyWith<$Res>(_self.progress, (value) {
+      return _then(_self.copyWith(progress: value));
+    });
+  }
+}
+
+/// @nodoc
+mixin _$History {
+  Map<String, VideoSession> get value;
+
+  /// Create a copy of History
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  $HistoryCopyWith<History> get copyWith =>
+      _$HistoryCopyWithImpl<History>(this as History, _$identity);
+
+  /// Serializes this History to a JSON map.
+  Map<String, dynamic> toJson();
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is History &&
             const DeepCollectionEquality().equals(other.value, value));
   }
 
@@ -545,36 +462,117 @@ class _$HistoryImpl extends _History {
   int get hashCode =>
       Object.hash(runtimeType, const DeepCollectionEquality().hash(value));
 
-  /// Create a copy of History
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  @pragma('vm:prefer-inline')
-  _$$HistoryImplCopyWith<_$HistoryImpl> get copyWith =>
-      __$$HistoryImplCopyWithImpl<_$HistoryImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$HistoryImplToJson(
-      this,
-    );
+  String toString() {
+    return 'History(value: $value)';
   }
 }
 
-abstract class _History extends History {
-  const factory _History({required final Map<String, VideoSession> value}) =
-      _$HistoryImpl;
-  const _History._() : super._();
+/// @nodoc
+abstract mixin class $HistoryCopyWith<$Res> {
+  factory $HistoryCopyWith(History value, $Res Function(History) _then) =
+      _$HistoryCopyWithImpl;
+  @useResult
+  $Res call({Map<String, VideoSession> value});
+}
 
-  factory _History.fromJson(Map<String, dynamic> json) = _$HistoryImpl.fromJson;
+/// @nodoc
+class _$HistoryCopyWithImpl<$Res> implements $HistoryCopyWith<$Res> {
+  _$HistoryCopyWithImpl(this._self, this._then);
+
+  final History _self;
+  final $Res Function(History) _then;
+
+  /// Create a copy of History
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? value = null,
+  }) {
+    return _then(_self.copyWith(
+      value: null == value
+          ? _self.value
+          : value // ignore: cast_nullable_to_non_nullable
+              as Map<String, VideoSession>,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _History extends History {
+  const _History({required this.value}) : super._();
+  factory _History.fromJson(Map<String, dynamic> json) =>
+      _$HistoryFromJson(json);
 
   @override
-  Map<String, VideoSession> get value;
+  final Map<String, VideoSession> value;
 
   /// Create a copy of History
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$HistoryImplCopyWith<_$HistoryImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+  @pragma('vm:prefer-inline')
+  _$HistoryCopyWith<_History> get copyWith =>
+      __$HistoryCopyWithImpl<_History>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$HistoryToJson(
+      this,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _History &&
+            const DeepCollectionEquality().equals(other.value, value));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, const DeepCollectionEquality().hash(value));
+
+  @override
+  String toString() {
+    return 'History(value: $value)';
+  }
 }
+
+/// @nodoc
+abstract mixin class _$HistoryCopyWith<$Res> implements $HistoryCopyWith<$Res> {
+  factory _$HistoryCopyWith(_History value, $Res Function(_History) _then) =
+      __$HistoryCopyWithImpl;
+  @override
+  @useResult
+  $Res call({Map<String, VideoSession> value});
+}
+
+/// @nodoc
+class __$HistoryCopyWithImpl<$Res> implements _$HistoryCopyWith<$Res> {
+  __$HistoryCopyWithImpl(this._self, this._then);
+
+  final _History _self;
+  final $Res Function(_History) _then;
+
+  /// Create a copy of History
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? value = null,
+  }) {
+    return _then(_History(
+      value: null == value
+          ? _self.value
+          : value // ignore: cast_nullable_to_non_nullable
+              as Map<String, VideoSession>,
+    ));
+  }
+}
+
+// dart format on

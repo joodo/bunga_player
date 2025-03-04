@@ -1,3 +1,4 @@
+// dart format width=80
 // coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint
@@ -9,136 +10,31 @@ part of 'client_account.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
-
-ClientAccount _$ClientAccountFromJson(Map<String, dynamic> json) {
-  return _ClientAccount.fromJson(json);
-}
 
 /// @nodoc
 mixin _$ClientAccount {
   @JsonKey(name: "username")
-  String get id => throw _privateConstructorUsedError;
-  String get password => throw _privateConstructorUsedError;
-
-  /// Serializes this ClientAccount to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  String get id;
+  String get password;
 
   /// Create a copy of ClientAccount
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
   $ClientAccountCopyWith<ClientAccount> get copyWith =>
-      throw _privateConstructorUsedError;
-}
+      _$ClientAccountCopyWithImpl<ClientAccount>(
+          this as ClientAccount, _$identity);
 
-/// @nodoc
-abstract class $ClientAccountCopyWith<$Res> {
-  factory $ClientAccountCopyWith(
-          ClientAccount value, $Res Function(ClientAccount) then) =
-      _$ClientAccountCopyWithImpl<$Res, ClientAccount>;
-  @useResult
-  $Res call({@JsonKey(name: "username") String id, String password});
-}
-
-/// @nodoc
-class _$ClientAccountCopyWithImpl<$Res, $Val extends ClientAccount>
-    implements $ClientAccountCopyWith<$Res> {
-  _$ClientAccountCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of ClientAccount
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? id = null,
-    Object? password = null,
-  }) {
-    return _then(_value.copyWith(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      password: null == password
-          ? _value.password
-          : password // ignore: cast_nullable_to_non_nullable
-              as String,
-    ) as $Val);
-  }
-}
-
-/// @nodoc
-abstract class _$$ClientAccountImplCopyWith<$Res>
-    implements $ClientAccountCopyWith<$Res> {
-  factory _$$ClientAccountImplCopyWith(
-          _$ClientAccountImpl value, $Res Function(_$ClientAccountImpl) then) =
-      __$$ClientAccountImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({@JsonKey(name: "username") String id, String password});
-}
-
-/// @nodoc
-class __$$ClientAccountImplCopyWithImpl<$Res>
-    extends _$ClientAccountCopyWithImpl<$Res, _$ClientAccountImpl>
-    implements _$$ClientAccountImplCopyWith<$Res> {
-  __$$ClientAccountImplCopyWithImpl(
-      _$ClientAccountImpl _value, $Res Function(_$ClientAccountImpl) _then)
-      : super(_value, _then);
-
-  /// Create a copy of ClientAccount
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? id = null,
-    Object? password = null,
-  }) {
-    return _then(_$ClientAccountImpl(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      password: null == password
-          ? _value.password
-          : password // ignore: cast_nullable_to_non_nullable
-              as String,
-    ));
-  }
-}
-
-/// @nodoc
-@JsonSerializable()
-class _$ClientAccountImpl implements _ClientAccount {
-  const _$ClientAccountImpl(
-      {@JsonKey(name: "username") required this.id, required this.password});
-
-  factory _$ClientAccountImpl.fromJson(Map<String, dynamic> json) =>
-      _$$ClientAccountImplFromJson(json);
-
-  @override
-  @JsonKey(name: "username")
-  final String id;
-  @override
-  final String password;
-
-  @override
-  String toString() {
-    return 'ClientAccount(id: $id, password: $password)';
-  }
+  /// Serializes this ClientAccount to a JSON map.
+  Map<String, dynamic> toJson();
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$ClientAccountImpl &&
+            other is ClientAccount &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.password, password) ||
                 other.password == password));
@@ -148,40 +44,137 @@ class _$ClientAccountImpl implements _ClientAccount {
   @override
   int get hashCode => Object.hash(runtimeType, id, password);
 
-  /// Create a copy of ClientAccount
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  @pragma('vm:prefer-inline')
-  _$$ClientAccountImplCopyWith<_$ClientAccountImpl> get copyWith =>
-      __$$ClientAccountImplCopyWithImpl<_$ClientAccountImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$ClientAccountImplToJson(
-      this,
-    );
+  String toString() {
+    return 'ClientAccount(id: $id, password: $password)';
   }
 }
 
-abstract class _ClientAccount implements ClientAccount {
-  const factory _ClientAccount(
-      {@JsonKey(name: "username") required final String id,
-      required final String password}) = _$ClientAccountImpl;
+/// @nodoc
+abstract mixin class $ClientAccountCopyWith<$Res> {
+  factory $ClientAccountCopyWith(
+          ClientAccount value, $Res Function(ClientAccount) _then) =
+      _$ClientAccountCopyWithImpl;
+  @useResult
+  $Res call({@JsonKey(name: "username") String id, String password});
+}
 
-  factory _ClientAccount.fromJson(Map<String, dynamic> json) =
-      _$ClientAccountImpl.fromJson;
+/// @nodoc
+class _$ClientAccountCopyWithImpl<$Res>
+    implements $ClientAccountCopyWith<$Res> {
+  _$ClientAccountCopyWithImpl(this._self, this._then);
+
+  final ClientAccount _self;
+  final $Res Function(ClientAccount) _then;
+
+  /// Create a copy of ClientAccount
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = null,
+    Object? password = null,
+  }) {
+    return _then(_self.copyWith(
+      id: null == id
+          ? _self.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as String,
+      password: null == password
+          ? _self.password
+          : password // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _ClientAccount implements ClientAccount {
+  const _ClientAccount(
+      {@JsonKey(name: "username") required this.id, required this.password});
+  factory _ClientAccount.fromJson(Map<String, dynamic> json) =>
+      _$ClientAccountFromJson(json);
 
   @override
   @JsonKey(name: "username")
-  String get id;
+  final String id;
   @override
-  String get password;
+  final String password;
 
   /// Create a copy of ClientAccount
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$ClientAccountImplCopyWith<_$ClientAccountImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+  @pragma('vm:prefer-inline')
+  _$ClientAccountCopyWith<_ClientAccount> get copyWith =>
+      __$ClientAccountCopyWithImpl<_ClientAccount>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$ClientAccountToJson(
+      this,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _ClientAccount &&
+            (identical(other.id, id) || other.id == id) &&
+            (identical(other.password, password) ||
+                other.password == password));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, id, password);
+
+  @override
+  String toString() {
+    return 'ClientAccount(id: $id, password: $password)';
+  }
 }
+
+/// @nodoc
+abstract mixin class _$ClientAccountCopyWith<$Res>
+    implements $ClientAccountCopyWith<$Res> {
+  factory _$ClientAccountCopyWith(
+          _ClientAccount value, $Res Function(_ClientAccount) _then) =
+      __$ClientAccountCopyWithImpl;
+  @override
+  @useResult
+  $Res call({@JsonKey(name: "username") String id, String password});
+}
+
+/// @nodoc
+class __$ClientAccountCopyWithImpl<$Res>
+    implements _$ClientAccountCopyWith<$Res> {
+  __$ClientAccountCopyWithImpl(this._self, this._then);
+
+  final _ClientAccount _self;
+  final $Res Function(_ClientAccount) _then;
+
+  /// Create a copy of ClientAccount
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? id = null,
+    Object? password = null,
+  }) {
+    return _then(_ClientAccount(
+      id: null == id
+          ? _self.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as String,
+      password: null == password
+          ? _self.password
+          : password // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+// dart format on

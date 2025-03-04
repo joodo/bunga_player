@@ -3,12 +3,12 @@ import 'dart:math';
 import 'package:bunga_player/play/models/play_payload.dart';
 import 'package:bunga_player/play/payload_parser.dart';
 import 'package:bunga_player/screens/player_screen/actions.dart';
-import 'package:bunga_player/screens/player_screen/business.dart';
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
+import '../models/watcher.dart';
 import 'panel.dart';
 
 class PlaylistPanel extends StatefulWidget implements Panel {
@@ -77,7 +77,7 @@ class _PlaylistPanelState extends State<PlaylistPanel> {
                                   final read = context.read;
 
                                   final shouldShare =
-                                      read<Watchers>().isSharing;
+                                      read<List<Watcher>?>() != null;
 
                                   final act = Actions.invoke(
                                     context,

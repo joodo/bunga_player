@@ -6,8 +6,7 @@ part of 'video_record.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$VideoRecordImpl _$$VideoRecordImplFromJson(Map<String, dynamic> json) =>
-    _$VideoRecordImpl(
+_VideoRecord _$VideoRecordFromJson(Map<String, dynamic> json) => _VideoRecord(
       id: json['id'] as String,
       title: json['title'] as String,
       thumbUrl: json['thumb_url'] as String?,
@@ -15,7 +14,7 @@ _$VideoRecordImpl _$$VideoRecordImplFromJson(Map<String, dynamic> json) =>
       path: json['path'] as String,
     );
 
-Map<String, dynamic> _$$VideoRecordImplToJson(_$VideoRecordImpl instance) =>
+Map<String, dynamic> _$VideoRecordToJson(_VideoRecord instance) =>
     <String, dynamic>{
       'id': instance.id,
       'title': instance.title,

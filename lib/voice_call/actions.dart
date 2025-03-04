@@ -61,17 +61,6 @@ class StartCallingRequestAction
     final read = context!.read;
 
     read<VoiceCallStatus>().value = VoiceCallStatusType.callOut;
-
-    final message = await (read<ActionsLeaf>().invoke(
-      SendMessageIntent(
-          CallMessageData(action: CallActionType.ask).toMessageData()),
-    ) as Future<Message>);
-
-    callingRequestBusiness.requestMessageId = message.id;
-    logger.i(
-        'start call asking, hope list: ${callingRequestBusiness.myHopeList}');
-
-    callingRequestBusiness.requestTimeOutTimer.reset();
   }
 }
 
@@ -88,19 +77,6 @@ class CancelCallingRequestAction
     BuildContext? context,
   ]) async {
     final read = context!.read;
-
-    await (read<ActionsLeaf>().invoke(
-      SendMessageIntent(CallMessageData(
-        action: CallActionType.cancel,
-        answerId: callingRequestBusiness.requestMessageId,
-      ).toMessageData()),
-    ) as Future<Message>);
-
-    callingRequestBusiness.myHopeList.clear();
-    callingRequestBusiness.requestMessageId = null;
-    callingRequestBusiness.requestTimeOutTimer.cancel();
-
-    read<VoiceCallStatus>().value = VoiceCallStatusType.none;
   }
 }
 
@@ -117,17 +93,6 @@ class RejectCallingRequestAction
     BuildContext? context,
   ]) async {
     final read = context!.read;
-
-    await (read<ActionsLeaf>().invoke(
-      SendMessageIntent(CallMessageData(
-        action: CallActionType.no,
-        answerId: callingRequestBusiness.requestMessageId,
-      ).toMessageData()),
-    ) as Future<Message>);
-
-    callingRequestBusiness.requestMessageId = null;
-
-    read<VoiceCallStatus>().value = VoiceCallStatusType.none;
   }
 }
 
@@ -144,15 +109,6 @@ class AcceptCallingRequestAction
     BuildContext? context,
   ]) async {
     final read = context!.read;
-
-    await (read<ActionsLeaf>().invoke(
-      SendMessageIntent(CallMessageData(
-        action: CallActionType.yes,
-        answerId: callingRequestBusiness.requestMessageId,
-      ).toMessageData()),
-    ) as Future<Message>);
-
-    callingRequestBusiness.requestMessageId = null;
 
     return _startTalking(read);
   }
@@ -180,10 +136,6 @@ class HangUpAction extends ContextAction<HangUpIntent> {
     actionsLeaf.invoke(const VoiceCallMuteMicIntent(false));
 
     await read<VoiceCallClient>().leaveChannel();
-
-    return actionsLeaf.invoke(SendMessageIntent(
-      TalkStatusMessageData(TalkStatusType.end).toMessageData(),
-    )) as Future;
   }
 
   @override
@@ -325,22 +277,10 @@ class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
 
           // Some one also want call when I'm calling out, so answer him
           case VoiceCallStatusType.callOut:
-            read<ActionsLeaf>().invoke(
-              SendMessageIntent(CallMessageData(
-                action: CallActionType.yes,
-                answerId: message.id,
-              ).toMessageData()),
-            );
             myRequestHasBeenAccepted();
 
           // Some one want to join when we are calling, answer him
           case VoiceCallStatusType.talking:
-            read<ActionsLeaf>().invoke(
-              SendMessageIntent(CallMessageData(
-                action: CallActionType.yes,
-                answerId: message.id,
-              ).toMessageData()),
-            );
         }
 
       case CallActionType.cancel:
@@ -419,7 +359,4 @@ Future<void> _startTalking(Locator read) async {
     userId: 'read<ChatUser>().value!.id',
     channelId: 'read<ChatChannel>().value!.id',
   );
-  return read<ActionsLeaf>().invoke(SendMessageIntent(
-    TalkStatusMessageData(TalkStatusType.start).toMessageData(),
-  )) as Future;
 }

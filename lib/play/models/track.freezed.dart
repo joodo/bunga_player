@@ -1,3 +1,4 @@
+// dart format width=80
 // coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint
@@ -9,136 +10,27 @@ part of 'track.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 /// @nodoc
 mixin _$AudioTrack {
-  String get id => throw _privateConstructorUsedError;
-  String? get title => throw _privateConstructorUsedError;
-  String? get language => throw _privateConstructorUsedError;
+  String get id;
+  String? get title;
+  String? get language;
 
   /// Create a copy of AudioTrack
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
   $AudioTrackCopyWith<AudioTrack> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $AudioTrackCopyWith<$Res> {
-  factory $AudioTrackCopyWith(
-          AudioTrack value, $Res Function(AudioTrack) then) =
-      _$AudioTrackCopyWithImpl<$Res, AudioTrack>;
-  @useResult
-  $Res call({String id, String? title, String? language});
-}
-
-/// @nodoc
-class _$AudioTrackCopyWithImpl<$Res, $Val extends AudioTrack>
-    implements $AudioTrackCopyWith<$Res> {
-  _$AudioTrackCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of AudioTrack
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? id = null,
-    Object? title = freezed,
-    Object? language = freezed,
-  }) {
-    return _then(_value.copyWith(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      title: freezed == title
-          ? _value.title
-          : title // ignore: cast_nullable_to_non_nullable
-              as String?,
-      language: freezed == language
-          ? _value.language
-          : language // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
-  }
-}
-
-/// @nodoc
-abstract class _$$AudioTrackImplCopyWith<$Res>
-    implements $AudioTrackCopyWith<$Res> {
-  factory _$$AudioTrackImplCopyWith(
-          _$AudioTrackImpl value, $Res Function(_$AudioTrackImpl) then) =
-      __$$AudioTrackImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({String id, String? title, String? language});
-}
-
-/// @nodoc
-class __$$AudioTrackImplCopyWithImpl<$Res>
-    extends _$AudioTrackCopyWithImpl<$Res, _$AudioTrackImpl>
-    implements _$$AudioTrackImplCopyWith<$Res> {
-  __$$AudioTrackImplCopyWithImpl(
-      _$AudioTrackImpl _value, $Res Function(_$AudioTrackImpl) _then)
-      : super(_value, _then);
-
-  /// Create a copy of AudioTrack
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? id = null,
-    Object? title = freezed,
-    Object? language = freezed,
-  }) {
-    return _then(_$AudioTrackImpl(
-      null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      freezed == title
-          ? _value.title
-          : title // ignore: cast_nullable_to_non_nullable
-              as String?,
-      freezed == language
-          ? _value.language
-          : language // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
-  }
-}
-
-/// @nodoc
-
-class _$AudioTrackImpl implements _AudioTrack {
-  _$AudioTrackImpl(this.id, [this.title, this.language]);
-
-  @override
-  final String id;
-  @override
-  final String? title;
-  @override
-  final String? language;
-
-  @override
-  String toString() {
-    return 'AudioTrack(id: $id, title: $title, language: $language)';
-  }
+      _$AudioTrackCopyWithImpl<AudioTrack>(this as AudioTrack, _$identity);
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$AudioTrackImpl &&
+            other is AudioTrack &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.title, title) || other.title == title) &&
             (identical(other.language, language) ||
@@ -148,118 +40,29 @@ class _$AudioTrackImpl implements _AudioTrack {
   @override
   int get hashCode => Object.hash(runtimeType, id, title, language);
 
-  /// Create a copy of AudioTrack
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  @pragma('vm:prefer-inline')
-  _$$AudioTrackImplCopyWith<_$AudioTrackImpl> get copyWith =>
-      __$$AudioTrackImplCopyWithImpl<_$AudioTrackImpl>(this, _$identity);
-}
-
-abstract class _AudioTrack implements AudioTrack {
-  factory _AudioTrack(final String id,
-      [final String? title, final String? language]) = _$AudioTrackImpl;
-
-  @override
-  String get id;
-  @override
-  String? get title;
-  @override
-  String? get language;
-
-  /// Create a copy of AudioTrack
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$AudioTrackImplCopyWith<_$AudioTrackImpl> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-mixin _$SubtitleTrack {
-  String get id => throw _privateConstructorUsedError;
-  String? get title => throw _privateConstructorUsedError;
-  String? get language => throw _privateConstructorUsedError;
-  String? get uri => throw _privateConstructorUsedError;
-
-  /// Create a copy of SubtitleTrack
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $SubtitleTrackCopyWith<SubtitleTrack> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $SubtitleTrackCopyWith<$Res> {
-  factory $SubtitleTrackCopyWith(
-          SubtitleTrack value, $Res Function(SubtitleTrack) then) =
-      _$SubtitleTrackCopyWithImpl<$Res, SubtitleTrack>;
-  @useResult
-  $Res call({String id, String? title, String? language, String? uri});
-}
-
-/// @nodoc
-class _$SubtitleTrackCopyWithImpl<$Res, $Val extends SubtitleTrack>
-    implements $SubtitleTrackCopyWith<$Res> {
-  _$SubtitleTrackCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of SubtitleTrack
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? id = null,
-    Object? title = freezed,
-    Object? language = freezed,
-    Object? uri = freezed,
-  }) {
-    return _then(_value.copyWith(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      title: freezed == title
-          ? _value.title
-          : title // ignore: cast_nullable_to_non_nullable
-              as String?,
-      language: freezed == language
-          ? _value.language
-          : language // ignore: cast_nullable_to_non_nullable
-              as String?,
-      uri: freezed == uri
-          ? _value.uri
-          : uri // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
+  String toString() {
+    return 'AudioTrack(id: $id, title: $title, language: $language)';
   }
 }
 
 /// @nodoc
-abstract class _$$SubtitleTrackImplCopyWith<$Res>
-    implements $SubtitleTrackCopyWith<$Res> {
-  factory _$$SubtitleTrackImplCopyWith(
-          _$SubtitleTrackImpl value, $Res Function(_$SubtitleTrackImpl) then) =
-      __$$SubtitleTrackImplCopyWithImpl<$Res>;
-  @override
+abstract mixin class $AudioTrackCopyWith<$Res> {
+  factory $AudioTrackCopyWith(
+          AudioTrack value, $Res Function(AudioTrack) _then) =
+      _$AudioTrackCopyWithImpl;
   @useResult
-  $Res call({String id, String? title, String? language, String? uri});
+  $Res call({String id, String? title, String? language});
 }
 
 /// @nodoc
-class __$$SubtitleTrackImplCopyWithImpl<$Res>
-    extends _$SubtitleTrackCopyWithImpl<$Res, _$SubtitleTrackImpl>
-    implements _$$SubtitleTrackImplCopyWith<$Res> {
-  __$$SubtitleTrackImplCopyWithImpl(
-      _$SubtitleTrackImpl _value, $Res Function(_$SubtitleTrackImpl) _then)
-      : super(_value, _then);
+class _$AudioTrackCopyWithImpl<$Res> implements $AudioTrackCopyWith<$Res> {
+  _$AudioTrackCopyWithImpl(this._self, this._then);
 
-  /// Create a copy of SubtitleTrack
+  final AudioTrack _self;
+  final $Res Function(AudioTrack) _then;
+
+  /// Create a copy of AudioTrack
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -267,24 +70,19 @@ class __$$SubtitleTrackImplCopyWithImpl<$Res>
     Object? id = null,
     Object? title = freezed,
     Object? language = freezed,
-    Object? uri = freezed,
   }) {
-    return _then(_$SubtitleTrackImpl(
+    return _then(_self.copyWith(
       id: null == id
-          ? _value.id
+          ? _self.id
           : id // ignore: cast_nullable_to_non_nullable
               as String,
       title: freezed == title
-          ? _value.title
+          ? _self.title
           : title // ignore: cast_nullable_to_non_nullable
               as String?,
       language: freezed == language
-          ? _value.language
+          ? _self.language
           : language // ignore: cast_nullable_to_non_nullable
-              as String?,
-      uri: freezed == uri
-          ? _value.uri
-          : uri // ignore: cast_nullable_to_non_nullable
               as String?,
     ));
   }
@@ -292,8 +90,8 @@ class __$$SubtitleTrackImplCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$SubtitleTrackImpl implements _SubtitleTrack {
-  _$SubtitleTrackImpl({required this.id, this.title, this.language, this.uri});
+class _AudioTrack implements AudioTrack {
+  _AudioTrack(this.id, [this.title, this.language]);
 
   @override
   final String id;
@@ -301,19 +99,99 @@ class _$SubtitleTrackImpl implements _SubtitleTrack {
   final String? title;
   @override
   final String? language;
-  @override
-  final String? uri;
 
+  /// Create a copy of AudioTrack
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  String toString() {
-    return 'SubtitleTrack(id: $id, title: $title, language: $language, uri: $uri)';
-  }
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$AudioTrackCopyWith<_AudioTrack> get copyWith =>
+      __$AudioTrackCopyWithImpl<_AudioTrack>(this, _$identity);
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$SubtitleTrackImpl &&
+            other is _AudioTrack &&
+            (identical(other.id, id) || other.id == id) &&
+            (identical(other.title, title) || other.title == title) &&
+            (identical(other.language, language) ||
+                other.language == language));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, id, title, language);
+
+  @override
+  String toString() {
+    return 'AudioTrack(id: $id, title: $title, language: $language)';
+  }
+}
+
+/// @nodoc
+abstract mixin class _$AudioTrackCopyWith<$Res>
+    implements $AudioTrackCopyWith<$Res> {
+  factory _$AudioTrackCopyWith(
+          _AudioTrack value, $Res Function(_AudioTrack) _then) =
+      __$AudioTrackCopyWithImpl;
+  @override
+  @useResult
+  $Res call({String id, String? title, String? language});
+}
+
+/// @nodoc
+class __$AudioTrackCopyWithImpl<$Res> implements _$AudioTrackCopyWith<$Res> {
+  __$AudioTrackCopyWithImpl(this._self, this._then);
+
+  final _AudioTrack _self;
+  final $Res Function(_AudioTrack) _then;
+
+  /// Create a copy of AudioTrack
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? id = null,
+    Object? title = freezed,
+    Object? language = freezed,
+  }) {
+    return _then(_AudioTrack(
+      null == id
+          ? _self.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as String,
+      freezed == title
+          ? _self.title
+          : title // ignore: cast_nullable_to_non_nullable
+              as String?,
+      freezed == language
+          ? _self.language
+          : language // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ));
+  }
+}
+
+/// @nodoc
+mixin _$SubtitleTrack {
+  String get id;
+  String? get title;
+  String? get language;
+  String? get uri;
+
+  /// Create a copy of SubtitleTrack
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  $SubtitleTrackCopyWith<SubtitleTrack> get copyWith =>
+      _$SubtitleTrackCopyWithImpl<SubtitleTrack>(
+          this as SubtitleTrack, _$identity);
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is SubtitleTrack &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.title, title) || other.title == title) &&
             (identical(other.language, language) ||
@@ -324,35 +202,151 @@ class _$SubtitleTrackImpl implements _SubtitleTrack {
   @override
   int get hashCode => Object.hash(runtimeType, id, title, language, uri);
 
+  @override
+  String toString() {
+    return 'SubtitleTrack(id: $id, title: $title, language: $language, uri: $uri)';
+  }
+}
+
+/// @nodoc
+abstract mixin class $SubtitleTrackCopyWith<$Res> {
+  factory $SubtitleTrackCopyWith(
+          SubtitleTrack value, $Res Function(SubtitleTrack) _then) =
+      _$SubtitleTrackCopyWithImpl;
+  @useResult
+  $Res call({String id, String? title, String? language, String? uri});
+}
+
+/// @nodoc
+class _$SubtitleTrackCopyWithImpl<$Res>
+    implements $SubtitleTrackCopyWith<$Res> {
+  _$SubtitleTrackCopyWithImpl(this._self, this._then);
+
+  final SubtitleTrack _self;
+  final $Res Function(SubtitleTrack) _then;
+
   /// Create a copy of SubtitleTrack
   /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = null,
+    Object? title = freezed,
+    Object? language = freezed,
+    Object? uri = freezed,
+  }) {
+    return _then(_self.copyWith(
+      id: null == id
+          ? _self.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as String,
+      title: freezed == title
+          ? _self.title
+          : title // ignore: cast_nullable_to_non_nullable
+              as String?,
+      language: freezed == language
+          ? _self.language
+          : language // ignore: cast_nullable_to_non_nullable
+              as String?,
+      uri: freezed == uri
+          ? _self.uri
+          : uri // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _SubtitleTrack implements SubtitleTrack {
+  _SubtitleTrack({required this.id, this.title, this.language, this.uri});
+
+  @override
+  final String id;
+  @override
+  final String? title;
+  @override
+  final String? language;
+  @override
+  final String? uri;
+
+  /// Create a copy of SubtitleTrack
+  /// with the given fields replaced by the non-null parameter values.
+  @override
   @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$SubtitleTrackCopyWith<_SubtitleTrack> get copyWith =>
+      __$SubtitleTrackCopyWithImpl<_SubtitleTrack>(this, _$identity);
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _SubtitleTrack &&
+            (identical(other.id, id) || other.id == id) &&
+            (identical(other.title, title) || other.title == title) &&
+            (identical(other.language, language) ||
+                other.language == language) &&
+            (identical(other.uri, uri) || other.uri == uri));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, id, title, language, uri);
+
+  @override
+  String toString() {
+    return 'SubtitleTrack(id: $id, title: $title, language: $language, uri: $uri)';
+  }
+}
+
+/// @nodoc
+abstract mixin class _$SubtitleTrackCopyWith<$Res>
+    implements $SubtitleTrackCopyWith<$Res> {
+  factory _$SubtitleTrackCopyWith(
+          _SubtitleTrack value, $Res Function(_SubtitleTrack) _then) =
+      __$SubtitleTrackCopyWithImpl;
+  @override
+  @useResult
+  $Res call({String id, String? title, String? language, String? uri});
+}
+
+/// @nodoc
+class __$SubtitleTrackCopyWithImpl<$Res>
+    implements _$SubtitleTrackCopyWith<$Res> {
+  __$SubtitleTrackCopyWithImpl(this._self, this._then);
+
+  final _SubtitleTrack _self;
+  final $Res Function(_SubtitleTrack) _then;
+
+  /// Create a copy of SubtitleTrack
+  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
-  _$$SubtitleTrackImplCopyWith<_$SubtitleTrackImpl> get copyWith =>
-      __$$SubtitleTrackImplCopyWithImpl<_$SubtitleTrackImpl>(this, _$identity);
+  $Res call({
+    Object? id = null,
+    Object? title = freezed,
+    Object? language = freezed,
+    Object? uri = freezed,
+  }) {
+    return _then(_SubtitleTrack(
+      id: null == id
+          ? _self.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as String,
+      title: freezed == title
+          ? _self.title
+          : title // ignore: cast_nullable_to_non_nullable
+              as String?,
+      language: freezed == language
+          ? _self.language
+          : language // ignore: cast_nullable_to_non_nullable
+              as String?,
+      uri: freezed == uri
+          ? _self.uri
+          : uri // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ));
+  }
 }
 
-abstract class _SubtitleTrack implements SubtitleTrack {
-  factory _SubtitleTrack(
-      {required final String id,
-      final String? title,
-      final String? language,
-      final String? uri}) = _$SubtitleTrackImpl;
-
-  @override
-  String get id;
-  @override
-  String? get title;
-  @override
-  String? get language;
-  @override
-  String? get uri;
-
-  /// Create a copy of SubtitleTrack
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$SubtitleTrackImplCopyWith<_$SubtitleTrackImpl> get copyWith =>
-      throw _privateConstructorUsedError;
-}
+// dart format on

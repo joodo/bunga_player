@@ -38,11 +38,7 @@ class AskPositionAction extends ContextAction<AskPositionIntent> {
 
   @override
   Future<void> invoke(AskPositionIntent intent, [BuildContext? context]) async {
-    final message = await (Actions.invoke(
-      context!,
-      SendMessageIntent(WhereAskingMessageData().toMessageData()),
-    ) as Future<Message>);
-    positionAskingBusiness.askingMessageId = message.id;
+    throw UnimplementedError();
 
     Future.delayed(const Duration(seconds: 3), () {
       if (positionAskingBusiness.askingMessageId != null) {
@@ -131,15 +127,7 @@ class SendPlayingStatusAction extends ContextAction<SendPlayingStatusIntent> {
 
   @override
   Future<void> invoke(SendPlayingStatusIntent intent, [BuildContext? context]) {
-    return Actions.invoke(
-        context!,
-        SendMessageIntent(
-          PlayStatusMessageData(
-            status: intent.playingStatus,
-            position: intent.position,
-            answerId: intent.answeringMessageId,
-          ).toMessageData(),
-        )) as Future<void>;
+    throw UnimplementedError();
   }
 
   @override

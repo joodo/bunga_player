@@ -6,20 +6,20 @@ part of 'history.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$WatchProgressImpl _$$WatchProgressImplFromJson(Map<String, dynamic> json) =>
-    _$WatchProgressImpl(
+_WatchProgress _$WatchProgressFromJson(Map<String, dynamic> json) =>
+    _WatchProgress(
       position: Duration(microseconds: (json['position'] as num).toInt()),
       duration: Duration(microseconds: (json['duration'] as num).toInt()),
     );
 
-Map<String, dynamic> _$$WatchProgressImplToJson(_$WatchProgressImpl instance) =>
+Map<String, dynamic> _$WatchProgressToJson(_WatchProgress instance) =>
     <String, dynamic>{
       'position': instance.position.inMicroseconds,
       'duration': instance.duration.inMicroseconds,
     };
 
-_$VideoSessionImpl _$$VideoSessionImplFromJson(Map<String, dynamic> json) =>
-    _$VideoSessionImpl(
+_VideoSession _$VideoSessionFromJson(Map<String, dynamic> json) =>
+    _VideoSession(
       updatedAt: DateTime.parse(json['updated_at'] as String),
       videoRecord:
           VideoRecord.fromJson(json['video_record'] as Map<String, dynamic>),
@@ -28,7 +28,7 @@ _$VideoSessionImpl _$$VideoSessionImplFromJson(Map<String, dynamic> json) =>
       subtitleUri: json['subtitle_uri'] as String?,
     );
 
-Map<String, dynamic> _$$VideoSessionImplToJson(_$VideoSessionImpl instance) =>
+Map<String, dynamic> _$VideoSessionToJson(_VideoSession instance) =>
     <String, dynamic>{
       'updated_at': instance.updatedAt.toIso8601String(),
       'video_record': instance.videoRecord.toJson(),
@@ -36,14 +36,12 @@ Map<String, dynamic> _$$VideoSessionImplToJson(_$VideoSessionImpl instance) =>
       'subtitle_uri': instance.subtitleUri,
     };
 
-_$HistoryImpl _$$HistoryImplFromJson(Map<String, dynamic> json) =>
-    _$HistoryImpl(
+_History _$HistoryFromJson(Map<String, dynamic> json) => _History(
       value: (json['value'] as Map<String, dynamic>).map(
         (k, e) => MapEntry(k, VideoSession.fromJson(e as Map<String, dynamic>)),
       ),
     );
 
-Map<String, dynamic> _$$HistoryImplToJson(_$HistoryImpl instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$HistoryToJson(_History instance) => <String, dynamic>{
       'value': instance.value.map((k, e) => MapEntry(k, e.toJson())),
     };

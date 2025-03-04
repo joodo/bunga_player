@@ -6,15 +6,21 @@ import 'user.dart';
 
 part 'message_data.g.dart';
 
+abstract class MessageData {
+  String get type;
+  Map<String, dynamic> toJson();
+}
+
 /// Send when sharing video
 @JsonSerializable()
-class StartProjectionMessageData {
+class StartProjectionMessageData extends MessageData {
   static const messageType = 'start-projection';
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: true)
+  final type = messageType;
 
   final User sharer;
   final VideoRecord videoRecord;
-  @JsonKey(includeFromJson: false, includeToJson: true)
-  final type = messageType;
 
   StartProjectionMessageData({
     required this.sharer,
@@ -23,32 +29,63 @@ class StartProjectionMessageData {
 
   factory StartProjectionMessageData.fromJson(Map<String, dynamic> json) =>
       _$StartProjectionMessageDataFromJson(json);
+  @override
   Map<String, dynamic> toJson() => _$StartProjectionMessageDataToJson(this);
 }
 
-class AlohaMessageData {
+/// Send when join watching
+@JsonSerializable()
+class AlohaMessageData extends MessageData {
+  static const messageType = 'aloha';
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: true)
+  final type = messageType;
+
   final User user;
 
   AlohaMessageData({required this.user});
 
-  Map<String, dynamic> toMessageData() => {'type': 'aloha', ...user.toJson()};
+  factory AlohaMessageData.fromJson(Map<String, dynamic> json) =>
+      _$AlohaMessageDataFromJson(json);
+  @override
+  Map<String, dynamic> toJson() => _$AlohaMessageDataToJson(this);
 }
 
-class HereIsMessageData {
+/// Send when answering aloha
+@JsonSerializable()
+class HereIsMessageData extends MessageData {
+  static const messageType = 'here-is';
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: true)
+  final type = messageType;
+
   final User user;
   final bool isTalking;
 
   HereIsMessageData({required this.user, required this.isTalking});
 
-  Map<String, dynamic> toMessageData() => {
-        'type': 'hereIs',
-        ...user.toJson(),
-        'isTalking': isTalking,
-      };
+  factory HereIsMessageData.fromJson(Map<String, dynamic> json) =>
+      _$HereIsMessageDataFromJson(json);
+  @override
+  Map<String, dynamic> toJson() => _$HereIsMessageDataToJson(this);
 }
 
-class ByeMessageData {
-  Map<String, dynamic> toMessageData() => {'type': 'bye'};
+/// Send when leave watching
+@JsonSerializable()
+class ByeMessageData extends MessageData {
+  static const messageType = 'bye';
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: true)
+  final type = messageType;
+
+  final String userId;
+
+  ByeMessageData({required this.userId});
+
+  factory ByeMessageData.fromJson(Map<String, dynamic> json) =>
+      _$ByeMessageDataFromJson(json);
+  @override
+  Map<String, dynamic> toJson() => _$ByeMessageDataToJson(this);
 }
 
 extension AlohaExtension on Map<String, dynamic> {

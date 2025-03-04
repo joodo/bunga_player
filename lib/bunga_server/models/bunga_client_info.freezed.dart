@@ -1,3 +1,4 @@
+// dart format width=80
 // coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint
@@ -9,144 +10,30 @@ part of 'bunga_client_info.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
-
-IMInfo _$IMInfoFromJson(Map<String, dynamic> json) {
-  return _IMInfo.fromJson(json);
-}
 
 /// @nodoc
 mixin _$IMInfo {
-  String get appId => throw _privateConstructorUsedError;
-  String get userId => throw _privateConstructorUsedError;
-  String get userSig => throw _privateConstructorUsedError;
-
-  /// Serializes this IMInfo to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  String get appId;
+  String get userId;
+  String get userSig;
 
   /// Create a copy of IMInfo
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $IMInfoCopyWith<IMInfo> get copyWith => throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $IMInfoCopyWith<$Res> {
-  factory $IMInfoCopyWith(IMInfo value, $Res Function(IMInfo) then) =
-      _$IMInfoCopyWithImpl<$Res, IMInfo>;
-  @useResult
-  $Res call({String appId, String userId, String userSig});
-}
-
-/// @nodoc
-class _$IMInfoCopyWithImpl<$Res, $Val extends IMInfo>
-    implements $IMInfoCopyWith<$Res> {
-  _$IMInfoCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of IMInfo
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? appId = null,
-    Object? userId = null,
-    Object? userSig = null,
-  }) {
-    return _then(_value.copyWith(
-      appId: null == appId
-          ? _value.appId
-          : appId // ignore: cast_nullable_to_non_nullable
-              as String,
-      userId: null == userId
-          ? _value.userId
-          : userId // ignore: cast_nullable_to_non_nullable
-              as String,
-      userSig: null == userSig
-          ? _value.userSig
-          : userSig // ignore: cast_nullable_to_non_nullable
-              as String,
-    ) as $Val);
-  }
-}
+  $IMInfoCopyWith<IMInfo> get copyWith =>
+      _$IMInfoCopyWithImpl<IMInfo>(this as IMInfo, _$identity);
 
-/// @nodoc
-abstract class _$$IMInfoImplCopyWith<$Res> implements $IMInfoCopyWith<$Res> {
-  factory _$$IMInfoImplCopyWith(
-          _$IMInfoImpl value, $Res Function(_$IMInfoImpl) then) =
-      __$$IMInfoImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({String appId, String userId, String userSig});
-}
-
-/// @nodoc
-class __$$IMInfoImplCopyWithImpl<$Res>
-    extends _$IMInfoCopyWithImpl<$Res, _$IMInfoImpl>
-    implements _$$IMInfoImplCopyWith<$Res> {
-  __$$IMInfoImplCopyWithImpl(
-      _$IMInfoImpl _value, $Res Function(_$IMInfoImpl) _then)
-      : super(_value, _then);
-
-  /// Create a copy of IMInfo
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? appId = null,
-    Object? userId = null,
-    Object? userSig = null,
-  }) {
-    return _then(_$IMInfoImpl(
-      appId: null == appId
-          ? _value.appId
-          : appId // ignore: cast_nullable_to_non_nullable
-              as String,
-      userId: null == userId
-          ? _value.userId
-          : userId // ignore: cast_nullable_to_non_nullable
-              as String,
-      userSig: null == userSig
-          ? _value.userSig
-          : userSig // ignore: cast_nullable_to_non_nullable
-              as String,
-    ));
-  }
-}
-
-/// @nodoc
-@JsonSerializable()
-class _$IMInfoImpl implements _IMInfo {
-  const _$IMInfoImpl(
-      {required this.appId, required this.userId, required this.userSig});
-
-  factory _$IMInfoImpl.fromJson(Map<String, dynamic> json) =>
-      _$$IMInfoImplFromJson(json);
-
-  @override
-  final String appId;
-  @override
-  final String userId;
-  @override
-  final String userSig;
-
-  @override
-  String toString() {
-    return 'IMInfo(appId: $appId, userId: $userId, userSig: $userSig)';
-  }
+  /// Serializes this IMInfo to a JSON map.
+  Map<String, dynamic> toJson();
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$IMInfoImpl &&
+            other is IMInfo &&
             (identical(other.appId, appId) || other.appId == appId) &&
             (identical(other.userId, userId) || other.userId == userId) &&
             (identical(other.userSig, userSig) || other.userSig == userSig));
@@ -156,128 +43,48 @@ class _$IMInfoImpl implements _IMInfo {
   @override
   int get hashCode => Object.hash(runtimeType, appId, userId, userSig);
 
-  /// Create a copy of IMInfo
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  @pragma('vm:prefer-inline')
-  _$$IMInfoImplCopyWith<_$IMInfoImpl> get copyWith =>
-      __$$IMInfoImplCopyWithImpl<_$IMInfoImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$IMInfoImplToJson(
-      this,
-    );
+  String toString() {
+    return 'IMInfo(appId: $appId, userId: $userId, userSig: $userSig)';
   }
 }
 
-abstract class _IMInfo implements IMInfo {
-  const factory _IMInfo(
-      {required final String appId,
-      required final String userId,
-      required final String userSig}) = _$IMInfoImpl;
+/// @nodoc
+abstract mixin class $IMInfoCopyWith<$Res> {
+  factory $IMInfoCopyWith(IMInfo value, $Res Function(IMInfo) _then) =
+      _$IMInfoCopyWithImpl;
+  @useResult
+  $Res call({String appId, String userId, String userSig});
+}
 
-  factory _IMInfo.fromJson(Map<String, dynamic> json) = _$IMInfoImpl.fromJson;
+/// @nodoc
+class _$IMInfoCopyWithImpl<$Res> implements $IMInfoCopyWith<$Res> {
+  _$IMInfoCopyWithImpl(this._self, this._then);
 
-  @override
-  String get appId;
-  @override
-  String get userId;
-  @override
-  String get userSig;
+  final IMInfo _self;
+  final $Res Function(IMInfo) _then;
 
   /// Create a copy of IMInfo
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$IMInfoImplCopyWith<_$IMInfoImpl> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-VoiceCallInfo _$VoiceCallInfoFromJson(Map<String, dynamic> json) {
-  return _VoiceCallInfo.fromJson(json);
-}
-
-/// @nodoc
-mixin _$VoiceCallInfo {
-  String get key => throw _privateConstructorUsedError;
-
-  /// Serializes this VoiceCallInfo to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-
-  /// Create a copy of VoiceCallInfo
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $VoiceCallInfoCopyWith<VoiceCallInfo> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $VoiceCallInfoCopyWith<$Res> {
-  factory $VoiceCallInfoCopyWith(
-          VoiceCallInfo value, $Res Function(VoiceCallInfo) then) =
-      _$VoiceCallInfoCopyWithImpl<$Res, VoiceCallInfo>;
-  @useResult
-  $Res call({String key});
-}
-
-/// @nodoc
-class _$VoiceCallInfoCopyWithImpl<$Res, $Val extends VoiceCallInfo>
-    implements $VoiceCallInfoCopyWith<$Res> {
-  _$VoiceCallInfoCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of VoiceCallInfo
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? key = null,
+    Object? appId = null,
+    Object? userId = null,
+    Object? userSig = null,
   }) {
-    return _then(_value.copyWith(
-      key: null == key
-          ? _value.key
-          : key // ignore: cast_nullable_to_non_nullable
+    return _then(_self.copyWith(
+      appId: null == appId
+          ? _self.appId
+          : appId // ignore: cast_nullable_to_non_nullable
               as String,
-    ) as $Val);
-  }
-}
-
-/// @nodoc
-abstract class _$$VoiceCallInfoImplCopyWith<$Res>
-    implements $VoiceCallInfoCopyWith<$Res> {
-  factory _$$VoiceCallInfoImplCopyWith(
-          _$VoiceCallInfoImpl value, $Res Function(_$VoiceCallInfoImpl) then) =
-      __$$VoiceCallInfoImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({String key});
-}
-
-/// @nodoc
-class __$$VoiceCallInfoImplCopyWithImpl<$Res>
-    extends _$VoiceCallInfoCopyWithImpl<$Res, _$VoiceCallInfoImpl>
-    implements _$$VoiceCallInfoImplCopyWith<$Res> {
-  __$$VoiceCallInfoImplCopyWithImpl(
-      _$VoiceCallInfoImpl _value, $Res Function(_$VoiceCallInfoImpl) _then)
-      : super(_value, _then);
-
-  /// Create a copy of VoiceCallInfo
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? key = null,
-  }) {
-    return _then(_$VoiceCallInfoImpl(
-      key: null == key
-          ? _value.key
-          : key // ignore: cast_nullable_to_non_nullable
+      userId: null == userId
+          ? _self.userId
+          : userId // ignore: cast_nullable_to_non_nullable
+              as String,
+      userSig: null == userSig
+          ? _self.userSig
+          : userSig // ignore: cast_nullable_to_non_nullable
               as String,
     ));
   }
@@ -285,25 +92,115 @@ class __$$VoiceCallInfoImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$VoiceCallInfoImpl implements _VoiceCallInfo {
-  const _$VoiceCallInfoImpl({required this.key});
-
-  factory _$VoiceCallInfoImpl.fromJson(Map<String, dynamic> json) =>
-      _$$VoiceCallInfoImplFromJson(json);
-
-  @override
-  final String key;
+class _IMInfo implements IMInfo {
+  const _IMInfo(
+      {required this.appId, required this.userId, required this.userSig});
+  factory _IMInfo.fromJson(Map<String, dynamic> json) => _$IMInfoFromJson(json);
 
   @override
-  String toString() {
-    return 'VoiceCallInfo(key: $key)';
+  final String appId;
+  @override
+  final String userId;
+  @override
+  final String userSig;
+
+  /// Create a copy of IMInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$IMInfoCopyWith<_IMInfo> get copyWith =>
+      __$IMInfoCopyWithImpl<_IMInfo>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$IMInfoToJson(
+      this,
+    );
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$VoiceCallInfoImpl &&
+            other is _IMInfo &&
+            (identical(other.appId, appId) || other.appId == appId) &&
+            (identical(other.userId, userId) || other.userId == userId) &&
+            (identical(other.userSig, userSig) || other.userSig == userSig));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, appId, userId, userSig);
+
+  @override
+  String toString() {
+    return 'IMInfo(appId: $appId, userId: $userId, userSig: $userSig)';
+  }
+}
+
+/// @nodoc
+abstract mixin class _$IMInfoCopyWith<$Res> implements $IMInfoCopyWith<$Res> {
+  factory _$IMInfoCopyWith(_IMInfo value, $Res Function(_IMInfo) _then) =
+      __$IMInfoCopyWithImpl;
+  @override
+  @useResult
+  $Res call({String appId, String userId, String userSig});
+}
+
+/// @nodoc
+class __$IMInfoCopyWithImpl<$Res> implements _$IMInfoCopyWith<$Res> {
+  __$IMInfoCopyWithImpl(this._self, this._then);
+
+  final _IMInfo _self;
+  final $Res Function(_IMInfo) _then;
+
+  /// Create a copy of IMInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? appId = null,
+    Object? userId = null,
+    Object? userSig = null,
+  }) {
+    return _then(_IMInfo(
+      appId: null == appId
+          ? _self.appId
+          : appId // ignore: cast_nullable_to_non_nullable
+              as String,
+      userId: null == userId
+          ? _self.userId
+          : userId // ignore: cast_nullable_to_non_nullable
+              as String,
+      userSig: null == userSig
+          ? _self.userSig
+          : userSig // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+/// @nodoc
+mixin _$VoiceCallInfo {
+  String get key;
+
+  /// Create a copy of VoiceCallInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  $VoiceCallInfoCopyWith<VoiceCallInfo> get copyWith =>
+      _$VoiceCallInfoCopyWithImpl<VoiceCallInfo>(
+          this as VoiceCallInfo, _$identity);
+
+  /// Serializes this VoiceCallInfo to a JSON map.
+  Map<String, dynamic> toJson();
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is VoiceCallInfo &&
             (identical(other.key, key) || other.key == key));
   }
 
@@ -311,134 +208,40 @@ class _$VoiceCallInfoImpl implements _VoiceCallInfo {
   @override
   int get hashCode => Object.hash(runtimeType, key);
 
-  /// Create a copy of VoiceCallInfo
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  @pragma('vm:prefer-inline')
-  _$$VoiceCallInfoImplCopyWith<_$VoiceCallInfoImpl> get copyWith =>
-      __$$VoiceCallInfoImplCopyWithImpl<_$VoiceCallInfoImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$VoiceCallInfoImplToJson(
-      this,
-    );
-  }
-}
-
-abstract class _VoiceCallInfo implements VoiceCallInfo {
-  const factory _VoiceCallInfo({required final String key}) =
-      _$VoiceCallInfoImpl;
-
-  factory _VoiceCallInfo.fromJson(Map<String, dynamic> json) =
-      _$VoiceCallInfoImpl.fromJson;
-
-  @override
-  String get key;
-
-  /// Create a copy of VoiceCallInfo
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$VoiceCallInfoImplCopyWith<_$VoiceCallInfoImpl> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-BilibiliInfo _$BilibiliInfoFromJson(Map<String, dynamic> json) {
-  return _BilibiliInfo.fromJson(json);
-}
-
-/// @nodoc
-mixin _$BilibiliInfo {
-  String get sess => throw _privateConstructorUsedError;
-  String get mixinKey => throw _privateConstructorUsedError;
-
-  /// Serializes this BilibiliInfo to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-
-  /// Create a copy of BilibiliInfo
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $BilibiliInfoCopyWith<BilibiliInfo> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $BilibiliInfoCopyWith<$Res> {
-  factory $BilibiliInfoCopyWith(
-          BilibiliInfo value, $Res Function(BilibiliInfo) then) =
-      _$BilibiliInfoCopyWithImpl<$Res, BilibiliInfo>;
-  @useResult
-  $Res call({String sess, String mixinKey});
-}
-
-/// @nodoc
-class _$BilibiliInfoCopyWithImpl<$Res, $Val extends BilibiliInfo>
-    implements $BilibiliInfoCopyWith<$Res> {
-  _$BilibiliInfoCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of BilibiliInfo
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? sess = null,
-    Object? mixinKey = null,
-  }) {
-    return _then(_value.copyWith(
-      sess: null == sess
-          ? _value.sess
-          : sess // ignore: cast_nullable_to_non_nullable
-              as String,
-      mixinKey: null == mixinKey
-          ? _value.mixinKey
-          : mixinKey // ignore: cast_nullable_to_non_nullable
-              as String,
-    ) as $Val);
+  String toString() {
+    return 'VoiceCallInfo(key: $key)';
   }
 }
 
 /// @nodoc
-abstract class _$$BilibiliInfoImplCopyWith<$Res>
-    implements $BilibiliInfoCopyWith<$Res> {
-  factory _$$BilibiliInfoImplCopyWith(
-          _$BilibiliInfoImpl value, $Res Function(_$BilibiliInfoImpl) then) =
-      __$$BilibiliInfoImplCopyWithImpl<$Res>;
-  @override
+abstract mixin class $VoiceCallInfoCopyWith<$Res> {
+  factory $VoiceCallInfoCopyWith(
+          VoiceCallInfo value, $Res Function(VoiceCallInfo) _then) =
+      _$VoiceCallInfoCopyWithImpl;
   @useResult
-  $Res call({String sess, String mixinKey});
+  $Res call({String key});
 }
 
 /// @nodoc
-class __$$BilibiliInfoImplCopyWithImpl<$Res>
-    extends _$BilibiliInfoCopyWithImpl<$Res, _$BilibiliInfoImpl>
-    implements _$$BilibiliInfoImplCopyWith<$Res> {
-  __$$BilibiliInfoImplCopyWithImpl(
-      _$BilibiliInfoImpl _value, $Res Function(_$BilibiliInfoImpl) _then)
-      : super(_value, _then);
+class _$VoiceCallInfoCopyWithImpl<$Res>
+    implements $VoiceCallInfoCopyWith<$Res> {
+  _$VoiceCallInfoCopyWithImpl(this._self, this._then);
 
-  /// Create a copy of BilibiliInfo
+  final VoiceCallInfo _self;
+  final $Res Function(VoiceCallInfo) _then;
+
+  /// Create a copy of VoiceCallInfo
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? sess = null,
-    Object? mixinKey = null,
+    Object? key = null,
   }) {
-    return _then(_$BilibiliInfoImpl(
-      sess: null == sess
-          ? _value.sess
-          : sess // ignore: cast_nullable_to_non_nullable
-              as String,
-      mixinKey: null == mixinKey
-          ? _value.mixinKey
-          : mixinKey // ignore: cast_nullable_to_non_nullable
+    return _then(_self.copyWith(
+      key: null == key
+          ? _self.key
+          : key // ignore: cast_nullable_to_non_nullable
               as String,
     ));
   }
@@ -446,27 +249,103 @@ class __$$BilibiliInfoImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$BilibiliInfoImpl implements _BilibiliInfo {
-  const _$BilibiliInfoImpl({required this.sess, required this.mixinKey});
-
-  factory _$BilibiliInfoImpl.fromJson(Map<String, dynamic> json) =>
-      _$$BilibiliInfoImplFromJson(json);
-
-  @override
-  final String sess;
-  @override
-  final String mixinKey;
+class _VoiceCallInfo implements VoiceCallInfo {
+  const _VoiceCallInfo({required this.key});
+  factory _VoiceCallInfo.fromJson(Map<String, dynamic> json) =>
+      _$VoiceCallInfoFromJson(json);
 
   @override
-  String toString() {
-    return 'BilibiliInfo(sess: $sess, mixinKey: $mixinKey)';
+  final String key;
+
+  /// Create a copy of VoiceCallInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$VoiceCallInfoCopyWith<_VoiceCallInfo> get copyWith =>
+      __$VoiceCallInfoCopyWithImpl<_VoiceCallInfo>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$VoiceCallInfoToJson(
+      this,
+    );
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$BilibiliInfoImpl &&
+            other is _VoiceCallInfo &&
+            (identical(other.key, key) || other.key == key));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, key);
+
+  @override
+  String toString() {
+    return 'VoiceCallInfo(key: $key)';
+  }
+}
+
+/// @nodoc
+abstract mixin class _$VoiceCallInfoCopyWith<$Res>
+    implements $VoiceCallInfoCopyWith<$Res> {
+  factory _$VoiceCallInfoCopyWith(
+          _VoiceCallInfo value, $Res Function(_VoiceCallInfo) _then) =
+      __$VoiceCallInfoCopyWithImpl;
+  @override
+  @useResult
+  $Res call({String key});
+}
+
+/// @nodoc
+class __$VoiceCallInfoCopyWithImpl<$Res>
+    implements _$VoiceCallInfoCopyWith<$Res> {
+  __$VoiceCallInfoCopyWithImpl(this._self, this._then);
+
+  final _VoiceCallInfo _self;
+  final $Res Function(_VoiceCallInfo) _then;
+
+  /// Create a copy of VoiceCallInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? key = null,
+  }) {
+    return _then(_VoiceCallInfo(
+      key: null == key
+          ? _self.key
+          : key // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+/// @nodoc
+mixin _$BilibiliInfo {
+  String get sess;
+  String get mixinKey;
+
+  /// Create a copy of BilibiliInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  $BilibiliInfoCopyWith<BilibiliInfo> get copyWith =>
+      _$BilibiliInfoCopyWithImpl<BilibiliInfo>(
+          this as BilibiliInfo, _$identity);
+
+  /// Serializes this BilibiliInfo to a JSON map.
+  Map<String, dynamic> toJson();
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is BilibiliInfo &&
             (identical(other.sess, sess) || other.sess == sess) &&
             (identical(other.mixinKey, mixinKey) ||
                 other.mixinKey == mixinKey));
@@ -476,136 +355,44 @@ class _$BilibiliInfoImpl implements _BilibiliInfo {
   @override
   int get hashCode => Object.hash(runtimeType, sess, mixinKey);
 
-  /// Create a copy of BilibiliInfo
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  @pragma('vm:prefer-inline')
-  _$$BilibiliInfoImplCopyWith<_$BilibiliInfoImpl> get copyWith =>
-      __$$BilibiliInfoImplCopyWithImpl<_$BilibiliInfoImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$BilibiliInfoImplToJson(
-      this,
-    );
-  }
-}
-
-abstract class _BilibiliInfo implements BilibiliInfo {
-  const factory _BilibiliInfo(
-      {required final String sess,
-      required final String mixinKey}) = _$BilibiliInfoImpl;
-
-  factory _BilibiliInfo.fromJson(Map<String, dynamic> json) =
-      _$BilibiliInfoImpl.fromJson;
-
-  @override
-  String get sess;
-  @override
-  String get mixinKey;
-
-  /// Create a copy of BilibiliInfo
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$BilibiliInfoImplCopyWith<_$BilibiliInfoImpl> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-AListInfo _$AListInfoFromJson(Map<String, dynamic> json) {
-  return _AListInfo.fromJson(json);
-}
-
-/// @nodoc
-mixin _$AListInfo {
-  String get host => throw _privateConstructorUsedError;
-  String get token => throw _privateConstructorUsedError;
-
-  /// Serializes this AListInfo to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-
-  /// Create a copy of AListInfo
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $AListInfoCopyWith<AListInfo> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $AListInfoCopyWith<$Res> {
-  factory $AListInfoCopyWith(AListInfo value, $Res Function(AListInfo) then) =
-      _$AListInfoCopyWithImpl<$Res, AListInfo>;
-  @useResult
-  $Res call({String host, String token});
-}
-
-/// @nodoc
-class _$AListInfoCopyWithImpl<$Res, $Val extends AListInfo>
-    implements $AListInfoCopyWith<$Res> {
-  _$AListInfoCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of AListInfo
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? host = null,
-    Object? token = null,
-  }) {
-    return _then(_value.copyWith(
-      host: null == host
-          ? _value.host
-          : host // ignore: cast_nullable_to_non_nullable
-              as String,
-      token: null == token
-          ? _value.token
-          : token // ignore: cast_nullable_to_non_nullable
-              as String,
-    ) as $Val);
+  String toString() {
+    return 'BilibiliInfo(sess: $sess, mixinKey: $mixinKey)';
   }
 }
 
 /// @nodoc
-abstract class _$$AListInfoImplCopyWith<$Res>
-    implements $AListInfoCopyWith<$Res> {
-  factory _$$AListInfoImplCopyWith(
-          _$AListInfoImpl value, $Res Function(_$AListInfoImpl) then) =
-      __$$AListInfoImplCopyWithImpl<$Res>;
-  @override
+abstract mixin class $BilibiliInfoCopyWith<$Res> {
+  factory $BilibiliInfoCopyWith(
+          BilibiliInfo value, $Res Function(BilibiliInfo) _then) =
+      _$BilibiliInfoCopyWithImpl;
   @useResult
-  $Res call({String host, String token});
+  $Res call({String sess, String mixinKey});
 }
 
 /// @nodoc
-class __$$AListInfoImplCopyWithImpl<$Res>
-    extends _$AListInfoCopyWithImpl<$Res, _$AListInfoImpl>
-    implements _$$AListInfoImplCopyWith<$Res> {
-  __$$AListInfoImplCopyWithImpl(
-      _$AListInfoImpl _value, $Res Function(_$AListInfoImpl) _then)
-      : super(_value, _then);
+class _$BilibiliInfoCopyWithImpl<$Res> implements $BilibiliInfoCopyWith<$Res> {
+  _$BilibiliInfoCopyWithImpl(this._self, this._then);
 
-  /// Create a copy of AListInfo
+  final BilibiliInfo _self;
+  final $Res Function(BilibiliInfo) _then;
+
+  /// Create a copy of BilibiliInfo
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? host = null,
-    Object? token = null,
+    Object? sess = null,
+    Object? mixinKey = null,
   }) {
-    return _then(_$AListInfoImpl(
-      host: null == host
-          ? _value.host
-          : host // ignore: cast_nullable_to_non_nullable
+    return _then(_self.copyWith(
+      sess: null == sess
+          ? _self.sess
+          : sess // ignore: cast_nullable_to_non_nullable
               as String,
-      token: null == token
-          ? _value.token
-          : token // ignore: cast_nullable_to_non_nullable
+      mixinKey: null == mixinKey
+          ? _self.mixinKey
+          : mixinKey // ignore: cast_nullable_to_non_nullable
               as String,
     ));
   }
@@ -613,27 +400,111 @@ class __$$AListInfoImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$AListInfoImpl implements _AListInfo {
-  const _$AListInfoImpl({required this.host, required this.token});
-
-  factory _$AListInfoImpl.fromJson(Map<String, dynamic> json) =>
-      _$$AListInfoImplFromJson(json);
-
-  @override
-  final String host;
-  @override
-  final String token;
+class _BilibiliInfo implements BilibiliInfo {
+  const _BilibiliInfo({required this.sess, required this.mixinKey});
+  factory _BilibiliInfo.fromJson(Map<String, dynamic> json) =>
+      _$BilibiliInfoFromJson(json);
 
   @override
-  String toString() {
-    return 'AListInfo(host: $host, token: $token)';
+  final String sess;
+  @override
+  final String mixinKey;
+
+  /// Create a copy of BilibiliInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$BilibiliInfoCopyWith<_BilibiliInfo> get copyWith =>
+      __$BilibiliInfoCopyWithImpl<_BilibiliInfo>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$BilibiliInfoToJson(
+      this,
+    );
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$AListInfoImpl &&
+            other is _BilibiliInfo &&
+            (identical(other.sess, sess) || other.sess == sess) &&
+            (identical(other.mixinKey, mixinKey) ||
+                other.mixinKey == mixinKey));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, sess, mixinKey);
+
+  @override
+  String toString() {
+    return 'BilibiliInfo(sess: $sess, mixinKey: $mixinKey)';
+  }
+}
+
+/// @nodoc
+abstract mixin class _$BilibiliInfoCopyWith<$Res>
+    implements $BilibiliInfoCopyWith<$Res> {
+  factory _$BilibiliInfoCopyWith(
+          _BilibiliInfo value, $Res Function(_BilibiliInfo) _then) =
+      __$BilibiliInfoCopyWithImpl;
+  @override
+  @useResult
+  $Res call({String sess, String mixinKey});
+}
+
+/// @nodoc
+class __$BilibiliInfoCopyWithImpl<$Res>
+    implements _$BilibiliInfoCopyWith<$Res> {
+  __$BilibiliInfoCopyWithImpl(this._self, this._then);
+
+  final _BilibiliInfo _self;
+  final $Res Function(_BilibiliInfo) _then;
+
+  /// Create a copy of BilibiliInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? sess = null,
+    Object? mixinKey = null,
+  }) {
+    return _then(_BilibiliInfo(
+      sess: null == sess
+          ? _self.sess
+          : sess // ignore: cast_nullable_to_non_nullable
+              as String,
+      mixinKey: null == mixinKey
+          ? _self.mixinKey
+          : mixinKey // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+/// @nodoc
+mixin _$AListInfo {
+  String get host;
+  String get token;
+
+  /// Create a copy of AListInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  $AListInfoCopyWith<AListInfo> get copyWith =>
+      _$AListInfoCopyWithImpl<AListInfo>(this as AListInfo, _$identity);
+
+  /// Serializes this AListInfo to a JSON map.
+  Map<String, dynamic> toJson();
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is AListInfo &&
             (identical(other.host, host) || other.host == host) &&
             (identical(other.token, token) || other.token == token));
   }
@@ -642,137 +513,43 @@ class _$AListInfoImpl implements _AListInfo {
   @override
   int get hashCode => Object.hash(runtimeType, host, token);
 
-  /// Create a copy of AListInfo
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  @pragma('vm:prefer-inline')
-  _$$AListInfoImplCopyWith<_$AListInfoImpl> get copyWith =>
-      __$$AListInfoImplCopyWithImpl<_$AListInfoImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$AListInfoImplToJson(
-      this,
-    );
-  }
-}
-
-abstract class _AListInfo implements AListInfo {
-  const factory _AListInfo(
-      {required final String host,
-      required final String token}) = _$AListInfoImpl;
-
-  factory _AListInfo.fromJson(Map<String, dynamic> json) =
-      _$AListInfoImpl.fromJson;
-
-  @override
-  String get host;
-  @override
-  String get token;
-
-  /// Create a copy of AListInfo
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$AListInfoImplCopyWith<_$AListInfoImpl> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-ChannelInfo _$ChannelInfoFromJson(Map<String, dynamic> json) {
-  return _ChannelInfo.fromJson(json);
-}
-
-/// @nodoc
-mixin _$ChannelInfo {
-  String get id => throw _privateConstructorUsedError;
-  String get name => throw _privateConstructorUsedError;
-
-  /// Serializes this ChannelInfo to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-
-  /// Create a copy of ChannelInfo
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $ChannelInfoCopyWith<ChannelInfo> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $ChannelInfoCopyWith<$Res> {
-  factory $ChannelInfoCopyWith(
-          ChannelInfo value, $Res Function(ChannelInfo) then) =
-      _$ChannelInfoCopyWithImpl<$Res, ChannelInfo>;
-  @useResult
-  $Res call({String id, String name});
-}
-
-/// @nodoc
-class _$ChannelInfoCopyWithImpl<$Res, $Val extends ChannelInfo>
-    implements $ChannelInfoCopyWith<$Res> {
-  _$ChannelInfoCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of ChannelInfo
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? id = null,
-    Object? name = null,
-  }) {
-    return _then(_value.copyWith(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      name: null == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String,
-    ) as $Val);
+  String toString() {
+    return 'AListInfo(host: $host, token: $token)';
   }
 }
 
 /// @nodoc
-abstract class _$$ChannelInfoImplCopyWith<$Res>
-    implements $ChannelInfoCopyWith<$Res> {
-  factory _$$ChannelInfoImplCopyWith(
-          _$ChannelInfoImpl value, $Res Function(_$ChannelInfoImpl) then) =
-      __$$ChannelInfoImplCopyWithImpl<$Res>;
-  @override
+abstract mixin class $AListInfoCopyWith<$Res> {
+  factory $AListInfoCopyWith(AListInfo value, $Res Function(AListInfo) _then) =
+      _$AListInfoCopyWithImpl;
   @useResult
-  $Res call({String id, String name});
+  $Res call({String host, String token});
 }
 
 /// @nodoc
-class __$$ChannelInfoImplCopyWithImpl<$Res>
-    extends _$ChannelInfoCopyWithImpl<$Res, _$ChannelInfoImpl>
-    implements _$$ChannelInfoImplCopyWith<$Res> {
-  __$$ChannelInfoImplCopyWithImpl(
-      _$ChannelInfoImpl _value, $Res Function(_$ChannelInfoImpl) _then)
-      : super(_value, _then);
+class _$AListInfoCopyWithImpl<$Res> implements $AListInfoCopyWith<$Res> {
+  _$AListInfoCopyWithImpl(this._self, this._then);
 
-  /// Create a copy of ChannelInfo
+  final AListInfo _self;
+  final $Res Function(AListInfo) _then;
+
+  /// Create a copy of AListInfo
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? id = null,
-    Object? name = null,
+    Object? host = null,
+    Object? token = null,
   }) {
-    return _then(_$ChannelInfoImpl(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
+    return _then(_self.copyWith(
+      host: null == host
+          ? _self.host
+          : host // ignore: cast_nullable_to_non_nullable
               as String,
-      name: null == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
+      token: null == token
+          ? _self.token
+          : token // ignore: cast_nullable_to_non_nullable
               as String,
     ));
   }
@@ -780,27 +557,109 @@ class __$$ChannelInfoImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$ChannelInfoImpl implements _ChannelInfo {
-  const _$ChannelInfoImpl({required this.id, required this.name});
-
-  factory _$ChannelInfoImpl.fromJson(Map<String, dynamic> json) =>
-      _$$ChannelInfoImplFromJson(json);
-
-  @override
-  final String id;
-  @override
-  final String name;
+class _AListInfo implements AListInfo {
+  const _AListInfo({required this.host, required this.token});
+  factory _AListInfo.fromJson(Map<String, dynamic> json) =>
+      _$AListInfoFromJson(json);
 
   @override
-  String toString() {
-    return 'ChannelInfo(id: $id, name: $name)';
+  final String host;
+  @override
+  final String token;
+
+  /// Create a copy of AListInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$AListInfoCopyWith<_AListInfo> get copyWith =>
+      __$AListInfoCopyWithImpl<_AListInfo>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$AListInfoToJson(
+      this,
+    );
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$ChannelInfoImpl &&
+            other is _AListInfo &&
+            (identical(other.host, host) || other.host == host) &&
+            (identical(other.token, token) || other.token == token));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, host, token);
+
+  @override
+  String toString() {
+    return 'AListInfo(host: $host, token: $token)';
+  }
+}
+
+/// @nodoc
+abstract mixin class _$AListInfoCopyWith<$Res>
+    implements $AListInfoCopyWith<$Res> {
+  factory _$AListInfoCopyWith(
+          _AListInfo value, $Res Function(_AListInfo) _then) =
+      __$AListInfoCopyWithImpl;
+  @override
+  @useResult
+  $Res call({String host, String token});
+}
+
+/// @nodoc
+class __$AListInfoCopyWithImpl<$Res> implements _$AListInfoCopyWith<$Res> {
+  __$AListInfoCopyWithImpl(this._self, this._then);
+
+  final _AListInfo _self;
+  final $Res Function(_AListInfo) _then;
+
+  /// Create a copy of AListInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? host = null,
+    Object? token = null,
+  }) {
+    return _then(_AListInfo(
+      host: null == host
+          ? _self.host
+          : host // ignore: cast_nullable_to_non_nullable
+              as String,
+      token: null == token
+          ? _self.token
+          : token // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+/// @nodoc
+mixin _$ChannelInfo {
+  String get id;
+  String get name;
+
+  /// Create a copy of ChannelInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  $ChannelInfoCopyWith<ChannelInfo> get copyWith =>
+      _$ChannelInfoCopyWithImpl<ChannelInfo>(this as ChannelInfo, _$identity);
+
+  /// Serializes this ChannelInfo to a JSON map.
+  Map<String, dynamic> toJson();
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is ChannelInfo &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.name, name) || other.name == name));
   }
@@ -809,314 +668,159 @@ class _$ChannelInfoImpl implements _ChannelInfo {
   @override
   int get hashCode => Object.hash(runtimeType, id, name);
 
-  /// Create a copy of ChannelInfo
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  @pragma('vm:prefer-inline')
-  _$$ChannelInfoImplCopyWith<_$ChannelInfoImpl> get copyWith =>
-      __$$ChannelInfoImplCopyWithImpl<_$ChannelInfoImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$ChannelInfoImplToJson(
-      this,
-    );
+  String toString() {
+    return 'ChannelInfo(id: $id, name: $name)';
   }
 }
 
-abstract class _ChannelInfo implements ChannelInfo {
-  const factory _ChannelInfo(
-      {required final String id,
-      required final String name}) = _$ChannelInfoImpl;
+/// @nodoc
+abstract mixin class $ChannelInfoCopyWith<$Res> {
+  factory $ChannelInfoCopyWith(
+          ChannelInfo value, $Res Function(ChannelInfo) _then) =
+      _$ChannelInfoCopyWithImpl;
+  @useResult
+  $Res call({String id, String name});
+}
 
-  factory _ChannelInfo.fromJson(Map<String, dynamic> json) =
-      _$ChannelInfoImpl.fromJson;
+/// @nodoc
+class _$ChannelInfoCopyWithImpl<$Res> implements $ChannelInfoCopyWith<$Res> {
+  _$ChannelInfoCopyWithImpl(this._self, this._then);
 
-  @override
-  String get id;
-  @override
-  String get name;
+  final ChannelInfo _self;
+  final $Res Function(ChannelInfo) _then;
 
   /// Create a copy of ChannelInfo
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$ChannelInfoImplCopyWith<_$ChannelInfoImpl> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-BungaClientInfo _$BungaClientInfoFromJson(Map<String, dynamic> json) {
-  return _BungaClientInfo.fromJson(json);
-}
-
-/// @nodoc
-mixin _$BungaClientInfo {
-  String get token => throw _privateConstructorUsedError;
-  ChannelInfo get channel => throw _privateConstructorUsedError;
-  IMInfo get im => throw _privateConstructorUsedError;
-  VoiceCallInfo? get voiceCall => throw _privateConstructorUsedError;
-  BilibiliInfo? get bilibili => throw _privateConstructorUsedError;
-  AListInfo? get alist => throw _privateConstructorUsedError;
-
-  /// Serializes this BungaClientInfo to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-
-  /// Create a copy of BungaClientInfo
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $BungaClientInfoCopyWith<BungaClientInfo> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $BungaClientInfoCopyWith<$Res> {
-  factory $BungaClientInfoCopyWith(
-          BungaClientInfo value, $Res Function(BungaClientInfo) then) =
-      _$BungaClientInfoCopyWithImpl<$Res, BungaClientInfo>;
-  @useResult
-  $Res call(
-      {String token,
-      ChannelInfo channel,
-      IMInfo im,
-      VoiceCallInfo? voiceCall,
-      BilibiliInfo? bilibili,
-      AListInfo? alist});
-
-  $ChannelInfoCopyWith<$Res> get channel;
-  $IMInfoCopyWith<$Res> get im;
-  $VoiceCallInfoCopyWith<$Res>? get voiceCall;
-  $BilibiliInfoCopyWith<$Res>? get bilibili;
-  $AListInfoCopyWith<$Res>? get alist;
-}
-
-/// @nodoc
-class _$BungaClientInfoCopyWithImpl<$Res, $Val extends BungaClientInfo>
-    implements $BungaClientInfoCopyWith<$Res> {
-  _$BungaClientInfoCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of BungaClientInfo
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? token = null,
-    Object? channel = null,
-    Object? im = null,
-    Object? voiceCall = freezed,
-    Object? bilibili = freezed,
-    Object? alist = freezed,
+    Object? id = null,
+    Object? name = null,
   }) {
-    return _then(_value.copyWith(
-      token: null == token
-          ? _value.token
-          : token // ignore: cast_nullable_to_non_nullable
+    return _then(_self.copyWith(
+      id: null == id
+          ? _self.id
+          : id // ignore: cast_nullable_to_non_nullable
               as String,
-      channel: null == channel
-          ? _value.channel
-          : channel // ignore: cast_nullable_to_non_nullable
-              as ChannelInfo,
-      im: null == im
-          ? _value.im
-          : im // ignore: cast_nullable_to_non_nullable
-              as IMInfo,
-      voiceCall: freezed == voiceCall
-          ? _value.voiceCall
-          : voiceCall // ignore: cast_nullable_to_non_nullable
-              as VoiceCallInfo?,
-      bilibili: freezed == bilibili
-          ? _value.bilibili
-          : bilibili // ignore: cast_nullable_to_non_nullable
-              as BilibiliInfo?,
-      alist: freezed == alist
-          ? _value.alist
-          : alist // ignore: cast_nullable_to_non_nullable
-              as AListInfo?,
-    ) as $Val);
-  }
-
-  /// Create a copy of BungaClientInfo
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $ChannelInfoCopyWith<$Res> get channel {
-    return $ChannelInfoCopyWith<$Res>(_value.channel, (value) {
-      return _then(_value.copyWith(channel: value) as $Val);
-    });
-  }
-
-  /// Create a copy of BungaClientInfo
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $IMInfoCopyWith<$Res> get im {
-    return $IMInfoCopyWith<$Res>(_value.im, (value) {
-      return _then(_value.copyWith(im: value) as $Val);
-    });
-  }
-
-  /// Create a copy of BungaClientInfo
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $VoiceCallInfoCopyWith<$Res>? get voiceCall {
-    if (_value.voiceCall == null) {
-      return null;
-    }
-
-    return $VoiceCallInfoCopyWith<$Res>(_value.voiceCall!, (value) {
-      return _then(_value.copyWith(voiceCall: value) as $Val);
-    });
-  }
-
-  /// Create a copy of BungaClientInfo
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $BilibiliInfoCopyWith<$Res>? get bilibili {
-    if (_value.bilibili == null) {
-      return null;
-    }
-
-    return $BilibiliInfoCopyWith<$Res>(_value.bilibili!, (value) {
-      return _then(_value.copyWith(bilibili: value) as $Val);
-    });
-  }
-
-  /// Create a copy of BungaClientInfo
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $AListInfoCopyWith<$Res>? get alist {
-    if (_value.alist == null) {
-      return null;
-    }
-
-    return $AListInfoCopyWith<$Res>(_value.alist!, (value) {
-      return _then(_value.copyWith(alist: value) as $Val);
-    });
-  }
-}
-
-/// @nodoc
-abstract class _$$BungaClientInfoImplCopyWith<$Res>
-    implements $BungaClientInfoCopyWith<$Res> {
-  factory _$$BungaClientInfoImplCopyWith(_$BungaClientInfoImpl value,
-          $Res Function(_$BungaClientInfoImpl) then) =
-      __$$BungaClientInfoImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call(
-      {String token,
-      ChannelInfo channel,
-      IMInfo im,
-      VoiceCallInfo? voiceCall,
-      BilibiliInfo? bilibili,
-      AListInfo? alist});
-
-  @override
-  $ChannelInfoCopyWith<$Res> get channel;
-  @override
-  $IMInfoCopyWith<$Res> get im;
-  @override
-  $VoiceCallInfoCopyWith<$Res>? get voiceCall;
-  @override
-  $BilibiliInfoCopyWith<$Res>? get bilibili;
-  @override
-  $AListInfoCopyWith<$Res>? get alist;
-}
-
-/// @nodoc
-class __$$BungaClientInfoImplCopyWithImpl<$Res>
-    extends _$BungaClientInfoCopyWithImpl<$Res, _$BungaClientInfoImpl>
-    implements _$$BungaClientInfoImplCopyWith<$Res> {
-  __$$BungaClientInfoImplCopyWithImpl(
-      _$BungaClientInfoImpl _value, $Res Function(_$BungaClientInfoImpl) _then)
-      : super(_value, _then);
-
-  /// Create a copy of BungaClientInfo
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? token = null,
-    Object? channel = null,
-    Object? im = null,
-    Object? voiceCall = freezed,
-    Object? bilibili = freezed,
-    Object? alist = freezed,
-  }) {
-    return _then(_$BungaClientInfoImpl(
-      token: null == token
-          ? _value.token
-          : token // ignore: cast_nullable_to_non_nullable
+      name: null == name
+          ? _self.name
+          : name // ignore: cast_nullable_to_non_nullable
               as String,
-      channel: null == channel
-          ? _value.channel
-          : channel // ignore: cast_nullable_to_non_nullable
-              as ChannelInfo,
-      im: null == im
-          ? _value.im
-          : im // ignore: cast_nullable_to_non_nullable
-              as IMInfo,
-      voiceCall: freezed == voiceCall
-          ? _value.voiceCall
-          : voiceCall // ignore: cast_nullable_to_non_nullable
-              as VoiceCallInfo?,
-      bilibili: freezed == bilibili
-          ? _value.bilibili
-          : bilibili // ignore: cast_nullable_to_non_nullable
-              as BilibiliInfo?,
-      alist: freezed == alist
-          ? _value.alist
-          : alist // ignore: cast_nullable_to_non_nullable
-              as AListInfo?,
     ));
   }
 }
 
 /// @nodoc
 @JsonSerializable()
-class _$BungaClientInfoImpl implements _BungaClientInfo {
-  const _$BungaClientInfoImpl(
-      {required this.token,
-      required this.channel,
-      required this.im,
-      this.voiceCall,
-      this.bilibili,
-      this.alist});
-
-  factory _$BungaClientInfoImpl.fromJson(Map<String, dynamic> json) =>
-      _$$BungaClientInfoImplFromJson(json);
+class _ChannelInfo implements ChannelInfo {
+  const _ChannelInfo({required this.id, required this.name});
+  factory _ChannelInfo.fromJson(Map<String, dynamic> json) =>
+      _$ChannelInfoFromJson(json);
 
   @override
-  final String token;
+  final String id;
   @override
-  final ChannelInfo channel;
+  final String name;
+
+  /// Create a copy of ChannelInfo
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  final IMInfo im;
-  @override
-  final VoiceCallInfo? voiceCall;
-  @override
-  final BilibiliInfo? bilibili;
-  @override
-  final AListInfo? alist;
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$ChannelInfoCopyWith<_ChannelInfo> get copyWith =>
+      __$ChannelInfoCopyWithImpl<_ChannelInfo>(this, _$identity);
 
   @override
-  String toString() {
-    return 'BungaClientInfo(token: $token, channel: $channel, im: $im, voiceCall: $voiceCall, bilibili: $bilibili, alist: $alist)';
+  Map<String, dynamic> toJson() {
+    return _$ChannelInfoToJson(
+      this,
+    );
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$BungaClientInfoImpl &&
+            other is _ChannelInfo &&
+            (identical(other.id, id) || other.id == id) &&
+            (identical(other.name, name) || other.name == name));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, id, name);
+
+  @override
+  String toString() {
+    return 'ChannelInfo(id: $id, name: $name)';
+  }
+}
+
+/// @nodoc
+abstract mixin class _$ChannelInfoCopyWith<$Res>
+    implements $ChannelInfoCopyWith<$Res> {
+  factory _$ChannelInfoCopyWith(
+          _ChannelInfo value, $Res Function(_ChannelInfo) _then) =
+      __$ChannelInfoCopyWithImpl;
+  @override
+  @useResult
+  $Res call({String id, String name});
+}
+
+/// @nodoc
+class __$ChannelInfoCopyWithImpl<$Res> implements _$ChannelInfoCopyWith<$Res> {
+  __$ChannelInfoCopyWithImpl(this._self, this._then);
+
+  final _ChannelInfo _self;
+  final $Res Function(_ChannelInfo) _then;
+
+  /// Create a copy of ChannelInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? id = null,
+    Object? name = null,
+  }) {
+    return _then(_ChannelInfo(
+      id: null == id
+          ? _self.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as String,
+      name: null == name
+          ? _self.name
+          : name // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+/// @nodoc
+mixin _$BungaClientInfo {
+  String get token;
+  ChannelInfo get channel;
+  IMInfo get im;
+  VoiceCallInfo? get voiceCall;
+  BilibiliInfo? get bilibili;
+  AListInfo? get alist;
+
+  /// Create a copy of BungaClientInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  $BungaClientInfoCopyWith<BungaClientInfo> get copyWith =>
+      _$BungaClientInfoCopyWithImpl<BungaClientInfo>(
+          this as BungaClientInfo, _$identity);
+
+  /// Serializes this BungaClientInfo to a JSON map.
+  Map<String, dynamic> toJson();
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is BungaClientInfo &&
             (identical(other.token, token) || other.token == token) &&
             (identical(other.channel, channel) || other.channel == channel) &&
             (identical(other.im, im) || other.im == im) &&
@@ -1132,52 +836,348 @@ class _$BungaClientInfoImpl implements _BungaClientInfo {
   int get hashCode =>
       Object.hash(runtimeType, token, channel, im, voiceCall, bilibili, alist);
 
-  /// Create a copy of BungaClientInfo
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  @pragma('vm:prefer-inline')
-  _$$BungaClientInfoImplCopyWith<_$BungaClientInfoImpl> get copyWith =>
-      __$$BungaClientInfoImplCopyWithImpl<_$BungaClientInfoImpl>(
-          this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$BungaClientInfoImplToJson(
-      this,
-    );
+  String toString() {
+    return 'BungaClientInfo(token: $token, channel: $channel, im: $im, voiceCall: $voiceCall, bilibili: $bilibili, alist: $alist)';
   }
 }
 
-abstract class _BungaClientInfo implements BungaClientInfo {
-  const factory _BungaClientInfo(
-      {required final String token,
-      required final ChannelInfo channel,
-      required final IMInfo im,
-      final VoiceCallInfo? voiceCall,
-      final BilibiliInfo? bilibili,
-      final AListInfo? alist}) = _$BungaClientInfoImpl;
+/// @nodoc
+abstract mixin class $BungaClientInfoCopyWith<$Res> {
+  factory $BungaClientInfoCopyWith(
+          BungaClientInfo value, $Res Function(BungaClientInfo) _then) =
+      _$BungaClientInfoCopyWithImpl;
+  @useResult
+  $Res call(
+      {String token,
+      ChannelInfo channel,
+      IMInfo im,
+      VoiceCallInfo? voiceCall,
+      BilibiliInfo? bilibili,
+      AListInfo? alist});
 
-  factory _BungaClientInfo.fromJson(Map<String, dynamic> json) =
-      _$BungaClientInfoImpl.fromJson;
+  $ChannelInfoCopyWith<$Res> get channel;
+  $IMInfoCopyWith<$Res> get im;
+  $VoiceCallInfoCopyWith<$Res>? get voiceCall;
+  $BilibiliInfoCopyWith<$Res>? get bilibili;
+  $AListInfoCopyWith<$Res>? get alist;
+}
+
+/// @nodoc
+class _$BungaClientInfoCopyWithImpl<$Res>
+    implements $BungaClientInfoCopyWith<$Res> {
+  _$BungaClientInfoCopyWithImpl(this._self, this._then);
+
+  final BungaClientInfo _self;
+  final $Res Function(BungaClientInfo) _then;
+
+  /// Create a copy of BungaClientInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? token = null,
+    Object? channel = null,
+    Object? im = null,
+    Object? voiceCall = freezed,
+    Object? bilibili = freezed,
+    Object? alist = freezed,
+  }) {
+    return _then(_self.copyWith(
+      token: null == token
+          ? _self.token
+          : token // ignore: cast_nullable_to_non_nullable
+              as String,
+      channel: null == channel
+          ? _self.channel
+          : channel // ignore: cast_nullable_to_non_nullable
+              as ChannelInfo,
+      im: null == im
+          ? _self.im
+          : im // ignore: cast_nullable_to_non_nullable
+              as IMInfo,
+      voiceCall: freezed == voiceCall
+          ? _self.voiceCall
+          : voiceCall // ignore: cast_nullable_to_non_nullable
+              as VoiceCallInfo?,
+      bilibili: freezed == bilibili
+          ? _self.bilibili
+          : bilibili // ignore: cast_nullable_to_non_nullable
+              as BilibiliInfo?,
+      alist: freezed == alist
+          ? _self.alist
+          : alist // ignore: cast_nullable_to_non_nullable
+              as AListInfo?,
+    ));
+  }
+
+  /// Create a copy of BungaClientInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $ChannelInfoCopyWith<$Res> get channel {
+    return $ChannelInfoCopyWith<$Res>(_self.channel, (value) {
+      return _then(_self.copyWith(channel: value));
+    });
+  }
+
+  /// Create a copy of BungaClientInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $IMInfoCopyWith<$Res> get im {
+    return $IMInfoCopyWith<$Res>(_self.im, (value) {
+      return _then(_self.copyWith(im: value));
+    });
+  }
+
+  /// Create a copy of BungaClientInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $VoiceCallInfoCopyWith<$Res>? get voiceCall {
+    if (_self.voiceCall == null) {
+      return null;
+    }
+
+    return $VoiceCallInfoCopyWith<$Res>(_self.voiceCall!, (value) {
+      return _then(_self.copyWith(voiceCall: value));
+    });
+  }
+
+  /// Create a copy of BungaClientInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $BilibiliInfoCopyWith<$Res>? get bilibili {
+    if (_self.bilibili == null) {
+      return null;
+    }
+
+    return $BilibiliInfoCopyWith<$Res>(_self.bilibili!, (value) {
+      return _then(_self.copyWith(bilibili: value));
+    });
+  }
+
+  /// Create a copy of BungaClientInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $AListInfoCopyWith<$Res>? get alist {
+    if (_self.alist == null) {
+      return null;
+    }
+
+    return $AListInfoCopyWith<$Res>(_self.alist!, (value) {
+      return _then(_self.copyWith(alist: value));
+    });
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _BungaClientInfo implements BungaClientInfo {
+  const _BungaClientInfo(
+      {required this.token,
+      required this.channel,
+      required this.im,
+      this.voiceCall,
+      this.bilibili,
+      this.alist});
+  factory _BungaClientInfo.fromJson(Map<String, dynamic> json) =>
+      _$BungaClientInfoFromJson(json);
 
   @override
-  String get token;
+  final String token;
   @override
-  ChannelInfo get channel;
+  final ChannelInfo channel;
   @override
-  IMInfo get im;
+  final IMInfo im;
   @override
-  VoiceCallInfo? get voiceCall;
+  final VoiceCallInfo? voiceCall;
   @override
-  BilibiliInfo? get bilibili;
+  final BilibiliInfo? bilibili;
   @override
-  AListInfo? get alist;
+  final AListInfo? alist;
 
   /// Create a copy of BungaClientInfo
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$BungaClientInfoImplCopyWith<_$BungaClientInfoImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+  @pragma('vm:prefer-inline')
+  _$BungaClientInfoCopyWith<_BungaClientInfo> get copyWith =>
+      __$BungaClientInfoCopyWithImpl<_BungaClientInfo>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$BungaClientInfoToJson(
+      this,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _BungaClientInfo &&
+            (identical(other.token, token) || other.token == token) &&
+            (identical(other.channel, channel) || other.channel == channel) &&
+            (identical(other.im, im) || other.im == im) &&
+            (identical(other.voiceCall, voiceCall) ||
+                other.voiceCall == voiceCall) &&
+            (identical(other.bilibili, bilibili) ||
+                other.bilibili == bilibili) &&
+            (identical(other.alist, alist) || other.alist == alist));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, token, channel, im, voiceCall, bilibili, alist);
+
+  @override
+  String toString() {
+    return 'BungaClientInfo(token: $token, channel: $channel, im: $im, voiceCall: $voiceCall, bilibili: $bilibili, alist: $alist)';
+  }
 }
+
+/// @nodoc
+abstract mixin class _$BungaClientInfoCopyWith<$Res>
+    implements $BungaClientInfoCopyWith<$Res> {
+  factory _$BungaClientInfoCopyWith(
+          _BungaClientInfo value, $Res Function(_BungaClientInfo) _then) =
+      __$BungaClientInfoCopyWithImpl;
+  @override
+  @useResult
+  $Res call(
+      {String token,
+      ChannelInfo channel,
+      IMInfo im,
+      VoiceCallInfo? voiceCall,
+      BilibiliInfo? bilibili,
+      AListInfo? alist});
+
+  @override
+  $ChannelInfoCopyWith<$Res> get channel;
+  @override
+  $IMInfoCopyWith<$Res> get im;
+  @override
+  $VoiceCallInfoCopyWith<$Res>? get voiceCall;
+  @override
+  $BilibiliInfoCopyWith<$Res>? get bilibili;
+  @override
+  $AListInfoCopyWith<$Res>? get alist;
+}
+
+/// @nodoc
+class __$BungaClientInfoCopyWithImpl<$Res>
+    implements _$BungaClientInfoCopyWith<$Res> {
+  __$BungaClientInfoCopyWithImpl(this._self, this._then);
+
+  final _BungaClientInfo _self;
+  final $Res Function(_BungaClientInfo) _then;
+
+  /// Create a copy of BungaClientInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? token = null,
+    Object? channel = null,
+    Object? im = null,
+    Object? voiceCall = freezed,
+    Object? bilibili = freezed,
+    Object? alist = freezed,
+  }) {
+    return _then(_BungaClientInfo(
+      token: null == token
+          ? _self.token
+          : token // ignore: cast_nullable_to_non_nullable
+              as String,
+      channel: null == channel
+          ? _self.channel
+          : channel // ignore: cast_nullable_to_non_nullable
+              as ChannelInfo,
+      im: null == im
+          ? _self.im
+          : im // ignore: cast_nullable_to_non_nullable
+              as IMInfo,
+      voiceCall: freezed == voiceCall
+          ? _self.voiceCall
+          : voiceCall // ignore: cast_nullable_to_non_nullable
+              as VoiceCallInfo?,
+      bilibili: freezed == bilibili
+          ? _self.bilibili
+          : bilibili // ignore: cast_nullable_to_non_nullable
+              as BilibiliInfo?,
+      alist: freezed == alist
+          ? _self.alist
+          : alist // ignore: cast_nullable_to_non_nullable
+              as AListInfo?,
+    ));
+  }
+
+  /// Create a copy of BungaClientInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $ChannelInfoCopyWith<$Res> get channel {
+    return $ChannelInfoCopyWith<$Res>(_self.channel, (value) {
+      return _then(_self.copyWith(channel: value));
+    });
+  }
+
+  /// Create a copy of BungaClientInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $IMInfoCopyWith<$Res> get im {
+    return $IMInfoCopyWith<$Res>(_self.im, (value) {
+      return _then(_self.copyWith(im: value));
+    });
+  }
+
+  /// Create a copy of BungaClientInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $VoiceCallInfoCopyWith<$Res>? get voiceCall {
+    if (_self.voiceCall == null) {
+      return null;
+    }
+
+    return $VoiceCallInfoCopyWith<$Res>(_self.voiceCall!, (value) {
+      return _then(_self.copyWith(voiceCall: value));
+    });
+  }
+
+  /// Create a copy of BungaClientInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $BilibiliInfoCopyWith<$Res>? get bilibili {
+    if (_self.bilibili == null) {
+      return null;
+    }
+
+    return $BilibiliInfoCopyWith<$Res>(_self.bilibili!, (value) {
+      return _then(_self.copyWith(bilibili: value));
+    });
+  }
+
+  /// Create a copy of BungaClientInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $AListInfoCopyWith<$Res>? get alist {
+    if (_self.alist == null) {
+      return null;
+    }
+
+    return $AListInfoCopyWith<$Res>(_self.alist!, (value) {
+      return _then(_self.copyWith(alist: value));
+    });
+  }
+}
+
+// dart format on

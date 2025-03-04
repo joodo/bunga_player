@@ -149,7 +149,7 @@ class _VariablesView extends StatefulWidget {
 }
 
 class _VariablesViewState extends State<_VariablesView> {
-  static const _variables = ['Client Account'];
+  static const _variables = ['Client Account', 'Watchers'];
 
   @override
   Widget build(BuildContext context) {
@@ -160,23 +160,32 @@ class _VariablesViewState extends State<_VariablesView> {
         0: IntrinsicColumnWidth(),
         1: FlexColumnWidth(),
       },
-      children: _variables
-          .map(
-            (notifierName) => TableRow(
-              children: [
-                SelectableText(notifierName)
-                    .padding(vertical: 8.0, horizontal: 16.0),
-                ValueListenableBuilder(
-                  valueListenable: getIt<ConsoleService>()
-                      .watchingValueNotifiers[notifierName]!,
-                  builder: (context, value, child) =>
-                      SelectableText(value.toString())
-                          .padding(vertical: 8.0, horizontal: 16.0),
-                ),
-              ],
-            ),
-          )
-          .toList(),
+      children: _variables.map(
+        (notifierName) {
+          final notifier =
+              getIt<ConsoleService>().watchingValueNotifiers[notifierName];
+
+          final content = notifier == null
+              ? const SelectableText('(null)')
+              // Check disposed or not
+              // ignore: invalid_use_of_protected_member
+              : !notifier.hasListeners
+                  ? const SelectableText('(disposed)')
+                  : ValueListenableBuilder(
+                      valueListenable: notifier,
+                      builder: (context, value, child) =>
+                          SelectableText(value.toString()),
+                    );
+
+          return TableRow(
+            children: [
+              SelectableText(notifierName)
+                  .padding(vertical: 8.0, horizontal: 16.0),
+              content.padding(vertical: 8.0, horizontal: 16.0),
+            ],
+          );
+        },
+      ).toList(),
     );
 
     // Preferences

@@ -4,7 +4,7 @@ part 'client_account.freezed.dart';
 part 'client_account.g.dart';
 
 @freezed
-class ClientAccount with _$ClientAccount {
+abstract class ClientAccount with _$ClientAccount {
   const factory ClientAccount({
     @JsonKey(name: "username") required String id,
     required String password,

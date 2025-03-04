@@ -1,16 +1,10 @@
-import 'package:bunga_player/play/service/service.dart';
-import 'package:bunga_player/play/service/service.media_kit.dart';
-import 'package:bunga_player/screens/player_screen/player/video_control.dart';
-import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:flutter/material.dart';
-import 'package:media_kit_video/media_kit_video.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
 import 'panel/panel.dart';
 import 'player/player.dart';
-import 'player/progress_bar.dart';
 import 'business.dart';
 
 class PlayerScreen extends StatefulWidget {

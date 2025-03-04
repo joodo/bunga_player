@@ -65,11 +65,6 @@ class _DanmakuControlState extends State<DanmakuControl> {
               ),
               onSubmitted: (value) {
                 if (value == '陈子祎') {
-                  Actions.invoke(
-                    context,
-                    SendMessageIntent(
-                        PopmojiMessageData(code: '1f416').toMessageData()),
-                  );
                 } else {
                   Actions.invoke(context, SendDanmakuIntent(value));
                 }

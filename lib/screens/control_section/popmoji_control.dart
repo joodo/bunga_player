@@ -130,12 +130,8 @@ class _PopmojiControlState extends State<PopmojiControl> {
 
   void _sendEmoji(String emoji) {
     // send popmoji
-    Actions.invoke(
-      context,
-      SendMessageIntent(PopmojiMessageData(
-        code: EmojiData.codePoint(emoji),
-      ).toMessageData()),
-    );
+
+    throw UnimplementedError();
   }
 }
 

@@ -41,12 +41,8 @@ class JoinChannelAction extends ContextAction<JoinChannelIntent> {
   }
 }
 
-class LeaveChannelIntent extends Intent {
-  const LeaveChannelIntent();
-}
-
 class SendMessageIntent extends Intent {
-  final Map<String, dynamic> data;
+  final MessageData data;
 
   const SendMessageIntent(this.data);
 }
@@ -61,7 +57,7 @@ class SendMessageAction extends ContextAction<SendMessageIntent> {
     SendMessageIntent intent, [
     BuildContext? context,
   ]) {
-    return client!.sendMessage(intent.data);
+    return client.sendMessage(intent.data.toJson());
   }
 }
 
@@ -89,11 +85,6 @@ class _ChannelActionsState extends SingleChildState<ChatActions> {
     _lastMessage.addListener(_updateWatchers);
     _lastMessage.addListener(_answerAloha);
 */
-    getIt<ExitCallbacks>().add(() async {
-      return context.read<ActionsLeaf>().maybeInvoke(
-            const LeaveChannelIntent(),
-          ) as Future?;
-    });
 
     super.initState();
   }

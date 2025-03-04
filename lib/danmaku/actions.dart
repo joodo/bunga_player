@@ -12,10 +12,13 @@ class SendDanmakuIntent extends Intent {
 class SendDanmakuAction extends ContextAction<SendDanmakuIntent> {
   @override
   Future<void> invoke(SendDanmakuIntent intent, [BuildContext? context]) {
+    throw UnimplementedError();
+    /*
     return Actions.invoke(
       context!,
       SendMessageIntent(DanmakuMessageData(text: intent.text).toMessageData()),
     ) as Future<void>;
+    */
   }
 }
 

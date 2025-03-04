@@ -1,5 +1,5 @@
 import 'package:animations/animations.dart';
-import 'package:bunga_player/chat/actions.dart';
+import 'package:bunga_player/chat/models/user.dart';
 import 'package:bunga_player/play_sync/providers.dart';
 import 'package:bunga_player/play/actions.dart' as play_action;
 import 'package:bunga_player/play_sync/actions.dart';
@@ -29,8 +29,9 @@ import 'package:bunga_player/voice_call/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
+import 'package:bunga_player/screens/widgets/divider.dart';
 
-import '../../widgets/divider.dart';
+import '../models/watcher.dart';
 import '../panel/audio_track_panel.dart';
 import '../panel/playlist_panel.dart';
 import '../panel/subtitle_panel.dart';
@@ -433,7 +434,7 @@ class _MoreActionsButton extends StatelessWidget {
               leadingIcon: const Icon(Icons.movie_filter),
               onPressed: _changeVideo(
                 context,
-                context.read<Watchers>().isSharing,
+                context.read<List<Watcher>?>() != null,
               ),
               child: const Text('换片'),
             ),
@@ -441,7 +442,7 @@ class _MoreActionsButton extends StatelessWidget {
             // Leave Button
             MenuItemButton(
               leadingIcon: const Icon(Icons.logout),
-              onPressed: () => _leaveChannel(context),
+              onPressed: Actions.handler(context, const LeaveChannelIntent()),
               child: const Text('离开房间'),
             ),
           ],
@@ -477,15 +478,5 @@ class _MoreActionsButton extends StatelessWidget {
         }
       }
     };
-  }
-
-  void _leaveChannel(BuildContext context) async {
-    if (!kIsDesktop) {
-      context.read<PlayVideoSessions>().save();
-    }
-
-    Actions.invoke(context, const play_action.StopPlayIntent());
-    //Actions.maybeInvoke(context, const LeaveChannelIntent());
-    Navigator.of(context).pop();
   }
 }

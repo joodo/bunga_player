@@ -2,6 +2,7 @@ import 'package:async/async.dart';
 import 'package:bunga_player/chat/actions.dart';
 import 'package:bunga_player/chat/models/message_data.dart';
 import 'package:bunga_player/chat/models/user.dart';
+import 'package:bunga_player/client_info/models/client_account.dart';
 import 'package:bunga_player/play/models/history.dart';
 import 'package:bunga_player/play/models/play_payload.dart';
 import 'package:bunga_player/play/models/video_record.dart';
@@ -125,6 +126,35 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
   }
 }
 
+@immutable
+class LeaveChannelIntent extends Intent {
+  const LeaveChannelIntent();
+}
+
+class LeaveChannelAction extends ContextAction<LeaveChannelIntent> {
+  final WatchersNotifier watchersNotifier;
+
+  LeaveChannelAction({required this.watchersNotifier});
+
+  @override
+  Future<void> invoke(LeaveChannelIntent intent,
+      [BuildContext? context]) async {
+    // Stop playing
+    context!.read<WindowTitle>().reset();
+    getIt<PlayService>().stop();
+
+    // Send bye message
+    if (watchersNotifier.isSharing) {
+      final myId = context.read<ClientAccount>().id;
+      final messageData = ByeMessageData(userId: myId);
+      Actions.invoke(context, SendMessageIntent(messageData));
+    }
+
+    // Exit!
+    Navigator.of(context).pop();
+  }
+}
+
 class RefreshDirIntent extends Intent {}
 
 class RefreshDirAction extends ContextAction<RefreshDirIntent> {
@@ -220,26 +250,22 @@ class ShareVideoIntent extends Intent {
 }
 
 class ShareVideoAction extends ContextAction<ShareVideoIntent> {
-  final ValueNotifier<Watchers> watchersNotifier;
+  final WatchersNotifier watchersNotifier;
+  final VoidCallback initShare;
 
-  ShareVideoAction({required this.watchersNotifier});
+  ShareVideoAction({required this.watchersNotifier, required this.initShare});
 
   @override
   Future<void> invoke(ShareVideoIntent intent, [BuildContext? context]) {
-    if (!watchersNotifier.value.isSharing) _initShare();
+    if (!watchersNotifier.isSharing) initShare();
 
     final messageData = StartProjectionMessageData(
       sharer: User.fromContext(context!),
       videoRecord: intent.record,
-    ).toJson();
+    );
     final act =
         Actions.invoke(context, SendMessageIntent(messageData)) as Future;
 
     return act;
-  }
-
-  void _initShare() {
-    // TODO: aloha
-    watchersNotifier.value = const Watchers([]);
   }
 }

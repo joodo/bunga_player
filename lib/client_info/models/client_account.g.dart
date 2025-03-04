@@ -6,13 +6,13 @@ part of 'client_account.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$ClientAccountImpl _$$ClientAccountImplFromJson(Map<String, dynamic> json) =>
-    _$ClientAccountImpl(
+_ClientAccount _$ClientAccountFromJson(Map<String, dynamic> json) =>
+    _ClientAccount(
       id: json['username'] as String,
       password: json['password'] as String,
     );
 
-Map<String, dynamic> _$$ClientAccountImplToJson(_$ClientAccountImpl instance) =>
+Map<String, dynamic> _$ClientAccountToJson(_ClientAccount instance) =>
     <String, dynamic>{
       'username': instance.id,
       'password': instance.password,
