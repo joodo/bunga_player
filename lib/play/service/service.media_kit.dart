@@ -53,9 +53,7 @@ class MediaKitPlayService implements PlayService {
         _seekCache = null;
       }
 
-      if (_openCompleter != null) {
-        _openCompleter!.complete();
-      }
+      _openCompleter?.complete();
     });
 
     // Initiate lazy value
@@ -154,6 +152,9 @@ class MediaKitPlayService implements PlayService {
   Future<void> open(PlayPayload payload) async {
     assert(payload.sources.videos.length > payload.videoSourceIndex);
 
+    if (_openCompleter?.isCompleted == false) {
+      _openCompleter?.complete();
+    }
     _openCompleter = Completer();
 
     // Update stream
