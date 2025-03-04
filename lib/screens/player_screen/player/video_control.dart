@@ -62,7 +62,7 @@ class VideoControl extends StatelessWidget {
           ),
           */
 
-              const ControlDivider(),
+              if (constraints.maxWidth > 420) const ControlDivider(),
 
               // Volume section
               if (constraints.maxWidth > 630) const _SliderSection(),
@@ -71,11 +71,9 @@ class VideoControl extends StatelessWidget {
               const Spacer(),
 
               // Duration button
-              const _DurationButton(),
-
-              const Spacer(),
-
-              const ControlDivider(),
+              if (constraints.maxWidth > 420) const _DurationButton(),
+              if (constraints.maxWidth > 420) const Spacer(),
+              if (constraints.maxWidth > 420) const ControlDivider(),
               /* TODO: onprogress
           // Call Button
           const SizedBox(width: 8),
