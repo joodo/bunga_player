@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:bunga_player/bunga_server/actions.dart';
 import 'package:bunga_player/bunga_server/models/bunga_client_info.dart';
 import 'package:bunga_player/play/models/history.dart';
-import 'package:crclib/catalog.dart';
+import 'package:bunga_player/utils/extensions/file.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
@@ -102,9 +102,7 @@ class _LocalFileParser implements _Parser {
     final path = url.toFilePath();
     final file = File(path);
 
-    final crcValue =
-        await file.openRead().take(1000).transform(Crc32Xz()).single;
-    final crcString = crcValue.toRadixString(36);
+    final crcString = await file.crcString();
 
     final name = path_tool.basenameWithoutExtension(path);
     return VideoRecord(

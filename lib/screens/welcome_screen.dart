@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
@@ -6,10 +7,13 @@ import 'package:bunga_player/bunga_server/actions.dart';
 import 'package:bunga_player/bunga_server/models/bunga_client_info.dart';
 import 'package:bunga_player/chat/models/message.dart';
 import 'package:bunga_player/client_info/providers.dart';
+import 'package:bunga_player/screens/dialogs/open_video/direct_link.dart';
 import 'package:bunga_player/screens/dialogs/settings/network.dart';
 import 'package:bunga_player/screens/dialogs/settings/reaction.dart';
 import 'package:bunga_player/screens/player_screen/player_screen.dart';
 import 'package:bunga_player/services/logger.dart';
+import 'package:bunga_player/ui/providers.dart';
+import 'package:bunga_player/utils/extensions/file.dart';
 import 'package:bunga_player/utils/extensions/http_response.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -64,15 +68,16 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         const _SettingButton(),
       ].toRow(),
       _getContent().flexible(),
-      _OpenVideoButton(onFinished: _onFinished),
+      _OpenVideoButton(onFinished: _videoSelected),
     ].toColumn().padding(all: 16.0).material();
   }
 
   Widget _getContent() {
     if (_currentProjection != null) {
       return _ProjectionCard(
-        _currentProjection!,
         key: ValueKey(_currentProjection!.videoRecord.id),
+        data: _currentProjection!,
+        onTap: _joinChannel,
       );
     }
 
@@ -81,17 +86,21 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           infoNotifier == null && !fetchingNotifier.value
               ? _Arrow()
               : _WaitWidget(),
-    ).flexible();
+    );
   }
 
   void _dealWithProjection(StartProjectionMessageData data) {
+    final autoJoin = context.read<AutoJoinChannel>().value;
     final isCurrent = ModalRoute.of(context)?.isCurrent ?? false;
-    setState(() {
-      _currentProjection = data;
-    });
+    final isFirstShare = _currentProjection == null;
+
+    _currentProjection = data;
+    setState(() {});
+
+    if (autoJoin && isCurrent && isFirstShare) _joinChannel();
   }
 
-  void _onFinished(OpenVideoDialogResult? result) async {
+  void _videoSelected(OpenVideoDialogResult? result) async {
     if (result == null) return;
     Navigator.push(
       context,
@@ -100,6 +109,66 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         settings: RouteSettings(arguments: result),
       ),
     );
+  }
+
+  void _joinChannel() async {
+    if (_currentProjection == null) return;
+    final data = _currentProjection!;
+
+    final record = data.videoRecord;
+    if (record.source != 'local' ||
+        await File(record.path).exists() && mounted) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const PlayerScreen(),
+          settings: RouteSettings(
+            arguments: data.videoRecord,
+          ),
+        ),
+      );
+    } else {
+      final path = await LocalVideoEntryDialog.exec();
+      if (path == null) return;
+
+      final file = File(path);
+      final crc = await file.crcString();
+
+      if (!mounted) return;
+      if (!record.id.endsWith(crc)) {
+        final confirmOpen = await showModal<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            icon: const Icon(Icons.difference),
+            title: const Text('文件不匹配'),
+            content: const Text('''你要打开的视频文件和对方不同。
+这通常意味着你们会看到不同的内容。不过，如果你清楚打开的只是同一内容的不同版本（比如 720P 和蓝光版），那么也可以同步播放来试试看。
+确认要打开视频吗？''').constrained(maxWidth: 360.0),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('不了'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('打开'),
+              ),
+            ],
+          ),
+        );
+        if (!mounted || confirmOpen != true) return;
+      }
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const PlayerScreen(),
+          settings: RouteSettings(
+            arguments: data.videoRecord.copyWith(path: path),
+          ),
+        ),
+      );
+    }
   }
 }
 
@@ -170,8 +239,9 @@ class _WaitWidget extends StatelessWidget {
 
 class _ProjectionCard extends StatefulWidget {
   final StartProjectionMessageData data;
+  final VoidCallback? onTap;
 
-  const _ProjectionCard(this.data, {super.key});
+  const _ProjectionCard({super.key, required this.data, this.onTap});
 
   @override
   State<_ProjectionCard> createState() => _ProjectionCardState();
@@ -199,13 +269,13 @@ class _ProjectionCardState extends State<_ProjectionCard> {
             width: 300,
             height: 200,
             child: Center(
-              child: Icon(Icons.movie_creation_outlined, size: 80),
+              child: Icon(Icons.smart_display, size: 180),
             ),
           );
 
     final textTheme = Theme.of(context).textTheme;
     final content = InkWell(
-      onTap: _joinChannel,
+      onTap: widget.onTap,
       child: [
         const Text('正在播放')
             .textStyle(textTheme.titleLarge!)
@@ -269,16 +339,6 @@ class _ProjectionCardState extends State<_ProjectionCard> {
     } catch (e) {
       logger.w(e);
     }
-  }
-
-  void _joinChannel() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const PlayerScreen(),
-        settings: RouteSettings(arguments: widget.data.videoRecord),
-      ),
-    );
   }
 }
 

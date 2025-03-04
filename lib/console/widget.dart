@@ -2,17 +2,16 @@ import 'dart:math';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:bunga_player/bunga_server/actions.dart';
-import 'package:bunga_player/chat/providers.dart';
-import 'package:bunga_player/bunga_server/client.dart';
+import 'package:bunga_player/client_info/models/client_account.dart';
+import 'package:bunga_player/console/service.dart';
 import 'package:bunga_player/play/providers.dart';
-import 'package:bunga_player/client_info/providers.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
-import 'package:bunga_player/voice_call/providers.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
+import 'package:styled_widget/styled_widget.dart';
 
 class ConsoleDialog extends StatefulWidget {
   final TextEditingController logTextController;
@@ -42,9 +41,11 @@ class _ConsoleDialogState extends State<ConsoleDialog> {
       children: [
         FilledButton(
           onPressed: () async {
-            final clientIdNotifier = context.read<ClientId>();
+            final accountNotifier =
+                getIt<ConsoleService>().watchingValueNotifiers['Client Account']
+                    as ValueNotifier<ClientAccount>;
 
-            final currentID = clientIdNotifier.value;
+            final currentID = accountNotifier.value.id;
             final split = currentID.split('__');
 
             late final String newID;
@@ -54,13 +55,18 @@ class _ConsoleDialogState extends State<ConsoleDialog> {
               newID = '${split.first}__${int.parse(split.last) + 1}';
             }
 
-            final bungaClientNotifier = context.read<BungaHostAddress>();
-            final host = bungaClientNotifier.value;
+            final newAccount = ClientAccount(
+              id: newID,
+              password: accountNotifier.value.password,
+            );
+            accountNotifier.value = newAccount;
 
-            final bungaClient = BungaClient(host);
-            await bungaClient.register(newID);
-            //bungaClientNotifier.value = bungaClient;
-            clientIdNotifier.value = newID;
+            final host = context.read<BungaHostAddress>().value;
+            final act = Actions.invoke(
+              context,
+              ConnectToHostIntent(host),
+            ) as Future;
+            await act;
 
             getIt<Toast>().show('User ID has changed to $newID');
           },
@@ -137,118 +143,84 @@ class _ConsoleDialogState extends State<ConsoleDialog> {
   }
 }
 
-Widget _padding(Widget child) => Padding(
-      padding: const EdgeInsets.symmetric(
-        vertical: 8,
-        horizontal: 16,
-      ),
-      child: child,
-    );
-
 class _VariablesView extends StatefulWidget {
   @override
   State<_VariablesView> createState() => _VariablesViewState();
 }
 
 class _VariablesViewState extends State<_VariablesView> {
-  late final _variables = <String, String Function(BuildContext context)>{
-    'Client id': (context) => context.read<ClientId>().value,
-    'App Keys': (context) {
-      final bunga = context.read<BungaClient?>();
-      if (bunga == null) return 'null';
-      return '''Chat:
-${bunga.chatClientInfo.runtimeType}: ${bunga.chatClientInfo.appKey}, ${bunga.chatClientInfo.userToken}
-Agora key:
-${bunga.agoraClientAppKey}
-Bili sess:
-${bunga.biliSess}''';
-    },
-    'Current verion': (context) => getIt<PackageInfo>().version,
-    'Voice Call': (context) =>
-        '''status: ${context.read<VoiceCallStatus>().value.name}
-talkers: ${context.read<VoiceCallTalkers>().value}''',
-    'Player': (context) =>
-        '''Video Entry: ${context.read<PlayVideoEntry>().value}
-Current session: ${context.read<PlayVideoSessions>().current?.toJson().toString()}''',
-  };
+  static const _variables = ['Client Account'];
 
   @override
   Widget build(BuildContext context) {
+    // Variables
     final variables = Table(
       border: TableBorder.all(color: Theme.of(context).colorScheme.onSurface),
       columnWidths: const <int, TableColumnWidth>{
         0: IntrinsicColumnWidth(),
         1: FlexColumnWidth(),
       },
-      children: _variables.entries
+      children: _variables
           .map(
-            (row) => TableRow(
+            (notifierName) => TableRow(
               children: [
-                _padding(SelectableText(row.key)),
-                _padding(SelectableText(row.value(context))),
+                SelectableText(notifierName)
+                    .padding(vertical: 8.0, horizontal: 16.0),
+                ValueListenableBuilder(
+                  valueListenable: getIt<ConsoleService>()
+                      .watchingValueNotifiers[notifierName]!,
+                  builder: (context, value, child) =>
+                      SelectableText(value.toString())
+                          .padding(vertical: 8.0, horizontal: 16.0),
+                ),
               ],
             ),
           )
           .toList(),
     );
 
+    // Preferences
     final pref = getIt<Preferences>();
+    const ellipsisKeys = ['history'];
     final prefs = Table(
       border: TableBorder.all(color: Theme.of(context).colorScheme.onSurface),
       columnWidths: const <int, TableColumnWidth>{
         0: IntrinsicColumnWidth(),
         1: FlexColumnWidth(),
       },
-      children: pref.keys.map((key) {
-        final content = SelectableText(pref.get(key).toString());
-        return TableRow(
-          children: [
-            _padding(SelectableText(key)),
-            Wrap(
+      children: pref.keys
+          .sorted()
+          .map(
+            (key) => TableRow(
               children: [
-                _padding(content),
-                TextButton(
-                  onPressed: () async {
-                    await pref.remove(key);
-                    setState(() {});
-                  },
-                  child: const Text('unset'),
-                ),
+                SelectableText(key).padding(vertical: 8.0, horizontal: 16.0),
+                [
+                  SelectableText(ellipsisKeys.contains(key)
+                          ? '...'
+                          : pref.get(key).toString())
+                      .padding(vertical: 8.0, horizontal: 16.0),
+                  TextButton(
+                    onPressed: () async {
+                      await pref.remove(key);
+                      setState(() {});
+                    },
+                    child: const Text('unset'),
+                  ),
+                ].toWrap(crossAxisAlignment: WrapCrossAlignment.center),
               ],
             ),
-          ],
-        );
-      }).toList(),
+          )
+          .toList(),
     );
 
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text(
-                'Environment',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(width: 8),
-              TextButton(
-                onPressed: () => setState(() {}),
-                child: const Text('Refresh'),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          variables,
-          const SizedBox(height: 16),
-          Text(
-            'Preferences',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: 8),
-          prefs,
-        ],
-      ),
-    );
+    return [
+      const Text('Environment')
+          .textStyle(Theme.of(context).textTheme.titleMedium!),
+      variables.padding(top: 8.0),
+      const Text('Preferences')
+          .textStyle(Theme.of(context).textTheme.titleMedium!)
+          .padding(top: 16.0),
+      prefs.padding(top: 8.0),
+    ].toColumn(crossAxisAlignment: CrossAxisAlignment.start).scrollable();
   }
 }

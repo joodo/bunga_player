@@ -1,3 +1,4 @@
+import 'package:bunga_player/console/service.dart';
 import 'package:bunga_player/network/service.dart';
 import 'package:get_it/get_it.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -12,11 +13,12 @@ import 'permissions.dart';
 final getIt = GetIt.instance;
 
 Future<void> init() async {
-  getIt.registerSingleton<Permissions>(const Permissions());
-  getIt.registerSingleton<Preferences>(await Preferences.create());
-  getIt.registerSingleton<PackageInfo>(await PackageInfo.fromPlatform());
-  getIt.registerSingleton<Toast>(Toast());
-  getIt.registerSingleton<ExitCallbacks>(ExitCallbacks());
+  getIt.registerSingleton(const Permissions());
+  getIt.registerSingleton(await Preferences.create());
+  getIt.registerSingleton(await PackageInfo.fromPlatform());
+  getIt.registerSingleton(Toast());
+  getIt.registerSingleton(ExitCallbacks());
   getIt.registerSingleton<PlayService>(MediaKitPlayService());
-  getIt.registerSingleton<NetworkService>(NetworkService());
+  getIt.registerSingleton(NetworkService());
+  getIt.registerSingleton(ConsoleService());
 }

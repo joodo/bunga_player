@@ -1,3 +1,4 @@
+import 'package:bunga_player/console/service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
@@ -40,18 +41,19 @@ class ClientColorHue extends ValueNotifier<int> {
 
 final clientInfoProviders = MultiProvider(
   providers: [
-    Provider(
-      create: (context) => ClientAccount(
-        id: getIt<Preferences>().getOrCreate(
-          'client_id',
-          const Uuid().v4(),
+    ValueListenableProvider.value(
+      value: ValueNotifier(
+        ClientAccount(
+          id: getIt<Preferences>().getOrCreate(
+            'client_id',
+            const Uuid().v4(),
+          ),
+          password: getIt<Preferences>().getOrCreate(
+            'client_pwd',
+            generatePassword(),
+          ),
         ),
-        password: getIt<Preferences>().getOrCreate(
-          'client_pwd',
-          generatePassword(),
-        ),
-      ),
-      lazy: false,
+      )..watchInConsole('Client Account'),
     ),
     ChangeNotifierProxyProvider<ClientAccount, ClientColorHue?>(
       create: (context) => null,
@@ -64,6 +66,8 @@ final clientInfoProviders = MultiProvider(
       },
     ),
     ChangeNotifierProvider(
-        create: (context) => ClientNicknameNotifier(), lazy: false),
+      create: (context) => ClientNicknameNotifier(),
+      lazy: false,
+    ),
   ],
 );

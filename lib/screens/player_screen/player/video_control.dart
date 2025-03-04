@@ -454,25 +454,13 @@ class _MoreActionsButton extends StatelessWidget {
 
   VoidCallback _changeVideo(BuildContext context, bool isCurrentSharing) {
     return () async {
-      final result = await showGeneralDialog<OpenVideoDialogResult>(
+      final result = await showModal<OpenVideoDialogResult>(
         context: context,
-        pageBuilder: (
-          BuildContext context,
-          Animation<double> animation,
-          Animation<double> secondaryAnimation,
-        ) {
-          final sharing = isCurrentSharing;
-          return Dialog.fullscreen(
-            child: OpenVideoDialog(
-              shareToChannel: sharing,
-              forceShareToChannel: sharing,
-            ),
-          );
-        },
-        transitionBuilder: (context, animation, secondaryAnimation, child) =>
-            FadeScaleTransition(
-          animation: animation,
-          child: child,
+        builder: (BuildContext context) => Dialog.fullscreen(
+          child: OpenVideoDialog(
+            shareToChannel: isCurrentSharing,
+            forceShareToChannel: isCurrentSharing,
+          ),
         ),
       );
       if (result == null) return;

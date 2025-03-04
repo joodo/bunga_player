@@ -19,8 +19,7 @@ class AboutSetting extends StatelessWidget with SettingsTab {
   @override
   Widget build(BuildContext context) {
     return [
-      SvgPicture.asset('assets/images/icons/icon.svg', width: 96)
-          .padding(top: 24.0),
+      SvgPicture.asset('assets/images/icon.svg', width: 96).padding(top: 24.0),
       const SizedBox(height: 16),
       Text(getIt<PackageInfo>().appName)
           .textStyle(Theme.of(context).textTheme.titleLarge!)
