@@ -19,6 +19,10 @@ import 'package:bunga_player/screens/dialogs/open_video/direct_link.dart';
 import 'package:bunga_player/screens/dialogs/open_video/open_video.dart';
 import 'package:bunga_player/screens/dialogs/video_conflict.dart';
 import 'package:bunga_player/services/services.dart';
+import 'package:bunga_player/services/toast.dart';
+import 'package:bunga_player/utils/business/provider.dart';
+import 'package:bunga_player/utils/business/value_listenable.dart';
+import 'package:bunga_player/utils/extensions/duration.dart';
 import 'package:bunga_player/utils/extensions/file.dart';
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:flutter/material.dart';
@@ -43,13 +47,6 @@ class SavedPositionNotifier extends ValueNotifier<Duration?> {
   SavedPositionNotifier() : super(null);
 }
 
-class PlayScreenBusiness extends SingleChildStatefulWidget {
-  const PlayScreenBusiness({super.key, super.child});
-
-  @override
-  State<PlayScreenBusiness> createState() => _PlayScreenBusinessState();
-}
-
 class WatchersNotifier extends ValueNotifier<List<User>?> {
   WatchersNotifier() : super(null);
   bool get isSharing => value != null;
@@ -66,6 +63,19 @@ class WatchersNotifier extends ValueNotifier<List<User>?> {
   bool containsId(String id) {
     return value?.any((element) => element.id == id) ?? false;
   }
+}
+
+@immutable
+class RemoteJustToggled {
+  final bool value;
+  const RemoteJustToggled(this.value);
+}
+
+class PlayScreenBusiness extends SingleChildStatefulWidget {
+  const PlayScreenBusiness({super.key, super.child});
+
+  @override
+  State<PlayScreenBusiness> createState() => _PlayScreenBusinessState();
 }
 
 class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
@@ -127,14 +137,20 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
       SavedPositionNotifier(); // For saved postion toast
 
   // Chat
+  StreamSubscription? _streamSubscription;
+
+  // Watchers
   final _watchersNotifier = WatchersNotifier()..watchInConsole('Watchers');
   late final _refreshWatchersAction =
       RefreshWatchersAction(watchersNotifier: _watchersNotifier);
-  late final _shareVideoAction = ShareVideoAction(
-    watchersNotifier: _watchersNotifier,
-    refreshAction: _refreshWatchersAction,
+  late final _shareVideoAction = ShareVideoAction(initShare: _initShare);
+
+  // Play position
+  bool _shouldAnswerWhere = false;
+
+  final _remoteJustToggledNotifier = AutoResetNotifier(
+    const Duration(seconds: 1),
   );
-  late final List<StreamSubscription> _streamSubscriptions;
 
   @override
   void initState() {
@@ -155,6 +171,9 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
             .then(
           (payload) {
             if (mounted && !argument.onlyForMe) {
+              // I shared the video, I should answer others
+              _shouldAnswerWhere = true;
+
               _shareVideoAction.invoke(
                 ShareVideoIntent(payload.record),
                 context,
@@ -171,52 +190,12 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
 
         if (!mounted) return;
         AskPositionAction().invoke(AskPositionIntent(), context);
-        _refreshWatchersAction.invoke(RefreshWatchersIntent(), context);
+        _initShare();
       }
     });
 
-    // Listen to changing video
-    final myId = context.read<ClientAccount>().id;
-    final messageStream = context.read<Stream<Message>>();
-    _streamSubscriptions = [
-      messageStream
-          .where(
-            (message) =>
-                message.data['type'] ==
-                    StartProjectionMessageData.messageType &&
-                message.senderId != myId,
-          )
-          .map((message) => StartProjectionMessageData.fromJson(message.data))
-          .listen(_dealWithProjection),
-      messageStream
-          .where(
-            (message) =>
-                message.data['type'] == AlohaMessageData.messageType &&
-                message.senderId != myId,
-          )
-          .map((message) => AlohaMessageData.fromJson(message.data))
-          .listen(_dealWithAloha),
-      messageStream
-          .where(
-            (message) =>
-                message.data['type'] == HereIsMessageData.messageType &&
-                message.senderId != myId,
-          )
-          .map((message) => HereIsMessageData.fromJson(message.data))
-          .listen(_dealWithHereIs),
-      messageStream
-          .where(
-            (message) =>
-                message.data['type'] == ByeMessageData.messageType &&
-                message.senderId != myId,
-          )
-          .map((message) => ByeMessageData.fromJson(message.data))
-          .listen(_dealWithBye),
-    ];
-
     // Init late variables
     _history;
-    _isVideoBufferingNotifier;
   }
 
   @override
@@ -225,15 +204,15 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
     _busyCountNotifer.dispose();
     _panelNotifier.dispose();
     _watchersNotifier.dispose();
+    _remoteJustToggledNotifier.dispose();
+
     _isVideoBufferingNotifier.removeListener(_updateBusyCount);
 
     _saveWatchProgressTimer.cancel();
     _history.save();
     _savedPositionNotifier.dispose();
 
-    for (final subscription in _streamSubscriptions) {
-      subscription.cancel();
-    }
+    _streamSubscription?.cancel();
 
     super.dispose();
   }
@@ -248,8 +227,11 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
         ValueListenableProvider.value(value: _busyCountNotifer),
         ValueListenableProvider.value(value: _panelNotifier),
         ValueListenableProvider.value(value: _watchersNotifier),
+        ValueProxyListenableProvider(
+          valueListenable: _remoteJustToggledNotifier,
+          proxy: (value) => RemoteJustToggled(value),
+        ),
       ],
-      //builder: (context, child) => child!,
       child: child!.actions(
         actions: {
           RefreshDirIntent: RefreshDirAction(dirInfoNotifier: _dirInfoNotifier),
@@ -258,17 +240,57 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
           OpenVideoIntent: _openVideoAction,
           LeaveChannelIntent:
               LeaveChannelAction(watchersNotifier: _watchersNotifier),
-          ToggleIntent: ToggleAction(
+          SyncToggleIntent: SyncToggleAction(
             saveWatchProgressTimer: _saveWatchProgressTimer,
             savedPositionNotifier: _savedPositionNotifier,
           ),
-          SeekIntent: SeekAction(),
+          SyncSeekIntent: SyncSeekAction(),
           ShareVideoIntent: _shareVideoAction,
           RefreshWatchersIntent: _refreshWatchersAction,
           AskPositionIntent: AskPositionAction(),
         },
       ),
     );
+  }
+
+  void _initShare() {
+    // Listen to messageStream
+    final myId = context.read<ClientAccount>().id;
+    final messageStream = context
+        .read<Stream<Message>>()
+        .where((message) => message.senderId != myId);
+
+    _streamSubscription = messageStream.listen((message) {
+      switch (message.data['type']) {
+        case StartProjectionMessageData.messageType:
+          _dealWithProjection(
+            StartProjectionMessageData.fromJson(message.data),
+          );
+        case AlohaMessageData.messageType:
+          _dealWithAloha(
+            AlohaMessageData.fromJson(message.data),
+          );
+        case HereIsMessageData.messageType:
+          _dealWithHereIs(
+            HereIsMessageData.fromJson(message.data),
+          );
+        case ByeMessageData.messageType:
+          _dealWithBye(
+            ByeMessageData.fromJson(message.data),
+          );
+        case WhereMessageData.messageType:
+          _dealWithWhere(
+            WhereMessageData.fromJson(message.data),
+          );
+        case PlayAtMessageData.messageType:
+          _dealWithPlayAt(
+            PlayAtMessageData.fromJson(message.data),
+          );
+      }
+    });
+
+    // Get watchers
+    _refreshWatchersAction.invoke(const RefreshWatchersIntent(), context);
   }
 
   void _dealWithAloha(AlohaMessageData data) {
@@ -287,6 +309,58 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
 
   void _dealWithBye(ByeMessageData data) {
     _watchersNotifier.removeUser(data.userId);
+  }
+
+  void _dealWithWhere(WhereMessageData data) {
+    if (!_shouldAnswerWhere) return;
+
+    final history = _history.value;
+    final record = _playPayloadNotifier.value?.record;
+    // No history, not even played
+    if (!history.containsKey(record?.id)) return;
+
+    final action = SendPlayStatusAction();
+    action.invoke(SendPlayStatusIntent(), context);
+  }
+
+  void _dealWithPlayAt(PlayAtMessageData data) {
+    // Follow play status
+    String? toastType;
+
+    // If apply status is because asking where, then don't show snack bar
+    if (!_shouldAnswerWhere) {
+      toastType = 'none';
+      _shouldAnswerWhere = true;
+    }
+
+    final playService = getIt<PlayService>();
+    if (data.isPlaying != playService.playStatusNotifier.value.isPlaying) {
+      toastType ??= 'toggle';
+      getIt<PlayService>().toggle();
+      _remoteJustToggledNotifier.mark();
+    }
+
+    Duration remotePosition = data.position;
+    if (data.isPlaying) {
+      remotePosition += DateTime.now().toUtc().difference(data.when);
+    }
+    if (data.isPlaying &&
+            !playService.positionNotifier.value.near(remotePosition) ||
+        playService.positionNotifier.value != remotePosition) {
+      toastType ??= 'seek';
+      playService.seek(remotePosition);
+    }
+
+    toastType ??= 'none';
+
+    final toast = getIt<Toast>();
+    final name = data.sender.name;
+    switch (toastType) {
+      case 'toggle':
+        toast.show('$name ${data.isPlaying ? '播放' : '暂停'}了视频');
+      case 'seek':
+        toast.show('$name 调整了进度');
+    }
   }
 
   Future<void> _dealWithProjection(StartProjectionMessageData data) async {

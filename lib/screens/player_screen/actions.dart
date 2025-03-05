@@ -178,46 +178,55 @@ class RefreshDirAction extends ContextAction<RefreshDirIntent> {
   }
 }
 
-class ToggleIntent extends Intent {}
+class SyncToggleIntent extends Intent {}
 
-class ToggleAction extends Action<ToggleIntent> {
+class SyncToggleAction extends ContextAction<SyncToggleIntent> {
   final RestartableTimer saveWatchProgressTimer;
   final SavedPositionNotifier savedPositionNotifier;
 
-  ToggleAction({
+  SyncToggleAction({
     required this.saveWatchProgressTimer,
     required this.savedPositionNotifier,
   });
 
   @override
-  void invoke(ToggleIntent intent) {
+  void invoke(SyncToggleIntent intent, [BuildContext? context]) {
     final service = getIt<PlayService>();
+    service.toggle();
+
+    // Deal with progress saving business
     if (service.playStatusNotifier.value.isPlaying) {
-      saveWatchProgressTimer.cancel();
-    } else {
       saveWatchProgressTimer.reset();
       savedPositionNotifier.value = null;
+    } else {
+      saveWatchProgressTimer.cancel();
     }
 
-    getIt<PlayService>().toggle();
+    // Try to send play status to channel
+    final action = SendPlayStatusAction();
+    if (action.isActionEnabled) action.invoke(SendPlayStatusIntent(), context);
   }
 
   @override
-  bool isEnabled(ToggleIntent intent) {
-    return getIt<PlayService>().playStatusNotifier.value != PlayStatus.stop;
+  bool isEnabled(SyncToggleIntent intent, [BuildContext? context]) {
+    if (context == null) return false;
+
+    final isBusy = context.read<BusyCount>().isBusy;
+    final remoteJustToggled = context.read<RemoteJustToggled>().value;
+    return !isBusy && !remoteJustToggled;
   }
 }
 
-class SeekIntent extends Intent {
-  const SeekIntent(this.duration) : isIncrease = false;
-  const SeekIntent.increase(this.duration) : isIncrease = true;
+class SyncSeekIntent extends Intent {
+  const SyncSeekIntent(this.duration) : isIncrease = false;
+  const SyncSeekIntent.increase(this.duration) : isIncrease = true;
   final Duration duration;
   final bool isIncrease;
 }
 
-class SeekAction extends ContextAction<SeekIntent> {
+class SyncSeekAction extends ContextAction<SyncSeekIntent> {
   @override
-  void invoke(SeekIntent intent, [BuildContext? context]) {
+  void invoke(SyncSeekIntent intent, [BuildContext? context]) {
     final service = getIt<PlayService>();
 
     final position = service.positionNotifier.value;
@@ -226,19 +235,14 @@ class SeekAction extends ContextAction<SeekIntent> {
 
     newPos = newPos.clamp(Duration.zero, service.durationNotifier.value);
     service.seek(newPos);
-/* TODO::
-    return Actions.maybeInvoke(
-      context,
-      SendPlayingStatusIntent(
-        read<PlayStatus>().value,
-        newPos,
-      ),
-    ) as Future<void>?;
-    */
+
+    // Try to send play status to channel
+    final action = SendPlayStatusAction();
+    if (action.isActionEnabled) action.invoke(SendPlayStatusIntent(), context);
   }
 
   @override
-  bool isEnabled(SeekIntent intent, [BuildContext? context]) {
+  bool isEnabled(SyncSeekIntent intent, [BuildContext? context]) {
     return getIt<PlayService>().playStatusNotifier.value != PlayStatus.stop;
   }
 }
@@ -269,22 +273,16 @@ class ShareVideoIntent extends Intent {
 }
 
 class ShareVideoAction extends ContextAction<ShareVideoIntent> {
-  final WatchersNotifier watchersNotifier;
-  final RefreshWatchersAction refreshAction;
+  final VoidCallback initShare;
 
-  ShareVideoAction({
-    required this.watchersNotifier,
-    required this.refreshAction,
-  });
+  ShareVideoAction({required this.initShare});
 
   @override
   Future<void> invoke(ShareVideoIntent intent, [BuildContext? context]) {
-    if (!watchersNotifier.isSharing) {
-      refreshAction.invoke(const RefreshWatchersIntent(), context);
-    }
+    if (context!.read<List<User>?>() == null) initShare();
 
     final messageData = StartProjectionMessageData(
-      sharer: User.fromContext(context!),
+      sharer: User.fromContext(context),
       videoRecord: intent.record,
     );
     final act =
@@ -304,5 +302,27 @@ class AskPositionAction extends ContextAction<AskPositionIntent> {
   void invoke(AskPositionIntent intent, [BuildContext? context]) {
     final messageData = WhereMessageData();
     Actions.invoke(context!, SendMessageIntent(messageData));
+  }
+}
+
+@immutable
+class SendPlayStatusIntent extends Intent {}
+
+class SendPlayStatusAction extends ContextAction<SendPlayStatusIntent> {
+  @override
+  void invoke(SendPlayStatusIntent intent, [BuildContext? context]) {
+    final playService = getIt<PlayService>();
+    final messageData = PlayAtMessageData(
+      sender: User.fromContext(context!),
+      position: playService.positionNotifier.value,
+      isPlaying: playService.playStatusNotifier.value.isPlaying,
+      when: DateTime.now().toUtc(),
+    );
+    Actions.invoke(context, SendMessageIntent(messageData));
+  }
+
+  @override
+  bool isEnabled(SendPlayStatusIntent intent, [BuildContext? context]) {
+    return context?.read<List<User>?>() != null;
   }
 }

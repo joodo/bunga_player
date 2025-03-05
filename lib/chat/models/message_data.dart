@@ -112,10 +112,17 @@ class PlayAtMessageData extends MessageData {
   @JsonKey(includeFromJson: false, includeToJson: true)
   final type = messageType;
 
+  final User sender;
   final Duration position;
   final bool isPlaying;
+  final DateTime when;
 
-  PlayAtMessageData({required this.position, required this.isPlaying});
+  PlayAtMessageData({
+    required this.sender,
+    required this.position,
+    required this.isPlaying,
+    required this.when,
+  });
 
   factory PlayAtMessageData.fromJson(Map<String, dynamic> json) =>
       _$PlayAtMessageDataFromJson(json);

@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:bunga_player/bunga_server/models/bunga_client_info.dart';
 import 'package:bunga_player/client_info/models/client_account.dart';
 import 'package:bunga_player/utils/business/preference_notifier.dart';
-import 'package:bunga_player/utils/business/value_listenable.dart';
+import 'package:bunga_player/utils/business/provider.dart';
 import 'package:bunga_player/utils/extensions/http_response.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -111,17 +111,13 @@ class _BungaServerActionsState extends SingleChildState<BungaServerActions> {
     return MultiProvider(
       providers: [
         ValueListenableProvider.value(value: _infoNotifier),
-        ValueListenableProvider.value(
-          value: ProxyValueNotifier(
-            from: _fetchingNotifier,
-            proxy: (originValue) => FetchingBungaClient(originValue),
-          ),
+        ValueProxyListenableProvider(
+          valueListenable: _fetchingNotifier,
+          proxy: (value) => FetchingBungaClient(value),
         ),
-        ValueListenableProvider.value(
-          value: ProxyValueNotifier(
-            from: _hostAddressNotifier,
-            proxy: (originValue) => BungaHostAddress(originValue),
-          ),
+        ValueProxyListenableProvider(
+          valueListenable: _hostAddressNotifier,
+          proxy: (value) => BungaHostAddress(value),
         ),
       ],
       child: Actions(

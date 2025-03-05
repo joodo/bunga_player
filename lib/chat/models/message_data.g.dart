@@ -67,13 +67,17 @@ Map<String, dynamic> _$WhereMessageDataToJson(WhereMessageData instance) =>
 
 PlayAtMessageData _$PlayAtMessageDataFromJson(Map<String, dynamic> json) =>
     PlayAtMessageData(
+      sender: User.fromJson(json['sender'] as Map<String, dynamic>),
       position: Duration(microseconds: (json['position'] as num).toInt()),
       isPlaying: json['is_playing'] as bool,
+      when: DateTime.parse(json['when'] as String),
     );
 
 Map<String, dynamic> _$PlayAtMessageDataToJson(PlayAtMessageData instance) =>
     <String, dynamic>{
       'type': instance.type,
+      'sender': instance.sender.toJson(),
       'position': instance.position.inMicroseconds,
       'is_playing': instance.isPlaying,
+      'when': instance.when.toIso8601String(),
     };

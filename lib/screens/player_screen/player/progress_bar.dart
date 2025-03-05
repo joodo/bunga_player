@@ -98,7 +98,7 @@ class _VideoProgressBarState extends State<VideoProgressBar> {
                 },
           onChangeEnd: (value) {
             final pos = Duration(milliseconds: value.toInt());
-            Actions.invoke(context, SeekIntent(pos));
+            Actions.invoke(context, SyncSeekIntent(pos));
 
             if (_isPlayingBeforeDraggingSlider) player.play();
 

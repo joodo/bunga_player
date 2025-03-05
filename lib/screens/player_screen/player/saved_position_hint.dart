@@ -57,7 +57,7 @@ class _SavedPositionHintState extends State<SavedPositionHint>
       Text('上回看到 ${savedPosition.hhmmss}').padding(vertical: 12.0, left: 16.0),
       TextButton(
         onPressed: () {
-          Actions.invoke(context, SeekIntent(savedPosition));
+          Actions.invoke(context, SyncSeekIntent(savedPosition));
           _hide();
         },
         child: const Text('跳转'),
