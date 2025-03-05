@@ -5,6 +5,7 @@ import 'package:styled_widget/styled_widget.dart';
 
 import 'panel/panel.dart';
 import 'player/player.dart';
+import 'danmaku_control/danmaku_control.dart';
 import 'business.dart';
 
 class PlayerScreen extends StatefulWidget {
@@ -17,6 +18,7 @@ class PlayerScreen extends StatefulWidget {
 class _PlayerScreenState extends State<PlayerScreen> {
   // Panel
   static const _panelWidth = 300.0;
+  static const _danmakuHeight = 64.0;
 
   @override
   void initState() {
@@ -30,19 +32,26 @@ class _PlayerScreenState extends State<PlayerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<Panel?>(
-      builder: (context, panel, child) => [
-        child!.positioned(
-          top: 0,
-          bottom: 0,
+    return Consumer2<Panel?, DanmakuVisible>(
+      builder: (context, panel, danmakuVisible, child) => [
+        child!.card(margin: EdgeInsets.all(0)).positioned(
+              top: 0,
+              bottom: danmakuVisible.value ? _danmakuHeight : 0,
+              left: 0,
+              right: panel != null ? _panelWidth + 8.0 : 0,
+              animate: true,
+            ),
+        const DanmakuControl().positioned(
           left: 0,
-          right: panel != null ? _panelWidth : 0,
+          right: panel != null ? _panelWidth + 8.0 : 0,
+          height: _danmakuHeight,
+          bottom: danmakuVisible.value ? 0 : -_danmakuHeight,
           animate: true,
         ),
         (panel?.card(
                   key: ValueKey(panel.type),
-                  elevation: 24.0,
                   margin: const EdgeInsets.all(0),
+                  color: Theme.of(context).colorScheme.surfaceContainerHigh,
                 ) ??
                 const SizedBox.shrink(key: ValueKey('none')))
             .fadeThroughTransitionSwitcher(

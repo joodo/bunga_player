@@ -44,6 +44,12 @@ class BusyCount {
   BusyCount get decrease => BusyCount(_count - 1);
 }
 
+@immutable
+class DanmakuVisible {
+  final bool value;
+  const DanmakuVisible(this.value);
+}
+
 class SavedPositionNotifier extends ValueNotifier<Duration?> {
   SavedPositionNotifier() : super(null);
 }
@@ -112,6 +118,9 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
 
   // Panel
   final _panelNotifier = ValueNotifier<Panel?>(null);
+
+  // Danmaku Control
+  final _showDanmakuControlNotifier = ValueNotifier(false);
 
   // History
   late final _history = context.read<History>();
@@ -239,11 +248,15 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
   Widget buildWithChild(BuildContext context, Widget? child) {
     return MultiProvider(
       providers: [
+        ValueListenableProvider.value(value: _panelNotifier),
+        ValueProxyListenableProvider(
+          valueListenable: _showDanmakuControlNotifier,
+          proxy: (value) => DanmakuVisible(value),
+        ),
         ValueListenableProvider.value(value: _playPayloadNotifier),
         ChangeNotifierProvider.value(value: _savedPositionNotifier),
         ValueListenableProvider.value(value: _dirInfoNotifier),
         ValueListenableProvider.value(value: _busyCountNotifer),
-        ValueListenableProvider.value(value: _panelNotifier),
         ValueListenableProvider.value(value: _watchersNotifier),
         ValueProxyListenableProvider(
           valueListenable: _remoteJustToggledNotifier,
@@ -255,6 +268,8 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
           RefreshDirIntent: RefreshDirAction(dirInfoNotifier: _dirInfoNotifier),
           ShowPanelIntent: ShowPanelAction(widgetNotifier: _panelNotifier),
           ClosePanelIntent: ClosePanelAction(widgetNotifier: _panelNotifier),
+          ToggleDanmakuControlIntent: ToggleDanmakuControlAction(
+              showDanmakuControlNotifier: _showDanmakuControlNotifier),
           OpenVideoIntent: _openVideoAction,
           LeaveChannelIntent:
               LeaveChannelAction(watchersNotifier: _watchersNotifier),

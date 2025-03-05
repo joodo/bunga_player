@@ -94,9 +94,16 @@ class VideoControl extends StatelessWidget {
           const SizedBox(width: 8),
         */
               // Popmoji Button
-              IconButton(
-                icon: const Icon(Icons.mood),
-                onPressed: () {},
+              Selector<DanmakuVisible, bool>(
+                selector: (context, visible) => visible.value,
+                builder: (context, visible, child) => IconButton(
+                  icon: const Icon(Icons.mood),
+                  isSelected: visible,
+                  onPressed: Actions.handler(
+                    context,
+                    ToggleDanmakuControlIntent(),
+                  ),
+                ),
               ),
 
               // Dir button

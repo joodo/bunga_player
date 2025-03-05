@@ -19,11 +19,12 @@ class PanelWidget extends SingleChildStatelessWidget {
     return [
       [
         CloseButton(onPressed: Actions.handler(context, ClosePanelIntent())),
-        Text(
-          title ?? '',
-          overflow: TextOverflow.ellipsis,
-          maxLines: 2,
-        ).fontSize(16.0).padding(left: 12.0).expanded(),
+        if (title != null)
+          Text(
+            title!,
+            overflow: TextOverflow.ellipsis,
+            maxLines: 2,
+          ).fontSize(16.0).padding(left: 12.0).expanded(),
         if (actions != null) ...actions!,
       ]
           .toRow(
@@ -31,7 +32,7 @@ class PanelWidget extends SingleChildStatelessWidget {
           )
           .padding(horizontal: 12.0, top: 12.0, bottom: 0),
       const Divider(),
-      child!,
+      child!.flexible(),
     ].toColumn(crossAxisAlignment: CrossAxisAlignment.stretch);
   }
 }
