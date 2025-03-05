@@ -45,7 +45,7 @@ class _DanmakuControlState extends State<DanmakuControl> {
         child: TextField(
           style: const TextStyle(height: 1.0),
           controller: _controller,
-          autofocus: true,
+          autofocus: kIsDesktop,
           focusNode: _focusNode,
           onTapOutside: (event) {},
           decoration: InputDecoration(

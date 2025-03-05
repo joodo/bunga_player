@@ -1,6 +1,7 @@
 import 'package:bunga_player/chat/models/user.dart';
 import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/play/service/service.media_kit.dart';
+import 'package:bunga_player/screens/player_screen/player/popmoji_player.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:flutter/material.dart';
 import 'package:media_kit_video/media_kit_video.dart';
@@ -22,26 +23,25 @@ class Player extends StatelessWidget {
     return Selector<List<User>?, bool>(
       selector: (context, userList) => userList != null,
       builder: (context, isSharing, child) => [
+        const Header().padding(vertical: 4.0),
         [
-          const Header().padding(vertical: 4.0),
-          [
-            Video(
-              controller:
-                  (getIt<PlayService>() as MediaKitPlayService).controller,
-              // use mpv subtitle
-              subtitleViewConfiguration:
-                  const SubtitleViewConfiguration(visible: false),
-              wakelock: false,
-              controls: NoVideoControls,
-            ),
-            if (isSharing) const DanmakuPlayer(),
-          ].toStack().flexible(),
-          const VideoProgressBar().constrained(height: 16),
-          const VideoControl().constrained(height: 64),
-        ].toColumn(),
-        if (!context.watch<BusyCount>().isBusy)
-          const SavedPositionHint().positioned(bottom: 72, right: 12),
-      ].toStack(),
+          Video(
+            controller:
+                (getIt<PlayService>() as MediaKitPlayService).controller,
+            // use mpv subtitle
+            subtitleViewConfiguration:
+                const SubtitleViewConfiguration(visible: false),
+            wakelock: false,
+            controls: NoVideoControls,
+          ),
+          if (isSharing) const DanmakuPlayer(),
+          if (isSharing) const PopmojiPlayer(),
+          if (!context.watch<BusyCount>().isBusy)
+            const SavedPositionHint().positioned(bottom: 72, right: 12),
+        ].toStack().flexible(),
+        const VideoProgressBar().constrained(height: 16),
+        const VideoControl().constrained(height: 64),
+      ].toColumn(),
     );
   }
 }

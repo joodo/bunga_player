@@ -23,4 +23,17 @@ class Toast {
     }
     _showMethod!(text);
   }
+
+  ValueNotifier<double>? _offsetNotifier;
+  void registerOffsetNotifier(ValueNotifier<double>? notifier) {
+    _offsetNotifier = notifier;
+  }
+
+  void unregisterOffsetNotifier(ValueNotifier<double>? notifier) {
+    if (_offsetNotifier == notifier) _offsetNotifier = null;
+  }
+
+  void setOffset(double offset) {
+    _offsetNotifier?.value = offset;
+  }
 }

@@ -9,8 +9,8 @@ import 'danmaku_control.dart';
 import 'business.dart';
 
 class PlayerScreen extends StatelessWidget {
-  static const _panelWidth = 300.0;
-  static const _danmakuHeight = 64.0;
+  static const panelWidth = 300.0;
+  static const danmakuHeight = 64.0;
 
   const PlayerScreen({super.key});
 
@@ -21,16 +21,16 @@ class PlayerScreen extends StatelessWidget {
       builder: (context, panel, danmakuVisible, child) => [
         child!.card(margin: EdgeInsets.all(0)).positioned(
               top: 0,
-              bottom: danmakuVisible.value ? _danmakuHeight : 0,
+              bottom: danmakuVisible.value ? danmakuHeight : 0,
               left: 0,
-              right: panel != null ? _panelWidth + 8.0 : 0,
+              right: panel != null ? panelWidth + 8.0 : 0,
               animate: true,
             ),
         const DanmakuControl().positioned(
           left: 0,
-          right: panel != null ? _panelWidth + 8.0 : 0,
-          height: _danmakuHeight,
-          bottom: danmakuVisible.value ? 0 : -_danmakuHeight,
+          right: panel != null ? panelWidth + 8.0 : 0,
+          height: danmakuHeight,
+          bottom: danmakuVisible.value ? 0 : -danmakuHeight,
           animate: true,
         ),
         (panel?.card(
@@ -42,10 +42,10 @@ class PlayerScreen extends StatelessWidget {
             .fadeThroughTransitionSwitcher(
                 duration: const Duration(milliseconds: 300))
             .positioned(
-              width: _panelWidth,
+              width: panelWidth,
               top: 0,
               bottom: 0,
-              right: panel == null ? -_panelWidth : 0,
+              right: panel == null ? -panelWidth : 0,
               animate: true,
             )
       ]

@@ -34,6 +34,7 @@ import 'package:provider/provider.dart';
 
 import 'actions.dart';
 import 'panel/panel.dart';
+import 'player_screen.dart';
 
 @immutable
 class BusyCount {
@@ -198,7 +199,12 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
   void initState() {
     super.initState();
 
+    // UI
     _isVideoBufferingNotifier.addListener(_updateBusyCount);
+    _showDanmakuControlNotifier.addListener(
+      () => getIt<Toast>().setOffset(
+          _showDanmakuControlNotifier.value ? PlayerScreen.danmakuHeight : 0),
+    );
 
     // Play url
     WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -229,7 +235,6 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
           OpenVideoIntent.record(argument),
           context,
         );
-        print(_savedPositionNotifier.value);
 
         if (!mounted) return;
         AskPositionAction().invoke(AskPositionIntent(), context);
