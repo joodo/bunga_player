@@ -178,19 +178,23 @@ class RefreshDirAction extends ContextAction<RefreshDirIntent> {
   }
 }
 
-class SyncToggleIntent extends Intent {}
+@immutable
+class ToggleIntent extends Intent {
+  final bool sync;
+  const ToggleIntent({this.sync = false});
+}
 
-class SyncToggleAction extends ContextAction<SyncToggleIntent> {
+class ToggleAction extends ContextAction<ToggleIntent> {
   final RestartableTimer saveWatchProgressTimer;
   final SavedPositionNotifier savedPositionNotifier;
 
-  SyncToggleAction({
+  ToggleAction({
     required this.saveWatchProgressTimer,
     required this.savedPositionNotifier,
   });
 
   @override
-  void invoke(SyncToggleIntent intent, [BuildContext? context]) {
+  void invoke(ToggleIntent intent, [BuildContext? context]) {
     final service = getIt<PlayService>();
     service.toggle();
 
@@ -202,13 +206,17 @@ class SyncToggleAction extends ContextAction<SyncToggleIntent> {
       saveWatchProgressTimer.cancel();
     }
 
-    // Try to send play status to channel
-    final action = SendPlayStatusAction();
-    if (action.isActionEnabled) action.invoke(SendPlayStatusIntent(), context);
+    if (intent.sync) {
+      // Try to send play status to channel
+      final action = SendPlayStatusAction();
+      if (action.isActionEnabled) {
+        action.invoke(SendPlayStatusIntent(), context);
+      }
+    }
   }
 
   @override
-  bool isEnabled(SyncToggleIntent intent, [BuildContext? context]) {
+  bool isEnabled(ToggleIntent intent, [BuildContext? context]) {
     if (context == null) return false;
 
     final isBusy = context.read<BusyCount>().isBusy;

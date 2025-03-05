@@ -174,7 +174,10 @@ class _PlayButtonState extends State<_PlayButton>
             iconSize: 36,
             onPressed: isBusy
                 ? null
-                : () => Actions.maybeInvoke(context, SyncToggleIntent()),
+                : () => Actions.maybeInvoke(
+                      context,
+                      const ToggleIntent(sync: true),
+                    ),
           ),
         );
       },

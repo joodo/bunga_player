@@ -164,6 +164,11 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
     const Duration(seconds: 1),
   );
 
+  late final _toggleAction = ToggleAction(
+    saveWatchProgressTimer: _saveWatchProgressTimer,
+    savedPositionNotifier: _savedPositionNotifier,
+  );
+
   @override
   void initState() {
     super.initState();
@@ -252,10 +257,7 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
           OpenVideoIntent: _openVideoAction,
           LeaveChannelIntent:
               LeaveChannelAction(watchersNotifier: _watchersNotifier),
-          SyncToggleIntent: SyncToggleAction(
-            saveWatchProgressTimer: _saveWatchProgressTimer,
-            savedPositionNotifier: _savedPositionNotifier,
-          ),
+          ToggleIntent: _toggleAction,
           SyncSeekIntent: SyncSeekAction(),
           ShareVideoIntent: _shareVideoAction,
           RefreshWatchersIntent: _refreshWatchersAction,
@@ -348,7 +350,7 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
     final playService = getIt<PlayService>();
     if (data.isPlaying != playService.playStatusNotifier.value.isPlaying) {
       toastType ??= 'toggle';
-      getIt<PlayService>().toggle();
+      _toggleAction.invoke(ToggleIntent(), context);
       _remoteJustToggledNotifier.mark();
     }
 
