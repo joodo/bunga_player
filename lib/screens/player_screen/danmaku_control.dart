@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:bunga_player/chat/actions.dart';
 import 'package:bunga_player/chat/models/message_data.dart';
 import 'package:bunga_player/chat/models/user.dart';
+import 'package:bunga_player/utils/business/platform.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
@@ -61,7 +62,7 @@ class _DanmakuControlState extends State<DanmakuControl> {
           onSubmitted: (value) {
             _sendDanmaku(value);
             _controller.clear();
-            _focusNode.requestFocus();
+            if (kIsDesktop) _focusNode.requestFocus();
           },
         ),
       ).padding(left: 8.0).flexible(),
