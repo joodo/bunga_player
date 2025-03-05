@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:animations/animations.dart';
 import 'package:async/async.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:bunga_player/chat/actions.dart';
 import 'package:bunga_player/chat/models/message.dart';
 import 'package:bunga_player/chat/models/message_data.dart';
@@ -54,10 +55,21 @@ class WatchersNotifier extends ValueNotifier<List<User>?> {
   void addUser(User user) {
     if (containsId(user.id)) return;
     value = [...value!, user];
+    AudioPlayer().play(
+      AssetSource('sounds/user_join.mp3'),
+      mode: PlayerMode.lowLatency,
+    );
   }
 
   void removeUser(String id) {
-    value = [...value!..removeWhere((e) => e.id == id)];
+    final index = value!.indexWhere((e) => e.id == id);
+    if (index < 0) return;
+
+    value = [...value!..removeAt(index)];
+    AudioPlayer().play(
+      AssetSource('sounds/user_leave.mp3'),
+      mode: PlayerMode.lowLatency,
+    );
   }
 
   bool containsId(String id) {
