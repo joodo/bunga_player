@@ -27,19 +27,18 @@ class Header extends StatelessWidget {
     return [
       Tooltip(
         message: '刷新',
+        verticalOffset: 20.0,
         child: TextButton(
           onPressed: Actions.handler(context, RefreshWatchersIntent()),
-          child: Text(
-            '当前观众:',
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
+          child: const Text('当前观众:')
+              .textColor(Theme.of(context).colorScheme.onSurface),
         ),
       ),
       ...users.map((user) => _WatcherLabel(user) as Widget),
       TextButton(
         onPressed: Actions.handler(context, AskPositionIntent()),
         child: const Text('同步播放进度'),
-      ).padding(left: 8.0),
+      ),
     ].toRow().padding(horizontal: 8.0);
   }
 }
