@@ -8,9 +8,14 @@ import 'package:styled_widget/styled_widget.dart';
 
 import 'open_video.dart';
 
-class HistoryTab extends StatelessWidget {
+class HistoryTab extends StatefulWidget {
   const HistoryTab({super.key});
 
+  @override
+  State<HistoryTab> createState() => _HistoryTabState();
+}
+
+class _HistoryTabState extends State<HistoryTab> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -39,7 +44,9 @@ class HistoryTab extends StatelessWidget {
             child: const Icon(Icons.delete, color: Colors.white),
           ),
           onDismissed: (direction) {
-            history.remove(entry.videoRecord.id);
+            setState(() {
+              history.remove(entry.videoRecord.id);
+            });
           },
           child: ListTile(
             leading: (entry.videoRecord.thumbUrl == null
