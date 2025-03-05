@@ -176,7 +176,7 @@ class _PlayButtonState extends State<_PlayButton>
                 ? null
                 : () => Actions.maybeInvoke(
                       context,
-                      const ToggleIntent(sync: true),
+                      const ToggleIntent(syncToRemote: true),
                     ),
           ),
         );

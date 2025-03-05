@@ -204,6 +204,7 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
           OpenVideoIntent.record(argument),
           context,
         );
+        print(_savedPositionNotifier.value);
 
         if (!mounted) return;
         AskPositionAction().invoke(AskPositionIntent(), context);

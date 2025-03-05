@@ -180,8 +180,8 @@ class RefreshDirAction extends ContextAction<RefreshDirIntent> {
 
 @immutable
 class ToggleIntent extends Intent {
-  final bool sync;
-  const ToggleIntent({this.sync = false});
+  final bool syncToRemote;
+  const ToggleIntent({this.syncToRemote = false});
 }
 
 class ToggleAction extends ContextAction<ToggleIntent> {
@@ -201,12 +201,16 @@ class ToggleAction extends ContextAction<ToggleIntent> {
     // Deal with progress saving business
     if (service.playStatusNotifier.value.isPlaying) {
       saveWatchProgressTimer.reset();
-      savedPositionNotifier.value = null;
     } else {
       saveWatchProgressTimer.cancel();
     }
 
-    if (intent.sync) {
+    if (intent.syncToRemote) {
+      // Toggle is invoked by me, not remote, so I can forget saved position.
+      savedPositionNotifier.value = null;
+    }
+
+    if (intent.syncToRemote) {
       // Try to send play status to channel
       final action = SendPlayStatusAction();
       if (action.isActionEnabled) {
