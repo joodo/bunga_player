@@ -81,3 +81,29 @@ Map<String, dynamic> _$PlayAtMessageDataToJson(PlayAtMessageData instance) =>
       'is_playing': instance.isPlaying,
       'when': instance.when.toIso8601String(),
     };
+
+PopmojiMessageData _$PopmojiMessageDataFromJson(Map<String, dynamic> json) =>
+    PopmojiMessageData(
+      sender: User.fromJson(json['sender'] as Map<String, dynamic>),
+      code: json['code'] as String,
+    );
+
+Map<String, dynamic> _$PopmojiMessageDataToJson(PopmojiMessageData instance) =>
+    <String, dynamic>{
+      'type': instance.type,
+      'sender': instance.sender.toJson(),
+      'code': instance.code,
+    };
+
+DanmakuMessageData _$DanmakuMessageDataFromJson(Map<String, dynamic> json) =>
+    DanmakuMessageData(
+      sender: User.fromJson(json['sender'] as Map<String, dynamic>),
+      message: json['message'] as String,
+    );
+
+Map<String, dynamic> _$DanmakuMessageDataToJson(DanmakuMessageData instance) =>
+    <String, dynamic>{
+      'type': instance.type,
+      'sender': instance.sender.toJson(),
+      'message': instance.message,
+    };

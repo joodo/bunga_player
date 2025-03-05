@@ -20,6 +20,7 @@ import 'package:bunga_player/screens/dialogs/open_video/direct_link.dart';
 import 'package:bunga_player/screens/dialogs/open_video/open_video.dart';
 import 'package:bunga_player/screens/dialogs/video_conflict.dart';
 import 'package:bunga_player/services/services.dart';
+import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/toast.dart';
 import 'package:bunga_player/utils/business/provider.dart';
 import 'package:bunga_player/utils/business/value_listenable.dart';
@@ -80,6 +81,18 @@ class WatchersNotifier extends ValueNotifier<List<User>?> {
 
   bool containsId(String id) {
     return value?.any((element) => element.id == id) ?? false;
+  }
+}
+
+class RecentPopmojisNotifier extends ValueNotifier<List<String>> {
+  RecentPopmojisNotifier()
+      : super(["🎆", "😆", "😭", "😍", "🤤", "🫣", "🤮", "🤡", "🔥"]) {
+    bindPreference<List<String>>(
+      preferences: getIt<Preferences>(),
+      key: 'recent_popmojis',
+      load: (pref) => value,
+      update: (value) => value,
+    );
   }
 }
 
@@ -178,6 +191,9 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
     savedPositionNotifier: _savedPositionNotifier,
   );
 
+  // Popmojis
+  final _recentPopmojis = RecentPopmojisNotifier();
+
   @override
   void initState() {
     super.initState();
@@ -262,6 +278,7 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
           valueListenable: _remoteJustToggledNotifier,
           proxy: (value) => RemoteJustToggled(value),
         ),
+        ChangeNotifierProvider.value(value: _recentPopmojis),
       ],
       child: child!.actions(
         actions: {
@@ -278,6 +295,8 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
           ShareVideoIntent: _shareVideoAction,
           RefreshWatchersIntent: _refreshWatchersAction,
           AskPositionIntent: AskPositionAction(),
+          SendPopmojiIntent: SendPopmojiAction(),
+          SendDanmakuIntent: SendDanmakuAction(),
         },
       ),
     );

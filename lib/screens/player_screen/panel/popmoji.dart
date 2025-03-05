@@ -1,4 +1,6 @@
 import 'package:bunga_player/popmoji/models/data.dart';
+import 'package:bunga_player/screens/player_screen/actions.dart';
+import 'package:bunga_player/screens/player_screen/business.dart';
 import 'package:bunga_player/utils/business/platform.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -72,13 +74,25 @@ class _PopmojiPanelState extends State<PopmojiPanel> {
                     emoji,
                     size: buttonSize,
                     waitDuration: const Duration(milliseconds: 500),
-                    onPressed: () {},
+                    onPressed: () {
+                      Actions.invoke(context, SendPopmojiIntent(emoji));
+                      _addToRecent(emoji);
+                    },
                   ),
                 )
                 .toList()
                 .toRow(),
       ),
     );
+  }
+
+  void _addToRecent(String emoji) {
+    final notifier = context.read<RecentPopmojisNotifier>();
+    final emojis = notifier.value;
+    emojis
+      ..remove(emoji)
+      ..insert(0, emoji);
+    notifier.value = [...emojis];
   }
 
   List _sliceItems(List<EmojiCategory> categories, int count) {

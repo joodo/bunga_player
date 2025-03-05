@@ -361,3 +361,37 @@ class SendPlayStatusAction extends ContextAction<SendPlayStatusIntent> {
     return context?.read<List<User>?>() != null;
   }
 }
+
+@immutable
+class SendPopmojiIntent extends Intent {
+  final String code;
+  const SendPopmojiIntent(this.code);
+}
+
+class SendPopmojiAction extends ContextAction<SendPopmojiIntent> {
+  @override
+  void invoke(SendPopmojiIntent intent, [BuildContext? context]) {
+    final messageData = PopmojiMessageData(
+      code: intent.code,
+      sender: User.fromContext(context!),
+    );
+    Actions.invoke(context, SendMessageIntent(messageData));
+  }
+}
+
+@immutable
+class SendDanmakuIntent extends Intent {
+  final String message;
+  const SendDanmakuIntent(this.message);
+}
+
+class SendDanmakuAction extends ContextAction<SendDanmakuIntent> {
+  @override
+  void invoke(SendDanmakuIntent intent, [BuildContext? context]) {
+    final messageData = DanmakuMessageData(
+      message: intent.message,
+      sender: User.fromContext(context!),
+    );
+    Actions.invoke(context, SendMessageIntent(messageData));
+  }
+}

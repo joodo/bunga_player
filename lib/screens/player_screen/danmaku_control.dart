@@ -1,13 +1,16 @@
 import 'dart:math';
 
+import 'package:bunga_player/chat/actions.dart';
+import 'package:bunga_player/chat/models/message_data.dart';
+import 'package:bunga_player/chat/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
-import '../../widgets/popmoji_button.dart';
-import '../actions.dart';
-import '../panel/popmoji.dart';
+import '../widgets/popmoji_button.dart';
 import 'business.dart';
+import 'actions.dart';
+import 'panel/popmoji.dart';
 
 class DanmakuControl extends StatefulWidget {
   const DanmakuControl({super.key});
@@ -56,6 +59,7 @@ class _DanmakuControlState extends State<DanmakuControl> {
             floatingLabelBehavior: FloatingLabelBehavior.never,
           ),
           onSubmitted: (value) {
+            _sendDanmaku(value);
             _controller.clear();
             _focusNode.requestFocus();
           },
@@ -69,7 +73,7 @@ class _DanmakuControlState extends State<DanmakuControl> {
         final maxPopmojisWidth = constraints.maxWidth - 500.0;
         int maxPopmojisCount = maxPopmojisWidth ~/ buttonSize - 1;
         maxPopmojisCount = max(maxPopmojisCount, 1);
-        final popmojis = Consumer<ValueNotifier<List<String>>>(
+        final popmojis = Consumer<RecentPopmojisNotifier>(
           builder: (context, recentPopmojis, child) {
             return [
               ...recentPopmojis.value
@@ -78,7 +82,8 @@ class _DanmakuControlState extends State<DanmakuControl> {
                   .map((emoji) => PopmojiButton(
                         emoji,
                         size: buttonSize,
-                        onPressed: () {},
+                        onPressed:
+                            Actions.handler(context, SendPopmojiIntent(emoji)),
                       )),
               IconButton(
                 onPressed: Actions.handler(
@@ -94,8 +99,16 @@ class _DanmakuControlState extends State<DanmakuControl> {
         return [
           danmakuField.flexible(),
           popmojis.padding(horizontal: 8.0),
-        ].toRow(mainAxisSize: MainAxisSize.max).wrapDanmakuBusiness();
+        ].toRow(mainAxisSize: MainAxisSize.max);
       },
     );
+  }
+
+  void _sendDanmaku(String message) {
+    final me = User.fromContext(context);
+    final messageData = message == '陈子祎'
+        ? PopmojiMessageData(code: '🐖', sender: me)
+        : DanmakuMessageData(message: message, sender: me);
+    Actions.invoke(context, SendMessageIntent(messageData));
   }
 }

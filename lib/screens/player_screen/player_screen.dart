@@ -5,31 +5,16 @@ import 'package:styled_widget/styled_widget.dart';
 
 import 'panel/panel.dart';
 import 'player/player.dart';
-import 'danmaku_control/danmaku_control.dart';
+import 'danmaku_control.dart';
 import 'business.dart';
 
-class PlayerScreen extends StatefulWidget {
-  const PlayerScreen({super.key});
-
-  @override
-  State<PlayerScreen> createState() => _PlayerScreenState();
-}
-
-class _PlayerScreenState extends State<PlayerScreen> {
-  // Panel
+class PlayerScreen extends StatelessWidget {
   static const _panelWidth = 300.0;
   static const _danmakuHeight = 64.0;
 
-  @override
-  void initState() {
-    super.initState();
-  }
+  const PlayerScreen({super.key});
 
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
+  // Panel
   @override
   Widget build(BuildContext context) {
     return Consumer2<Panel?, DanmakuVisible>(

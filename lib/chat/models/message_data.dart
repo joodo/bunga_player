@@ -129,3 +129,47 @@ class PlayAtMessageData extends MessageData {
   @override
   Map<String, dynamic> toJson() => _$PlayAtMessageDataToJson(this);
 }
+
+/// Send popmoji
+@JsonSerializable()
+class PopmojiMessageData extends MessageData {
+  static const messageType = 'popmoji';
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: true)
+  final type = messageType;
+
+  final User sender;
+  final String code;
+
+  PopmojiMessageData({
+    required this.sender,
+    required this.code,
+  });
+
+  factory PopmojiMessageData.fromJson(Map<String, dynamic> json) =>
+      _$PopmojiMessageDataFromJson(json);
+  @override
+  Map<String, dynamic> toJson() => _$PopmojiMessageDataToJson(this);
+}
+
+/// Send danmaku
+@JsonSerializable()
+class DanmakuMessageData extends MessageData {
+  static const messageType = 'danmaku';
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: true)
+  final type = messageType;
+
+  final User sender;
+  final String message;
+
+  DanmakuMessageData({
+    required this.sender,
+    required this.message,
+  });
+
+  factory DanmakuMessageData.fromJson(Map<String, dynamic> json) =>
+      _$DanmakuMessageDataFromJson(json);
+  @override
+  Map<String, dynamic> toJson() => _$DanmakuMessageDataToJson(this);
+}
