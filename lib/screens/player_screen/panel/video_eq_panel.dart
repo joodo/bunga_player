@@ -1,7 +1,7 @@
 import 'package:bunga_player/play/providers.dart';
 import 'package:bunga_player/play/service/service.dart';
+import 'package:bunga_player/screens/widgets/slider_item.dart';
 import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
@@ -50,7 +50,6 @@ class VideoEqPanel extends StatelessWidget implements Panel {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return PanelWidget(
       title: '画面均衡',
       child: [
@@ -85,24 +84,24 @@ class VideoEqPanel extends StatelessWidget implements Panel {
           },
         ),
         ...tuneItems.map(
-          (item) => [
-            Icon(item.icon).iconColor(theme.textTheme.bodyMedium!.color!),
-            Text(item.name).padding(left: 8.0).constrained(width: 65.0),
-            ValueListenableBuilder(
-                valueListenable: item.notifier,
-                builder: (context, value, child) => Slider(
-                      min: -1.0,
-                      max: 1.0,
-                      value: value / 100.0,
-                      label: value.toString(),
-                      padding: const EdgeInsets.only(right: 8.0),
-                      onChanged: (value) {
-                        context.read<PlayEqPresetNotifier>().value = null;
-                        final percent = value * 100;
-                        item.notifier.value = percent.toInt();
-                      },
-                    ).controlSliderTheme(context).flexible()),
-          ].toRow().padding(vertical: 2.0),
+          (item) => SliderItem(
+            icon: item.icon,
+            title: item.name,
+            slider: ValueListenableBuilder(
+              valueListenable: item.notifier,
+              builder: (context, value, child) => Slider(
+                min: -1.0,
+                max: 1.0,
+                value: value / 100.0,
+                label: value.toString(),
+                onChanged: (value) {
+                  context.read<PlayEqPresetNotifier>().value = null;
+                  final percent = value * 100;
+                  item.notifier.value = percent.toInt();
+                },
+              ),
+            ),
+          ).padding(vertical: 2.0),
         ),
       ]
           .toColumn(crossAxisAlignment: CrossAxisAlignment.start)

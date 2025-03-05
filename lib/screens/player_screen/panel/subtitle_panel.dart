@@ -1,7 +1,7 @@
 import 'package:bunga_player/play/models/track.dart';
 import 'package:bunga_player/play/service/service.dart';
+import 'package:bunga_player/screens/widgets/slider_item.dart';
 import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:styled_widget/styled_widget.dart';
@@ -87,22 +87,22 @@ class _SubtitlePanelState extends State<SubtitlePanel> {
           .textStyle(theme.textTheme.labelMedium!)
           .padding(horizontal: 16.0, top: 24.0, bottom: 8.0),
       ..._tuneArguments.map(
-        (e) => [
-          Icon(e.icon).iconColor(theme.textTheme.bodyMedium!.color!),
-          Text(e.title).padding(left: 8.0).constrained(width: 60.0),
-          ValueListenableBuilder(
-              valueListenable: e.notifier,
-              builder: (context, value, child) => Slider(
-                    min: e.min,
-                    max: e.max,
-                    value: value,
-                    label: e.labelFunc(value),
-                    padding: const EdgeInsets.only(right: 8.0),
-                    onChanged: (value) {
-                      e.notifier.value = value;
-                    },
-                  ).controlSliderTheme(context).flexible()),
-        ].toRow().padding(horizontal: 16.0),
+        (e) => SliderItem(
+          icon: e.icon,
+          title: e.title,
+          slider: ValueListenableBuilder(
+            valueListenable: e.notifier,
+            builder: (context, value, child) => Slider(
+              min: e.min,
+              max: e.max,
+              value: value,
+              label: e.labelFunc(value),
+              onChanged: (value) {
+                e.notifier.value = value;
+              },
+            ),
+          ),
+        ).padding(horizontal: 16.0),
       ),
     ].toColumn(crossAxisAlignment: CrossAxisAlignment.start);
 

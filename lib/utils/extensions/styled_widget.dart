@@ -133,7 +133,7 @@ extension BungaStyledWidget on Widget {
       );
 }
 
-extension ControlSliderTheme on Slider {
+extension ControlSliderTheme on Widget {
   Widget controlSliderTheme(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return SliderTheme(
