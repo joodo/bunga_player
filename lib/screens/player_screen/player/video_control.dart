@@ -3,6 +3,7 @@ import 'package:bunga_player/chat/models/user.dart';
 import 'package:bunga_player/play_sync/providers.dart';
 import 'package:bunga_player/play/actions.dart' as play_action;
 import 'package:bunga_player/play_sync/actions.dart';
+import 'package:bunga_player/utils/business/preference_notifier.dart';
 import '../../../play/models/play_payload.dart';
 import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/screens/dialogs/open_video/open_video.dart';
@@ -332,17 +333,42 @@ class _CallButtonState extends State<_CallButton>
   }
 }
 
-class _DurationButton extends StatelessWidget {
+class _DurationButton extends StatefulWidget {
   const _DurationButton();
+
+  @override
+  State<_DurationButton> createState() => _DurationButtonState();
+}
+
+class _DurationButtonState extends State<_DurationButton> {
+  final _showRemainNotifier = createPreferenceNotifier(
+    key: 'show_remain_duration',
+    initValue: false,
+  );
+
+  @override
+  void dispose() {
+    _showRemainNotifier.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Consumer3<PlayPosition, PlayDuration, ShowRemainDuration>(
-      builder: (context, position, duration, showRemainDuration, child) {
-        final displayString = showRemainDuration.value
-            ? '${position.value.hhmmss} - ${max(duration.value - position.value, Duration.zero).hhmmss}'
-            : '${position.value.hhmmss} / ${duration.value.hhmmss}';
+    final playService = getIt<PlayService>();
+    return ListenableBuilder(
+      listenable: Listenable.merge([
+        playService.positionNotifier,
+        playService.durationNotifier,
+        _showRemainNotifier,
+      ]),
+      builder: (context, child) {
+        final position = playService.positionNotifier.value;
+        final duration = playService.durationNotifier.value;
+        final displayString = _showRemainNotifier.value
+            ? '${position.hhmmss} - ${max(duration - position, Duration.zero).hhmmss}'
+            : '${position.hhmmss} / ${duration.hhmmss}';
         return TextButton(
-          onPressed: showRemainDuration.toggle,
+          onPressed: _showRemainNotifier.toggle,
           child: Text(displayString).textStyle(
             Theme.of(context).textTheme.labelMedium!,
           ),
