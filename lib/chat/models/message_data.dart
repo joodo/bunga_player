@@ -58,8 +58,9 @@ class NowPlayingMessageData extends MessageData {
   final type = messageType;
 
   final VideoRecord videoRecord;
+  final User sharer;
 
-  NowPlayingMessageData({required this.videoRecord});
+  NowPlayingMessageData({required this.videoRecord, required this.sharer});
 
   factory NowPlayingMessageData.fromJson(Map<String, dynamic> json) =>
       _$NowPlayingMessageDataFromJson(json);

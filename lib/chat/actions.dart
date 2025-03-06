@@ -85,6 +85,16 @@ class _ChannelActionsState extends SingleChildState<ChatActions> {
                   messageStreamController: _messageStreamController,
                 ),
           initialData: null,
+          builder: (context, child) {
+            if (context.watch<TencentClient?>() != null) {
+              final messageData = WhatsOnMessageData();
+              SendMessageAction().invoke(
+                SendMessageIntent(messageData),
+                context,
+              );
+            }
+            return child!;
+          },
         ),
       ],
       child: child!.actions(actions: {

@@ -6,6 +6,7 @@ import 'package:animations/animations.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:bunga_player/bunga_server/actions.dart';
 import 'package:bunga_player/bunga_server/models/bunga_client_info.dart';
+import 'package:bunga_player/chat/actions.dart';
 import 'package:bunga_player/chat/models/message.dart';
 import 'package:bunga_player/client_info/providers.dart';
 import 'package:bunga_player/screens/dialogs/open_video/direct_link.dart';
@@ -38,14 +39,20 @@ class WelcomeScreen extends StatefulWidget {
 }
 
 class _WelcomeScreenState extends State<WelcomeScreen> {
-  late final _messageSubscription = context
-      .read<Stream<Message>>()
-      .where(
-        (message) =>
-            message.data['type'] == StartProjectionMessageData.messageType,
-      )
-      .map((message) => StartProjectionMessageData.fromJson(message.data))
-      .listen(_dealWithProjection);
+  late final _messageSubscription = context.read<Stream<Message>>().listen(
+    (message) {
+      switch (message.data['type']) {
+        case StartProjectionMessageData.messageType:
+          final data = StartProjectionMessageData.fromJson(message.data);
+          _dealWithProjection(data);
+        case WhatsOnMessageData.messageType:
+          _dealWithWhatsOn();
+        case NowPlayingMessageData.messageType:
+          final data = NowPlayingMessageData.fromJson(message.data);
+          _dealWithNotPlaying(data);
+      }
+    },
+  );
 
   StartProjectionMessageData? _currentProjection;
 
@@ -107,6 +114,24 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     }
 
     if (autoJoin && isCurrent && isFirstShare) _joinChannel();
+  }
+
+  void _dealWithWhatsOn() {
+    if (_currentProjection == null) return;
+
+    final messageData = NowPlayingMessageData(
+      videoRecord: _currentProjection!.videoRecord,
+      sharer: _currentProjection!.sharer,
+    );
+    Actions.invoke(context, SendMessageIntent(messageData));
+  }
+
+  void _dealWithNotPlaying(NowPlayingMessageData data) {
+    if (_currentProjection != null) return;
+    _dealWithProjection(StartProjectionMessageData(
+      sharer: data.sharer,
+      videoRecord: data.videoRecord,
+    ));
   }
 
   void _videoSelected(OpenVideoDialogResult? result) async {

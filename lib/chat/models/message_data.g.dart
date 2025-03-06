@@ -35,6 +35,7 @@ NowPlayingMessageData _$NowPlayingMessageDataFromJson(
     NowPlayingMessageData(
       videoRecord:
           VideoRecord.fromJson(json['video_record'] as Map<String, dynamic>),
+      sharer: User.fromJson(json['sharer'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$NowPlayingMessageDataToJson(
@@ -42,6 +43,7 @@ Map<String, dynamic> _$NowPlayingMessageDataToJson(
     <String, dynamic>{
       'type': instance.type,
       'video_record': instance.videoRecord.toJson(),
+      'sharer': instance.sharer.toJson(),
     };
 
 AlohaMessageData _$AlohaMessageDataFromJson(Map<String, dynamic> json) =>
