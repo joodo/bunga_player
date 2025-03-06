@@ -375,15 +375,19 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
   void _dealWithAloha(AlohaMessageData data) {
     _watchersNotifier.addUser(data.user);
 
+    final me = User.fromContext(context);
     final messageData = HereIsMessageData(
-      user: User.fromContext(context),
-      isTalking: false,
+      user: me,
+      isTalking: _talkerIdsNotifier.value.contains(me.id),
     );
     Actions.invoke(context, SendMessageIntent(messageData));
   }
 
   void _dealWithHereIs(HereIsMessageData data) {
     _watchersNotifier.addUser(data.user);
+    if (data.isTalking && _talkerIdsNotifier.value.add(data.user.id)) {
+      _talkerIdsNotifier.value = {..._talkerIdsNotifier.value};
+    }
   }
 
   void _dealWithBye(ByeMessageData data) {
