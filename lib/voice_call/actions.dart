@@ -8,6 +8,7 @@ import 'package:bunga_player/chat/models/message_data.dart';
 import 'package:bunga_player/client_info/models/client_account.dart';
 import 'package:bunga_player/chat/models/message.dart';
 import 'package:bunga_player/services/permissions.dart';
+import 'package:bunga_player/utils/business/provider.dart';
 import 'package:bunga_player/voice_call/client/client.agora.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart';
@@ -188,7 +189,7 @@ class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
   final _hoperList = <String>{}; // Who is asking me
   final _callStatusNotifier = ValueNotifier<CallStatus>(CallStatus.none);
 
-  final _clientNotifier = ValueNotifier<AgoraClient?>(null);
+  AgoraClient? _client;
 
   late final _cancelAction = CancelCallingRequestAction(
     hopeList: _hopeList,
@@ -232,7 +233,6 @@ class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
   @override
   void dispose() {
     _callStatusNotifier.dispose();
-    _clientNotifier.dispose();
     _messageSubscription.cancel();
     super.dispose();
   }
@@ -264,22 +264,14 @@ class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
       child: MultiProvider(
         providers: [
           ValueListenableProvider.value(value: _callStatusNotifier),
-          SingleChildBuilder(
-            builder: (context, child) => Consumer<BungaClientInfo?>(
-              builder: (context, value, child) {
-                if (value != null) {
-                  AgoraClient.create(value).then((value) {
-                    _clientNotifier.value = value;
-                  });
-                }
-
-                return ValueListenableProvider.value(
-                  value: _clientNotifier,
-                  child: child,
-                );
-              },
-              child: child,
-            ),
+          ProxyFutureProvider<AgoraClient?, BungaClientInfo?>(
+            proxy: (clientInfo) =>
+                clientInfo == null ? null : AgoraClient.create(clientInfo),
+            initialData: null,
+            builder: (context, child) {
+              _client = context.watch<AgoraClient?>();
+              return child!;
+            },
           ),
         ],
         child: child,
@@ -381,7 +373,7 @@ class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
 
     await getIt<Permissions>().requestMicrophone();
 
-    await _clientNotifier.value?.joinChannel(userId: myId);
+    await _client?.joinChannel(userId: myId);
 
     if (!mounted) return;
     final messageData = TalkStatusMessageData(status: TalkStatus.start);
@@ -389,9 +381,9 @@ class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
   }
 
   Future<void> _stopTalking() async {
-    _clientNotifier.value?.micMuteNotifier.value = false;
+    _client?.micMuteNotifier.value = false;
 
-    await _clientNotifier.value?.leaveChannel();
+    await _client?.leaveChannel();
 
     if (!mounted) return;
     final messageData = TalkStatusMessageData(status: TalkStatus.end);

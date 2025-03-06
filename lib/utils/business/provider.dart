@@ -26,3 +26,30 @@ class ValueProxyListenableProvider<T, R> extends SingleChildStatelessWidget {
     );
   }
 }
+
+class ProxyFutureProvider<T, R> extends SingleChildStatelessWidget {
+  final Future<T>? Function(R value) proxy;
+  final T initialData;
+  final Widget Function(BuildContext context, Widget? child)? builder;
+
+  const ProxyFutureProvider({
+    super.key,
+    super.child,
+    required this.proxy,
+    required this.initialData,
+    this.builder,
+  });
+
+  @override
+  Widget buildWithChild(BuildContext context, Widget? child) {
+    return Consumer<R>(
+      builder: (context, value, child) => FutureProvider<T>.value(
+        value: proxy(value),
+        initialData: initialData,
+        builder: this.builder,
+        child: child,
+      ),
+      child: child,
+    );
+  }
+}

@@ -1,27 +1,18 @@
 import 'dart:async';
-import 'dart:convert';
 
-import 'package:audioplayers/audioplayers.dart';
 import 'package:bunga_player/bunga_server/models/bunga_client_info.dart';
 import 'package:bunga_player/chat/client/client.tencent.dart';
 import 'package:bunga_player/play_sync/models.dart';
 import 'package:bunga_player/play_sync/providers.dart';
-import 'package:bunga_player/screens/wrappers/actions.dart';
-import 'package:bunga_player/services/exit_callbacks.dart';
-import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/services/toast.dart';
+import 'package:bunga_player/utils/business/provider.dart';
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
-import 'package:bunga_player/voice_call/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 
-import 'client/client.dart';
 import 'models/channel_data.dart';
 import 'models/message_data.dart';
 import 'models/message.dart';
-import 'models/user.dart';
-import 'providers.dart';
 
 class UpdateChannelDataIntent extends Intent {
   final ChannelData channelData;
@@ -48,16 +39,20 @@ class SendMessageIntent extends Intent {
 }
 
 class SendMessageAction extends ContextAction<SendMessageIntent> {
-  final ChatClient client;
-
-  SendMessageAction({required this.client});
+  SendMessageAction();
 
   @override
   Future<Message> invoke(
     SendMessageIntent intent, [
     BuildContext? context,
   ]) {
+    final client = context!.read<TencentClient>();
     return client.sendMessage(intent.data.toJson());
+  }
+
+  @override
+  bool isEnabled(SendMessageIntent intent, [BuildContext? context]) {
+    return context?.read<TencentClient?>() != null;
   }
 }
 
@@ -70,21 +65,6 @@ class ChatActions extends SingleChildStatefulWidget {
 class _ChannelActionsState extends SingleChildState<ChatActions> {
   final _messageStreamController = StreamController<Message>.broadcast();
 
-  late final _lastMessage = context.read<ChatChannelLastMessage>();
-
-  @override
-  void initState() {
-    /*
-    _currentWatchers.addJoinListener(_notifyUserJoin);
-    _currentWatchers.addLeaveListener(_notifyUserLeave);
-    _currentChannel.addListener(_sendAloha);
-    _lastMessage.addListener(_updateWatchers);
-    _lastMessage.addListener(_answerAloha);
-*/
-
-    super.initState();
-  }
-
   @override
   void dispose() {
     _messageStreamController.close();
@@ -94,32 +74,22 @@ class _ChannelActionsState extends SingleChildState<ChatActions> {
 
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
-    return Consumer<BungaClientInfo?>(
-      builder: (context, clientInfo, child) {
-        return FutureBuilder(
-          future: clientInfo == null
-              ? Future.value(null)
+    return MultiProvider(
+      providers: [
+        Provider.value(value: _messageStreamController.stream),
+        ProxyFutureProvider<TencentClient?, BungaClientInfo?>(
+          proxy: (clientInfo) => clientInfo == null
+              ? null
               : TencentClient.create(
                   clientInfo: clientInfo,
                   messageStreamController: _messageStreamController,
                 ),
-          builder: (context, snapshot) {
-            return child!.actions(
-                actions: snapshot.hasData
-                    ? {
-                        SendMessageIntent:
-                            SendMessageAction(client: snapshot.data!),
-                      }
-                    : {});
-          },
-        );
-      },
-      child: MultiProvider(
-        providers: [
-          Provider.value(value: _messageStreamController.stream),
-        ],
-        child: child,
-      ),
+          initialData: null,
+        ),
+      ],
+      child: child!.actions(actions: {
+        SendMessageIntent: SendMessageAction(),
+      }),
     );
   }
 }

@@ -33,6 +33,40 @@ class StartProjectionMessageData extends MessageData {
   Map<String, dynamic> toJson() => _$StartProjectionMessageDataToJson(this);
 }
 
+/// Send when asking what's playing
+@JsonSerializable()
+class WhatsOnMessageData extends MessageData {
+  static const messageType = 'whats-on';
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: true)
+  final type = messageType;
+
+  WhatsOnMessageData();
+
+  factory WhatsOnMessageData.fromJson(Map<String, dynamic> json) =>
+      _$WhatsOnMessageDataFromJson(json);
+  @override
+  Map<String, dynamic> toJson() => _$WhatsOnMessageDataToJson(this);
+}
+
+/// Send when answering what's playing
+@JsonSerializable()
+class NowPlayingMessageData extends MessageData {
+  static const messageType = 'now-playing';
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: true)
+  final type = messageType;
+
+  final VideoRecord videoRecord;
+
+  NowPlayingMessageData({required this.videoRecord});
+
+  factory NowPlayingMessageData.fromJson(Map<String, dynamic> json) =>
+      _$NowPlayingMessageDataFromJson(json);
+  @override
+  Map<String, dynamic> toJson() => _$NowPlayingMessageDataToJson(this);
+}
+
 /// Send when join watching
 @JsonSerializable()
 class AlohaMessageData extends MessageData {

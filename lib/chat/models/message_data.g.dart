@@ -22,6 +22,28 @@ Map<String, dynamic> _$StartProjectionMessageDataToJson(
       'video_record': instance.videoRecord.toJson(),
     };
 
+WhatsOnMessageData _$WhatsOnMessageDataFromJson(Map<String, dynamic> json) =>
+    WhatsOnMessageData();
+
+Map<String, dynamic> _$WhatsOnMessageDataToJson(WhatsOnMessageData instance) =>
+    <String, dynamic>{
+      'type': instance.type,
+    };
+
+NowPlayingMessageData _$NowPlayingMessageDataFromJson(
+        Map<String, dynamic> json) =>
+    NowPlayingMessageData(
+      videoRecord:
+          VideoRecord.fromJson(json['video_record'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$NowPlayingMessageDataToJson(
+        NowPlayingMessageData instance) =>
+    <String, dynamic>{
+      'type': instance.type,
+      'video_record': instance.videoRecord.toJson(),
+    };
+
 AlohaMessageData _$AlohaMessageDataFromJson(Map<String, dynamic> json) =>
     AlohaMessageData(
       user: User.fromJson(json['user'] as Map<String, dynamic>),
