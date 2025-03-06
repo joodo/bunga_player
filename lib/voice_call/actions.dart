@@ -389,7 +389,7 @@ class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
   }
 
   Future<void> _stopTalking() async {
-    _clientNotifier.value?.setMuteMic(false);
+    _clientNotifier.value?.micMuteNotifier.value = false;
 
     await _clientNotifier.value?.leaveChannel();
 

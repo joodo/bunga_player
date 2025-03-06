@@ -1,6 +1,10 @@
 import 'package:bunga_player/chat/models/user.dart';
 import 'package:bunga_player/client_info/models/client_account.dart';
+import 'package:bunga_player/services/preferences.dart';
+import 'package:bunga_player/services/services.dart';
+import 'package:bunga_player/utils/models/volume.dart';
 import 'package:bunga_player/voice_call/actions.dart';
+import 'package:bunga_player/voice_call/client/client.agora.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
@@ -86,18 +90,55 @@ class CallButton extends StatelessWidget {
                     SliderItem(
                       icon: Icons.headphones,
                       title: '语音音量',
-                      slider: Slider(
-                        value: 0.5,
-                        onChanged: (double value) {},
+                      slider: Consumer<AgoraClient>(
+                        builder: (context, client, child) {
+                          return ValueListenableBuilder(
+                            valueListenable: client.volumeNotifier,
+                            builder: (context, volume, child) {
+                              return Slider(
+                                max: 100,
+                                value: volume.volume.toDouble(),
+                                label: '${volume.volume}%',
+                                onChanged: (double value) {
+                                  client.volumeNotifier.value =
+                                      Volume(volume: value.toInt());
+                                },
+                                onChangeEnd: (value) {
+                                  final pref = getIt<Preferences>();
+                                  pref.set('call_volume', value.toInt());
+                                },
+                              );
+                            },
+                          );
+                        },
                       ),
                     ),
                     const Divider(height: 16.0),
                     [
-                      IconButton.outlined(
-                        onPressed: () {
-                          print('mute mic');
-                        },
-                        icon: Icon(Icons.mic),
+                      Consumer<AgoraClient>(
+                        builder: (context, client, child) =>
+                            ValueListenableBuilder(
+                          valueListenable: client.micMuteNotifier,
+                          builder: (context, muted, child) => muted
+                              ? IconButton(
+                                  style: const ButtonStyle(
+                                    backgroundColor:
+                                        WidgetStatePropertyAll<Color>(
+                                            Colors.red),
+                                  ),
+                                  color: Colors.white70,
+                                  onPressed: () {
+                                    client.micMuteNotifier.value = false;
+                                  },
+                                  icon: Icon(Icons.mic_off),
+                                )
+                              : IconButton.outlined(
+                                  onPressed: () {
+                                    client.micMuteNotifier.value = true;
+                                  },
+                                  icon: Icon(Icons.mic),
+                                ),
+                        ),
                       ),
                       _createCallOperateButton(
                         color: Colors.red,

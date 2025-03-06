@@ -6,7 +6,7 @@ import 'package:flutter/cupertino.dart';
 abstract class VoiceCallClient {
   ValueNotifier<Volume> get volumeNotifier;
 
-  void setMuteMic(bool mute);
+  ValueNotifier<bool> get micMuteNotifier;
 
   Future<void> joinChannel({required String userId});
   Future<void> leaveChannel();
