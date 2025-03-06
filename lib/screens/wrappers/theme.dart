@@ -28,7 +28,6 @@ class ThemeWrapper extends SingleChildStatelessWidget {
         showValueIndicator: ShowValueIndicator.always,
         year2023: false,
       ),
-      tooltipTheme: const TooltipThemeData(verticalOffset: 8.0),
     ).useSystemChineseFont(Brightness.dark);
 
     return Theme(

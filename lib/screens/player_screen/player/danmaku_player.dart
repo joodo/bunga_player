@@ -6,6 +6,7 @@ import 'package:bunga_player/chat/models/message_data.dart';
 import 'package:bunga_player/chat/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:styled_widget/styled_widget.dart';
 
 typedef Danmaku = ({String message, User sender});
 
@@ -169,26 +170,20 @@ class DanmakuText extends StatelessWidget {
     final foregroundColor =
         HSVColor.fromAHSV(1, (hue % 360), 0.5, 0.95).toColor();
 
-    return Stack(
-      children: <Widget>[
-        // Stroked text as border.
-        Text(
-          text,
-          style: textStyle.copyWith(
-            foreground: Paint()
-              ..style = PaintingStyle.stroke
-              ..strokeCap = StrokeCap.round
-              ..strokeJoin = StrokeJoin.round
-              ..strokeWidth = 4
-              ..color = borderColor,
-          ),
+    return [
+      // Stroked text as border.
+      Text(text).textStyle(
+        textStyle.copyWith(
+          foreground: Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeCap = StrokeCap.round
+            ..strokeJoin = StrokeJoin.round
+            ..strokeWidth = 4
+            ..color = borderColor,
         ),
-        // Solid text as fill.
-        Text(
-          text,
-          style: textStyle.copyWith(color: foregroundColor),
-        ),
-      ],
-    );
+      ),
+      // Solid text as fill.
+      Text(text).textStyle(textStyle.copyWith(color: foregroundColor)),
+    ].toStack();
   }
 }

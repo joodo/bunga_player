@@ -55,8 +55,8 @@ class PopmojiButton extends StatelessWidget {
             repeat: true,
             height: 64,
           ),
-          const SizedBox(height: 4),
-          Text(context.read<EmojiData>().tags[emoji]?.first ?? ''),
+          Text(context.read<EmojiData>().tags[emoji]?.first ?? '')
+              .padding(top: 4.0),
         ].toColumn().padding(all: 8.0),
       ),
       child: button,

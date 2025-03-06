@@ -51,55 +51,53 @@ class _PlaylistPanelState extends State<PlaylistPanel> {
           child: dirInfo == null
               ? const Text('没有其他视频').center()
               : ListView.separated(
-                      controller: _scrollController,
-                      padding: const EdgeInsets.only(bottom: 24.0),
-                      itemBuilder: (context, index) {
-                        final epInfo = dirInfo.info[index];
-                        final current = dirInfo.current == index;
-                        return ListTile(
-                          key: ValueKey('ep$index'),
-                          selected: current,
-                          title: Text(
-                            epInfo.name,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          subtitle: current ? const Text('当前播放') : null,
-                          trailing: epInfo.thumb != null
-                              ? Image.network(
-                                  epInfo.thumb!,
-                                  key: ValueKey(epInfo.thumb!),
-                                ).clipRRect(all: 8.0)
-                              : null,
-                          onTap: current
-                              ? null
-                              : () async {
-                                  final read = context.read;
+                  controller: _scrollController,
+                  padding: const EdgeInsets.only(bottom: 24.0),
+                  itemBuilder: (context, index) {
+                    final epInfo = dirInfo.info[index];
+                    final current = dirInfo.current == index;
+                    return ListTile(
+                      key: ValueKey('ep$index'),
+                      selected: current,
+                      title: Text(
+                        epInfo.name,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      subtitle: current ? const Text('当前播放') : null,
+                      trailing: epInfo.thumb != null
+                          ? Image.network(
+                              epInfo.thumb!,
+                              key: ValueKey(epInfo.thumb!),
+                            ).clipRRect(all: 8.0)
+                          : null,
+                      onTap: current
+                          ? null
+                          : () async {
+                              final read = context.read;
 
-                                  final shouldShare =
-                                      read<List<User>?>() != null;
+                              final shouldShare = read<List<User>?>() != null;
 
-                                  final act = Actions.invoke(
-                                    context,
-                                    OpenVideoIntent.url(epInfo.url),
-                                  ) as Future<PlayPayload>;
+                              final act = Actions.invoke(
+                                context,
+                                OpenVideoIntent.url(epInfo.url),
+                              ) as Future<PlayPayload>;
 
-                                  final payload = await act;
-                                  if (context.mounted && shouldShare) {
-                                    Actions.invoke(
-                                      context,
-                                      ShareVideoIntent(payload.record),
-                                    );
-                                  }
-                                },
-                        ).animatedSize(
-                          duration: const Duration(milliseconds: 200),
-                        );
-                      },
-                      separatorBuilder: (context, index) =>
-                          const Divider(indent: 16.0),
-                      itemCount: dirInfo.info.length)
-                  .expanded(),
+                              final payload = await act;
+                              if (context.mounted && shouldShare) {
+                                Actions.invoke(
+                                  context,
+                                  ShareVideoIntent(payload.record),
+                                );
+                              }
+                            },
+                    ).animatedSize(
+                      duration: const Duration(milliseconds: 200),
+                    );
+                  },
+                  separatorBuilder: (context, index) =>
+                      const Divider(indent: 16.0),
+                  itemCount: dirInfo.info.length),
         );
       },
     );

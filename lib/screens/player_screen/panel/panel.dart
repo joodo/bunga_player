@@ -32,7 +32,7 @@ class PanelWidget extends SingleChildStatelessWidget {
           )
           .padding(horizontal: 12.0, top: 12.0, bottom: 0),
       const Divider(),
-      child!.flexible(),
+      child!.expanded(),
     ].toColumn(crossAxisAlignment: CrossAxisAlignment.stretch);
   }
 }

@@ -1,12 +1,12 @@
-import 'package:bunga_player/chat/models/user.dart';
-import 'package:bunga_player/play/service/service.dart';
-import 'package:bunga_player/play/service/service.media_kit.dart';
-import 'package:bunga_player/screens/player_screen/player/popmoji_player.dart';
-import 'package:bunga_player/services/services.dart';
 import 'package:flutter/material.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
+
+import 'package:bunga_player/chat/models/user.dart';
+import 'package:bunga_player/play/service/service.dart';
+import 'package:bunga_player/play/service/service.media_kit.dart';
+import 'package:bunga_player/services/services.dart';
 
 import '../business.dart';
 import 'danmaku_player.dart';
@@ -14,6 +14,7 @@ import 'header.dart';
 import 'progress_bar.dart';
 import 'saved_position_hint.dart';
 import 'video_control.dart';
+import 'popmoji_player.dart';
 
 class Player extends StatelessWidget {
   const Player({super.key});
