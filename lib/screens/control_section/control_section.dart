@@ -4,7 +4,6 @@ import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/ui/providers.dart';
 import 'package:bunga_player/screens/control_section/danmaku_control.dart';
 import 'package:bunga_player/screens/control_section/source_selection_control.dart';
-import 'package:bunga_player/screens/control_section/call_control.dart';
 import 'package:bunga_player/screens/control_section/rename_control.dart';
 import 'package:bunga_player/screens/player_screen/player/video_control.dart';
 import 'package:bunga_player/screens/control_section/popmoji_control.dart';
@@ -48,7 +47,6 @@ class LockObserver extends RouteObserver {
 class _ControlSectionState extends State<ControlSection> {
   final _navigatorStateKey = GlobalKey<NavigatorState>();
   late final _showHUD = context.read<ShouldShowHUD>();
-  late final _callStatus = context.read<VoiceCallStatus>();
 
   late final _routeObserver = LockObserver(_showHUD);
 
@@ -57,13 +55,11 @@ class _ControlSectionState extends State<ControlSection> {
     super.initState();
 
     _showHUD.addListener(_onUIHiddenChanged);
-    _callStatus.addListener(_onCallStatusChanged);
   }
 
   @override
   void dispose() {
     _showHUD.removeListener(_onUIHiddenChanged);
-    _callStatus.removeListener(_onCallStatusChanged);
 
     super.dispose();
   }
@@ -72,7 +68,6 @@ class _ControlSectionState extends State<ControlSection> {
     return switch (name) {
       'control:rename' => const RenameControl(),
       'control:main' => const VideoControl(),
-      'control:call' => const CallControl(),
       'control:popmoji' => const PopmojiControl(),
       'control:tune' => const TuneControl(),
       'control:danmaku' => const DanmakuControl(),
@@ -114,13 +109,7 @@ class _ControlSectionState extends State<ControlSection> {
     return _ShortcutsWrapper(child: navigator);
   }
 
-  void _onCallStatusChanged() {
-    // Route to call control when call in
-    if (context.read<VoiceCallStatus>().value == VoiceCallStatusType.callIn) {
-      final navigator = _navigatorStateKey.currentState!;
-      navigator.pushNamed('control:call');
-    }
-  }
+  void _onCallStatusChanged() {}
 
   void _onUIHiddenChanged() {
     // When show again during fullscreen, route to main control

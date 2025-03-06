@@ -20,13 +20,11 @@ class SliderItem extends StatelessWidget {
     return [
       Icon(icon).iconColor(theme.textTheme.bodyMedium!.color!),
       [
-        Text(title)
-            .textStyle(theme.textTheme.bodyLarge!)
-            .padding(left: 8.0, top: 12.0),
-        slider.controlSliderTheme(context),
+        Text(title).textStyle(theme.textTheme.bodyLarge!).padding(top: 12.0),
+        slider.controlSliderTheme(context).padding(left: 2.0),
       ]
           .toColumn(crossAxisAlignment: CrossAxisAlignment.start)
-          .padding(left: 8.0)
+          .padding(left: 16.0)
           .flexible(),
     ].toRow(crossAxisAlignment: CrossAxisAlignment.center);
   }

@@ -107,3 +107,39 @@ Map<String, dynamic> _$DanmakuMessageDataToJson(DanmakuMessageData instance) =>
       'sender': instance.sender.toJson(),
       'message': instance.message,
     };
+
+CallMessageData _$CallMessageDataFromJson(Map<String, dynamic> json) =>
+    CallMessageData(
+      action: $enumDecode(_$CallActionEnumMap, json['action']),
+    );
+
+Map<String, dynamic> _$CallMessageDataToJson(CallMessageData instance) =>
+    <String, dynamic>{
+      'type': instance.type,
+      'action': _$CallActionEnumMap[instance.action]!,
+    };
+
+const _$CallActionEnumMap = {
+  CallAction.ask: 'ask',
+  CallAction.yes: 'yes',
+  CallAction.no: 'no',
+  CallAction.cancel: 'cancel',
+};
+
+TalkStatusMessageData _$TalkStatusMessageDataFromJson(
+        Map<String, dynamic> json) =>
+    TalkStatusMessageData(
+      status: $enumDecode(_$TalkStatusEnumMap, json['status']),
+    );
+
+Map<String, dynamic> _$TalkStatusMessageDataToJson(
+        TalkStatusMessageData instance) =>
+    <String, dynamic>{
+      'type': instance.type,
+      'status': _$TalkStatusEnumMap[instance.status]!,
+    };
+
+const _$TalkStatusEnumMap = {
+  TalkStatus.start: 'start',
+  TalkStatus.end: 'end',
+};

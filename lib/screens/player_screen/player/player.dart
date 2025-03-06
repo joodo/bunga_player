@@ -10,7 +10,7 @@ import 'package:bunga_player/services/services.dart';
 
 import '../business.dart';
 import 'danmaku_player.dart';
-import 'header.dart';
+import 'header/header.dart';
 import 'progress_bar.dart';
 import 'saved_position_hint.dart';
 import 'video_control.dart';

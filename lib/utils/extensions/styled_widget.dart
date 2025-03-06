@@ -8,7 +8,7 @@ extension BungaStyledWidget on Widget {
       )
           .fade(duration: 1000.ms, begin: 0.5, end: 1.0)
           .then(delay: 300.ms)
-          .fade(duration: 1000.ms, begin: 1.0, end: 0.5);
+          .fade(duration: 1000.ms, end: 0.5);
   Widget colorScheme({
     ColorScheme? scheme,
     Color? seedColor,
@@ -143,7 +143,7 @@ extension ControlSliderTheme on Widget {
         valueIndicatorColor: colorScheme.tertiary,
         thumbSize: const WidgetStatePropertyAll(Size(4.0, 32.0)),
         overlayShape: const RoundSliderOverlayShape(overlayRadius: 20.0),
-        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+        padding: const EdgeInsets.all(0),
         showValueIndicator: ShowValueIndicator.always,
         year2023: false,
       ),

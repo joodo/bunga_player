@@ -16,7 +16,10 @@ abstract class IMInfo with _$IMInfo {
 
 @freezed
 abstract class VoiceCallInfo with _$VoiceCallInfo {
-  const factory VoiceCallInfo({required String key}) = _VoiceCallInfo;
+  const factory VoiceCallInfo({
+    required String key,
+    required String channelToken,
+  }) = _VoiceCallInfo;
 
   factory VoiceCallInfo.fromJson(Map<String, dynamic> json) =>
       _$VoiceCallInfoFromJson(json);

@@ -21,11 +21,13 @@ Map<String, dynamic> _$IMInfoToJson(_IMInfo instance) => <String, dynamic>{
 _VoiceCallInfo _$VoiceCallInfoFromJson(Map<String, dynamic> json) =>
     _VoiceCallInfo(
       key: json['key'] as String,
+      channelToken: json['channel_token'] as String,
     );
 
 Map<String, dynamic> _$VoiceCallInfoToJson(_VoiceCallInfo instance) =>
     <String, dynamic>{
       'key': instance.key,
+      'channel_token': instance.channelToken,
     };
 
 _BilibiliInfo _$BilibiliInfoFromJson(Map<String, dynamic> json) =>

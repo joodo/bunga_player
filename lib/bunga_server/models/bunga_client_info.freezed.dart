@@ -184,6 +184,7 @@ class __$IMInfoCopyWithImpl<$Res> implements _$IMInfoCopyWith<$Res> {
 /// @nodoc
 mixin _$VoiceCallInfo {
   String get key;
+  String get channelToken;
 
   /// Create a copy of VoiceCallInfo
   /// with the given fields replaced by the non-null parameter values.
@@ -201,16 +202,18 @@ mixin _$VoiceCallInfo {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is VoiceCallInfo &&
-            (identical(other.key, key) || other.key == key));
+            (identical(other.key, key) || other.key == key) &&
+            (identical(other.channelToken, channelToken) ||
+                other.channelToken == channelToken));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, key);
+  int get hashCode => Object.hash(runtimeType, key, channelToken);
 
   @override
   String toString() {
-    return 'VoiceCallInfo(key: $key)';
+    return 'VoiceCallInfo(key: $key, channelToken: $channelToken)';
   }
 }
 
@@ -220,7 +223,7 @@ abstract mixin class $VoiceCallInfoCopyWith<$Res> {
           VoiceCallInfo value, $Res Function(VoiceCallInfo) _then) =
       _$VoiceCallInfoCopyWithImpl;
   @useResult
-  $Res call({String key});
+  $Res call({String key, String channelToken});
 }
 
 /// @nodoc
@@ -237,11 +240,16 @@ class _$VoiceCallInfoCopyWithImpl<$Res>
   @override
   $Res call({
     Object? key = null,
+    Object? channelToken = null,
   }) {
     return _then(_self.copyWith(
       key: null == key
           ? _self.key
           : key // ignore: cast_nullable_to_non_nullable
+              as String,
+      channelToken: null == channelToken
+          ? _self.channelToken
+          : channelToken // ignore: cast_nullable_to_non_nullable
               as String,
     ));
   }
@@ -250,12 +258,14 @@ class _$VoiceCallInfoCopyWithImpl<$Res>
 /// @nodoc
 @JsonSerializable()
 class _VoiceCallInfo implements VoiceCallInfo {
-  const _VoiceCallInfo({required this.key});
+  const _VoiceCallInfo({required this.key, required this.channelToken});
   factory _VoiceCallInfo.fromJson(Map<String, dynamic> json) =>
       _$VoiceCallInfoFromJson(json);
 
   @override
   final String key;
+  @override
+  final String channelToken;
 
   /// Create a copy of VoiceCallInfo
   /// with the given fields replaced by the non-null parameter values.
@@ -277,16 +287,18 @@ class _VoiceCallInfo implements VoiceCallInfo {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _VoiceCallInfo &&
-            (identical(other.key, key) || other.key == key));
+            (identical(other.key, key) || other.key == key) &&
+            (identical(other.channelToken, channelToken) ||
+                other.channelToken == channelToken));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, key);
+  int get hashCode => Object.hash(runtimeType, key, channelToken);
 
   @override
   String toString() {
-    return 'VoiceCallInfo(key: $key)';
+    return 'VoiceCallInfo(key: $key, channelToken: $channelToken)';
   }
 }
 
@@ -298,7 +310,7 @@ abstract mixin class _$VoiceCallInfoCopyWith<$Res>
       __$VoiceCallInfoCopyWithImpl;
   @override
   @useResult
-  $Res call({String key});
+  $Res call({String key, String channelToken});
 }
 
 /// @nodoc
@@ -315,11 +327,16 @@ class __$VoiceCallInfoCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   $Res call({
     Object? key = null,
+    Object? channelToken = null,
   }) {
     return _then(_VoiceCallInfo(
       key: null == key
           ? _self.key
           : key // ignore: cast_nullable_to_non_nullable
+              as String,
+      channelToken: null == channelToken
+          ? _self.channelToken
+          : channelToken // ignore: cast_nullable_to_non_nullable
               as String,
     ));
   }

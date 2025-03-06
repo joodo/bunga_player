@@ -1,8 +1,6 @@
 import 'package:animations/animations.dart';
 import 'package:bunga_player/chat/models/user.dart';
-import 'package:bunga_player/play_sync/providers.dart';
 import 'package:bunga_player/play/actions.dart' as play_action;
-import 'package:bunga_player/play_sync/actions.dart';
 import 'package:bunga_player/utils/business/preference_notifier.dart';
 import '../../../play/models/play_payload.dart';
 import 'package:bunga_player/play/service/service.dart';
@@ -11,22 +9,15 @@ import 'package:bunga_player/screens/player_screen/actions.dart';
 import 'package:bunga_player/screens/player_screen/business.dart';
 import 'package:bunga_player/screens/player_screen/panel/video_source_panel.dart';
 import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/services/toast.dart';
 import 'package:bunga_player/utils/business/platform.dart';
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
-import 'package:bunga_player/voice_call/actions.dart';
-import 'package:bunga_player/chat/models/channel_data.dart';
 import 'package:bunga_player/utils/models/volume.dart';
 import 'package:bunga_player/mocks/slider.dart' as mock;
-import 'package:bunga_player/play/models/video_entries/video_entry.dart';
-import 'package:bunga_player/chat/providers.dart';
 import 'package:bunga_player/play/providers.dart';
 import 'package:bunga_player/ui/providers.dart';
-import 'package:bunga_player/screens/widgets/video_open_menu_items.dart';
 import 'package:bunga_player/utils/extensions/comparable.dart';
 import 'package:bunga_player/utils/extensions/duration.dart';
 import 'package:bunga_player/utils/business/value_listenable.dart';
-import 'package:bunga_player/voice_call/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
@@ -256,79 +247,6 @@ class _SliderSection extends StatelessWidget {
           ].toRow(),
         ],
       ),
-    );
-  }
-}
-
-class _CallButton extends StatefulWidget {
-  final VoidCallback onPressed;
-  const _CallButton({required this.onPressed});
-
-  @override
-  State<_CallButton> createState() => _CallButtonState();
-}
-
-class _CallButtonState extends State<_CallButton>
-    with TickerProviderStateMixin {
-  AnimationController? _controller;
-  late final Animation<double> _animation = CurvedAnimation(
-    parent: _controller!,
-    curve: Curves.bounceInOut,
-  );
-
-  @override
-  void initState() {
-    super.initState();
-
-    _controller = AnimationController(
-      duration: const Duration(seconds: 1),
-      upperBound: 0.2,
-      vsync: this,
-    )..repeat(reverse: true);
-  }
-
-  @override
-  void dispose() {
-    _controller?.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Selector<VoiceCallStatus, VoiceCallStatusType>(
-      selector: (context, currentCallStatus) => currentCallStatus.value,
-      builder: (context, callStatus, child) => switch (callStatus) {
-        VoiceCallStatusType.none => IconButton(
-            icon: const Icon(Icons.call),
-            onPressed: true
-                ? () {
-                    Actions.invoke(context, StartCallingRequestIntent());
-                    widget.onPressed();
-                  }
-                : null,
-          ),
-        VoiceCallStatusType.callOut ||
-        VoiceCallStatusType.talking =>
-          IconButton(
-            style: const ButtonStyle(
-              backgroundColor: WidgetStatePropertyAll<Color>(Colors.green),
-            ),
-            color: Colors.white70,
-            icon: const Icon(Icons.call),
-            onPressed: widget.onPressed,
-          ),
-        VoiceCallStatusType.callIn => RotationTransition(
-            turns: _animation,
-            child: IconButton(
-              style: const ButtonStyle(
-                backgroundColor: WidgetStatePropertyAll<Color>(Colors.green),
-              ),
-              color: Colors.white70,
-              icon: const Icon(Icons.call),
-              onPressed: widget.onPressed,
-            ),
-          ),
-      },
     );
   }
 }

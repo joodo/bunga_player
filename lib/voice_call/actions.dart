@@ -2,158 +2,180 @@ import 'dart:async';
 
 import 'package:async/async.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:bunga_player/bunga_server/models/bunga_client_info.dart';
 import 'package:bunga_player/chat/actions.dart';
 import 'package:bunga_player/chat/models/message_data.dart';
-import 'package:bunga_player/screens/wrappers/actions.dart';
+import 'package:bunga_player/client_info/models/client_account.dart';
 import 'package:bunga_player/chat/models/message.dart';
-import 'package:bunga_player/chat/models/user.dart';
-import 'package:bunga_player/chat/providers.dart';
 import 'package:bunga_player/services/permissions.dart';
 import 'package:bunga_player/voice_call/client/client.agora.dart';
-import 'package:bunga_player/voice_call/client/client.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
-import 'package:bunga_player/voice_call/models.dart';
 import 'package:flutter/widgets.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 
-import 'providers.dart';
-
-class CallingRequestBusiness {
-  final Locator providerLocator;
-  CallingRequestBusiness({required this.providerLocator});
-
-  String? requestMessageId;
-  final List<String> myHopeList = [];
-
-  late final requestTimeOutTimer = RestartableTimer(
-    const Duration(seconds: 20),
-    () {
-      getIt<Toast>().show('无人接听');
-      providerLocator<ActionsLeaf>().mayBeInvoke(CancelCallingRequestIntent());
-    },
-  )..cancel();
-
-  void myRequestIsRejectedBy(String userId) {
-    myHopeList.remove(userId);
-
-    logger.i('$userId rejected call asking or leaved, hope list: $myHopeList');
-
-    if (myHopeList.isEmpty) {
-      getIt<Toast>().show('呼叫已被拒绝');
-      providerLocator<ActionsLeaf>().mayBeInvoke(CancelCallingRequestIntent());
-    }
-  }
+enum CallStatus {
+  none,
+  callIn,
+  callOut,
+  talking,
 }
 
-class StartCallingRequestIntent extends Intent {}
+@immutable
+class StartCallingRequestIntent extends Intent {
+  final List<String> hopeList;
+  const StartCallingRequestIntent({required this.hopeList});
+}
 
 class StartCallingRequestAction
     extends ContextAction<StartCallingRequestIntent> {
-  final CallingRequestBusiness callingRequestBusiness;
-  StartCallingRequestAction({required this.callingRequestBusiness});
+  final Set<String> hopeList;
+  final ValueNotifier<CallStatus> callStatusNotifier;
+  final RestartableTimer timeOutTimer;
+
+  StartCallingRequestAction({
+    required this.hopeList,
+    required this.callStatusNotifier,
+    required this.timeOutTimer,
+  });
 
   @override
-  Future<void>? invoke(StartCallingRequestIntent intent,
-      [BuildContext? context]) async {
-    final read = context!.read;
+  void invoke(StartCallingRequestIntent intent, [BuildContext? context]) async {
+    callStatusNotifier.value = CallStatus.callOut;
+    hopeList.addAll(intent.hopeList);
 
-    read<VoiceCallStatus>().value = VoiceCallStatusType.callOut;
+    final messageData = CallMessageData(action: CallAction.ask);
+    Actions.invoke(context!, SendMessageIntent(messageData));
+
+    timeOutTimer.reset();
+
+    logger.i('start call asking, hope list: $hopeList');
   }
 }
 
-class CancelCallingRequestIntent extends Intent {}
+@immutable
+class CancelCallingRequestIntent extends Intent {
+  const CancelCallingRequestIntent();
+}
 
 class CancelCallingRequestAction
     extends ContextAction<CancelCallingRequestIntent> {
-  final CallingRequestBusiness callingRequestBusiness;
-  CancelCallingRequestAction({required this.callingRequestBusiness});
+  final Set<String> hopeList;
+  final RestartableTimer requestTimeOutTimer;
+  final ValueNotifier<CallStatus> callStatusNotifier;
+
+  CancelCallingRequestAction({
+    required this.hopeList,
+    required this.requestTimeOutTimer,
+    required this.callStatusNotifier,
+  });
 
   @override
-  Future<void>? invoke(
+  void invoke(
     CancelCallingRequestIntent intent, [
     BuildContext? context,
   ]) async {
-    final read = context!.read;
+    final messageData = CallMessageData(action: CallAction.cancel);
+    Actions.invoke(context!, SendMessageIntent(messageData));
+
+    hopeList.clear();
+    requestTimeOutTimer.cancel();
+    callStatusNotifier.value = CallStatus.none;
   }
 }
 
-class RejectCallingRequestIntent extends Intent {}
+@immutable
+class RejectCallingRequestIntent extends Intent {
+  const RejectCallingRequestIntent();
+}
 
 class RejectCallingRequestAction
     extends ContextAction<RejectCallingRequestIntent> {
-  final CallingRequestBusiness callingRequestBusiness;
-  RejectCallingRequestAction({required this.callingRequestBusiness});
+  final Set<String> hoperList;
+  final ValueNotifier<CallStatus> callStatusNotifier;
+
+  RejectCallingRequestAction({
+    required this.hoperList,
+    required this.callStatusNotifier,
+  });
 
   @override
-  Future<void>? invoke(
+  void invoke(
     RejectCallingRequestIntent intent, [
     BuildContext? context,
-  ]) async {
-    final read = context!.read;
+  ]) {
+    final messageData = CallMessageData(action: CallAction.no);
+    Actions.invoke(context!, SendMessageIntent(messageData));
+
+    hoperList.clear();
+
+    callStatusNotifier.value = CallStatus.none;
   }
 }
 
-class AcceptCallingRequestIntent extends Intent {}
+@immutable
+class AcceptCallingRequestIntent extends Intent {
+  const AcceptCallingRequestIntent();
+}
 
 class AcceptCallingRequestAction
     extends ContextAction<AcceptCallingRequestIntent> {
-  final CallingRequestBusiness callingRequestBusiness;
-  AcceptCallingRequestAction({required this.callingRequestBusiness});
+  final ValueNotifier<CallStatus> callStatusNotifier;
+  final Set<String> hoperList;
+  final VoidCallback startTalking;
+
+  AcceptCallingRequestAction({
+    required this.callStatusNotifier,
+    required this.hoperList,
+    required this.startTalking,
+  });
 
   @override
-  Future<void>? invoke(
+  void invoke(
     AcceptCallingRequestIntent intent, [
     BuildContext? context,
-  ]) async {
-    final read = context!.read;
+  ]) {
+    final messageData = CallMessageData(action: CallAction.yes);
+    Actions.invoke(context!, SendMessageIntent(messageData));
 
-    return _startTalking(read);
+    hoperList.clear();
+
+    callStatusNotifier.value = CallStatus.talking;
+
+    startTalking();
   }
 }
 
+@immutable
 class HangUpIntent extends Intent {
   const HangUpIntent();
 }
 
 class HangUpAction extends ContextAction<HangUpIntent> {
-  final CallingRequestBusiness callingRequestBusiness;
-  HangUpAction({required this.callingRequestBusiness});
+  final ValueNotifier<CallStatus> callStatusNotifier;
+  final VoidCallback stopTalking;
+
+  HangUpAction({required this.callStatusNotifier, required this.stopTalking});
 
   @override
-  Future<void> invoke(HangUpIntent intent, [BuildContext? context]) async {
-    final read = context!.read;
-
-    read<VoiceCallStatus>().value = VoiceCallStatusType.none;
+  void invoke(HangUpIntent intent, [BuildContext? context]) {
+    callStatusNotifier.value = CallStatus.none;
     AudioPlayer().play(
       AssetSource('sounds/hang_up.mp3'),
       mode: PlayerMode.lowLatency,
     );
 
-    final actionsLeaf = read<ActionsLeaf>();
-    actionsLeaf.invoke(const VoiceCallMuteMicIntent(false));
+    stopTalking();
 
-    await read<VoiceCallClient>().leaveChannel();
+    final messageData = TalkStatusMessageData(status: TalkStatus.end);
+    Actions.invoke(context!, SendMessageIntent(messageData));
   }
 
   @override
   bool isEnabled(HangUpIntent intent, [BuildContext? context]) {
-    return context!.read<VoiceCallStatus>().value != VoiceCallStatusType.none;
-  }
-}
-
-class VoiceCallMuteMicIntent extends Intent {
-  final bool mute;
-  const VoiceCallMuteMicIntent(this.mute);
-}
-
-class VoiceCallMuteMicAction extends ContextAction<VoiceCallMuteMicIntent> {
-  @override
-  Future<void> invoke(VoiceCallMuteMicIntent intent, [BuildContext? context]) {
-    context!.read<VoiceCallMuteMic>().value = intent.mute;
-    return context.read<VoiceCallClient>().setMuteMic(intent.mute);
+    return callStatusNotifier.value != CallStatus.none;
   }
 }
 
@@ -165,38 +187,56 @@ class VoiceCallActions extends SingleChildStatefulWidget {
 }
 
 class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
-  late final _callingRequestBusiness = CallingRequestBusiness(
-    providerLocator: context.read,
+  final _hopeList = <String>{}; // Who may answer me
+  final _hoperList = <String>{}; // Who is asking me
+  final _callStatusNotifier = ValueNotifier<CallStatus>(CallStatus.none);
+
+  final _clientNotifier = ValueNotifier<AgoraClient?>(null);
+
+  late final _cancelAction = CancelCallingRequestAction(
+    hopeList: _hopeList,
+    callStatusNotifier: _callStatusNotifier,
+    requestTimeOutTimer: _requestTimeOutTimer,
   );
 
-  late final _chatLastMessage = context.read<ChatChannelLastMessage>();
-  late final _callStatus = context.read<VoiceCallStatus>();
-  late final _volume = context.read<VoiceCallVolume>();
-  late final _channelMessage = context.read<ChatChannelLastMessage>();
-  late final _nsLevel = context.read<VoiceCallNoiseSuppressionLevel>();
+  late final _requestTimeOutTimer = RestartableTimer(
+    const Duration(seconds: 20),
+    () {
+      getIt<Toast>().show('无人接听');
+      final messageData = CallMessageData(action: CallAction.cancel);
+      Actions.invoke(context, SendMessageIntent(messageData));
+
+      _hopeList.clear();
+      _callStatusNotifier.value = CallStatus.none;
+    },
+  )..cancel();
+
+  late final StreamSubscription _messageSubscription;
 
   @override
   void initState() {
-    /*
-    _chatChannel.addListener(_autoHangUp);
-    _chatLastMessage.addListener(_updateTalkers);
-    _callStatus.addListener(_soundCallRing);
-    _volume.addListener(_applyCallVolume);
-    _nsLevel.addListener(_applyNoiceSuppress);
-    _channelWatchers.addLeaveListener(_leaveMeansRejectBy);
-    _channelMessage.addListener(_dealResponse);
-*/
     super.initState();
+
+    _callStatusNotifier.addListener(_soundCallRing);
+
+    final myId = context.read<ClientAccount>().id;
+    _messageSubscription = context
+        .read<Stream<Message>>()
+        .where((message) =>
+            message.data['type'] == CallMessageData.messageType &&
+            message.senderId != myId)
+        .map((message) => (
+              senderId: message.senderId,
+              action: CallMessageData.fromJson(message.data).action,
+            ))
+        .listen(_dealResponse);
   }
 
   @override
   void dispose() {
-    _chatLastMessage.removeListener(_updateTalkers);
-    _callStatus.removeListener(_soundCallRing);
-    _volume.removeListener(_applyCallVolume);
-    _nsLevel.removeListener(_applyNoiceSuppress);
-    _channelMessage.removeListener(_dealResponse);
-
+    _callStatusNotifier.dispose();
+    _clientNotifier.dispose();
+    _messageSubscription.cancel();
     super.dispose();
   }
 
@@ -205,18 +245,48 @@ class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
     return Actions(
       actions: <Type, Action<Intent>>{
         StartCallingRequestIntent: StartCallingRequestAction(
-            callingRequestBusiness: _callingRequestBusiness),
-        CancelCallingRequestIntent: CancelCallingRequestAction(
-            callingRequestBusiness: _callingRequestBusiness),
+          callStatusNotifier: _callStatusNotifier,
+          hopeList: _hopeList,
+          timeOutTimer: _requestTimeOutTimer,
+        ),
+        CancelCallingRequestIntent: _cancelAction,
         RejectCallingRequestIntent: RejectCallingRequestAction(
-            callingRequestBusiness: _callingRequestBusiness),
+          hoperList: _hoperList,
+          callStatusNotifier: _callStatusNotifier,
+        ),
         AcceptCallingRequestIntent: AcceptCallingRequestAction(
-            callingRequestBusiness: _callingRequestBusiness),
-        HangUpIntent:
-            HangUpAction(callingRequestBusiness: _callingRequestBusiness),
-        VoiceCallMuteMicIntent: VoiceCallMuteMicAction(),
+          callStatusNotifier: _callStatusNotifier,
+          hoperList: _hoperList,
+          startTalking: _startTalking,
+        ),
+        HangUpIntent: HangUpAction(
+          callStatusNotifier: _callStatusNotifier,
+          stopTalking: _stopTalking,
+        ),
       },
-      child: child!,
+      child: MultiProvider(
+        providers: [
+          ValueListenableProvider.value(value: _callStatusNotifier),
+          SingleChildBuilder(
+            builder: (context, child) => Consumer<BungaClientInfo?>(
+              builder: (context, value, child) {
+                if (value != null) {
+                  AgoraClient.create(value).then((value) {
+                    _clientNotifier.value = value;
+                  });
+                }
+
+                return ValueListenableProvider.value(
+                  value: _clientNotifier,
+                  child: child,
+                );
+              },
+              child: child,
+            ),
+          ),
+        ],
+        child: child,
+      ),
     );
   }
 
@@ -226,129 +296,99 @@ class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
     ..setReleaseMode(ReleaseMode.loop)
     ..setPlayerMode(PlayerMode.lowLatency);
   void _soundCallRing() {
-    if (_callStatus.value == VoiceCallStatusType.callIn ||
-        _callStatus.value == VoiceCallStatusType.callOut) {
+    if (_callStatusNotifier.value == CallStatus.callIn ||
+        _callStatusNotifier.value == CallStatus.callOut) {
       _callRinger.resume();
     } else {
       _callRinger.stop();
     }
   }
 
-  // Volume
-  void _applyCallVolume() {
-    final setVolume = context.read<VoiceCallClient>().setVolume;
-    if (_volume.value.mute) {
-      setVolume(0);
-    } else {
-      setVolume(_volume.value.percent);
-    }
-  }
-
-  void _applyNoiceSuppress() {
-    (context.read<VoiceCallClient>() as AgoraClient)
-        .setNoiseSuppression(_nsLevel.value);
-  }
-
-  void _leaveMeansRejectBy({required String userId}) {
-    if (_callStatus.value == VoiceCallStatusType.callOut) {
-      _callingRequestBusiness.myRequestIsRejectedBy(userId);
-    }
-  }
-
-  void _dealResponse() {
-    final read = context.read;
-
-    final message = _channelMessage.value;
-    if (message == null || !message.data.isCallData) return;
-
-    final data = message.data.toCallData();
+  void _dealResponse(({String senderId, CallAction action}) data) {
     switch (data.action) {
       // someone ask for call
-      case CallActionType.ask:
-        switch (_callStatus.value) {
+      case CallAction.ask:
+        switch (_callStatusNotifier.value) {
           // Has call in
-          case VoiceCallStatusType.none:
-            _callStatus.value = VoiceCallStatusType.callIn;
-            _callingRequestBusiness.requestMessageId = message.id;
+          case CallStatus.none:
+            _callStatusNotifier.value = CallStatus.callIn;
+            _hoperList.add(data.senderId);
 
-          // Already has call in, no need to deal, current caller will accept
-          case VoiceCallStatusType.callIn:
-            break;
+          // Already has call in
+          case CallStatus.callIn:
+            _hoperList.add(data.senderId);
 
           // Some one also want call when I'm calling out, so answer him
-          case VoiceCallStatusType.callOut:
-            myRequestHasBeenAccepted();
+          case CallStatus.callOut:
+            _acceptAsk();
+            _myRequestHasBeenAccepted();
 
           // Some one want to join when we are calling, answer him
-          case VoiceCallStatusType.talking:
+          case CallStatus.talking:
+            _acceptAsk();
         }
 
-      case CallActionType.cancel:
+      case CallAction.cancel:
         // caller canceled asking
-        if (_callStatus.value == VoiceCallStatusType.callIn &&
-            data.answerId == _callingRequestBusiness.requestMessageId) {
-          _callStatus.value = VoiceCallStatusType.none;
-          _callingRequestBusiness.requestMessageId = null;
+        if (_callStatusNotifier.value == CallStatus.callIn) {
+          _hoperList.remove(data.senderId);
+          if (_hoperList.isEmpty) {
+            _callStatusNotifier.value = CallStatus.none;
+          }
         }
 
-      case CallActionType.yes:
+      case CallAction.yes:
         // my request has been accepted!
-        if (_callStatus.value == VoiceCallStatusType.callOut &&
-            data.answerId == _callingRequestBusiness.requestMessageId) {
-          myRequestHasBeenAccepted();
+        if (_callStatusNotifier.value == CallStatus.callOut) {
+          _myRequestHasBeenAccepted();
         }
 
-      case CallActionType.no:
+      case CallAction.no:
         // someone rejected me
-        if (_callStatus.value == VoiceCallStatusType.callOut &&
-            data.answerId == _callingRequestBusiness.requestMessageId) {
-          _callingRequestBusiness.myRequestIsRejectedBy(message.senderId);
+        if (_callStatusNotifier.value == CallStatus.callOut) {
+          _myRequestIsRejectedBy(data.senderId);
         }
     }
   }
 
-  Future<void> myRequestHasBeenAccepted() {
-    final read = context.read;
-
-    _callingRequestBusiness.requestMessageId = null;
-    _callingRequestBusiness.myHopeList.clear();
-    _callingRequestBusiness.requestTimeOutTimer.cancel();
-
-    return _startTalking(read);
+  void _acceptAsk() {
+    final messageData = CallMessageData(action: CallAction.yes);
+    Actions.invoke(context, SendMessageIntent(messageData));
   }
 
-  void _updateTalkers() {
-    final message = _chatLastMessage.value;
-    if (message == null) return;
+  void _myRequestIsRejectedBy(String userId) {
+    _hopeList.remove(userId);
 
-    final talkers = context.read<VoiceCallTalkers>();
-    void removeAndCheck() {
-      talkers.remove(message.senderId);
+    logger.i('$userId rejected call asking or leaved, hope list: $_hopeList');
 
-      // Only left me
-      if (talkers.value!.length == 1) {
-        getIt<Toast>().show('通话已结束');
-        context.read<ActionsLeaf>().mayBeInvoke(const HangUpIntent());
-      }
-    }
-
-    if (message.data.isTalkStatusData) {
-      final status = message.data.toTalkStatusData().status;
-      if (status == TalkStatusType.start) {
-        talkers.add(message.senderId);
-      } else {
-        removeAndCheck();
-      }
+    if (_hopeList.isEmpty) {
+      getIt<Toast>().show('呼叫已被拒绝');
+      _cancelAction.invoke(
+        CancelCallingRequestIntent(),
+        context,
+      );
     }
   }
-}
 
-Future<void> _startTalking(Locator read) async {
-  await getIt<Permissions>().requestMicrophone();
+  void _myRequestHasBeenAccepted() {
+    _hopeList.clear();
+    _requestTimeOutTimer.cancel();
 
-  read<VoiceCallStatus>().value = VoiceCallStatusType.talking;
-  await read<VoiceCallClient>().joinChannel(
-    userId: 'read<ChatUser>().value!.id',
-    channelId: 'read<ChatChannel>().value!.id',
-  );
+    _callStatusNotifier.value = CallStatus.talking;
+
+    _startTalking();
+  }
+
+  Future<void> _startTalking() async {
+    final myId = context.read<ClientAccount>().id;
+
+    await getIt<Permissions>().requestMicrophone();
+
+    await _clientNotifier.value?.joinChannel(userId: myId);
+  }
+
+  Future<void> _stopTalking() async {
+    _clientNotifier.value?.setMuteMic(false);
+    await _clientNotifier.value?.leaveChannel();
+  }
 }

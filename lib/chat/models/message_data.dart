@@ -173,3 +173,43 @@ class DanmakuMessageData extends MessageData {
   @override
   Map<String, dynamic> toJson() => _$DanmakuMessageDataToJson(this);
 }
+
+/// Send when negotiating calling
+enum CallAction { ask, yes, no, cancel }
+
+@JsonSerializable()
+class CallMessageData extends MessageData {
+  static const messageType = 'call';
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: true)
+  final type = messageType;
+
+  final CallAction action;
+
+  CallMessageData({required this.action});
+
+  factory CallMessageData.fromJson(Map<String, dynamic> json) =>
+      _$CallMessageDataFromJson(json);
+  @override
+  Map<String, dynamic> toJson() => _$CallMessageDataToJson(this);
+}
+
+/// Send when join / leave talking
+enum TalkStatus { start, end }
+
+@JsonSerializable()
+class TalkStatusMessageData extends MessageData {
+  static const messageType = 'talk-status';
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: true)
+  final type = messageType;
+
+  final TalkStatus status;
+
+  TalkStatusMessageData({required this.status});
+
+  factory TalkStatusMessageData.fromJson(Map<String, dynamic> json) =>
+      _$TalkStatusMessageDataFromJson(json);
+  @override
+  Map<String, dynamic> toJson() => _$TalkStatusMessageDataToJson(this);
+}

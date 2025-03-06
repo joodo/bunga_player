@@ -36,7 +36,7 @@ class ActionsWrapper extends SingleChildStatelessWidget {
         const BungaServerActions(),
         const ChatActions(),
         //const PlaySyncActions(),
-        //const VoiceCallActions(),
+        const VoiceCallActions(),
         const DanmakuActions(),
         const AListActions(),
         const ConsoleActions(),

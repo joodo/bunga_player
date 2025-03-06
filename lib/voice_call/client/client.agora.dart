@@ -1,65 +1,75 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
-import 'package:audioplayers/audioplayers.dart';
-import 'package:bunga_player/bunga_server/client.dart';
+import 'package:bunga_player/bunga_server/models/bunga_client_info.dart';
 import 'package:bunga_player/services/logger.dart';
+import 'package:bunga_player/utils/models/volume.dart';
+import 'package:flutter/material.dart';
 
-import '../providers.dart';
 import 'client.dart';
 
-class AgoraClient extends VoiceCallClient {
-  final BungaClient _bungaClient;
+enum NoiseSuppressionLevel { none, low, middle, high }
 
-  AgoraClient(
-    this._bungaClient, {
-    double? volume,
-    NoiseSuppressionLevel? noiseSuppressionLevel,
-  })  : _volumeCache = volume,
-        _noiseSuppressionLevelCache = noiseSuppressionLevel {
-    _asyncInit(_bungaClient.agoraClientAppKey);
+class AgoraClient extends VoiceCallClient {
+  final String key;
+  final String channelId;
+  final String channelToken;
+
+  static Future<AgoraClient?> create(BungaClientInfo info) async {
+    if (info.voiceCall == null) return null;
+
+    final client = AgoraClient._(
+      key: info.voiceCall!.key,
+      channelId: info.channel.id,
+      channelToken: info.voiceCall!.channelToken,
+    );
+    await client._init();
+    return client;
+  }
+
+  AgoraClient._({
+    required this.key,
+    required this.channelId,
+    required this.channelToken,
+  }) {
+    noiseSuppressionLevelNotifier.addListener(() async {
+      final level = noiseSuppressionLevelNotifier.value;
+      switch (level) {
+        case NoiseSuppressionLevel.none:
+          await _engine.setAINSMode(
+            enabled: false,
+            mode: AudioAinsMode.ainsModeAggressive,
+          );
+        case NoiseSuppressionLevel.low:
+          await _engine.setAINSMode(
+            enabled: true,
+            mode: AudioAinsMode.ainsModeUltralowlatency,
+          );
+        case NoiseSuppressionLevel.middle:
+          await _engine.setAINSMode(
+            enabled: true,
+            mode: AudioAinsMode.ainsModeBalanced,
+          );
+        case NoiseSuppressionLevel.high:
+          await _engine.setAINSMode(
+            enabled: true,
+            mode: AudioAinsMode.ainsModeAggressive,
+          );
+      }
+      logger.i('Call: noise suppression set to $level');
+    });
+    volumeNotifier.addListener(() {
+      final volume = volumeNotifier.value;
+      final value = volume.mute ? 0 : volume.volume;
+      _engine.adjustPlaybackSignalVolume(value * 3); // max 3 times of origin
+    });
   }
 
   final _engine = createAgoraRtcEngine();
-
-  NoiseSuppressionLevel? _noiseSuppressionLevelCache;
-  Future<void> setNoiseSuppression(NoiseSuppressionLevel level) async {
-    if (!_initiated) {
-      _noiseSuppressionLevelCache = level;
-      return;
-    }
-
-    logger.i('Call: noise suppression set to $level');
-    switch (level) {
-      case NoiseSuppressionLevel.none:
-        return _engine.setAINSMode(
-          enabled: false,
-          mode: AudioAinsMode.ainsModeAggressive,
-        );
-      case NoiseSuppressionLevel.low:
-        return _engine.setAINSMode(
-          enabled: true,
-          mode: AudioAinsMode.ainsModeUltralowlatency,
-        );
-      case NoiseSuppressionLevel.middle:
-        return _engine.setAINSMode(
-          enabled: true,
-          mode: AudioAinsMode.ainsModeBalanced,
-        );
-      case NoiseSuppressionLevel.high:
-        return _engine.setAINSMode(
-          enabled: true,
-          mode: AudioAinsMode.ainsModeAggressive,
-        );
-    }
-  }
-
-  bool _initiated = false;
-  Future<void> _asyncInit(String appId) async {
+  Future<void> _init() async {
     // Engine
     await _engine.initialize(RtcEngineContext(
-      appId: appId,
+      appId: key,
       logConfig: const LogConfig(level: LogLevel.logLevelWarn),
     ));
 
@@ -67,12 +77,7 @@ class AgoraClient extends VoiceCallClient {
     _engine.registerEventHandler(
       RtcEngineEventHandler(
         onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
-          // TODO: move to actions
           logger.i('Voice call: Local user uid:${connection.localUid} joined.');
-          AudioPlayer().play(
-            AssetSource('sounds/user_speak.mp3'),
-            mode: PlayerMode.lowLatency,
-          );
         },
         onUserJoined: (RtcConnection connection, int remoteUid, int elapsed) {
           logger.i('Voice call: Remote user uid:$remoteUid joined.');
@@ -94,31 +99,15 @@ class AgoraClient extends VoiceCallClient {
       profile: AudioProfileType.audioProfileSpeechStandard,
       scenario: AudioScenarioType.audioScenarioChatroom,
     );
-
-    _initiated = true;
-    if (_noiseSuppressionLevelCache != null) {
-      setNoiseSuppression(_noiseSuppressionLevelCache!);
-      _noiseSuppressionLevelCache = null;
-    }
-    if (_volumeCache != null) {
-      setVolume(_volumeCache!);
-      _volumeCache = null;
-    }
   }
+
+  // Noise suppress
+  final noiseSuppressionLevelNotifier =
+      ValueNotifier<NoiseSuppressionLevel>(NoiseSuppressionLevel.high);
 
   // Volume
-  double? _volumeCache;
   @override
-  Future<void> setVolume(double percent) async {
-    assert(percent >= 0 && percent <= 1);
-
-    if (!_initiated) {
-      _volumeCache = percent;
-      return;
-    }
-
-    await _engine.adjustPlaybackSignalVolume((300 * percent).toInt());
-  }
+  final volumeNotifier = ValueNotifier<Volume>(Volume(volume: 100));
 
   // Mic
   @override
@@ -128,18 +117,7 @@ class AgoraClient extends VoiceCallClient {
 
   // Channel
   @override
-  Future<void> joinChannel({
-    required String userId,
-    required String channelId,
-  }) async {
-    final uid = userId.hashCode;
-
-    final tokenResponse = await _bungaClient.post('agora/token', {
-      'uid': uid,
-      'channel': channelId,
-    });
-    final token = jsonDecode(tokenResponse)['token'];
-
+  Future<void> joinChannel({required String userId}) async {
     const options = ChannelMediaOptions(
       clientRoleType: ClientRoleType.clientRoleBroadcaster,
       channelProfile: ChannelProfileType.channelProfileCommunication,
@@ -147,10 +125,18 @@ class AgoraClient extends VoiceCallClient {
 
     return _engine.joinChannel(
       channelId: channelId,
-      uid: uid,
-      token: token,
+      uid: _uidFromUserId(userId),
+      token: channelToken,
       options: options,
     );
+  }
+
+  int _uidFromUserId(String userId) {
+    int hash = 5381;
+    for (int i = 0; i < userId.length; i++) {
+      hash = ((hash << 5) + hash) + userId.codeUnitAt(i);
+    }
+    return hash & 0x7FFFFFFF;
   }
 
   @override
