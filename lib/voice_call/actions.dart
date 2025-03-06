@@ -168,9 +168,6 @@ class HangUpAction extends ContextAction<HangUpIntent> {
     );
 
     stopTalking();
-
-    final messageData = TalkStatusMessageData(status: TalkStatus.end);
-    Actions.invoke(context!, SendMessageIntent(messageData));
   }
 
   @override
@@ -385,10 +382,19 @@ class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
     await getIt<Permissions>().requestMicrophone();
 
     await _clientNotifier.value?.joinChannel(userId: myId);
+
+    if (!mounted) return;
+    final messageData = TalkStatusMessageData(status: TalkStatus.start);
+    Actions.invoke(context, SendMessageIntent(messageData));
   }
 
   Future<void> _stopTalking() async {
     _clientNotifier.value?.setMuteMic(false);
+
     await _clientNotifier.value?.leaveChannel();
+
+    if (!mounted) return;
+    final messageData = TalkStatusMessageData(status: TalkStatus.end);
+    Actions.invoke(context, SendMessageIntent(messageData));
   }
 }

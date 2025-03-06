@@ -1,3 +1,4 @@
+import 'package:bunga_player/screens/player_screen/business.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
@@ -61,7 +62,10 @@ class _WatcherLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(user.name)
+    final isTalking = context.select<List<TalkerId>, bool>(
+      (value) => value.any((e) => e.value == user.id),
+    );
+    return Text(isTalking ? '🎤${user.name}' : user.name)
         .textColor(user.getColor(brightness: 0.95))
         .padding(right: 10.0);
   }

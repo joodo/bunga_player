@@ -27,6 +27,7 @@ import 'package:bunga_player/utils/business/value_listenable.dart';
 import 'package:bunga_player/utils/extensions/duration.dart';
 import 'package:bunga_player/utils/extensions/file.dart';
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
+import 'package:bunga_player/voice_call/actions.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:path/path.dart' as path_tool;
@@ -108,6 +109,12 @@ class PlayScreenBusiness extends SingleChildStatefulWidget {
 
   @override
   State<PlayScreenBusiness> createState() => _PlayScreenBusinessState();
+}
+
+@immutable
+class TalkerId {
+  final String value;
+  const TalkerId(this.value);
 }
 
 class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
@@ -195,6 +202,10 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
   // Popmojis
   final _recentPopmojis = RecentPopmojisNotifier();
 
+  // Talk
+  final _talkerIdsNotifier = ValueNotifier<Set<String>>({})
+    ..watchInConsole('Talkers Id');
+
   @override
   void initState() {
     super.initState();
@@ -253,6 +264,7 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
     _panelNotifier.dispose();
     _watchersNotifier.dispose();
     _remoteJustToggledNotifier.dispose();
+    _talkerIdsNotifier.dispose();
 
     _isVideoBufferingNotifier.removeListener(_updateBusyCount);
 
@@ -284,6 +296,10 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
           proxy: (value) => RemoteJustToggled(value),
         ),
         ChangeNotifierProvider.value(value: _recentPopmojis),
+        ValueProxyListenableProvider(
+          valueListenable: _talkerIdsNotifier,
+          proxy: (value) => value.map((e) => TalkerId(e)).toList(),
+        ),
       ],
       child: child!.actions(
         actions: {
@@ -310,35 +326,44 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
   void _initShare() {
     // Listen to messageStream
     final myId = context.read<ClientAccount>().id;
-    final messageStream = context
-        .read<Stream<Message>>()
-        .where((message) => message.senderId != myId);
+    final messageStream = context.read<Stream<Message>>();
 
     _streamSubscription = messageStream.listen((message) {
       switch (message.data['type']) {
         case StartProjectionMessageData.messageType:
+          if (message.senderId == myId) break;
           _dealWithProjection(
             StartProjectionMessageData.fromJson(message.data),
           );
         case AlohaMessageData.messageType:
+          if (message.senderId == myId) break;
           _dealWithAloha(
             AlohaMessageData.fromJson(message.data),
           );
         case HereIsMessageData.messageType:
+          if (message.senderId == myId) break;
           _dealWithHereIs(
             HereIsMessageData.fromJson(message.data),
           );
         case ByeMessageData.messageType:
+          if (message.senderId == myId) break;
           _dealWithBye(
             ByeMessageData.fromJson(message.data),
           );
         case WhereMessageData.messageType:
+          if (message.senderId == myId) break;
           _dealWithWhere(
             WhereMessageData.fromJson(message.data),
           );
         case PlayAtMessageData.messageType:
+          if (message.senderId == myId) break;
           _dealWithPlayAt(
             PlayAtMessageData.fromJson(message.data),
+          );
+        case TalkStatusMessageData.messageType:
+          _dealWithTalkStatus(
+            message.senderId,
+            TalkStatusMessageData.fromJson(message.data).status,
           );
       }
     });
@@ -414,6 +439,30 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
         toast.show('$name ${data.isPlaying ? '播放' : '暂停'}了视频');
       case 'seek':
         toast.show('$name 调整了进度');
+    }
+  }
+
+  void _dealWithTalkStatus(String senderId, TalkStatus status) {
+    switch (status) {
+      case TalkStatus.start:
+        if (_talkerIdsNotifier.value.add(senderId)) {
+          _talkerIdsNotifier.value = {..._talkerIdsNotifier.value};
+          AudioPlayer().play(
+            AssetSource('sounds/user_speak.mp3'),
+            mode: PlayerMode.lowLatency,
+          );
+        }
+      case TalkStatus.end:
+        if (_talkerIdsNotifier.value.remove(senderId)) {
+          _talkerIdsNotifier.value = {..._talkerIdsNotifier.value};
+
+          final myId = context.read<ClientAccount>().id;
+          if (_talkerIdsNotifier.value.length == 1 &&
+              _talkerIdsNotifier.value.first == myId) {
+            getIt<Toast>().show('通话已结束');
+            Actions.invoke(context, const HangUpIntent());
+          }
+        }
     }
   }
 
