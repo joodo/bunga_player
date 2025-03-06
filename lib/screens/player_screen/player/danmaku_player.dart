@@ -25,7 +25,7 @@ class _DanmakuPlayerState extends State<DanmakuPlayer>
   @override
   void initState() {
     super.initState();
-    context
+    _subscription = context
         .read<Stream<Message>>()
         .where(
             (message) => message.data['type'] == DanmakuMessageData.messageType)
@@ -47,20 +47,18 @@ class _DanmakuPlayerState extends State<DanmakuPlayer>
   @override
   Widget build(BuildContext context) {
     const topPadding = 48.0;
-    return Stack(
-      children: [
-        for (final (line, danmakuPoses) in _danmakuLines.indexed)
-          for (final danmakuPos in danmakuPoses)
-            Positioned(
-              top: line * 48 + topPadding,
-              left: danmakuPos.x,
-              child: DanmakuText(
-                text: danmakuPos.danmaku.message,
-                hue: danmakuPos.danmaku.sender.colorHue,
-              ),
+    return [
+      for (final (line, danmakuPoses) in _danmakuLines.indexed)
+        for (final danmakuPos in danmakuPoses)
+          Positioned(
+            top: line * 48 + topPadding,
+            left: danmakuPos.x,
+            child: DanmakuText(
+              text: danmakuPos.danmaku.message,
+              hue: danmakuPos.danmaku.sender.colorHue,
             ),
-      ],
-    );
+          ),
+    ].toStack();
   }
 
   static const spacing = 24.0;

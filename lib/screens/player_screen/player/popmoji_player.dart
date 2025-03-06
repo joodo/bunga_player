@@ -59,7 +59,7 @@ class _FireworkOverlayState extends State<_FireworkOverlay>
   @override
   void initState() {
     super.initState();
-    context
+    _subscription = context
         .read<Stream<Message>>()
         .where((message) =>
             message.data['type'] == PopmojiMessageData.messageType &&
@@ -108,7 +108,7 @@ class _PopmojiOverlayState extends State<_PopmojiOverlay> {
   @override
   void initState() {
     super.initState();
-    context
+    _subscription = context
         .read<Stream<Message>>()
         .where((message) =>
             message.data['type'] == PopmojiMessageData.messageType &&
