@@ -177,19 +177,17 @@ class HangUpAction extends ContextAction<HangUpIntent> {
   }
 }
 
-class VoiceCallActions extends SingleChildStatefulWidget {
-  const VoiceCallActions({super.key, super.child});
+class VoiceCallBusiness extends SingleChildStatefulWidget {
+  const VoiceCallBusiness({super.key, super.child});
 
   @override
-  State<VoiceCallActions> createState() => _VoiceCallActionsState();
+  State<VoiceCallBusiness> createState() => _VoiceCallBusinessState();
 }
 
-class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
+class _VoiceCallBusinessState extends SingleChildState<VoiceCallBusiness> {
   final _hopeList = <String>{}; // Who may answer me
   final _hoperList = <String>{}; // Who is asking me
   final _callStatusNotifier = ValueNotifier<CallStatus>(CallStatus.none);
-
-  AgoraClient? _client;
 
   late final _cancelAction = CancelCallingRequestAction(
     hopeList: _hopeList,
@@ -264,15 +262,6 @@ class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
       child: MultiProvider(
         providers: [
           ValueListenableProvider.value(value: _callStatusNotifier),
-          ProxyFutureProvider<AgoraClient?, BungaClientInfo?>(
-            proxy: (clientInfo) =>
-                clientInfo == null ? null : AgoraClient.create(clientInfo),
-            initialData: null,
-            builder: (context, child) {
-              _client = context.watch<AgoraClient?>();
-              return child!;
-            },
-          ),
         ],
         child: child,
       ),
@@ -370,10 +359,11 @@ class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
 
   Future<void> _startTalking() async {
     final myId = context.read<ClientAccount>().id;
+    final client = context.read<AgoraClient>();
 
     await getIt<Permissions>().requestMicrophone();
 
-    await _client?.joinChannel(userId: myId);
+    await client.joinChannel(userId: myId);
 
     if (!mounted) return;
     final messageData = TalkStatusMessageData(status: TalkStatus.start);
@@ -381,12 +371,32 @@ class _VoiceCallActionsState extends SingleChildState<VoiceCallActions> {
   }
 
   Future<void> _stopTalking() async {
-    _client?.micMuteNotifier.value = false;
-
-    await _client?.leaveChannel();
-
-    if (!mounted) return;
     final messageData = TalkStatusMessageData(status: TalkStatus.end);
     Actions.invoke(context, SendMessageIntent(messageData));
+
+    final client = context.read<AgoraClient>();
+    client.micMuteNotifier.value = false;
+    await client.leaveChannel();
+  }
+}
+
+extension WrapVoiceCall on Widget {
+  Widget voiceCallBusiness({Key? key}) => VoiceCallBusiness(
+        key: key,
+        child: this,
+      );
+}
+
+class VoiceCallGlobalBusiness extends SingleChildStatelessWidget {
+  const VoiceCallGlobalBusiness({super.key, super.child});
+
+  @override
+  Widget buildWithChild(BuildContext context, Widget? child) {
+    return ProxyFutureProvider<AgoraClient?, BungaClientInfo?>(
+      proxy: (clientInfo) =>
+          clientInfo == null ? null : AgoraClient.create(clientInfo),
+      initialData: null,
+      child: child,
+    );
   }
 }

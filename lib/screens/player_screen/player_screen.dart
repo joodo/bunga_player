@@ -1,4 +1,5 @@
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
+import 'package:bunga_player/voice_call/business.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
@@ -52,6 +53,6 @@ class PlayerScreen extends StatelessWidget {
           .toStack()
           .animate(const Duration(milliseconds: 350), Curves.easeOutCubic),
       child: const Player(),
-    ).material().playScreenBusiness();
+    ).material().playScreenBusiness().voiceCallBusiness();
   }
 }

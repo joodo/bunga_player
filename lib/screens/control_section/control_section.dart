@@ -8,7 +8,6 @@ import 'package:bunga_player/screens/control_section/rename_control.dart';
 import 'package:bunga_player/screens/player_screen/player/video_control.dart';
 import 'package:bunga_player/screens/control_section/popmoji_control.dart';
 import 'package:bunga_player/screens/control_section/tune_control.dart';
-import 'package:bunga_player/voice_call/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';

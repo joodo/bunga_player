@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 
-import 'package:bunga_player/bunga_server/actions.dart';
+import 'package:bunga_player/bunga_server/global_business.dart';
 import 'package:bunga_player/chat/actions.dart';
 import 'package:bunga_player/danmaku/actions.dart';
 import 'package:bunga_player/play/actions.dart';
 import 'package:bunga_player/ui/actions.dart';
 import 'package:bunga_player/play_sync/actions.dart';
-import 'package:bunga_player/voice_call/actions.dart';
+import 'package:bunga_player/voice_call/business.dart';
 
 class ActionsLeaf {
   late BuildContext _leafContext;
@@ -33,10 +33,8 @@ class ActionsWrapper extends SingleChildStatelessWidget {
         Provider(create: (context) => ActionsLeaf()),
         const UIActions(),
         const PlayActions(),
-        const BungaServerActions(),
         const ChatActions(),
         //const PlaySyncActions(),
-        const VoiceCallActions(),
         const DanmakuActions(),
         const AListActions(),
         const ConsoleActions(),

@@ -69,14 +69,16 @@ class ConnectToHostAction extends ContextAction<ConnectToHostIntent> {
   }
 }
 
-class BungaServerActions extends SingleChildStatefulWidget {
-  const BungaServerActions({super.key, super.child});
+class BungaServerGlobalBusiness extends SingleChildStatefulWidget {
+  const BungaServerGlobalBusiness({super.key, super.child});
 
   @override
-  State<BungaServerActions> createState() => _BungaServerActionsState();
+  State<BungaServerGlobalBusiness> createState() =>
+      _BungaServerGlobalBusinessState();
 }
 
-class _BungaServerActionsState extends SingleChildState<BungaServerActions> {
+class _BungaServerGlobalBusinessState
+    extends SingleChildState<BungaServerGlobalBusiness> {
   final _infoNotifier = ValueNotifier<BungaClientInfo?>(null);
   final _fetchingNotifier = ValueNotifier<bool>(false);
   final _hostAddressNotifier = createPreferenceNotifier<String>(
@@ -124,7 +126,7 @@ class _BungaServerActionsState extends SingleChildState<BungaServerActions> {
         actions: <Type, Action<Intent>>{
           ConnectToHostIntent: _connectToHostAction,
         },
-        child: child ?? const SizedBox.shrink(),
+        child: child!,
       ),
     );
   }

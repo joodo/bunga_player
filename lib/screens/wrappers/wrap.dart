@@ -7,14 +7,14 @@ import 'update_and_clean.dart';
 import 'restart.dart';
 import 'toast.dart';
 import 'actions.dart';
-import 'providers.dart';
+import 'global_business.dart';
 
 class WrappedWidget extends Nested {
   WrappedWidget({super.key})
       : super(
           children: [
             const RestartWrapper(),
-            const ProvidersWrapper(),
+            const GlobalBusiness(),
             const ThemeWrapper(),
             const ToastWrapper(),
             const ActionsWrapper(),
