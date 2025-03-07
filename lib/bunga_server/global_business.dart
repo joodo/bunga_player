@@ -113,11 +113,11 @@ class _BungaServerGlobalBusinessState
     return MultiProvider(
       providers: [
         ValueListenableProvider.value(value: _infoNotifier),
-        ValueProxyListenableProvider(
+        ValueListenableProxyProvider(
           valueListenable: _fetchingNotifier,
           proxy: (value) => FetchingBungaClient(value),
         ),
-        ValueProxyListenableProvider(
+        ValueListenableProxyProvider(
           valueListenable: _hostAddressNotifier,
           proxy: (value) => BungaHostAddress(value),
         ),

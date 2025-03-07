@@ -1,5 +1,4 @@
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
-import 'package:bunga_player/voice_call/business.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
@@ -27,12 +26,16 @@ class PlayerScreen extends StatelessWidget {
               right: panel != null ? panelWidth + 8.0 : 0,
               animate: true,
             ),
-        const DanmakuControl().positioned(
-          left: 0,
-          right: panel != null ? panelWidth + 8.0 : 0,
-          height: danmakuHeight,
-          bottom: danmakuVisible.value ? 0 : -danmakuHeight,
-          animate: true,
+        Consumer<IsInChannel>(
+          builder: (context, inChannel, child) => inChannel.value
+              ? const DanmakuControl().positioned(
+                  left: 0,
+                  right: panel != null ? panelWidth + 8.0 : 0,
+                  height: danmakuHeight,
+                  bottom: danmakuVisible.value ? 0 : -danmakuHeight,
+                  animate: true,
+                )
+              : const SizedBox.shrink(),
         ),
         (panel?.card(
                   key: ValueKey(panel.type),
@@ -53,6 +56,6 @@ class PlayerScreen extends StatelessWidget {
           .toStack()
           .animate(const Duration(milliseconds: 350), Curves.easeOutCubic),
       child: const Player(),
-    ).material().playScreenBusiness().voiceCallBusiness();
+    ).material().playScreenBusiness();
   }
 }

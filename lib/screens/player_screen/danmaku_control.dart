@@ -3,13 +3,13 @@ import 'dart:math';
 import 'package:bunga_player/chat/actions.dart';
 import 'package:bunga_player/chat/models/message_data.dart';
 import 'package:bunga_player/chat/models/user.dart';
+import 'package:bunga_player/danmaku/business.dart';
 import 'package:bunga_player/utils/business/platform.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
 import '../widgets/popmoji_button.dart';
-import 'business.dart';
 import 'actions.dart';
 import 'panel/popmoji.dart';
 

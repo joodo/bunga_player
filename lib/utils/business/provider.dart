@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 
-class ValueProxyListenableProvider<T, R> extends SingleChildStatelessWidget {
+class ValueListenableProxyProvider<T, R> extends SingleChildStatelessWidget {
   final ValueListenable<R> valueListenable;
   final T Function(R value) proxy;
 
-  const ValueProxyListenableProvider({
+  const ValueListenableProxyProvider({
     super.key,
     super.child,
     required this.valueListenable,

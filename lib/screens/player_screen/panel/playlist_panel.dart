@@ -1,9 +1,10 @@
 import 'dart:math';
 
-import 'package:bunga_player/chat/models/user.dart';
+import 'package:bunga_player/play/busuness.dart';
 import 'package:bunga_player/play/models/play_payload.dart';
 import 'package:bunga_player/play/payload_parser.dart';
-import 'package:bunga_player/screens/player_screen/actions.dart';
+import 'package:bunga_player/play_sync/business.dart';
+import 'package:bunga_player/screens/player_screen/business.dart';
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -74,17 +75,14 @@ class _PlaylistPanelState extends State<PlaylistPanel> {
                       onTap: current
                           ? null
                           : () async {
-                              final read = context.read;
-
-                              final shouldShare = read<List<User>?>() != null;
-
                               final act = Actions.invoke(
                                 context,
                                 OpenVideoIntent.url(epInfo.url),
                               ) as Future<PlayPayload>;
 
                               final payload = await act;
-                              if (context.mounted && shouldShare) {
+                              if (context.mounted &&
+                                  context.read<IsInChannel>().value) {
                                 Actions.invoke(
                                   context,
                                   ShareVideoIntent(payload.record),

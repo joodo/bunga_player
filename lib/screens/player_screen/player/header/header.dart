@@ -1,4 +1,5 @@
-import 'package:bunga_player/screens/player_screen/business.dart';
+import 'package:bunga_player/chat/business.dart';
+import 'package:bunga_player/play_sync/business.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
@@ -6,8 +7,8 @@ import 'package:styled_widget/styled_widget.dart';
 import 'package:bunga_player/chat/models/user.dart';
 import 'package:bunga_player/play/models/play_payload.dart';
 
-import '../../actions.dart';
 import 'call_button.dart';
+import '../../business.dart';
 
 class Header extends StatelessWidget {
   const Header({super.key});
@@ -17,8 +18,7 @@ class Header extends StatelessWidget {
     final payload = context.watch<PlayPayload?>();
     if (payload == null) return const SizedBox.shrink();
 
-    final users = context.watch<List<User>?>();
-    if (users == null) {
+    if (!context.watch<IsInChannel>().value) {
       return TextButton(
         onPressed: Actions.handler(
           context,
@@ -33,20 +33,22 @@ class Header extends StatelessWidget {
         Text(payload.record.title)
             .textStyle(Theme.of(context).textTheme.titleMedium!)
             .padding(left: 12.0, vertical: 4.0),
-        [
-          Tooltip(
-            message: '点击同步播放进度',
-            child: TextButton(
-              onPressed: () {
-                Actions.invoke(context, RefreshWatchersIntent());
-                Actions.invoke(context, AskPositionIntent());
-              },
-              child: const Text('当前观众:')
-                  .textColor(Theme.of(context).colorScheme.onSurface),
+        Consumer<List<User>>(
+          builder: (context, users, child) => [
+            Tooltip(
+              message: '点击同步播放进度',
+              child: TextButton(
+                onPressed: () {
+                  Actions.invoke(context, RefreshWatchersIntent());
+                  Actions.invoke(context, AskPositionIntent());
+                },
+                child: const Text('当前观众:')
+                    .textColor(Theme.of(context).colorScheme.onSurface),
+              ),
             ),
-          ),
-          ...users.map((user) => _WatcherLabel(user)),
-        ].toRow(),
+            ...users.map((user) => _WatcherLabel(user)),
+          ].toRow(),
+        ),
       ]
           .toColumn(crossAxisAlignment: CrossAxisAlignment.start)
           .padding(horizontal: 8.0),

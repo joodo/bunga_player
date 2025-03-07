@@ -1,6 +1,5 @@
+import 'package:bunga_player/play/busuness.dart';
 import 'package:bunga_player/play/service/service.dart';
-import 'package:bunga_player/screens/player_screen/actions.dart';
-import 'package:bunga_player/screens/player_screen/business.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/business/platform.dart';
 import 'package:bunga_player/utils/extensions/duration.dart';
@@ -98,7 +97,7 @@ class _VideoProgressBarState extends State<VideoProgressBar> {
                 },
           onChangeEnd: (value) {
             final pos = Duration(milliseconds: value.toInt());
-            Actions.invoke(context, SyncSeekIntent(pos));
+            Actions.invoke(context, SeekIntent(pos));
 
             if (_isPlayingBeforeDraggingSlider) player.play();
 

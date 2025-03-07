@@ -1,6 +1,5 @@
+import 'package:bunga_player/danmaku/business.dart';
 import 'package:bunga_player/popmoji/models/data.dart';
-import 'package:bunga_player/screens/player_screen/actions.dart';
-import 'package:bunga_player/screens/player_screen/business.dart';
 import 'package:bunga_player/utils/business/platform.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

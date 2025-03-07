@@ -1,6 +1,7 @@
 import 'package:animations/animations.dart';
-import 'package:bunga_player/chat/models/user.dart';
 import 'package:bunga_player/play/actions.dart' as play_action;
+import 'package:bunga_player/play/busuness.dart';
+import 'package:bunga_player/play_sync/business.dart';
 import 'package:bunga_player/utils/business/preference_notifier.dart';
 import '../../../play/models/play_payload.dart';
 import 'package:bunga_player/play/service/service.dart';
@@ -175,7 +176,7 @@ class _PlayButtonState extends State<_PlayButton>
                 ? null
                 : () => Actions.maybeInvoke(
                       context,
-                      const ToggleIntent(syncToRemote: true),
+                      const ToggleIntent(forgetSavedPosition: true),
                     ),
           ),
         );
@@ -387,7 +388,7 @@ class _MoreActionsButton extends StatelessWidget {
               leadingIcon: const Icon(Icons.movie_filter),
               onPressed: _changeVideo(
                 context,
-                context.read<List<User>?>() != null,
+                context.read<IsInChannel>().value,
               ),
               child: const Text('换片'),
             ),
@@ -395,7 +396,10 @@ class _MoreActionsButton extends StatelessWidget {
             // Leave Button
             MenuItemButton(
               leadingIcon: const Icon(Icons.logout),
-              onPressed: Actions.handler(context, const LeaveChannelIntent()),
+              onPressed: () {
+                Actions.invoke(context, const StopPlayingIntent());
+                Navigator.of(context).pop();
+              },
               child: const Text('离开房间'),
             ),
           ],

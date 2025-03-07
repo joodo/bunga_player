@@ -1,14 +1,14 @@
+import 'package:bunga_player/play/busuness.dart';
+import 'package:bunga_player/screens/player_screen/business.dart';
 import 'package:flutter/material.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
-import 'package:bunga_player/chat/models/user.dart';
 import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/play/service/service.media_kit.dart';
 import 'package:bunga_player/services/services.dart';
 
-import '../business.dart';
 import 'danmaku_player.dart';
 import 'header/header.dart';
 import 'progress_bar.dart';
@@ -21,9 +21,8 @@ class Player extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Selector<List<User>?, bool>(
-      selector: (context, userList) => userList != null,
-      builder: (context, isSharing, child) => [
+    return Consumer<IsInChannel>(
+      builder: (context, inChannel, child) => [
         const Header().padding(vertical: 4.0),
         [
           Video(
@@ -35,8 +34,8 @@ class Player extends StatelessWidget {
             wakelock: false,
             controls: NoVideoControls,
           ),
-          if (isSharing) const DanmakuPlayer(),
-          if (isSharing) const PopmojiPlayer(),
+          if (inChannel.value) const DanmakuPlayer(),
+          if (inChannel.value) const PopmojiPlayer(),
           if (!context.watch<BusyCount>().isBusy)
             const SavedPositionHint().positioned(bottom: 72, right: 12),
         ].toStack().flexible(),

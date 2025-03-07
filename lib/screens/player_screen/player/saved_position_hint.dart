@@ -1,4 +1,5 @@
 import 'package:animations/animations.dart';
+import 'package:bunga_player/play/busuness.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
@@ -8,9 +9,6 @@ import 'package:bunga_player/screens/wrappers/theme.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/extensions/duration.dart';
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
-
-import '../actions.dart';
-import '../business.dart';
 
 class SavedPositionHint extends StatefulWidget {
   const SavedPositionHint({super.key});
@@ -57,7 +55,7 @@ class _SavedPositionHintState extends State<SavedPositionHint>
       Text('上回看到 ${savedPosition.hhmmss}').padding(vertical: 12.0, left: 16.0),
       TextButton(
         onPressed: () {
-          Actions.invoke(context, SyncSeekIntent(savedPosition));
+          Actions.invoke(context, SeekIntent(savedPosition));
           _hide();
         },
         child: const Text('跳转'),
