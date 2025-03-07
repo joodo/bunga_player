@@ -34,7 +34,8 @@ class AudioTrackPanel extends StatelessWidget implements Panel {
                     },
                   ))
               .toList()
-              .toColumn(),
+              .toColumn()
+              .scrollable(padding: EdgeInsets.only(bottom: 16.0)),
         ),
       ),
     );

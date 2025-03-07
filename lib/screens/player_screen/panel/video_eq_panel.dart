@@ -105,7 +105,8 @@ class VideoEqPanel extends StatelessWidget implements Panel {
         ),
       ]
           .toColumn(crossAxisAlignment: CrossAxisAlignment.start)
-          .padding(horizontal: 16.0),
+          .padding(horizontal: 16.0)
+          .scrollable(padding: EdgeInsets.only(bottom: 16.0)),
     );
   }
 }
