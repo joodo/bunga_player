@@ -167,3 +167,19 @@ const _$TalkStatusEnumMap = {
   TalkStatus.start: 'start',
   TalkStatus.end: 'end',
 };
+
+ShareSubMessageData _$ShareSubMessageDataFromJson(Map<String, dynamic> json) =>
+    ShareSubMessageData(
+      url: json['url'] as String,
+      sharer: User.fromJson(json['sharer'] as Map<String, dynamic>),
+      title: json['title'] as String,
+    );
+
+Map<String, dynamic> _$ShareSubMessageDataToJson(
+        ShareSubMessageData instance) =>
+    <String, dynamic>{
+      'type': instance.type,
+      'url': instance.url,
+      'sharer': instance.sharer.toJson(),
+      'title': instance.title,
+    };

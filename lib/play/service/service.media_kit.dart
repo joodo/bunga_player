@@ -327,6 +327,8 @@ class MediaKitPlayService implements PlayService {
   int _externalSubIndex = 0;
   final _externalSubUris = <String, String>{};
   @override
+  String? getExternalSubtitleUri(String trackId) => _externalSubUris[trackId];
+  @override
   Future<SubtitleTrack> loadSubtitleTrack(String uri) async {
     final eid = 'e${_externalSubIndex++}';
     final title = path.basenameWithoutExtension(uri);

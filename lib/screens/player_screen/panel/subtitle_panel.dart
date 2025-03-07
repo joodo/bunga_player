@@ -1,9 +1,15 @@
+import 'package:bunga_player/chat/client/client.tencent.dart';
+import 'package:bunga_player/chat/models/message_data.dart';
+import 'package:bunga_player/chat/models/user.dart';
 import 'package:bunga_player/play/models/track.dart';
 import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/screens/widgets/slider_item.dart';
 import 'package:bunga_player/services/services.dart';
+import 'package:bunga_player/services/toast.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
+import 'package:path/path.dart' as path_tool;
+import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
 import 'panel.dart';
@@ -60,26 +66,36 @@ class _SubtitlePanelState extends State<SubtitlePanel> {
     final player = getIt<PlayService>();
     final theme = Theme.of(context);
 
-    final tracksSection = ValueListenableBuilder(
-      valueListenable: player.subtitleTracksNotifier,
-      builder: (context, tracks, child) => ValueListenableBuilder(
-        valueListenable: player.subtitleTrackNotifier,
-        builder: (context, currentTrack, child) => tracks
-            .map((e) => RadioListTile(
-                  key: ValueKey(e.id),
-                  title: Text(_toTitle(e)),
-                  value: e,
-                  groupValue: currentTrack,
-                  onChanged: (SubtitleTrack? value) {
-                    if (value != null) {
-                      player.subtitleTrackNotifier.value = value;
-                    }
-                  },
-                ))
-            .toList()
-            .toColumn(),
-      ),
-    );
+    final tracksSection = Consumer<TencentClient?>(
+        builder: (context, chatClient, child) => ValueListenableBuilder(
+              valueListenable: player.subtitleTracksNotifier,
+              builder: (context, tracks, child) => ValueListenableBuilder(
+                valueListenable: player.subtitleTrackNotifier,
+                builder: (context, currentTrack, child) => tracks
+                    .map((e) => RadioListTile(
+                          key: ValueKey(e.id),
+                          title: Text(_toTitle(e)),
+                          value: e,
+                          groupValue: currentTrack,
+                          secondary: chatClient != null && e.id.startsWith('e')
+                              ? IconButton(
+                                  icon: Icon(Icons.ios_share),
+                                  tooltip: '分享给他人',
+                                  onPressed: () {
+                                    _shareSubtitle(e.id);
+                                  },
+                                )
+                              : null,
+                          onChanged: (SubtitleTrack? value) {
+                            if (value != null) {
+                              player.subtitleTrackNotifier.value = value;
+                            }
+                          },
+                        ))
+                    .toList()
+                    .toColumn(),
+              ),
+            ));
 
     final body = [
       tracksSection,
@@ -104,7 +120,7 @@ class _SubtitlePanelState extends State<SubtitlePanel> {
           ),
         ).padding(horizontal: 16.0),
       ),
-    ].toColumn(crossAxisAlignment: CrossAxisAlignment.start);
+    ].toColumn();
 
     return PanelWidget(
       title: '字幕',
@@ -115,9 +131,7 @@ class _SubtitlePanelState extends State<SubtitlePanel> {
           tooltip: '打开外部字幕',
         ),
       ],
-      child: body
-          .scrollable(padding: const EdgeInsets.only(bottom: 16.0))
-          .flexible(),
+      child: body.scrollable(padding: const EdgeInsets.only(bottom: 16.0)),
     );
   }
 
@@ -132,7 +146,33 @@ class _SubtitlePanelState extends State<SubtitlePanel> {
     if (!context.mounted || file == null) return;
 
     final player = getIt<PlayService>();
-    final track = await player.loadSubtitleTrack(file.path);
-    player.subtitleTrackNotifier.value = track;
+    try {
+      final track = await player.loadSubtitleTrack(file.path);
+      player.subtitleTrackNotifier.value = track;
+    } catch (e) {
+      getIt<Toast>().show('字幕载入失败');
+    }
+  }
+
+  void _shareSubtitle(String trackId) async {
+    final chatClient = context.read<TencentClient>();
+    final path = getIt<PlayService>().getExternalSubtitleUri(trackId);
+    final me = User.fromContext(context);
+
+    try {
+      final url = await chatClient.uploadFile(path!);
+
+      final title = path_tool.basenameWithoutExtension(path);
+      final messageData = ShareSubMessageData(
+        url: url,
+        sharer: me,
+        title: title,
+      );
+      await chatClient.sendMessage(messageData.toJson());
+      getIt<Toast>().show('分享成功');
+    } catch (e) {
+      getIt<Toast>().show('分享失败');
+      rethrow;
+    }
   }
 }

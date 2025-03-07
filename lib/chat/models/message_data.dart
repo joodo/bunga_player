@@ -248,3 +248,27 @@ class TalkStatusMessageData extends MessageData {
   @override
   Map<String, dynamic> toJson() => _$TalkStatusMessageDataToJson(this);
 }
+
+/// Send when sharing subtitle
+@JsonSerializable()
+class ShareSubMessageData extends MessageData {
+  static const messageType = 'share-sub';
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: true)
+  final type = messageType;
+
+  final String url;
+  final User sharer;
+  final String title;
+
+  ShareSubMessageData({
+    required this.url,
+    required this.sharer,
+    required this.title,
+  });
+
+  factory ShareSubMessageData.fromJson(Map<String, dynamic> json) =>
+      _$ShareSubMessageDataFromJson(json);
+  @override
+  Map<String, dynamic> toJson() => _$ShareSubMessageDataToJson(this);
+}

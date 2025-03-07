@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:bunga_player/bunga_server/models/bunga_client_info.dart';
 import 'package:bunga_player/services/logger.dart';
+import 'package:path/path.dart' as path_tool;
 import 'package:tencent_cloud_chat_sdk/enum/V2TimAdvancedMsgListener.dart';
 
 import 'package:tencent_cloud_chat_sdk/enum/V2TimSDKListener.dart';
@@ -77,34 +78,6 @@ class TencentClient extends ChatClient {
               senderId: message.sender!,
             );
             messageStreamController.add(m);
-          } else if (message.elemType == MessageElemType.V2TIM_ELEM_TYPE_FILE) {
-            /*
-            final getMessageOnlineUrlRes = await manager.getMessageOnlineUrl(
-              msgID: message.msgID!,
-            );
-
-            final fileElem = getMessageOnlineUrlRes.data!.fileElem!;
-            final info = jsonDecode(fileElem.fileName!);
-
-            final channelFile = ChannelFile(
-              id: fileElem.UUID!,
-              title: info['t'] ?? 'no title',
-              description: info['d'],
-              uploader: _userInfoCache[message.sender!] ??
-                  User(
-                    id: message.sender!,
-                    name: message.nickName!,
-                  ),
-              url: fileElem.url!,
-            );
-            logger.i(
-                'Receive file from ${channelFile.uploader.name}: ${channelFile.title}, ${channelFile.description}');
-
-            _fileStreamController.add((
-              groupId: message.groupID,
-              file: channelFile,
-            ));
-            */
           }
         },
       ),
@@ -133,5 +106,32 @@ class TencentClient extends ChatClient {
 
     logger.i('Send message: [$messageId] $text');
     return message;
+  }
+
+  @override
+  Future<String> uploadFile(String path) async {
+    final manager = TencentImSDKPlugin.v2TIMManager.getMessageManager();
+
+    final filename = path_tool.basenameWithoutExtension(path);
+    final createFileMessageRes = await manager.createFileMessage(
+      filePath: path,
+      fileName: filename,
+    );
+    assert(createFileMessageRes.code == 0);
+
+    final sendMessageRes = await manager.sendMessage(
+      id: createFileMessageRes.data!.id!,
+      receiver: '',
+      groupID: channelId,
+    );
+    assert(sendMessageRes.code == 0, sendMessageRes.desc);
+
+    final getMessageOnlineUrlRes = await manager.getMessageOnlineUrl(
+      msgID: sendMessageRes.data!.msgID!,
+    );
+
+    final url = getMessageOnlineUrlRes.data!.fileElem!.url!;
+    logger.i('Send file $filename: $url');
+    return url;
   }
 }
