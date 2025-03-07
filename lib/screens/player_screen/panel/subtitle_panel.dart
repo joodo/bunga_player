@@ -3,6 +3,8 @@ import 'package:bunga_player/chat/models/message_data.dart';
 import 'package:bunga_player/chat/models/user.dart';
 import 'package:bunga_player/play/models/track.dart';
 import 'package:bunga_player/play/service/service.dart';
+import 'package:bunga_player/play_sync/business.dart';
+import 'package:bunga_player/screens/player_screen/business.dart';
 import 'package:bunga_player/screens/widgets/slider_item.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
@@ -66,39 +68,51 @@ class _SubtitlePanelState extends State<SubtitlePanel> {
     final player = getIt<PlayService>();
     final theme = Theme.of(context);
 
-    final tracksSection = Consumer<TencentClient?>(
-        builder: (context, chatClient, child) => ValueListenableBuilder(
+    final tracksSection = Consumer<IsInChannel>(
+        builder: (context, isInChannel, child) => ValueListenableBuilder(
               valueListenable: player.subtitleTracksNotifier,
               builder: (context, tracks, child) => ValueListenableBuilder(
                 valueListenable: player.subtitleTrackNotifier,
-                builder: (context, currentTrack, child) => tracks
-                    .map((e) => RadioListTile(
-                          key: ValueKey(e.id),
-                          title: Text(_toTitle(e)),
-                          value: e,
-                          groupValue: currentTrack,
-                          secondary: chatClient != null && e.id.startsWith('e')
-                              ? IconButton(
-                                  icon: Icon(Icons.ios_share),
-                                  tooltip: '分享给他人',
-                                  onPressed: () {
-                                    _shareSubtitle(e.id);
-                                  },
-                                )
-                              : null,
-                          onChanged: (SubtitleTrack? value) {
-                            if (value != null) {
-                              player.subtitleTrackNotifier.value = value;
-                            }
-                          },
-                        ))
-                    .toList()
-                    .toColumn(),
+                builder: (context, currentTrack, child) => [
+                  ...tracks
+                      .where((e) => !e.id.startsWith('\$n'))
+                      .map((e) => RadioListTile(
+                            key: ValueKey(e.id),
+                            title: Text(_toTitle(e)),
+                            value: e.id,
+                            groupValue: currentTrack.id,
+                            secondary:
+                                isInChannel.value && e.id.startsWith('\$e')
+                                    ? IconButton(
+                                        icon: Icon(Icons.ios_share),
+                                        tooltip: '分享给他人',
+                                        onPressed: () {
+                                          _shareSubtitle(e.id);
+                                        },
+                                      )
+                                    : null,
+                            onChanged: (String? id) {
+                              if (id != null) {
+                                player.setSubtitleTrack(id);
+                              }
+                            },
+                          )),
+                  if (isInChannel.value)
+                    Consumer<Map<String, ChannelSubtitle>>(
+                      builder: (context, channelSubtitles, child) =>
+                          channelSubtitles.values
+                              .map((e) => _ChannelSubtitleRadioTile(
+                                    info: e,
+                                    groupValue: currentTrack.id,
+                                  ))
+                              .toList()
+                              .toColumn(),
+                    ),
+                ].toColumn(),
               ),
             ));
 
-    final body = [
-      tracksSection,
+    final tuneSection = [
       const Text('调整')
           .textStyle(theme.textTheme.labelMedium!)
           .padding(horizontal: 16.0, top: 24.0, bottom: 8.0),
@@ -120,6 +134,11 @@ class _SubtitlePanelState extends State<SubtitlePanel> {
           ),
         ).padding(horizontal: 16.0),
       ),
+    ].toColumn();
+
+    final body = [
+      tracksSection,
+      tuneSection,
     ].toColumn();
 
     return PanelWidget(
@@ -173,6 +192,55 @@ class _SubtitlePanelState extends State<SubtitlePanel> {
     } catch (e) {
       getIt<Toast>().show('分享失败');
       rethrow;
+    }
+  }
+}
+
+class _ChannelSubtitleRadioTile extends StatefulWidget {
+  final ChannelSubtitle info;
+  final String groupValue;
+
+  const _ChannelSubtitleRadioTile({
+    required this.info,
+    required this.groupValue,
+  });
+
+  @override
+  State<_ChannelSubtitleRadioTile> createState() =>
+      _ChannelSubtitleRadioTileState();
+}
+
+class _ChannelSubtitleRadioTileState extends State<_ChannelSubtitleRadioTile> {
+  @override
+  Widget build(BuildContext context) {
+    return RadioListTile<String?>(
+      title: Text('${widget.info.sharer.name} 分享：${widget.info.title}'),
+      value: context.read<SubtitleTrackIdOfUrl>().value[widget.info.url],
+      groupValue: widget.groupValue,
+      onChanged: (String? value) {
+        _loadChannelData();
+      },
+    );
+  }
+
+  void _loadChannelData() async {
+    final busyNotifier = context.read<PanelBusyNotifier>();
+    final playService = getIt<PlayService>();
+    final subtitleTrackIdOfUrl = context.read<SubtitleTrackIdOfUrl>().value;
+    final url = widget.info.url;
+    try {
+      if (subtitleTrackIdOfUrl[url] == null) {
+        busyNotifier.value = true;
+        final track = await playService.loadSubtitleTrack(url);
+        subtitleTrackIdOfUrl[url] = track.id;
+        setState(() {});
+      }
+      playService.setSubtitleTrack(subtitleTrackIdOfUrl[url]!);
+    } catch (e) {
+      getIt<Toast>().show('分享失败');
+      rethrow;
+    } finally {
+      busyNotifier.value = false;
     }
   }
 }

@@ -282,14 +282,18 @@ class MediaKitPlayService implements PlayService {
       }
     }).distinct(),
     setter: (subtitleTrack) {
-      final subtitleTracks = _player.state.tracks.subtitle;
       final id = subtitleTrack.id;
-      final track = subtitleTracks.firstWhere((track) =>
-          track.id == id || (track.title?.startsWith(',$id,') ?? false));
-      _player.setSubtitleTrack(track);
+      setSubtitleTrack(id);
     },
     initValue: SubtitleTrack(id: 'none'),
   );
+  @override
+  void setSubtitleTrack(String id) {
+    final subtitleTracks = _player.state.tracks.subtitle;
+    final track = subtitleTracks.firstWhere((track) =>
+        track.id == id || (track.title?.startsWith(',$id,') ?? false));
+    _player.setSubtitleTrack(track);
+  }
 
   late final _subtitleTracksStream = _player.stream.tracks
       .map((tracks) => tracks.subtitle)
@@ -330,19 +334,22 @@ class MediaKitPlayService implements PlayService {
   String? getExternalSubtitleUri(String trackId) => _externalSubUris[trackId];
   @override
   Future<SubtitleTrack> loadSubtitleTrack(String uri) async {
-    final eid = 'e${_externalSubIndex++}';
     final title = path.basenameWithoutExtension(uri);
-
-    _externalSubUris[eid] = uri;
-
-    // Save network resource to local
+    late final String eid;
     if (uri.startsWith('http')) {
+      // Save network resource to local
       final tempDir = await getApplicationCacheDirectory();
       final localPath =
           '${tempDir.path}/subtitle-${DateTime.now().millisecondsSinceEpoch.toRadixString(36)}';
       await getIt<NetworkService>().downloadFile(uri, localPath).last;
       uri = localPath;
+
+      eid = '\$n${_externalSubIndex++}';
+    } else {
+      eid = '\$e${_externalSubIndex++}';
     }
+
+    _externalSubUris[eid] = uri;
 
     // See https://mpv.io/manual/master/#command-interface-sub-add
     _mpvCommand('sub-add "$uri" auto ",$eid,$title"');

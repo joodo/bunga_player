@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:animations/animations.dart';
+import 'package:bunga_player/console/service.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:path/path.dart' as path_tool;
@@ -33,6 +34,16 @@ import 'package:bunga_player/utils/extensions/styled_widget.dart';
 class RemoteJustToggled {
   final bool value;
   const RemoteJustToggled(this.value);
+}
+
+typedef ChannelSubtitle = ({
+  String title,
+  String url,
+  User sharer,
+});
+
+class SubtitleTrackIdOfUrl {
+  final value = <String, String>{};
 }
 
 // Actions
@@ -149,8 +160,12 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
   );
   // Chat
   late final StreamSubscription _streamSubscription;
-
   bool _shouldAnswerWhere = false;
+
+  // Subtitle sharing
+  final _channelSubtitleNotifier =
+      ValueNotifier<Map<String, ChannelSubtitle>>({})
+        ..watchInConsole('Channel Subtitle');
 
   @override
   void initState() {
@@ -175,6 +190,10 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
           _dealWithPlayAt(
             PlayAtMessageData.fromJson(message.data),
           );
+        case ShareSubMessageData.messageType:
+          _dealWithSubSharing(
+            ShareSubMessageData.fromJson(message.data),
+          );
       }
     });
   }
@@ -182,6 +201,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
   @override
   void dispose() {
     _remoteJustToggledNotifier.dispose();
+    _channelSubtitleNotifier.dispose();
     _streamSubscription.cancel();
     super.dispose();
   }
@@ -190,6 +210,8 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
   Widget buildWithChild(BuildContext context, Widget? child) {
     return MultiProvider(
       providers: [
+        ValueListenableProvider.value(value: _channelSubtitleNotifier),
+        Provider(create: (context) => SubtitleTrackIdOfUrl()),
         ValueListenableProxyProvider(
           valueListenable: _remoteJustToggledNotifier,
           proxy: (value) => RemoteJustToggled(value),
@@ -291,6 +313,15 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
       case 'seek':
         toast.show('$name 调整了进度');
     }
+  }
+
+  void _dealWithSubSharing(ShareSubMessageData data) {
+    _channelSubtitleNotifier.value[data.sharer.id] = (
+      title: data.title,
+      url: data.url,
+      sharer: data.sharer,
+    );
+    _channelSubtitleNotifier.value = {..._channelSubtitleNotifier.value};
   }
 }
 
