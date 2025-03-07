@@ -37,7 +37,7 @@ class Player extends StatelessWidget {
           if (inChannel.value) const DanmakuPlayer(),
           if (inChannel.value) const PopmojiPlayer(),
           if (!context.watch<BusyCount>().isBusy)
-            const SavedPositionHint().positioned(bottom: 72, right: 12),
+            const SavedPositionHint().positioned(bottom: 8.0, right: 12.0),
         ].toStack().flexible(),
         const VideoProgressBar().constrained(height: 16),
         const VideoControl().constrained(height: 64),
