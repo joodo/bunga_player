@@ -170,11 +170,6 @@ class HangUpAction extends ContextAction<HangUpIntent> {
 
     stopTalking();
   }
-
-  @override
-  bool isEnabled(HangUpIntent intent, [BuildContext? context]) {
-    return callStatusNotifier.value != CallStatus.none;
-  }
 }
 
 class VoiceCallBusiness extends SingleChildStatefulWidget {

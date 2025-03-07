@@ -157,8 +157,8 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
           ? widget
               .danmakuBusiness()
               .playSyncBusiness()
-              .voiceCallBusiness()
               .channelBusiness()
+              .voiceCallBusiness()
           : Actions(
               actions: {
                 ShareVideoIntent: CallbackAction<ShareVideoIntent>(
