@@ -58,8 +58,12 @@ class TalkerId {
 
 class LeaveChannelAction extends ContextAction<StopPlayingIntent> {
   final WatchersNotifier watchersNotifier;
+  final BuildContext businessContext;
 
-  LeaveChannelAction({required this.watchersNotifier});
+  LeaveChannelAction({
+    required this.watchersNotifier,
+    required this.businessContext,
+  });
 
   @override
   Future<void> invoke(StopPlayingIntent intent, [BuildContext? context]) async {
@@ -68,7 +72,7 @@ class LeaveChannelAction extends ContextAction<StopPlayingIntent> {
     Actions.invoke(context, SendMessageIntent(messageData));
 
     // Pass intent to stop playing
-    Actions.invoke(context, intent);
+    Actions.invoke(businessContext, intent);
   }
 }
 
@@ -159,8 +163,10 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
         ),
       ],
       child: child?.actions(actions: {
-        StopPlayingIntent:
-            LeaveChannelAction(watchersNotifier: _watchersNotifier),
+        StopPlayingIntent: LeaveChannelAction(
+          watchersNotifier: _watchersNotifier,
+          businessContext: context,
+        ),
         RefreshWatchersIntent: _refreshWatchersAction,
       }),
     );

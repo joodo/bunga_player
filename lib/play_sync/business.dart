@@ -38,7 +38,9 @@ class RemoteJustToggled {
 // Actions
 
 class SyncToggleAction extends ContextAction<ToggleIntent> {
-  SyncToggleAction();
+  final BuildContext businessContext;
+
+  SyncToggleAction({required this.businessContext});
 
   @override
   void invoke(ToggleIntent intent, [BuildContext? context]) {
@@ -46,7 +48,7 @@ class SyncToggleAction extends ContextAction<ToggleIntent> {
     if (remoteJustToggled) return;
 
     // Toggle is invoked by me, not remote, so I can forget saved position.
-    Actions.maybeInvoke(context, intent);
+    Actions.maybeInvoke(businessContext, intent);
 
     if (intent.forgetSavedPosition) {
       // Forget saved position means this action is invoked by myself
@@ -57,9 +59,13 @@ class SyncToggleAction extends ContextAction<ToggleIntent> {
 }
 
 class SyncSeekAction extends ContextAction<SeekIntent> {
+  final BuildContext businessContext;
+
+  SyncSeekAction({required this.businessContext});
+
   @override
   void invoke(SeekIntent intent, [BuildContext? context]) {
-    Actions.maybeInvoke(context!, intent);
+    Actions.maybeInvoke(businessContext, intent);
 
     // Try to send play status to channel
     final action = SendPlayStatusAction();
@@ -190,8 +196,8 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
         ),
       ],
       child: child?.actions(actions: {
-        ToggleIntent: SyncToggleAction(),
-        SeekIntent: SyncSeekAction(),
+        ToggleIntent: SyncToggleAction(businessContext: context),
+        SeekIntent: SyncSeekAction(businessContext: context),
         ShareVideoIntent: ShareVideoAction(
           shouldAnswerWhereSetter: () => _shouldAnswerWhere = true,
         ),
