@@ -5,6 +5,7 @@ import 'package:bunga_player/bunga_server/models/bunga_client_info.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
+import 'package:bunga_player/utils/business/platform.dart';
 import 'package:bunga_player/utils/models/volume.dart';
 import 'package:flutter/material.dart';
 
@@ -109,6 +110,16 @@ class AgoraClient extends VoiceCallClient {
       profile: AudioProfileType.audioProfileSpeechStandard,
       scenario: AudioScenarioType.audioScenarioChatroom,
     );
+
+    if (kIsDesktop) {
+      inputDeviceNotifier.value =
+          await _engine.getAudioDeviceManager().getRecordingDevice();
+      inputDeviceNotifier.addListener(() {
+        _engine
+            .getAudioDeviceManager()
+            .setRecordingDevice(inputDeviceNotifier.value);
+      });
+    }
   }
 
   // Noise suppress
@@ -122,6 +133,13 @@ class AgoraClient extends VoiceCallClient {
   // Mic
   @override
   final micMuteNotifier = ValueNotifier<bool>(false);
+
+  // Devices
+  Future<List<AudioDeviceInfo>> getAvailableInputDevices() {
+    return _engine.getAudioDeviceManager().enumerateRecordingDevices();
+  }
+
+  final inputDeviceNotifier = ValueNotifier<String>('');
 
   // Channel
   @override
