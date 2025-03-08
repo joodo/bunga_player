@@ -1,4 +1,4 @@
-import 'package:animations/animations.dart';
+import 'package:bunga_player/screens/widgets/popup_widget.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
 import 'package:bunga_player/utils/business/value_listenable.dart';
@@ -19,15 +19,6 @@ class ToastWrapperState extends SingleChildState<ToastWrapper>
     with SingleTickerProviderStateMixin {
   late final _service = getIt<Toast>();
 
-  late final _controller = AnimationController(
-    value: 0.0,
-    duration: const Duration(milliseconds: 150),
-    reverseDuration: const Duration(milliseconds: 75),
-    vsync: this,
-  )..addStatusListener((AnimationStatus status) {
-      setState(() {});
-    });
-
   late final _visibleNotifier = AutoResetNotifier(
     const Duration(milliseconds: 1500),
   );
@@ -37,23 +28,14 @@ class ToastWrapperState extends SingleChildState<ToastWrapper>
 
   @override
   void initState() {
+    super.initState();
+
     _service.register(show);
     _service.registerOffsetNotifier(_bottomOffset);
-
-    _visibleNotifier.addListener(() {
-      if (_visibleNotifier.value) {
-        _controller.forward();
-      } else {
-        _controller.reverse();
-      }
-    });
-
-    super.initState();
   }
 
   @override
   void dispose() {
-    _controller.dispose();
     _service.unregister(show);
     _service.unregisterOffsetNotifier(_bottomOffset);
     _visibleNotifier.dispose();
@@ -84,12 +66,8 @@ class ToastWrapperState extends SingleChildState<ToastWrapper>
       child: card,
     );
 
-    final animedCard = AnimatedBuilder(
-      animation: _controller,
-      builder: (BuildContext context, Widget? child) => FadeScaleTransition(
-        animation: _controller,
-        child: child,
-      ),
+    final popup = PopupWidget(
+      visibleNotifier: _visibleNotifier,
       child: themedCard,
     );
 
@@ -98,10 +76,7 @@ class ToastWrapperState extends SingleChildState<ToastWrapper>
       builder: (context, value, child) {
         return [
           if (child != null) child,
-          Visibility(
-            visible: _controller.status != AnimationStatus.dismissed,
-            child: animedCard,
-          ).positioned(bottom: 72.0 + _bottomOffset.value, left: 12.0),
+          popup.positioned(bottom: 72.0 + _bottomOffset.value, left: 12.0),
         ].toStack(alignment: Alignment.centerLeft);
       },
       child: child,

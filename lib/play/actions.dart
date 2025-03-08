@@ -37,7 +37,7 @@ class SetVolumeIntent extends Intent {
 
 class SetVolumeAction extends ContextAction<SetVolumeIntent> {
   @override
-  Future<void> invoke(SetVolumeIntent intent, [BuildContext? context]) {
+  Future<void> invoke(SetVolumeIntent intent, [BuildContext? context]) async {
     var volume = intent.volume;
     if (intent.offset) {
       volume += context!.read<PlayVolume>().value.volume;
@@ -45,7 +45,6 @@ class SetVolumeAction extends ContextAction<SetVolumeIntent> {
           .read<JustAdjustedByShortHand>()
           .markWithAction(ShortHandAction.volume);
     }
-    return getIt<PlayService>().setVolume(volume);
   }
 }
 
@@ -57,9 +56,7 @@ class SetMuteIntent extends Intent {
 
 class SetMuteAction extends Action<SetMuteIntent> {
   @override
-  Future<void> invoke(SetMuteIntent intent) {
-    return getIt<PlayService>().setMute(intent.mute);
-  }
+  Future<void> invoke(SetMuteIntent intent) async {}
 }
 
 class TogglePlayIntent extends Intent {
@@ -499,9 +496,6 @@ class _PlayActionsState extends SingleChildState<PlayActions> {
     final player = getIt<PlayService>();
     final read = context.read;
 
-    // init volume
-    player.setVolume(read<PlayVolume>().value.volume);
-
     _playRate.addListener(_applyRate);
 
     _preventAudioDucking();
@@ -509,7 +503,6 @@ class _PlayActionsState extends SingleChildState<PlayActions> {
 
     _streamSubscriptions.addAll(
       <(Stream, ValueNotifier)>[
-        (player.volumeStream, read<PlayVolume>()),
         (player.videoEntryStream, read<PlayVideoEntry>()),
         (player.sourceIndexStream, read<PlaySourceIndex>()),
       ].map((e) => _bindStreamToValueNotifier(e.$1, e.$2)),

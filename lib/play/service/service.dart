@@ -17,10 +17,7 @@ abstract class PlayService {
   static const int maxVolume = 100;
   static const int minVolume = 0;
 
-  // TODO::
-  Stream<Volume> get volumeStream;
-  Future<void> setVolume(int volume);
-  Future<void> setMute(bool isMute);
+  ValueNotifier<Volume> get volumeNotifier;
 
   Future<void> open(PlayPayload payload);
 

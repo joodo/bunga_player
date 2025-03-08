@@ -8,6 +8,7 @@ import 'package:bunga_player/utils/business/value_listenable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:screen_brightness/screen_brightness.dart';
 import 'package:window_manager/window_manager.dart';
 
 class AlwaysOnTop extends ValueNotifier<bool> {
@@ -197,6 +198,18 @@ class ShortcutMapping
   }
 }
 
+class ScreenBrightnessNotifier extends ValueNotifier<double> {
+  ScreenBrightnessNotifier() : super(0) {
+    ScreenBrightness().setAnimate(false);
+    ScreenBrightness().current.then((brightness) {
+      value = brightness;
+      addListener(() {
+        ScreenBrightness().setScreenBrightness(value);
+      });
+    });
+  }
+}
+
 final uiProviders = MultiProvider(
   providers: [
     ChangeNotifierProvider(create: (context) => CatIndicator()),
@@ -212,6 +225,10 @@ final uiProviders = MultiProvider(
       lazy: false,
     ),
     ChangeNotifierProvider(create: (context) => DanmakuMode()),
+    ChangeNotifierProvider(
+      create: (context) => ScreenBrightnessNotifier(),
+      lazy: false,
+    ),
     ProxyProvider2<IsFullScreen, DanmakuMode, FoldLayout>(
       update: (context, isFullScreen, danmakuMode, previous) =>
           FoldLayout(isFullScreen.value && !danmakuMode.value),

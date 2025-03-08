@@ -1,9 +1,9 @@
 import 'package:animations/animations.dart';
-import 'package:bunga_player/play/actions.dart' as play_action;
 import 'package:bunga_player/play/busuness.dart';
 import 'package:bunga_player/play_sync/business.dart';
+import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/utils/business/preference_notifier.dart';
-import '../../../play/models/play_payload.dart';
+import 'package:bunga_player/play/models/play_payload.dart';
 import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/screens/dialogs/open_video/open_video.dart';
 import 'package:bunga_player/screens/player_screen/actions.dart';
@@ -13,8 +13,6 @@ import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/business/platform.dart';
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:bunga_player/utils/models/volume.dart';
-import 'package:bunga_player/mocks/slider.dart' as mock;
-import 'package:bunga_player/play/providers.dart';
 import 'package:bunga_player/ui/providers.dart';
 import 'package:bunga_player/utils/extensions/comparable.dart';
 import 'package:bunga_player/utils/extensions/duration.dart';
@@ -41,20 +39,6 @@ class VideoControl extends StatelessWidget {
               // Play button
               const _PlayButton().padding(left: 8.0),
 
-              // Ask position button
-              /* TODO: onprogress
-          Tooltip(
-            message: '拉取远程进度',
-            child: Consumer3<ChatUser, ChatChannel, ChatChannelWatchers>(
-              builder: (context, _, __, ___, child) => IconButton(
-                onPressed: Actions.handler(context, const AskPositionIntent()),
-                icon: child!,
-              ),
-              child: const Icon(Icons.sync),
-            ),
-          ),
-          */
-
               if (constraints.maxWidth > 420) const ControlDivider(),
 
               // Volume section
@@ -67,26 +51,8 @@ class VideoControl extends StatelessWidget {
               if (constraints.maxWidth > 420) const _DurationButton(),
               if (constraints.maxWidth > 420) const Spacer(),
               if (constraints.maxWidth > 420) const ControlDivider(),
-              /* TODO: onprogress
-          // Call Button
-          const SizedBox(width: 8),
-          _CallButton(
-              onPressed: () => Navigator.of(context).pushNamed('control:call')),
-          const SizedBox(width: 8),
-        
-          // Danmaku Button
-          ChannelRequiredWrap(
-            builder: (context, action, child) => IconButton(
-              icon: const Icon(Icons.chat),
-              onPressed: action,
-            ),
-            action: () => Navigator.of(context).pushNamed('control:danmaku'),
-          ),
-          const SizedBox(width: 8),
-        
-          const SizedBox(width: 8),
-        */
-              // Popmoji Button
+
+              // Danmaku Button
               Selector<DanmakuVisible, bool>(
                 selector: (context, visible) => visible.value,
                 builder: (context, visible, child) => IconButton(
@@ -189,66 +155,32 @@ class _SliderSection extends StatelessWidget {
   const _SliderSection();
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 170,
-      child: PageView(
-        scrollDirection: Axis.vertical,
-        physics: const ClampingScrollPhysics(),
-        children: [
-          [
-            Consumer<PlayVolume>(
-              builder: (context, volumeData, child) => IconButton(
-                icon: volumeData.value.mute
-                    ? const Icon(Icons.volume_off)
-                    : const Icon(Icons.volume_up),
-                onPressed: () => Actions.invoke(
-                  context,
-                  play_action.SetMuteIntent(!volumeData.value.mute),
-                ),
-              ),
-            ),
-            Consumer<PlayVolume>(
-                    builder: (context, volumeData, child) => Slider(
-                          value: volumeData.value.mute
-                              ? 0.0
-                              : volumeData.value.volume.toDouble(),
-                          max: Volume.max.toDouble(),
-                          label: '${volumeData.value.volume}%',
-                          onChanged: (value) => Actions.invoke(
-                            context,
-                            play_action.SetVolumeIntent(value.toInt()),
-                          ),
-                          onChangeEnd: (value) =>
-                              context.read<PlayVolume>().save(value.round()),
-                          focusNode: FocusNode(canRequestFocus: false),
-                        ).controlSliderTheme(context).constrained(height: 24))
-                .flexible(),
-          ].toRow(),
-          [
-            IconButton(
-              icon: const Icon(Icons.speed),
-              onPressed: context.read<PlayRate>().reset,
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Consumer<PlayRate>(
-                builder: (context, playRate, child) => mock.MySlider(
-                  min: 0.25,
-                  max: 1.75,
-                  divisions: 6,
-                  value: playRate.value,
-                  label: ' ×${playRate.value} ',
-                  onChanged: (value) => playRate.value = value,
-                  focusNode: FocusNode(canRequestFocus: false),
-                  useRootOverlay: true,
-                ),
-              ),
-            ),
-            const SizedBox(width: 16),
-          ].toRow(),
-        ],
-      ),
-    );
+    final play = getIt<PlayService>();
+    return ValueListenableBuilder(
+      valueListenable: play.volumeNotifier,
+      builder: (context, volume, child) => [
+        IconButton(
+          icon: volume.mute
+              ? const Icon(Icons.volume_off)
+              : const Icon(Icons.volume_up),
+          onPressed: () {
+            play.volumeNotifier.value =
+                play.volumeNotifier.value.copyWithToggleMute();
+          },
+        ),
+        Slider(
+          value: volume.mute ? 0.0 : volume.volume.toDouble(),
+          max: Volume.max.toDouble(),
+          label: '${volume.volume}%',
+          onChanged: (value) {
+            play.volumeNotifier.value = Volume(volume: value.toInt());
+          },
+          onChangeEnd: (value) =>
+              getIt<Preferences>().set('play_volume', value.toInt()),
+          focusNode: FocusNode(canRequestFocus: false),
+        ).controlSliderTheme(context).constrained(height: 24).flexible(),
+      ].toRow(),
+    ).constrained(width: 170);
   }
 }
 

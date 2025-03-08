@@ -1,6 +1,7 @@
 import 'package:bunga_player/play/busuness.dart';
 import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/services/services.dart';
+import 'package:bunga_player/ui/providers.dart';
 import 'package:bunga_player/utils/business/platform.dart';
 import 'package:bunga_player/utils/extensions/duration.dart';
 import 'package:bunga_player/screens/widgets/slider_dense_track_shape.dart';
@@ -56,6 +57,8 @@ class _VideoProgressBarState extends State<VideoProgressBar> {
         player.bufferNotifier,
       ]),
       builder: (context, child) {
+        final showHUDNotifier = context.read<ShouldShowHUD>();
+
         final duration = player.durationNotifier.value;
         final position = Duration(milliseconds: _currentPosition.toInt());
         final buffer = player.bufferNotifier.value;
@@ -84,6 +87,8 @@ class _VideoProgressBarState extends State<VideoProgressBar> {
               _currentPosition = value;
               _isDragging = true;
             });
+
+            showHUDNotifier.lockUp('drag');
           },
           onChanged: duration.inMilliseconds == 0
               ? null
@@ -107,6 +112,8 @@ class _VideoProgressBarState extends State<VideoProgressBar> {
               _currentPosition = value;
               _isDragging = false;
             });
+
+            showHUDNotifier.unlock('drag');
           },
         );
 

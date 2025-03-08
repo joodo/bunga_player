@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:bunga_player/play/models/play_payload.dart';
 import 'package:bunga_player/play/models/track.dart';
 import 'package:bunga_player/services/permissions.dart';
+import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/utils/models/volume.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/network/service.dart';
@@ -12,6 +13,7 @@ import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
 import 'package:media_kit/media_kit.dart' as media_kit;
 import 'package:media_kit_video/media_kit_video.dart' as media_kit;
+import 'package:media_kit_video/media_kit_video_controls/src/controls/extensions/duration.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 
@@ -32,14 +34,6 @@ class MediaKitPlayService implements PlayService {
 
     // Things when video finish
     _setProperty('keep-open', 'yes');
-    /* TODO: onprogress
-    _player.stream.playing.listen(
-      (isPlay) {
-        if (_player.state.playlist.medias.isEmpty) return;
-        _statusController
-            .add(isPlay ? PlayStatusType.play : PlayStatusType.pause);
-      },
-    );*/
 
     // Subtitles
     _setProperty('sub-visibility', 'yes'); // use mpv subtitle, not media_kit
@@ -49,7 +43,7 @@ class MediaKitPlayService implements PlayService {
       if (duration <= Duration.zero) return;
 
       if (_seekCache != null) {
-        _player.seek(_seekCache!);
+        _clampSeek(_seekCache!);
         _seekCache = null;
       }
 
@@ -79,26 +73,14 @@ class MediaKitPlayService implements PlayService {
   late final controller = media_kit.VideoController(_player);
 
   // Volume
-  Volume _volume = Volume(volume: Volume.max);
-  late final _volumeController = StreamController<Volume>.broadcast();
   @override
-  Stream<Volume> get volumeStream => _volumeController.stream;
-  @override
-  Future<void> setMute(bool isMute) {
-    _volume = Volume(volume: _volume.volume, mute: isMute);
-    _volumeController.add(_volume);
-
-    return isMute
-        ? _player.setVolume(0)
-        : _player.setVolume(_volume.volume.toDouble());
-  }
-
-  @override
-  Future<void> setVolume(int volume) {
-    _volume = Volume(volume: volume);
-    _volumeController.add(_volume);
-    return _player.setVolume(volume.toDouble());
-  }
+  late final volumeNotifier = ValueNotifier<Volume>(
+    Volume(volume: getIt<Preferences>().get<int>('play_volume') ?? Volume.max),
+  )..addListener(() {
+      final target =
+          volumeNotifier.value.mute ? 0 : volumeNotifier.value.volume;
+      _player.setVolume(target.toDouble());
+    });
 
   // Buffer, Duration
   @override
@@ -127,13 +109,17 @@ class MediaKitPlayService implements PlayService {
       if (_player.state.duration <= Duration.zero) {
         _seekCache = position;
       } else {
-        _player.seek(position);
+        _clampSeek(position);
       }
     },
     initValue: Duration.zero,
   );
   @override
   void seek(Duration position) => positionNotifier.value = position;
+  void _clampSeek(Duration position) {
+    position = position.clamp(Duration.zero, _player.state.duration);
+    _player.seek(position);
+  }
 
   // Video loading
 
