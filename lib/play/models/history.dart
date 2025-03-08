@@ -32,8 +32,8 @@ abstract class VideoSession with _$VideoSession {
   const factory VideoSession({
     required DateTime updatedAt,
     required VideoRecord videoRecord,
-    required WatchProgress progress,
-    String? subtitleUri,
+    WatchProgress? progress,
+    String? subtitlePath,
   }) = _VideoSession;
 
   factory VideoSession.fromJson(Map<String, dynamic> json) =>
@@ -67,7 +67,39 @@ abstract class History with _$History {
   factory History.fromJson(Map<String, dynamic> json) =>
       _$HistoryFromJson(json);
 
-  void save() {
+  static const _notPassedProgress = WatchProgress(
+    position: Duration(milliseconds: -1),
+    duration: Duration(milliseconds: -1),
+  );
+  static const _notPassedSubPath = 'NOTPASSED';
+  void update({
+    required VideoRecord videoRecord,
+    WatchProgress? progress = _notPassedProgress,
+    String? subtitlePath = _notPassedSubPath,
+  }) {
+    final current = value[videoRecord.id];
+    if (current != null) {
+      value[videoRecord.id] = current.copyWith(
+        updatedAt: DateTime.now(),
+        progress: identical(progress, _notPassedProgress)
+            ? current.progress
+            : progress,
+        subtitlePath: identical(subtitlePath, _notPassedSubPath)
+            ? current.subtitlePath
+            : subtitlePath,
+      );
+    } else {
+      value[videoRecord.id] = VideoSession(
+        videoRecord: videoRecord,
+        updatedAt: DateTime.now(),
+        progress: identical(progress, _notPassedProgress) ? null : progress,
+        subtitlePath:
+            identical(subtitlePath, _notPassedSubPath) ? null : subtitlePath,
+      );
+    }
+  }
+
+  Future<void> save() {
     if (value.length > maxCount) {
       value.values
           .sortedBy((element) => element.updatedAt)
@@ -80,6 +112,6 @@ abstract class History with _$History {
     }
 
     final compressed = jsonEncode(toJson()).compress();
-    getIt<Preferences>().set(preferencesKey, compressed);
+    return getIt<Preferences>().set(preferencesKey, compressed);
   }
 }

@@ -17,6 +17,6 @@ abstract class SubtitleTrack with _$SubtitleTrack {
     required String id,
     String? title,
     String? language,
-    String? uri,
+    String? path,
   }) = _SubtitleTrack;
 }

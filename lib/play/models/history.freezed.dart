@@ -181,8 +181,8 @@ class __$WatchProgressCopyWithImpl<$Res>
 mixin _$VideoSession {
   DateTime get updatedAt;
   VideoRecord get videoRecord;
-  WatchProgress get progress;
-  String? get subtitleUri;
+  WatchProgress? get progress;
+  String? get subtitlePath;
 
   /// Create a copy of VideoSession
   /// with the given fields replaced by the non-null parameter values.
@@ -206,18 +206,18 @@ mixin _$VideoSession {
                 other.videoRecord == videoRecord) &&
             (identical(other.progress, progress) ||
                 other.progress == progress) &&
-            (identical(other.subtitleUri, subtitleUri) ||
-                other.subtitleUri == subtitleUri));
+            (identical(other.subtitlePath, subtitlePath) ||
+                other.subtitlePath == subtitlePath));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode =>
-      Object.hash(runtimeType, updatedAt, videoRecord, progress, subtitleUri);
+      Object.hash(runtimeType, updatedAt, videoRecord, progress, subtitlePath);
 
   @override
   String toString() {
-    return 'VideoSession(updatedAt: $updatedAt, videoRecord: $videoRecord, progress: $progress, subtitleUri: $subtitleUri)';
+    return 'VideoSession(updatedAt: $updatedAt, videoRecord: $videoRecord, progress: $progress, subtitlePath: $subtitlePath)';
   }
 }
 
@@ -230,11 +230,11 @@ abstract mixin class $VideoSessionCopyWith<$Res> {
   $Res call(
       {DateTime updatedAt,
       VideoRecord videoRecord,
-      WatchProgress progress,
-      String? subtitleUri});
+      WatchProgress? progress,
+      String? subtitlePath});
 
   $VideoRecordCopyWith<$Res> get videoRecord;
-  $WatchProgressCopyWith<$Res> get progress;
+  $WatchProgressCopyWith<$Res>? get progress;
 }
 
 /// @nodoc
@@ -251,8 +251,8 @@ class _$VideoSessionCopyWithImpl<$Res> implements $VideoSessionCopyWith<$Res> {
   $Res call({
     Object? updatedAt = null,
     Object? videoRecord = null,
-    Object? progress = null,
-    Object? subtitleUri = freezed,
+    Object? progress = freezed,
+    Object? subtitlePath = freezed,
   }) {
     return _then(_self.copyWith(
       updatedAt: null == updatedAt
@@ -263,13 +263,13 @@ class _$VideoSessionCopyWithImpl<$Res> implements $VideoSessionCopyWith<$Res> {
           ? _self.videoRecord
           : videoRecord // ignore: cast_nullable_to_non_nullable
               as VideoRecord,
-      progress: null == progress
+      progress: freezed == progress
           ? _self.progress
           : progress // ignore: cast_nullable_to_non_nullable
-              as WatchProgress,
-      subtitleUri: freezed == subtitleUri
-          ? _self.subtitleUri
-          : subtitleUri // ignore: cast_nullable_to_non_nullable
+              as WatchProgress?,
+      subtitlePath: freezed == subtitlePath
+          ? _self.subtitlePath
+          : subtitlePath // ignore: cast_nullable_to_non_nullable
               as String?,
     ));
   }
@@ -288,8 +288,12 @@ class _$VideoSessionCopyWithImpl<$Res> implements $VideoSessionCopyWith<$Res> {
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
-  $WatchProgressCopyWith<$Res> get progress {
-    return $WatchProgressCopyWith<$Res>(_self.progress, (value) {
+  $WatchProgressCopyWith<$Res>? get progress {
+    if (_self.progress == null) {
+      return null;
+    }
+
+    return $WatchProgressCopyWith<$Res>(_self.progress!, (value) {
       return _then(_self.copyWith(progress: value));
     });
   }
@@ -301,8 +305,8 @@ class _VideoSession implements VideoSession {
   const _VideoSession(
       {required this.updatedAt,
       required this.videoRecord,
-      required this.progress,
-      this.subtitleUri});
+      this.progress,
+      this.subtitlePath});
   factory _VideoSession.fromJson(Map<String, dynamic> json) =>
       _$VideoSessionFromJson(json);
 
@@ -311,9 +315,9 @@ class _VideoSession implements VideoSession {
   @override
   final VideoRecord videoRecord;
   @override
-  final WatchProgress progress;
+  final WatchProgress? progress;
   @override
-  final String? subtitleUri;
+  final String? subtitlePath;
 
   /// Create a copy of VideoSession
   /// with the given fields replaced by the non-null parameter values.
@@ -341,18 +345,18 @@ class _VideoSession implements VideoSession {
                 other.videoRecord == videoRecord) &&
             (identical(other.progress, progress) ||
                 other.progress == progress) &&
-            (identical(other.subtitleUri, subtitleUri) ||
-                other.subtitleUri == subtitleUri));
+            (identical(other.subtitlePath, subtitlePath) ||
+                other.subtitlePath == subtitlePath));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode =>
-      Object.hash(runtimeType, updatedAt, videoRecord, progress, subtitleUri);
+      Object.hash(runtimeType, updatedAt, videoRecord, progress, subtitlePath);
 
   @override
   String toString() {
-    return 'VideoSession(updatedAt: $updatedAt, videoRecord: $videoRecord, progress: $progress, subtitleUri: $subtitleUri)';
+    return 'VideoSession(updatedAt: $updatedAt, videoRecord: $videoRecord, progress: $progress, subtitlePath: $subtitlePath)';
   }
 }
 
@@ -367,13 +371,13 @@ abstract mixin class _$VideoSessionCopyWith<$Res>
   $Res call(
       {DateTime updatedAt,
       VideoRecord videoRecord,
-      WatchProgress progress,
-      String? subtitleUri});
+      WatchProgress? progress,
+      String? subtitlePath});
 
   @override
   $VideoRecordCopyWith<$Res> get videoRecord;
   @override
-  $WatchProgressCopyWith<$Res> get progress;
+  $WatchProgressCopyWith<$Res>? get progress;
 }
 
 /// @nodoc
@@ -391,8 +395,8 @@ class __$VideoSessionCopyWithImpl<$Res>
   $Res call({
     Object? updatedAt = null,
     Object? videoRecord = null,
-    Object? progress = null,
-    Object? subtitleUri = freezed,
+    Object? progress = freezed,
+    Object? subtitlePath = freezed,
   }) {
     return _then(_VideoSession(
       updatedAt: null == updatedAt
@@ -403,13 +407,13 @@ class __$VideoSessionCopyWithImpl<$Res>
           ? _self.videoRecord
           : videoRecord // ignore: cast_nullable_to_non_nullable
               as VideoRecord,
-      progress: null == progress
+      progress: freezed == progress
           ? _self.progress
           : progress // ignore: cast_nullable_to_non_nullable
-              as WatchProgress,
-      subtitleUri: freezed == subtitleUri
-          ? _self.subtitleUri
-          : subtitleUri // ignore: cast_nullable_to_non_nullable
+              as WatchProgress?,
+      subtitlePath: freezed == subtitlePath
+          ? _self.subtitlePath
+          : subtitlePath // ignore: cast_nullable_to_non_nullable
               as String?,
     ));
   }
@@ -428,8 +432,12 @@ class __$VideoSessionCopyWithImpl<$Res>
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
-  $WatchProgressCopyWith<$Res> get progress {
-    return $WatchProgressCopyWith<$Res>(_self.progress, (value) {
+  $WatchProgressCopyWith<$Res>? get progress {
+    if (_self.progress == null) {
+      return null;
+    }
+
+    return $WatchProgressCopyWith<$Res>(_self.progress!, (value) {
       return _then(_self.copyWith(progress: value));
     });
   }

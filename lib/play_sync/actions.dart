@@ -169,7 +169,7 @@ class FetchChannelSubtitleAction
     final currentSession = context!.read<PlayVideoSessions>().currentOrCreate();
     final track = await getIt<PlayService>()
         .loadSubtitleTrack(intent.channelSubtitle.url);
-    currentSession.subtitleUri = track.uri;
+    currentSession.subtitleUri = track.path;
     intent.channelSubtitle.track = track;
   }
 }

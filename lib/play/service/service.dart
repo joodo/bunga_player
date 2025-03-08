@@ -49,9 +49,8 @@ abstract class PlayService {
 
   ValueNotifier<Iterable<SubtitleTrack>> get subtitleTracksNotifier;
   ValueNotifier<SubtitleTrack> get subtitleTrackNotifier;
-  void setSubtitleTrack(String id);
+  SubtitleTrack setSubtitleTrack(String id);
   Future<SubtitleTrack> loadSubtitleTrack(String uri);
-  String? getExternalSubtitleUri(String trackId);
 
   // value -100~100
   ValueNotifier<int> get brightnessNotifier;

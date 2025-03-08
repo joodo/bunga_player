@@ -383,7 +383,7 @@ class LoadLocalSubtitleAction extends ContextAction<LoadLocalSubtitleIntent> {
       final currentSession =
           context!.read<PlayVideoSessions>().currentOrCreate();
       final track = await getIt<PlayService>().loadSubtitleTrack(intent.path!);
-      currentSession.subtitleUri = track.uri!;
+      currentSession.subtitleUri = track.path!;
       return track;
     } catch (e) {
       getIt<Toast>().show('字幕加载失败');
@@ -534,8 +534,10 @@ class _PlayActionsState extends SingleChildState<PlayActions> {
     return MultiProvider(
       providers: [
         Provider.value(value: _history),
+        // TODO::
         ValueListenableProvider.value(
-            value: getIt<PlayService>().playStatusNotifier),
+          value: getIt<PlayService>().playStatusNotifier,
+        ),
       ],
       child: child!.actions(actions: {
         SetVolumeIntent: SetVolumeAction(),

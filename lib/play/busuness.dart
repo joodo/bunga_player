@@ -70,7 +70,7 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
     assert(context != null);
 
     final parser = PlayPayloadParser(context!);
-    final videoPlayer = getIt<PlayService>();
+    final play = getIt<PlayService>();
     late final PlayPayload payload;
 
     // Open video
@@ -83,7 +83,7 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
             record: intent.record,
           );
 
-      await videoPlayer.open(payload);
+      await play.open(payload);
 
       if (!context.mounted) throw StateError('Context unmounted.');
       context.read<WindowTitle>().value = payload.record.title;
@@ -96,15 +96,22 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
       busyCountNotifier.value = busyCountNotifier.value.decrease;
     }
 
-    // Load saved position
+    // Load history
     if (!context.mounted) throw StateError('Context unmounted.');
-    final history = context.read<History>();
-    final savedPostion = history.value[payload.record.id]?.progress.position;
+    final session = context.read<History>().value[payload.record.id];
+
+    final savedPostion = session?.progress?.position;
     if (savedPostion != null) {
-      videoPlayer.seek(savedPostion);
+      play.seek(savedPostion);
       savedPositionNotifier.value = savedPostion;
     } else {
       savedPositionNotifier.value = null;
+    }
+
+    final subPath = session?.subtitlePath;
+    if (subPath != null) {
+      final track = await play.loadSubtitleTrack(subPath);
+      play.setSubtitleTrack(track.id);
     }
 
     // Load dir info
@@ -123,9 +130,28 @@ class StopPlayingIntent extends Intent {
 
 class StopPlayingAction extends ContextAction<StopPlayingIntent> {
   @override
-  void invoke(StopPlayingIntent intent, [BuildContext? context]) {
+  void invoke(StopPlayingIntent intent, [BuildContext? context]) async {
     context!.read<WindowTitle>().reset();
+    context.read<History>().save();
     getIt<PlayService>().stop();
+  }
+}
+
+@immutable
+class SetSubtitleTrackIntent extends Intent {
+  final String trackId;
+  const SetSubtitleTrackIntent(this.trackId);
+}
+
+class SetSubtitleTrackAction extends ContextAction<SetSubtitleTrackIntent> {
+  @override
+  void invoke(SetSubtitleTrackIntent intent, [BuildContext? context]) {
+    final track = getIt<PlayService>().setSubtitleTrack(intent.trackId);
+
+    final record = context!.read<PlayPayload>().record;
+    final externalSubPath = track.path;
+    final history = context.read<History>();
+    history.update(videoRecord: record, subtitlePath: externalSubPath);
   }
 }
 
@@ -251,30 +277,7 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
   late final RestartableTimer _saveWatchProgressTimer = RestartableTimer(
     const Duration(seconds: 3),
     () {
-      final currentRecord = _playPayloadNotifier.value?.record;
-      if (currentRecord == null) return;
-
-      final player = getIt<PlayService>();
-
-      final historyValue = _history.value;
-
-      final progress = WatchProgress(
-        position: player.positionNotifier.value,
-        duration: player.durationNotifier.value,
-      );
-      if (historyValue.containsKey(currentRecord.id)) {
-        historyValue[currentRecord.id] =
-            historyValue[currentRecord.id]!.copyWith(
-          updatedAt: DateTime.now(),
-          progress: progress,
-        );
-      } else {
-        historyValue[currentRecord.id] = VideoSession(
-          videoRecord: currentRecord,
-          updatedAt: DateTime.now(),
-          progress: progress,
-        );
-      }
+      _updateProgress();
       _saveWatchProgressTimer.reset();
     },
   )..cancel();
@@ -287,22 +290,8 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
 
     _isVideoBufferingNotifier.addListener(_updateBusyCount);
 
-    // Init late variables
+    // History
     _history;
-  }
-
-  @override
-  void dispose() {
-    _playPayloadNotifier.dispose();
-    _busyCountNotifer.dispose();
-
-    _isVideoBufferingNotifier.removeListener(_updateBusyCount);
-
-    _saveWatchProgressTimer.cancel();
-    _history.save();
-    _savedPositionNotifier.dispose();
-
-    super.dispose();
   }
 
   @override
@@ -327,9 +316,36 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
           savedPositionNotifier: _savedPositionNotifier,
         ),
         SeekIntent: SeekAction(),
+        SetSubtitleTrackIntent: SetSubtitleTrackAction(),
         RefreshDirIntent: RefreshDirAction(dirInfoNotifier: _dirInfoNotifier),
       }),
     );
+  }
+
+  @override
+  void dispose() {
+    _playPayloadNotifier.dispose();
+    _busyCountNotifer.dispose();
+
+    _isVideoBufferingNotifier.removeListener(_updateBusyCount);
+
+    _saveWatchProgressTimer.cancel();
+    _savedPositionNotifier.dispose();
+
+    super.dispose();
+  }
+
+  void _updateProgress() {
+    final currentRecord = _playPayloadNotifier.value?.record;
+    if (currentRecord == null) return;
+
+    final play = getIt<PlayService>();
+
+    final progress = WatchProgress(
+      position: play.positionNotifier.value,
+      duration: play.durationNotifier.value,
+    );
+    _history.update(videoRecord: currentRecord, progress: progress);
   }
 }
 

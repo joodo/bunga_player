@@ -1,6 +1,7 @@
 import 'package:bunga_player/chat/client/client.tencent.dart';
 import 'package:bunga_player/chat/models/message_data.dart';
 import 'package:bunga_player/chat/models/user.dart';
+import 'package:bunga_player/play/busuness.dart';
 import 'package:bunga_player/play/models/track.dart';
 import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/play_sync/business.dart';
@@ -74,29 +75,26 @@ class _SubtitlePanelState extends State<SubtitlePanel> {
               builder: (context, tracks, child) => ValueListenableBuilder(
                 valueListenable: player.subtitleTrackNotifier,
                 builder: (context, currentTrack, child) => [
-                  ...tracks
-                      .where((e) => !e.id.startsWith('\$n'))
-                      .map((e) => RadioListTile(
-                            key: ValueKey(e.id),
-                            title: Text(_toTitle(e)),
-                            value: e.id,
-                            groupValue: currentTrack.id,
-                            secondary:
-                                isInChannel.value && e.id.startsWith('\$e')
-                                    ? IconButton(
-                                        icon: Icon(Icons.ios_share),
-                                        tooltip: '分享给他人',
-                                        onPressed: () {
-                                          _shareSubtitle(e.id);
-                                        },
-                                      )
-                                    : null,
-                            onChanged: (String? id) {
-                              if (id != null) {
-                                player.setSubtitleTrack(id);
-                              }
-                            },
-                          )),
+                  ...tracks.where((e) => !e.id.startsWith('\$n')).map((e) =>
+                      RadioListTile(
+                        key: ValueKey(e.id),
+                        title: Text(_toTitle(e)),
+                        value: e.id,
+                        groupValue: currentTrack.id,
+                        secondary: isInChannel.value && e.id.startsWith('\$e')
+                            ? IconButton(
+                                icon: Icon(Icons.ios_share),
+                                tooltip: '分享给他人',
+                                onPressed: () {
+                                  _shareSubtitle(e.id);
+                                },
+                              )
+                            : null,
+                        onChanged: (String? id) {
+                          if (id == null) return;
+                          Actions.invoke(context, SetSubtitleTrackIntent(id));
+                        },
+                      )),
                   if (isInChannel.value)
                     Consumer<Map<String, ChannelSubtitle>>(
                       builder: (context, channelSubtitles, child) =>
@@ -155,9 +153,11 @@ class _SubtitlePanelState extends State<SubtitlePanel> {
   }
 
   String _toTitle(SubtitleTrack track) {
-    final lang = track.language == null ? '' : ' (${track.language})';
-    final title = track.title == null ? '' : ' ${track.title}';
-    return '[${track.id}]$title$lang';
+    String title = '';
+    if (track.title != null) title += track.title!;
+    if (track.language != null) title += ' (${track.language})';
+    if (title.isEmpty) title = '[${track.id}]';
+    return title;
   }
 
   void _openSubtitle() async {
@@ -167,7 +167,9 @@ class _SubtitlePanelState extends State<SubtitlePanel> {
     final player = getIt<PlayService>();
     try {
       final track = await player.loadSubtitleTrack(file.path);
-      player.subtitleTrackNotifier.value = track;
+
+      if (!mounted) return;
+      Actions.invoke(context, SetSubtitleTrackIntent(track.id));
     } catch (e) {
       getIt<Toast>().show('字幕载入失败');
     }
@@ -175,11 +177,11 @@ class _SubtitlePanelState extends State<SubtitlePanel> {
 
   void _shareSubtitle(String trackId) async {
     final chatClient = context.read<TencentClient>();
-    final path = getIt<PlayService>().getExternalSubtitleUri(trackId);
+    final path = getIt<PlayService>().subtitleTrackNotifier.value.path!;
     final me = User.fromContext(context);
 
     try {
-      final url = await chatClient.uploadFile(path!);
+      final url = await chatClient.uploadFile(path);
 
       final title = path_tool.basenameWithoutExtension(path);
       final messageData = ShareSubMessageData(
@@ -235,7 +237,10 @@ class _ChannelSubtitleRadioTileState extends State<_ChannelSubtitleRadioTile> {
         subtitleTrackIdOfUrl[url] = track.id;
         setState(() {});
       }
-      playService.setSubtitleTrack(subtitleTrackIdOfUrl[url]!);
+
+      if (!mounted) return;
+      final trackId = subtitleTrackIdOfUrl[url]!;
+      Actions.invoke(context, SetSubtitleTrackIntent(trackId));
     } catch (e) {
       getIt<Toast>().show('分享失败');
       rethrow;

@@ -216,7 +216,7 @@ class _AListTabState extends State<AListTab> {
               .read<History>()
               .value[path.asPathToAListId()]
               ?.progress
-              .ratio;
+              ?.ratio;
           final onTap = switch (info.type) {
             AListFileType.folder => () => _cd('${info.name}/'),
             AListFileType.video => () {

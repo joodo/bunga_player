@@ -277,7 +277,7 @@ class MediaKitPlayService implements PlayService {
           id: splits[1],
           title: splits[2],
           language: subtitle.language,
-          uri: _externalSubUris[splits[1]],
+          path: _externalSubPaths[splits[1]],
         );
       }
     }).distinct(),
@@ -288,11 +288,13 @@ class MediaKitPlayService implements PlayService {
     initValue: SubtitleTrack(id: 'none'),
   );
   @override
-  void setSubtitleTrack(String id) {
+  SubtitleTrack setSubtitleTrack(String id) {
     final subtitleTracks = _player.state.tracks.subtitle;
     final track = subtitleTracks.firstWhere((track) =>
         track.id == id || (track.title?.startsWith(',$id,') ?? false));
     _player.setSubtitleTrack(track);
+    return subtitleTracksNotifier.value
+        .firstWhere((element) => element.id == id);
   }
 
   late final _subtitleTracksStream = _player.stream.tracks
@@ -313,7 +315,7 @@ class MediaKitPlayService implements PlayService {
             return SubtitleTrack(
               id: splits[1],
               title: splits[2],
-              uri: _externalSubUris[splits[1]],
+              path: _externalSubPaths[splits[1]],
               language: track.language,
             );
           },
@@ -329,9 +331,7 @@ class MediaKitPlayService implements PlayService {
   );
 
   int _externalSubIndex = 0;
-  final _externalSubUris = <String, String>{};
-  @override
-  String? getExternalSubtitleUri(String trackId) => _externalSubUris[trackId];
+  final _externalSubPaths = <String, String>{};
   @override
   Future<SubtitleTrack> loadSubtitleTrack(String uri) async {
     final title = path.basenameWithoutExtension(uri);
@@ -349,7 +349,7 @@ class MediaKitPlayService implements PlayService {
       eid = '\$e${_externalSubIndex++}';
     }
 
-    _externalSubUris[eid] = uri;
+    _externalSubPaths[eid] = uri;
 
     // See https://mpv.io/manual/master/#command-interface-sub-add
     _mpvCommand('sub-add "$uri" auto ",$eid,$title"');

@@ -26,16 +26,17 @@ class _HistoryTabState extends State<HistoryTab> {
     }
 
     final entries = history.values
+        .where((element) => element.progress != null)
         .sortedBy((element) => element.updatedAt)
         .reversed
         .toList();
     return ListView.builder(
-      itemCount: history.length,
+      itemCount: entries.length,
       padding: const EdgeInsets.symmetric(vertical: 16.0),
       itemBuilder: (BuildContext context, int index) {
         final entry = entries[index];
         return Dismissible(
-          key: Key(index.toString()),
+          key: Key(entry.videoRecord.id),
           direction: DismissDirection.endToStart,
           background: Container(
             alignment: Alignment.centerRight,
@@ -62,7 +63,7 @@ class _HistoryTabState extends State<HistoryTab> {
                 .clipRRect(all: 16.0),
             title: Text(entry.videoRecord.title),
             subtitle: Text(entry.updatedAt.relativeString),
-            trailing: Text('已看 ${(entry.progress.ratio * 100).toInt()}%'),
+            trailing: Text('已看 ${(entry.progress!.ratio * 100).toInt()}%'),
             onTap: Actions.handler(
                 context,
                 SelectUrlIntent(Uri(

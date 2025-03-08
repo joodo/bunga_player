@@ -177,7 +177,7 @@ mixin _$SubtitleTrack {
   String get id;
   String? get title;
   String? get language;
-  String? get uri;
+  String? get path;
 
   /// Create a copy of SubtitleTrack
   /// with the given fields replaced by the non-null parameter values.
@@ -196,15 +196,15 @@ mixin _$SubtitleTrack {
             (identical(other.title, title) || other.title == title) &&
             (identical(other.language, language) ||
                 other.language == language) &&
-            (identical(other.uri, uri) || other.uri == uri));
+            (identical(other.path, path) || other.path == path));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, id, title, language, uri);
+  int get hashCode => Object.hash(runtimeType, id, title, language, path);
 
   @override
   String toString() {
-    return 'SubtitleTrack(id: $id, title: $title, language: $language, uri: $uri)';
+    return 'SubtitleTrack(id: $id, title: $title, language: $language, path: $path)';
   }
 }
 
@@ -214,7 +214,7 @@ abstract mixin class $SubtitleTrackCopyWith<$Res> {
           SubtitleTrack value, $Res Function(SubtitleTrack) _then) =
       _$SubtitleTrackCopyWithImpl;
   @useResult
-  $Res call({String id, String? title, String? language, String? uri});
+  $Res call({String id, String? title, String? language, String? path});
 }
 
 /// @nodoc
@@ -233,7 +233,7 @@ class _$SubtitleTrackCopyWithImpl<$Res>
     Object? id = null,
     Object? title = freezed,
     Object? language = freezed,
-    Object? uri = freezed,
+    Object? path = freezed,
   }) {
     return _then(_self.copyWith(
       id: null == id
@@ -248,9 +248,9 @@ class _$SubtitleTrackCopyWithImpl<$Res>
           ? _self.language
           : language // ignore: cast_nullable_to_non_nullable
               as String?,
-      uri: freezed == uri
-          ? _self.uri
-          : uri // ignore: cast_nullable_to_non_nullable
+      path: freezed == path
+          ? _self.path
+          : path // ignore: cast_nullable_to_non_nullable
               as String?,
     ));
   }
@@ -259,7 +259,7 @@ class _$SubtitleTrackCopyWithImpl<$Res>
 /// @nodoc
 
 class _SubtitleTrack implements SubtitleTrack {
-  _SubtitleTrack({required this.id, this.title, this.language, this.uri});
+  _SubtitleTrack({required this.id, this.title, this.language, this.path});
 
   @override
   final String id;
@@ -268,7 +268,7 @@ class _SubtitleTrack implements SubtitleTrack {
   @override
   final String? language;
   @override
-  final String? uri;
+  final String? path;
 
   /// Create a copy of SubtitleTrack
   /// with the given fields replaced by the non-null parameter values.
@@ -287,15 +287,15 @@ class _SubtitleTrack implements SubtitleTrack {
             (identical(other.title, title) || other.title == title) &&
             (identical(other.language, language) ||
                 other.language == language) &&
-            (identical(other.uri, uri) || other.uri == uri));
+            (identical(other.path, path) || other.path == path));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, id, title, language, uri);
+  int get hashCode => Object.hash(runtimeType, id, title, language, path);
 
   @override
   String toString() {
-    return 'SubtitleTrack(id: $id, title: $title, language: $language, uri: $uri)';
+    return 'SubtitleTrack(id: $id, title: $title, language: $language, path: $path)';
   }
 }
 
@@ -307,7 +307,7 @@ abstract mixin class _$SubtitleTrackCopyWith<$Res>
       __$SubtitleTrackCopyWithImpl;
   @override
   @useResult
-  $Res call({String id, String? title, String? language, String? uri});
+  $Res call({String id, String? title, String? language, String? path});
 }
 
 /// @nodoc
@@ -326,7 +326,7 @@ class __$SubtitleTrackCopyWithImpl<$Res>
     Object? id = null,
     Object? title = freezed,
     Object? language = freezed,
-    Object? uri = freezed,
+    Object? path = freezed,
   }) {
     return _then(_SubtitleTrack(
       id: null == id
@@ -341,9 +341,9 @@ class __$SubtitleTrackCopyWithImpl<$Res>
           ? _self.language
           : language // ignore: cast_nullable_to_non_nullable
               as String?,
-      uri: freezed == uri
-          ? _self.uri
-          : uri // ignore: cast_nullable_to_non_nullable
+      path: freezed == path
+          ? _self.path
+          : path // ignore: cast_nullable_to_non_nullable
               as String?,
     ));
   }
