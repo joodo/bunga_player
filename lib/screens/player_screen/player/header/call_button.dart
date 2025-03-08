@@ -2,6 +2,7 @@ import 'package:bunga_player/chat/models/user.dart';
 import 'package:bunga_player/client_info/models/client_account.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
+import 'package:bunga_player/ui/providers.dart';
 import 'package:bunga_player/utils/models/volume.dart';
 import 'package:bunga_player/voice_call/business.dart';
 import 'package:bunga_player/voice_call/client/client.agora.dart';
@@ -25,6 +26,22 @@ class CallButton extends StatefulWidget {
 
 class _CallButtonState extends State<CallButton> {
   final _overlayController = OverlayPortalController();
+  final _overlayVisibleNotifier = ValueNotifier(false);
+
+  @override
+  void initState() {
+    super.initState();
+    _overlayVisibleNotifier.addListener(() {
+      final showHUDNotifier = context.read<ShouldShowHUD>();
+      if (_overlayVisibleNotifier.value) {
+        _overlayController.show();
+        showHUDNotifier.lockUp('call button');
+      } else {
+        _overlayController.hide();
+        showHUDNotifier.unlock('call button');
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -144,7 +161,7 @@ class _CallButtonState extends State<CallButton> {
                           builder: (context) => CallingSettingsPanel(),
                         ),
                       );
-                      _overlayController.hide();
+                      _overlayVisibleNotifier.value = false;
                     },
                     icon: Icon(Icons.settings),
                   ),
@@ -164,7 +181,7 @@ class _CallButtonState extends State<CallButton> {
 
         final overlay = GestureDetector(
           behavior: HitTestBehavior.translucent,
-          onTap: _overlayController.hide,
+          onTap: () => _overlayVisibleNotifier.value = false,
           child: [
             item
                 .padding(horizontal: 12.0, top: 8.0, bottom: 12.0)
@@ -182,11 +199,7 @@ class _CallButtonState extends State<CallButton> {
         key: buttonKey,
         builder: (context, callStatus, child) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (callStatus != CallStatus.none) {
-              _overlayController.show();
-            } else {
-              _overlayController.hide();
-            }
+            _overlayVisibleNotifier.value = callStatus != CallStatus.none;
           });
 
           return switch (callStatus) {
@@ -211,7 +224,7 @@ class _CallButtonState extends State<CallButton> {
                   backgroundColor: WidgetStatePropertyAll<Color>(Colors.green),
                 ),
                 color: Colors.white70,
-                onPressed: _overlayController.show,
+                onPressed: () => _overlayVisibleNotifier.value = true,
                 icon: Icon(Icons.phone),
               ))
                   .animate(
@@ -226,13 +239,19 @@ class _CallButtonState extends State<CallButton> {
                   backgroundColor: WidgetStatePropertyAll<Color>(Colors.green),
                 ),
                 color: Colors.white70,
-                onPressed: _overlayController.show,
+                onPressed: () => _overlayVisibleNotifier.value = true,
                 icon: Icon(Icons.phone),
               ),
           };
         },
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _overlayVisibleNotifier.dispose();
+    super.dispose();
   }
 
   Widget _createCallOperateButton({

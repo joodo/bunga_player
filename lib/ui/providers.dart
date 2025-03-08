@@ -217,13 +217,7 @@ final uiProviders = MultiProvider(
           FoldLayout(isFullScreen.value && !danmakuMode.value),
     ),
     ChangeNotifierProvider<ShouldShowHUD>(
-      create: (context) {
-        final result = ShouldShowHUD();
-        result.addListener(() {
-          print('show hud: ${result.value}');
-        });
-        return result..mark();
-      },
+      create: (context) => ShouldShowHUD()..mark(),
     ),
     ChangeNotifierProvider(create: (context) => JustToggleByRemote()),
     ChangeNotifierProvider(create: (context) => JustAdjustedByShortHand()),
