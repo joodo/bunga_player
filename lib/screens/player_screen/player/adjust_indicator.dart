@@ -138,7 +138,6 @@ class _AdjustIndicatorState extends State<AdjustIndicator> {
   }
 
   void _onChangeBrightness() {
-    if (context.read<ShouldShowHUD>().value) return;
     _visibleNotifier.mark();
     setState(() {
       _changedValue = ChangedValue.brightness;
@@ -146,7 +145,6 @@ class _AdjustIndicatorState extends State<AdjustIndicator> {
   }
 
   void _onChangeVolume() {
-    if (context.read<ShouldShowHUD>().value) return;
     _visibleNotifier.mark();
     setState(() {
       _changedValue = ChangedValue.volume;
@@ -154,7 +152,6 @@ class _AdjustIndicatorState extends State<AdjustIndicator> {
   }
 
   void _onChangeVoiceVolume() {
-    if (context.read<ShouldShowHUD>().value) return;
     _visibleNotifier.mark();
     setState(() {
       _changedValue = ChangedValue.voiceVolume;

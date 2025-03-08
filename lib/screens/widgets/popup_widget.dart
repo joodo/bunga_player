@@ -52,6 +52,7 @@ class _PopupWidgetState extends SingleChildState<PopupWidget>
 
   void _updateAnimationControl() {
     if (widget.visibleNotifier.value) {
+      _controller.reset();
       _controller.forward();
     } else {
       _controller.reverse();
