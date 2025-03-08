@@ -12,6 +12,7 @@ import 'package:bunga_player/voice_call/client/client.agora.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:styled_widget/styled_widget.dart';
 
 import 'ui.dart';
 
@@ -87,120 +88,196 @@ class _TouchInteractiveRegionState extends State<TouchInteractiveRegion> {
   _VolumeAdjustType _volumeAdjustType = _VolumeAdjustType.media;
   double _farthestX = 0;
 
+  // Lock button
+  final _lockButtonVisibleNotifier =
+      AutoResetNotifier(const Duration(seconds: 5))..mark();
+  bool _locked = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _showHUDNotifier.addListener(_onHUDVisibleChanged);
+  }
+
   @override
   Widget build(BuildContext context) {
     final play = getIt<PlayService>();
     final voiceNotifier = context.read<AgoraClient>().volumeNotifier;
     return GestureDetector(
-      onTap: () => _showHUDNotifier.value
-          ? _showHUDNotifier.reset()
-          : _showHUDNotifier.mark(),
-      onDoubleTap: Actions.handler(
-        context,
-        ToggleIntent(forgetSavedPosition: true),
-      ),
-      onHorizontalDragStart: (details) {
-        _showHUDNotifier.lockUp('drag');
-
-        _dragStartPoint = details.localPosition;
-        _dargStartVideoPosition = play.positionNotifier.value;
-
-        _isPlayingBeforeDrag = play.playStatusNotifier.value.isPlaying;
-        play.pause();
-      },
-      onHorizontalDragUpdate: (details) {
-        final xOffset = details.localPosition.dx - _dragStartPoint.dx;
-        final positionOffset = Duration(
-          seconds: xOffset.toInt() ~/ 20,
-        );
-        play.seek(_dargStartVideoPosition + positionOffset);
-      },
-      onHorizontalDragEnd: (details) {
-        final xOffset = details.localPosition.dx - _dragStartPoint.dx;
-        final positionOffset = Duration(
-          seconds: xOffset.toInt() ~/ 20,
-        );
-        Actions.invoke(
-          context,
-          SeekIntent(_dargStartVideoPosition + positionOffset),
-        );
-
-        if (_isPlayingBeforeDrag) play.play();
-
-        context.read<ShouldShowHUD>().unlock('drag');
-      },
-      onVerticalDragStart: (details) {
-        _dragStartPoint = details.localPosition;
-
-        _isAdjustingBrightness = _dragStartPoint.dx < context.size!.width / 2;
-
-        if (_isAdjustingBrightness) {
-          // Adjust brightness
-          _dragStartDeviceValue =
-              context.read<ScreenBrightnessNotifier>().value;
+      behavior: HitTestBehavior.translucent,
+      onTap: () {
+        if (_locked) {
+          _lockButtonVisibleNotifier.mark();
         } else {
-          // Adjust volume
-          _farthestX = _dragStartPoint.dx;
-          if (_volumeAdjustType == _VolumeAdjustType.voice) {
-            if (_canAdjustVoice()) {
-              _dragStartDeviceValue = voiceNotifier.value.volume.toDouble();
-              return;
-            } else {
-              // Last time adjust voice, but cannot adjust this time
-              _volumeAdjustType = _VolumeAdjustType.media;
-            }
-          }
-
-          _dragStartDeviceValue = play.volumeNotifier.value.volume.toDouble();
+          _showHUDNotifier.value
+              ? _showHUDNotifier.reset()
+              : _showHUDNotifier.mark();
         }
       },
-      onVerticalDragUpdate: (details) {
-        final delta = _dragStartPoint.dy - details.localPosition.dy;
+      onDoubleTap: _locked
+          ? null
+          : Actions.handler(
+              context,
+              ToggleIntent(forgetSavedPosition: true),
+            ),
+      onHorizontalDragStart: _locked
+          ? null
+          : (details) {
+              _showHUDNotifier.lockUp('drag');
 
-        if (_isAdjustingBrightness) {
-          // Adjust brightness
-          final target = (_dragStartDeviceValue + delta / 500).clamp(0, 1.0);
-          context.read<ScreenBrightnessNotifier>().value = target.toDouble();
-        } else {
-          if (_volumeAdjustType == _VolumeAdjustType.voice) {
-            // Adjust voice
-            voiceNotifier.value = Volume(
-              volume: (_dragStartDeviceValue + delta / 5).toInt(),
-            );
-            if (!_canAdjustVoice() ||
-                _farthestX - details.localPosition.dx > 100.0) {
-              _volumeAdjustType = _VolumeAdjustType.media;
-              _dragStartDeviceValue =
-                  play.volumeNotifier.value.volume.toDouble();
-              _farthestX = details.localPosition.dx;
-            } else {
-              _farthestX = max(_farthestX, details.localPosition.dx);
-            }
-          } else {
-            // Adjust media
-            play.volumeNotifier.value = Volume(
-              volume: (_dragStartDeviceValue + delta / 5).toInt(),
-            );
-            if (!_canAdjustVoice()) return;
-            if (details.localPosition.dx - _farthestX > 100.0) {
-              _volumeAdjustType = _VolumeAdjustType.voice;
-              _dragStartDeviceValue = voiceNotifier.value.volume.toDouble();
               _dragStartPoint = details.localPosition;
-            } else {
-              _farthestX = min(_farthestX, details.localPosition.dx);
-            }
-          }
-        }
-      },
-      onVerticalDragEnd: (details) {
-        if (!_isAdjustingBrightness) {
-          // Save volumes
-          final pref = getIt<Preferences>();
-          pref.set('play_volume', play.volumeNotifier.value.volume);
-          pref.set('call_volume', voiceNotifier.value.volume);
-        }
-      },
+              _dargStartVideoPosition = play.positionNotifier.value;
+
+              _isPlayingBeforeDrag = play.playStatusNotifier.value.isPlaying;
+              play.pause();
+            },
+      onHorizontalDragUpdate: _locked
+          ? null
+          : (details) {
+              final xOffset = details.localPosition.dx - _dragStartPoint.dx;
+              final positionOffset = Duration(
+                seconds: xOffset.toInt() ~/ 20,
+              );
+              play.seek(_dargStartVideoPosition + positionOffset);
+            },
+      onHorizontalDragEnd: _locked
+          ? null
+          : (details) {
+              final xOffset = details.localPosition.dx - _dragStartPoint.dx;
+              final positionOffset = Duration(
+                seconds: xOffset.toInt() ~/ 20,
+              );
+              Actions.invoke(
+                context,
+                SeekIntent(_dargStartVideoPosition + positionOffset),
+              );
+
+              if (_isPlayingBeforeDrag) play.play();
+
+              context.read<ShouldShowHUD>().unlock('drag');
+            },
+      onVerticalDragStart: _locked
+          ? null
+          : (details) {
+              _dragStartPoint = details.localPosition;
+
+              _isAdjustingBrightness =
+                  _dragStartPoint.dx < context.size!.width / 2;
+
+              if (_isAdjustingBrightness) {
+                // Adjust brightness
+                _dragStartDeviceValue =
+                    context.read<ScreenBrightnessNotifier>().value;
+              } else {
+                // Adjust volume
+                _farthestX = _dragStartPoint.dx;
+                if (_volumeAdjustType == _VolumeAdjustType.voice) {
+                  if (_canAdjustVoice()) {
+                    _dragStartDeviceValue =
+                        voiceNotifier.value.volume.toDouble();
+                    return;
+                  } else {
+                    // Last time adjust voice, but cannot adjust this time
+                    _volumeAdjustType = _VolumeAdjustType.media;
+                  }
+                }
+
+                _dragStartDeviceValue =
+                    play.volumeNotifier.value.volume.toDouble();
+              }
+            },
+      onVerticalDragUpdate: _locked
+          ? null
+          : (details) {
+              final delta = _dragStartPoint.dy - details.localPosition.dy;
+
+              if (_isAdjustingBrightness) {
+                // Adjust brightness
+                final target =
+                    (_dragStartDeviceValue + delta / 500).clamp(0, 1.0);
+                context.read<ScreenBrightnessNotifier>().value =
+                    target.toDouble();
+              } else {
+                if (_volumeAdjustType == _VolumeAdjustType.voice) {
+                  // Adjust voice
+                  voiceNotifier.value = Volume(
+                    volume: (_dragStartDeviceValue + delta / 5).toInt(),
+                  );
+                  if (!_canAdjustVoice() ||
+                      _farthestX - details.localPosition.dx > 100.0) {
+                    _volumeAdjustType = _VolumeAdjustType.media;
+                    _dragStartDeviceValue =
+                        play.volumeNotifier.value.volume.toDouble();
+                    _farthestX = details.localPosition.dx;
+                  } else {
+                    _farthestX = max(_farthestX, details.localPosition.dx);
+                  }
+                } else {
+                  // Adjust media
+                  play.volumeNotifier.value = Volume(
+                    volume: (_dragStartDeviceValue + delta / 5).toInt(),
+                  );
+                  if (!_canAdjustVoice()) return;
+                  if (details.localPosition.dx - _farthestX > 100.0) {
+                    _volumeAdjustType = _VolumeAdjustType.voice;
+                    _dragStartDeviceValue =
+                        voiceNotifier.value.volume.toDouble();
+                    _dragStartPoint = details.localPosition;
+                  } else {
+                    _farthestX = min(_farthestX, details.localPosition.dx);
+                  }
+                }
+              }
+            },
+      onVerticalDragEnd: _locked
+          ? null
+          : (details) {
+              if (!_isAdjustingBrightness) {
+                // Save volumes
+                final pref = getIt<Preferences>();
+                pref.set('play_volume', play.volumeNotifier.value.volume);
+                pref.set('call_volume', voiceNotifier.value.volume);
+              }
+            },
+      child: ValueListenableBuilder(
+        valueListenable: _lockButtonVisibleNotifier,
+        builder: (context, visible, child) => Visibility(
+          visible: visible,
+          child: IconButton.outlined(
+            onPressed: () {
+              if (_locked) {
+                setState(() {
+                  _locked = false;
+                });
+                _showHUDNotifier.mark();
+              } else {
+                setState(() {
+                  _locked = true;
+                });
+                _showHUDNotifier.reset();
+              }
+            },
+            icon: Icon(_locked ? Icons.lock : Icons.lock_open),
+          ),
+        ).padding(right: 24.0).alignment(Alignment.centerRight),
+      ),
     );
+  }
+
+  @override
+  void dispose() {
+    _showHUDNotifier.removeListener(_onHUDVisibleChanged);
+    _lockButtonVisibleNotifier.dispose();
+    super.dispose();
+  }
+
+  void _onHUDVisibleChanged() {
+    if (_showHUDNotifier.value) {
+      _lockButtonVisibleNotifier.lockUp('hud');
+    } else {
+      _lockButtonVisibleNotifier.unlock('hud');
+      if (!_locked) _lockButtonVisibleNotifier.reset();
+    }
   }
 
   bool _canAdjustVoice() {
