@@ -24,14 +24,14 @@ class CallButton extends StatefulWidget {
 }
 
 class _CallButtonState extends State<CallButton> {
-  final _menuController = OverlayPortalController();
+  final _overlayController = OverlayPortalController();
 
   @override
   Widget build(BuildContext context) {
     final buttonKey = GlobalKey();
 
     return OverlayPortal(
-      controller: _menuController,
+      controller: _overlayController,
       overlayChildBuilder: (context) {
         final item = Consumer<CallStatus>(
           builder: (context, callStatus, child) => switch (callStatus) {
@@ -144,7 +144,7 @@ class _CallButtonState extends State<CallButton> {
                           builder: (context) => CallingSettingsPanel(),
                         ),
                       );
-                      _menuController.hide();
+                      _overlayController.hide();
                     },
                     icon: Icon(Icons.settings),
                   ),
@@ -164,7 +164,7 @@ class _CallButtonState extends State<CallButton> {
 
         final overlay = GestureDetector(
           behavior: HitTestBehavior.translucent,
-          onTap: _menuController.hide,
+          onTap: _overlayController.hide,
           child: [
             item
                 .padding(horizontal: 12.0, top: 8.0, bottom: 12.0)
@@ -183,14 +183,14 @@ class _CallButtonState extends State<CallButton> {
         builder: (context, callStatus, child) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (callStatus != CallStatus.none) {
-              _menuController.show();
+              _overlayController.show();
             } else {
-              _menuController.hide();
+              _overlayController.hide();
             }
           });
 
           return switch (callStatus) {
-            CallStatus.none => IconButton(
+            CallStatus.none => IconButton.filled(
                 onPressed: () {
                   final watcherIds =
                       context.read<List<User>>().map((e) => e.id).toList();
@@ -211,7 +211,7 @@ class _CallButtonState extends State<CallButton> {
                   backgroundColor: WidgetStatePropertyAll<Color>(Colors.green),
                 ),
                 color: Colors.white70,
-                onPressed: _menuController.show,
+                onPressed: _overlayController.show,
                 icon: Icon(Icons.phone),
               ))
                   .animate(
@@ -226,7 +226,7 @@ class _CallButtonState extends State<CallButton> {
                   backgroundColor: WidgetStatePropertyAll<Color>(Colors.green),
                 ),
                 color: Colors.white70,
-                onPressed: _menuController.show,
+                onPressed: _overlayController.show,
                 icon: Icon(Icons.phone),
               ),
           };

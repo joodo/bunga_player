@@ -30,7 +30,7 @@ class Header extends StatelessWidget {
 
     return [
       [
-        Text(payload.record.title)
+        Text(payload.record.title, maxLines: 1, overflow: TextOverflow.ellipsis)
             .textStyle(Theme.of(context).textTheme.titleMedium!)
             .padding(left: 12.0, vertical: 4.0),
         Consumer<List<User>>(
@@ -50,11 +50,14 @@ class Header extends StatelessWidget {
           ].toRow(),
         ),
       ]
-          .toColumn(crossAxisAlignment: CrossAxisAlignment.start)
-          .padding(horizontal: 8.0),
-      const Spacer(),
+          .toColumn(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+          )
+          .padding(horizontal: 8.0)
+          .flexible(),
       const CallButton().padding(right: 16.0),
-    ].toRow();
+    ].toRow().padding(vertical: 4.0);
   }
 }
 

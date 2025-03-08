@@ -216,29 +216,13 @@ final uiProviders = MultiProvider(
       update: (context, isFullScreen, danmakuMode, previous) =>
           FoldLayout(isFullScreen.value && !danmakuMode.value),
     ),
-    ChangeNotifierProxyProvider2<FoldLayout, CatIndicator, ShouldShowHUD>(
+    ChangeNotifierProvider<ShouldShowHUD>(
       create: (context) {
         final result = ShouldShowHUD();
-
-        if (!context.read<FoldLayout>().value) result.lockUp('fold');
-        if (!context.read<CatIndicator>().busy) result.lockUp('busy');
-
+        result.addListener(() {
+          print('show hud: ${result.value}');
+        });
         return result..mark();
-      },
-      update: (context, foldLayout, businessIndicator, previous) {
-        if (!foldLayout.value) {
-          previous!.lockUp('fold');
-        } else {
-          previous!.unlock('fold');
-        }
-
-        if (businessIndicator.busy) {
-          previous.lockUp('busy');
-        } else {
-          previous.unlock('busy');
-        }
-
-        return previous;
       },
     ),
     ChangeNotifierProvider(create: (context) => JustToggleByRemote()),

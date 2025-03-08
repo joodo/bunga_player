@@ -1,4 +1,5 @@
 import 'package:bunga_player/screens/player_screen/actions.dart';
+import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
@@ -54,7 +55,7 @@ class _PanelWidgetState extends SingleChildState<PanelWidget> {
       ),
       ListenableProvider.value(
         value: _busyNotifier,
-        child: child!.expanded(),
+        child: child!.material(color: Colors.transparent).expanded(),
       ),
     ].toColumn(crossAxisAlignment: CrossAxisAlignment.stretch);
   }

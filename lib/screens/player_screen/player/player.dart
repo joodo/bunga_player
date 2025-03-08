@@ -10,10 +10,9 @@ import 'package:bunga_player/play/service/service.media_kit.dart';
 import 'package:bunga_player/services/services.dart';
 
 import 'danmaku_player.dart';
-import 'header/header.dart';
-import 'progress_bar.dart';
+import 'interactive_region.dart';
 import 'saved_position_hint.dart';
-import 'video_control.dart';
+import 'ui.dart';
 import 'popmoji_player.dart';
 
 class Player extends StatelessWidget {
@@ -23,25 +22,26 @@ class Player extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<IsInChannel>(
       builder: (context, inChannel, child) => [
-        const Header().padding(vertical: 4.0),
-        [
-          Video(
-            controller:
-                (getIt<PlayService>() as MediaKitPlayService).controller,
-            // use mpv subtitle
-            subtitleViewConfiguration:
-                const SubtitleViewConfiguration(visible: false),
-            wakelock: false,
-            controls: NoVideoControls,
+        _mediaKitPlayer(),
+        if (inChannel.value) const DanmakuPlayer(),
+        if (inChannel.value) const PopmojiPlayer(),
+        InteractiveRegion(),
+        if (!context.watch<BusyCount>().isBusy)
+          const SavedPositionHint().positioned(
+            bottom: PlayerUI.videoControlHeight + 8.0,
+            right: 12.0,
           ),
-          if (inChannel.value) const DanmakuPlayer(),
-          if (inChannel.value) const PopmojiPlayer(),
-          if (!context.watch<BusyCount>().isBusy)
-            const SavedPositionHint().positioned(bottom: 8.0, right: 12.0),
-        ].toStack().flexible(),
-        const VideoProgressBar().constrained(height: 16),
-        const VideoControl().constrained(height: 64),
-      ].toColumn(),
+        const PlayerUI(),
+      ].toStack(fit: StackFit.expand),
     );
   }
+
+  Widget _mediaKitPlayer() => Video(
+        controller: (getIt<PlayService>() as MediaKitPlayService).controller,
+        // use mpv subtitle
+        subtitleViewConfiguration:
+            const SubtitleViewConfiguration(visible: false),
+        wakelock: false,
+        controls: NoVideoControls,
+      );
 }
