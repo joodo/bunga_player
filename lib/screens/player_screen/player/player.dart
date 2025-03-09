@@ -1,6 +1,7 @@
 import 'package:bunga_player/play/busuness.dart';
 import 'package:bunga_player/screens/player_screen/business.dart';
 import 'package:bunga_player/screens/player_screen/player/adjust_indicator.dart';
+import 'package:bunga_player/utils/business/platform.dart';
 import 'package:flutter/material.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:provider/provider.dart';
@@ -26,7 +27,9 @@ class Player extends StatelessWidget {
         _mediaKitPlayer(),
         if (inChannel.value) const DanmakuPlayer(),
         if (inChannel.value) const PopmojiPlayer(),
-        TouchInteractiveRegion(),
+        kIsDesktop
+            ? const DesktopInteractiveRegion()
+            : const TouchInteractiveRegion(),
         if (!context.watch<BusyCount>().isBusy)
           const SavedPositionHint().positioned(
             bottom: PlayerUI.videoControlHeight + 8.0,

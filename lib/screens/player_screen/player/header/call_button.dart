@@ -57,6 +57,7 @@ class _CallButtonState extends State<CallButton> {
                 const Text('收到语音通话请求')
                     .textStyle(Theme.of(context).textTheme.bodyLarge!)
                     .breath()
+                    .padding(top: 16.0)
                     .center(),
                 [
                   _createCallOperateButton(
@@ -77,12 +78,13 @@ class _CallButtonState extends State<CallButton> {
                   ),
                 ]
                     .toRow(mainAxisAlignment: MainAxisAlignment.spaceBetween)
-                    .padding(top: 24.0)
+                    .padding(vertical: 16.0, horizontal: 16.0)
               ],
             CallStatus.callOut => [
                 const Text('正在呼叫')
                     .textStyle(Theme.of(context).textTheme.bodyLarge!)
                     .breath()
+                    .padding(top: 16.0)
                     .center(),
                 _createCallOperateButton(
                   color: Colors.red,
@@ -91,36 +93,32 @@ class _CallButtonState extends State<CallButton> {
                     context,
                     const CancelCallingRequestIntent(),
                   ),
-                ).padding(top: 24.0).center(),
+                ).padding(vertical: 16.0).center(),
               ],
             CallStatus.talking => [
                 SliderItem(
                   icon: Icons.headphones,
                   title: '语音音量',
                   slider: Consumer<AgoraClient>(
-                    builder: (context, client, child) {
-                      return ValueListenableBuilder(
-                        valueListenable: client.volumeNotifier,
-                        builder: (context, volume, child) {
-                          return Slider(
-                            max: 100,
-                            value: volume.volume.toDouble(),
-                            label: '${volume.volume}%',
-                            onChanged: (double value) {
-                              client.volumeNotifier.value =
-                                  Volume(volume: value.toInt());
-                            },
-                            onChangeEnd: (value) {
-                              final pref = getIt<Preferences>();
-                              pref.set('call_volume', value.toInt());
-                            },
-                          );
+                    builder: (context, client, child) => ValueListenableBuilder(
+                      valueListenable: client.volumeNotifier,
+                      builder: (context, volume, child) => Slider(
+                        max: 100,
+                        value: volume.volume.toDouble(),
+                        label: '${volume.volume}%',
+                        onChanged: (double value) {
+                          client.volumeNotifier.value =
+                              Volume(volume: value.toInt());
                         },
-                      );
-                    },
+                        onChangeEnd: (value) {
+                          final pref = getIt<Preferences>();
+                          pref.set('call_volume', value.toInt());
+                        },
+                      ),
+                    ),
                   ),
-                ),
-                const Divider(height: 16.0),
+                ).padding(horizontal: 16.0),
+                const Divider(),
                 [
                   Consumer<AgoraClient>(
                     builder: (context, client, child) => ValueListenableBuilder(
@@ -167,7 +165,7 @@ class _CallButtonState extends State<CallButton> {
                   ),
                 ]
                     .toRow(mainAxisAlignment: MainAxisAlignment.spaceBetween)
-                    .padding(top: 8.0),
+                    .padding(top: 8.0, bottom: 12.0, horizontal: 12.0),
               ],
           }
               .toColumn(crossAxisAlignment: CrossAxisAlignment.stretch),
@@ -183,13 +181,10 @@ class _CallButtonState extends State<CallButton> {
           behavior: HitTestBehavior.translucent,
           onTap: () => _overlayVisibleNotifier.value = false,
           child: [
-            item
-                .padding(horizontal: 12.0, top: 8.0, bottom: 12.0)
-                .card(elevation: 4.0)
-                .positioned(
+            item.card(elevation: 4.0).positioned(
                   width: 220.0,
                   left: offset.dx - 220.0,
-                  top: offset.dy + 12.0,
+                  top: offset.dy,
                 )
           ].toStack(),
         );
