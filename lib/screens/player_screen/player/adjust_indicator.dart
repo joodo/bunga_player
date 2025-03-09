@@ -17,7 +17,7 @@ class AdjustIndicator extends StatefulWidget {
   State<AdjustIndicator> createState() => _AdjustIndicatorState();
 }
 
-enum ChangedValue { brightness, volume, voiceVolume }
+enum ChangedValue { brightness, volume, voiceVolume, micMute }
 
 class _AdjustIndicatorState extends State<AdjustIndicator> {
   final _visibleNotifier = AutoResetNotifier(const Duration(seconds: 1));
@@ -26,6 +26,7 @@ class _AdjustIndicatorState extends State<AdjustIndicator> {
   late final _brightnessNotifier = context.read<ScreenBrightnessNotifier>();
   late final _volumeNotifier = getIt<PlayService>().volumeNotifier;
   late final _voiceNotifier = context.read<AgoraClient>().volumeNotifier;
+  late final _micMuteNotifier = context.read<AgoraClient>().micMuteNotifier;
 
   @override
   void initState() {
@@ -34,11 +35,30 @@ class _AdjustIndicatorState extends State<AdjustIndicator> {
     _brightnessNotifier.addListener(_onChangeBrightness);
     _volumeNotifier.addListener(_onChangeVolume);
     _voiceNotifier.addListener(_onChangeVoiceVolume);
+    _micMuteNotifier.addListener(_onChangeMicMute);
   }
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+
+    if (_changedValue == ChangedValue.micMute) {
+      return PopupWidget(
+        visibleNotifier: _visibleNotifier,
+        child: [
+          Icon(
+            _micMuteNotifier.value ? Icons.mic_off : Icons.mic,
+            size: 60,
+          ),
+          Text(_micMuteNotifier.value ? '麦克已关闭' : '麦克已打开')
+              .textColor(Colors.white)
+              .padding(top: 12.0),
+        ]
+            .toColumn()
+            .padding(horizontal: 12.0, vertical: 16.0)
+            .card(color: colorScheme.tertiary.withAlpha(150)),
+      );
+    }
 
     final container = Card(
       clipBehavior: Clip.hardEdge,
@@ -118,6 +138,50 @@ class _AdjustIndicatorState extends State<AdjustIndicator> {
     );
   }
 
+  @override
+  void dispose() {
+    _visibleNotifier.dispose();
+
+    _brightnessNotifier.removeListener(_onChangeBrightness);
+    _volumeNotifier.removeListener(_onChangeVolume);
+    _voiceNotifier.removeListener(_onChangeVoiceVolume);
+    _micMuteNotifier.removeListener(_onChangeMicMute);
+
+    super.dispose();
+  }
+
+  void _onChangeBrightness() {
+    _visibleNotifier.mark();
+    setState(() {
+      _changedValue = ChangedValue.brightness;
+    });
+  }
+
+  void _onChangeVolume() {
+    if (context.read<ShouldShowHUD>().value) return;
+
+    _visibleNotifier.mark();
+    setState(() {
+      _changedValue = ChangedValue.volume;
+    });
+  }
+
+  void _onChangeVoiceVolume() {
+    if (context.read<ShouldShowHUD>().locks.contains('call button')) return;
+    _visibleNotifier.mark();
+    setState(() {
+      _changedValue = ChangedValue.voiceVolume;
+    });
+  }
+
+  void _onChangeMicMute() {
+    if (context.read<ShouldShowHUD>().locks.contains('call button')) return;
+    _visibleNotifier.mark();
+    setState(() {
+      _changedValue = ChangedValue.micMute;
+    });
+  }
+
   Widget _createIndicator({
     required IconData icon,
     required double value,
@@ -135,37 +199,5 @@ class _AdjustIndicatorState extends State<AdjustIndicator> {
           .flexible(),
       Icon(icon).padding(top: 12.0),
     ].toColumn().padding(horizontal: 12.0, vertical: 16.0);
-  }
-
-  void _onChangeBrightness() {
-    _visibleNotifier.mark();
-    setState(() {
-      _changedValue = ChangedValue.brightness;
-    });
-  }
-
-  void _onChangeVolume() {
-    _visibleNotifier.mark();
-    setState(() {
-      _changedValue = ChangedValue.volume;
-    });
-  }
-
-  void _onChangeVoiceVolume() {
-    _visibleNotifier.mark();
-    setState(() {
-      _changedValue = ChangedValue.voiceVolume;
-    });
-  }
-
-  @override
-  void dispose() {
-    _visibleNotifier.dispose();
-
-    _brightnessNotifier.removeListener(_onChangeBrightness);
-    _volumeNotifier.removeListener(_onChangeVolume);
-    _voiceNotifier.removeListener(_onChangeVoiceVolume);
-
-    super.dispose();
   }
 }

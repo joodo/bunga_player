@@ -49,7 +49,6 @@ class ValueNotifierWithReset<T> extends ValueNotifier<T> {
   }
 }
 
-// TODO: test case
 class AutoResetNotifier extends ChangeNotifier
     implements ValueListenable<bool> {
   AutoResetNotifier(this.cooldown);
@@ -67,6 +66,7 @@ class AutoResetNotifier extends ChangeNotifier
 
   final _locks = <String>{};
   bool get locked => _locks.isNotEmpty;
+  Set<String> get locks => _locks;
   void lockUp(String locker) {
     _value = true;
     _locks.add(locker);
