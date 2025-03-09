@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart' as services;
-import 'package:bunga_player/screens/wrappers/wrap.dart';
+import 'package:bunga_player/wrappers/wrap.dart';
 import 'package:bunga_player/utils/business/platform.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

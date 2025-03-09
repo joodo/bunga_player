@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
 import 'package:bunga_player/play/service/service.dart';
-import 'package:bunga_player/screens/wrappers/theme.dart';
+import 'package:bunga_player/wrappers/theme.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/extensions/duration.dart';
 import 'package:bunga_player/utils/extensions/styled_widget.dart';

@@ -1,4 +1,4 @@
-import 'package:bunga_player/play/providers.dart';
+import 'package:bunga_player/play/busuness.dart';
 import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/screens/widgets/slider_item.dart';
 import 'package:bunga_player/services/services.dart';

@@ -17,7 +17,7 @@ import 'package:bunga_player/utils/models/volume.dart';
 import 'package:bunga_player/utils/extensions/comparable.dart';
 import 'package:bunga_player/utils/extensions/duration.dart';
 import 'package:bunga_player/utils/business/value_listenable.dart';
-import 'package:bunga_player/ui/providers.dart';
+import 'package:bunga_player/ui/global_business.dart';
 
 import '../actions.dart';
 import '../business.dart';

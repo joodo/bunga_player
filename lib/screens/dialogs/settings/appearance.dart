@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
-import 'package:bunga_player/ui/providers.dart';
+import 'package:bunga_player/ui/global_business.dart';
 
 import 'widgets.dart';
 

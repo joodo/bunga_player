@@ -1,6 +1,6 @@
 import 'dart:ui';
 
-import 'package:bunga_player/popmoji/models/data.dart';
+import 'package:bunga_player/danmaku/models/data.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:lottie/lottie.dart';

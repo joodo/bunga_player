@@ -6,7 +6,7 @@ import 'package:bunga_player/console/service.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
-import 'package:bunga_player/ui/providers.dart';
+import 'package:bunga_player/ui/global_business.dart';
 import 'package:bunga_player/utils/extensions/comparable.dart';
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:bunga_player/utils/models/volume.dart';
@@ -24,6 +24,28 @@ import 'payload_parser.dart';
 import 'service/service.dart';
 
 // Data types
+
+typedef BCSGHPreset = ({
+  String title,
+  List<int> value,
+});
+
+class PlayEqPresetNotifier extends ValueNotifier<BCSGHPreset?> {
+  static final presets = <BCSGHPreset>[
+    (title: '默认', value: [0, 0, 0, 0, 0]),
+    (title: '鲜艳与生动', value: [5, 20, 65, 10, 0]),
+    (title: '电影感', value: [-5, 30, 10, -5, 0]),
+    (title: '温暖与复古', value: [10, 15, 10, 5, 5]),
+    (title: '凉爽与情绪化', value: [-5, 20, -10, -10, -5]),
+    (title: '夜视模式', value: [30, 40, -30, 20, 90]),
+    (title: '黑白经典', value: [0, 15, -100, 0, 0]),
+    (title: '褐色调', value: [5, 10, -20, 0, 30]),
+    (title: '高调', value: [20, -15, 10, 10, 0]),
+    (title: '低调', value: [-20, 25, -10, -10, 0]),
+    (title: '漂白偏移', value: [0, 30, -50, 0, 0]),
+  ];
+  PlayEqPresetNotifier() : super(presets.first);
+}
 
 @immutable
 class BusyCount {
@@ -435,6 +457,7 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
         ChangeNotifierProvider.value(value: _savedPositionNotifier),
         ValueListenableProvider.value(value: _dirInfoNotifier),
         ValueListenableProvider.value(value: _busyCountNotifer),
+        ChangeNotifierProvider(create: (context) => PlayEqPresetNotifier()),
       ],
       child: actions,
     );

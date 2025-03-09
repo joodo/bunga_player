@@ -26,8 +26,8 @@ class ShowConsoleAction extends ContextAction<ShowConsoleIntent> {
   }
 }
 
-class ConsoleActions extends SingleChildStatelessWidget {
-  const ConsoleActions({super.key, super.child});
+class ConsoleGlobalBusiness extends SingleChildStatelessWidget {
+  const ConsoleGlobalBusiness({super.key, super.child});
 
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {

@@ -1,5 +1,5 @@
 import 'package:bunga_player/client_info/models/client_account.dart';
-import 'package:bunga_player/client_info/providers.dart';
+import 'package:bunga_player/client_info/global_business.dart';
 import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:provider/provider.dart';

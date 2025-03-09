@@ -41,7 +41,7 @@ class ClientColorHue extends ValueNotifier<int> {
 }
 
 class ClientInfoGlobalBusiness extends SingleChildStatelessWidget {
-  const ClientInfoGlobalBusiness({super.key});
+  const ClientInfoGlobalBusiness({super.key, super.child});
 
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {

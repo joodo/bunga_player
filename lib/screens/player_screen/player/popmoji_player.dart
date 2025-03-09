@@ -5,7 +5,7 @@ import 'package:async/async.dart';
 import 'package:bunga_player/chat/models/message.dart';
 import 'package:bunga_player/chat/models/message_data.dart';
 import 'package:bunga_player/chat/models/user.dart';
-import 'package:bunga_player/popmoji/models/data.dart';
+import 'package:bunga_player/danmaku/models/data.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
 import 'package:bunga_player/utils/business/platform.dart';

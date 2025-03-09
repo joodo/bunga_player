@@ -1,6 +1,6 @@
 import 'package:bunga_player/chat/models/user.dart';
 import 'package:bunga_player/client_info/models/client_account.dart';
-import 'package:bunga_player/ui/providers.dart';
+import 'package:bunga_player/ui/global_business.dart';
 import 'package:bunga_player/utils/models/volume.dart';
 import 'package:bunga_player/voice_call/business.dart';
 import 'package:bunga_player/voice_call/client/client.agora.dart';

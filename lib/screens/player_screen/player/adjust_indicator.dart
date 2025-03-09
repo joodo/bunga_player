@@ -1,7 +1,7 @@
 import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/screens/widgets/popup_widget.dart';
 import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/ui/providers.dart';
+import 'package:bunga_player/ui/global_business.dart';
 import 'package:bunga_player/utils/business/value_listenable.dart';
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:bunga_player/voice_call/business.dart';

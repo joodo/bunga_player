@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:bunga_player/services/exit_callbacks.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/business/platform.dart';
@@ -7,8 +8,10 @@ import 'package:bunga_player/utils/extensions/single_activator.dart';
 import 'package:bunga_player/utils/business/value_listenable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 import 'package:screen_brightness/screen_brightness.dart';
+import 'package:styled_widget/styled_widget.dart';
 import 'package:window_manager/window_manager.dart';
 
 class AlwaysOnTop extends ValueNotifier<bool> {
@@ -61,80 +64,6 @@ class WindowTitle extends ValueNotifierWithReset<String> {
 
 class ShouldShowHUD extends AutoResetNotifier {
   ShouldShowHUD() : super(Duration(seconds: kIsDesktop ? 3 : 5));
-}
-
-class JustToggleByRemote extends AutoResetNotifier {
-  JustToggleByRemote() : super(const Duration(seconds: 2));
-}
-
-enum ShortHandAction { volume, deviceVolume, deviceBrightness }
-
-class JustAdjustedByShortHand extends AutoResetNotifier {
-  JustAdjustedByShortHand() : super(const Duration(seconds: 2));
-
-  ShortHandAction? _action;
-  ShortHandAction? get action => _action;
-  void markWithAction(ShortHandAction action) {
-    _action = action;
-    notifyListeners();
-    mark();
-  }
-}
-
-class DanmakuMode extends ValueNotifier<bool> {
-  DanmakuMode() : super(false);
-}
-
-class FoldLayout {
-  final bool value;
-
-  FoldLayout(this.value);
-}
-
-class CatIndicator extends ChangeNotifier {
-  String? _title;
-  String? get title => _title;
-  set title(String? value) {
-    if (value == _title) return;
-    _title = value;
-    notifyListeners();
-  }
-
-  bool __busy = false;
-  bool get busy => __busy;
-  set _busy(bool newValue) {
-    if (newValue == __busy) return;
-    __busy = newValue;
-    notifyListeners();
-  }
-
-  Future<T> run<T>(Future<T> Function() job) async {
-    final oldTitle = _title;
-    _busy = true;
-    try {
-      return await job();
-    } catch (e) {
-      _title = oldTitle;
-      rethrow;
-    } finally {
-      _busy = false;
-    }
-  }
-}
-
-class PendingBungaHost extends ValueNotifier<bool> {
-  PendingBungaHost() : super(false);
-}
-
-class ShowRemainDuration extends ValueNotifier<bool> {
-  ShowRemainDuration() : super(false) {
-    bindPreference<bool>(
-      preferences: getIt<Preferences>(),
-      key: 'show_remain_duration',
-      load: (pref) => pref,
-      update: (value) => value,
-    );
-  }
 }
 
 class AutoJoinChannel extends ValueNotifier<bool> {
@@ -231,40 +160,59 @@ class ScreenBrightnessNotifier extends ValueNotifier<double> {
   }
 }
 
-final uiProviders = MultiProvider(
-  providers: [
-    ChangeNotifierProvider(create: (context) => CatIndicator()),
-    ChangeNotifierProvider(
-      create: (context) => AlwaysOnTop(),
-      lazy: false,
-    ),
-    ChangeNotifierProvider(
-      create: (context) => IsFullScreen(context.read<AlwaysOnTop>()),
-    ),
-    ChangeNotifierProvider(
-      create: (context) => WindowTitle(),
-      lazy: false,
-    ),
-    ChangeNotifierProvider(create: (context) => DanmakuMode()),
-    ChangeNotifierProvider(
-      create: (context) => ScreenBrightnessNotifier(),
-      lazy: false,
-    ),
-    ProxyProvider2<IsFullScreen, DanmakuMode, FoldLayout>(
-      update: (context, isFullScreen, danmakuMode, previous) =>
-          FoldLayout(isFullScreen.value && !danmakuMode.value),
-    ),
-    ChangeNotifierProvider<ShouldShowHUD>(
-      create: (context) => ShouldShowHUD()..mark(),
-    ),
-    ChangeNotifierProvider(create: (context) => JustToggleByRemote()),
-    ChangeNotifierProvider(create: (context) => JustAdjustedByShortHand()),
-    ChangeNotifierProvider(create: (context) => PendingBungaHost()),
-    ChangeNotifierProvider(
-      create: (context) => ShowRemainDuration(),
-      lazy: false,
-    ),
-    ChangeNotifierProvider(create: (context) => AutoJoinChannel()),
-    ChangeNotifierProvider(create: (context) => ShortcutMappingNotifier()),
-  ],
-);
+class UIGlobalBusiness extends SingleChildStatefulWidget {
+  const UIGlobalBusiness({super.key, super.child});
+
+  @override
+  State<UIGlobalBusiness> createState() => _UIGlobalBusinessState();
+}
+
+class _UIGlobalBusinessState extends SingleChildState<UIGlobalBusiness> {
+  @override
+  void initState() {
+    super.initState();
+
+    getIt<ExitCallbacks>().setShutter(() async {
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => CircularProgressIndicator()
+            .constrained(height: 32.0, width: 32.0)
+            .center(),
+      );
+      await Future.delayed(const Duration(milliseconds: 3000));
+    });
+  }
+
+  @override
+  Widget buildWithChild(BuildContext context, Widget? child) {
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (context) => AlwaysOnTop(),
+          lazy: false,
+        ),
+        ChangeNotifierProvider(
+          create: (context) => IsFullScreen(context.read<AlwaysOnTop>()),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => WindowTitle(),
+          lazy: false,
+        ),
+        ChangeNotifierProvider(
+          create: (context) => ScreenBrightnessNotifier(),
+          lazy: false,
+        ),
+        ChangeNotifierProvider<ShouldShowHUD>(
+          create: (context) => ShouldShowHUD()..mark(),
+        ),
+        ChangeNotifierProvider(create: (context) => AutoJoinChannel()),
+        ChangeNotifierProvider(create: (context) => ShortcutMappingNotifier()),
+      ],
+      child: child,
+    );
+  }
+}

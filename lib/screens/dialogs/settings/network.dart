@@ -1,13 +1,13 @@
-import 'package:bunga_player/screens/widgets/input_builder.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
 import 'package:bunga_player/bunga_server/global_business.dart';
 import 'package:bunga_player/bunga_server/models/bunga_client_info.dart';
+import 'package:bunga_player/screens/widgets/input_builder.dart';
 import 'package:bunga_player/screens/dialogs/settings/widgets.dart';
 import 'package:bunga_player/screens/widgets/loading_button_icon.dart';
-import 'package:bunga_player/network/providers.dart';
+import 'package:bunga_player/network/global_business.dart';
 
 class NetworkSettings extends StatelessWidget with SettingsTab {
   @override

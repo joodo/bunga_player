@@ -1,12 +1,19 @@
+import 'dart:convert';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:nested/nested.dart';
+import 'package:provider/provider.dart';
+import 'package:vector_graphics/vector_graphics.dart';
+
 import 'package:bunga_player/chat/global_business.dart';
 import 'package:bunga_player/chat/models/message_data.dart';
 import 'package:bunga_player/chat/models/user.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:bunga_player/services/preferences.dart';
-import 'package:flutter/material.dart';
-import 'package:nested/nested.dart';
-import 'package:provider/provider.dart';
+
+import 'models/data.dart';
 
 // Data types
 
@@ -84,4 +91,43 @@ class _DanmakuBusinessState extends SingleChildState<DanmakuBusiness> {
 
 extension WrapDanmakuBusiness on Widget {
   Widget danmakuBusiness() => DanmakuBusiness(child: this);
+}
+
+class PopmojiGlobalBusiness extends SingleChildStatelessWidget {
+  const PopmojiGlobalBusiness({super.key, super.child});
+
+  @override
+  Widget buildWithChild(BuildContext context, Widget? child) {
+    return MultiProvider(
+      providers: [
+        FutureProvider<EmojiData?>(
+          create: (context) async {
+            String jsonString = await DefaultAssetBundle.of(context)
+                .loadString('assets/emojis/emojis.json');
+            final data = EmojiData.fromJson(jsonDecode(jsonString));
+
+            _preCacheEmojis(data);
+
+            return data;
+          },
+          initialData: null,
+          lazy: false,
+        ),
+      ],
+      child: child,
+    );
+  }
+
+  Future<void> _preCacheEmojis(EmojiData data) async {
+    svg.cache.maximumSize = 400;
+    for (var category in data.categories) {
+      for (var emoji in category.emojis) {
+        final icon = AssetBytesLoader(EmojiData.svgPath(emoji));
+        await svg.cache.putIfAbsent(
+          icon.cacheKey(null),
+          () => icon.loadBytes(null),
+        );
+      }
+    }
+  }
 }

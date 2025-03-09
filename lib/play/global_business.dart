@@ -7,14 +7,14 @@ import 'package:provider/provider.dart';
 
 import 'models/history.dart';
 
-class PlayActions extends SingleChildStatefulWidget {
-  const PlayActions({super.key, super.child});
+class PlayGlobalBusiness extends SingleChildStatefulWidget {
+  const PlayGlobalBusiness({super.key, super.child});
 
   @override
-  State<PlayActions> createState() => _PlayActionsState();
+  State<PlayGlobalBusiness> createState() => _PlayGlobalBusinessState();
 }
 
-class _PlayActionsState extends SingleChildState<PlayActions> {
+class _PlayGlobalBusinessState extends SingleChildState<PlayGlobalBusiness> {
   // History
   late final History _history;
 
@@ -42,7 +42,6 @@ class _PlayActionsState extends SingleChildState<PlayActions> {
     if (!Platform.isAndroid && !Platform.isIOS && !Platform.isWindows) return;
 
     final session = await AudioSession.instance;
-    // TODO:: check if this is necessary
     await session.configure(const AudioSessionConfiguration.speech());
   }
 }
