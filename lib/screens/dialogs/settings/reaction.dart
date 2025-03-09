@@ -60,7 +60,7 @@ class _ReactionSettingsState extends State<ReactionSettings> {
       const Text('行为').sectionTitle(),
       Consumer<AutoJoinChannel>(
         builder: (context, autoJoinNotifier, child) => SwitchListTile(
-          title: const Text('打开视频后自动加入房间'),
+          title: const Text('频道中有人分享时自动加入'),
           value: autoJoinNotifier.value,
           onChanged: (value) => autoJoinNotifier.value = value,
         ),

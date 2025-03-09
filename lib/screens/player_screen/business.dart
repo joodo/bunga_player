@@ -9,6 +9,7 @@ import 'package:bunga_player/play_sync/business.dart';
 import 'package:bunga_player/screens/dialogs/open_video/open_video.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
+import 'package:bunga_player/ui/providers.dart';
 import 'package:bunga_player/utils/business/provider.dart';
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:bunga_player/voice_call/business.dart';
@@ -59,6 +60,29 @@ class _WidgetBusinessState extends SingleChildState<_WidgetBusiness> {
 
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
+    final shortcutsWrap = Consumer<ShortcutMappingNotifier>(
+      builder: (context, mappingNotifier, child) {
+        final activitor = mappingNotifier.value[ShortcutKey.danmaku];
+        return Shortcuts(
+          shortcuts: {
+            if (activitor != null)
+              activitor: const ToggleDanmakuControlIntent(),
+          },
+          child: child!,
+        );
+      },
+      child: child,
+    );
+
+    final actionWrap = shortcutsWrap.actions(
+      actions: {
+        ShowPanelIntent: ShowPanelAction(widgetNotifier: _panelNotifier),
+        ClosePanelIntent: ClosePanelAction(widgetNotifier: _panelNotifier),
+        ToggleDanmakuControlIntent: ToggleDanmakuControlAction(
+            showDanmakuControlNotifier: _showDanmakuControlNotifier),
+      },
+    );
+
     return MultiProvider(
       providers: [
         ValueListenableProvider.value(value: _panelNotifier),
@@ -67,14 +91,7 @@ class _WidgetBusinessState extends SingleChildState<_WidgetBusiness> {
           proxy: (value) => DanmakuVisible(value),
         ),
       ],
-      child: child?.actions(
-        actions: {
-          ShowPanelIntent: ShowPanelAction(widgetNotifier: _panelNotifier),
-          ClosePanelIntent: ClosePanelAction(widgetNotifier: _panelNotifier),
-          ToggleDanmakuControlIntent: ToggleDanmakuControlAction(
-              showDanmakuControlNotifier: _showDanmakuControlNotifier),
-        },
-      ),
+      child: actionWrap,
     );
   }
 
@@ -149,7 +166,9 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
 
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
-    final widget = _WidgetBusiness(key: _childKey, child: child);
+    final focusWrap = Focus(autofocus: true, child: child!);
+
+    final widget = _WidgetBusiness(key: _childKey, child: focusWrap);
 
     final channelWrap = ValueListenableBuilder(
       valueListenable: _isJoiningChannelNotifier,
@@ -159,6 +178,7 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
               .playSyncBusiness()
               .channelBusiness()
               .voiceCallBusiness()
+              .playBusiness()
           : Actions(
               actions: {
                 ShareVideoIntent: CallbackAction<ShareVideoIntent>(
@@ -170,13 +190,13 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
                 )
               },
               child: widget,
-            ),
+            ).playBusiness(),
     );
 
     return ValueListenableProxyProvider(
       valueListenable: _isJoiningChannelNotifier,
       proxy: (value) => IsInChannel(value),
-      child: channelWrap.playBusiness(),
+      child: channelWrap,
     );
   }
 

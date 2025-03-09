@@ -8,8 +8,12 @@ import 'package:bunga_player/chat/models/message_data.dart';
 import 'package:bunga_player/client_info/models/client_account.dart';
 import 'package:bunga_player/chat/models/message.dart';
 import 'package:bunga_player/services/permissions.dart';
+import 'package:bunga_player/services/preferences.dart';
+import 'package:bunga_player/ui/providers.dart';
 import 'package:bunga_player/utils/business/provider.dart';
-import 'package:bunga_player/voice_call/client/client.agora.dart';
+import 'package:bunga_player/utils/extensions/styled_widget.dart';
+import 'package:bunga_player/utils/models/volume.dart';
+import 'client/client.agora.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
@@ -17,11 +21,82 @@ import 'package:flutter/widgets.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 
+// Data
+
+const _voiceVolumeKey = 'call_volume';
+
 enum CallStatus {
   none,
   callIn,
   callOut,
   talking,
+}
+
+// Actions
+
+@immutable
+class UpdateVoiceVolumeIntent extends Intent {
+  final Volume? volume;
+  final int? offset;
+  final bool save;
+  const UpdateVoiceVolumeIntent(this.volume)
+      : offset = null,
+        save = false;
+  const UpdateVoiceVolumeIntent.increase(this.offset)
+      : volume = null,
+        save = true;
+  const UpdateVoiceVolumeIntent.save()
+      : volume = null,
+        offset = null,
+        save = true;
+}
+
+class UpdateVoiceVolumeAction extends ContextAction<UpdateVoiceVolumeIntent> {
+  @override
+  Future<void> invoke(UpdateVoiceVolumeIntent intent,
+      [BuildContext? context]) async {
+    final client = context!.read<AgoraClient>();
+    if (intent.volume != null) {
+      client.volumeNotifier.value = intent.volume!;
+    }
+    if (intent.offset != null) {
+      final currentVolume = client.volumeNotifier.value;
+      final newVolume = Volume(
+        volume: (currentVolume.volume + intent.offset!)
+            .clamp(Volume.min, Volume.max),
+      );
+      client.volumeNotifier.value = newVolume;
+    }
+    if (intent.save) {
+      getIt<Preferences>().set(
+        _voiceVolumeKey,
+        client.volumeNotifier.value.volume,
+      );
+    }
+  }
+
+  @override
+  bool isEnabled(UpdateVoiceVolumeIntent intent, [BuildContext? context]) {
+    return context?.read<CallStatus?>() == CallStatus.talking;
+  }
+}
+
+@immutable
+class ToggleMicIntent extends Intent {
+  const ToggleMicIntent();
+}
+
+class ToggleMicAction extends ContextAction<ToggleMicIntent> {
+  @override
+  void invoke(ToggleMicIntent intent, [BuildContext? context]) {
+    final client = context!.read<AgoraClient>();
+    client.micMuteNotifier.value = !client.micMuteNotifier.value;
+  }
+
+  @override
+  bool isEnabled(ToggleMicIntent intent, [BuildContext? context]) {
+    return context?.read<CallStatus?>() == CallStatus.talking;
+  }
 }
 
 @immutable
@@ -172,6 +247,8 @@ class HangUpAction extends ContextAction<HangUpIntent> {
   }
 }
 
+// Business
+
 class VoiceCallBusiness extends SingleChildStatefulWidget {
   const VoiceCallBusiness({super.key, super.child});
 
@@ -221,6 +298,51 @@ class _VoiceCallBusinessState extends SingleChildState<VoiceCallBusiness> {
               action: CallMessageData.fromJson(message.data).action,
             ))
         .listen(_dealResponse);
+
+    // Load init volume
+    context.read<AgoraClient>().volumeNotifier.value = Volume(
+      volume: getIt<Preferences>().get(_voiceVolumeKey) ?? Volume.max,
+    );
+  }
+
+  @override
+  Widget buildWithChild(BuildContext context, Widget? child) {
+    final shortcuts = child!.applyShortcuts({
+      ShortcutKey.voiceVolumeUp: UpdateVoiceVolumeIntent.increase(10),
+      ShortcutKey.voiceVolumeDown: UpdateVoiceVolumeIntent.increase(-10),
+      ShortcutKey.muteMic: ToggleMicIntent(),
+    });
+
+    final actionWrap = shortcuts.actions(actions: {
+      StartCallingRequestIntent: StartCallingRequestAction(
+        callStatusNotifier: _callStatusNotifier,
+        hopeList: _hopeList,
+        timeOutTimer: _requestTimeOutTimer,
+      ),
+      CancelCallingRequestIntent: _cancelAction,
+      RejectCallingRequestIntent: RejectCallingRequestAction(
+        hoperList: _hoperList,
+        callStatusNotifier: _callStatusNotifier,
+      ),
+      AcceptCallingRequestIntent: AcceptCallingRequestAction(
+        callStatusNotifier: _callStatusNotifier,
+        hoperList: _hoperList,
+        startTalking: _startTalking,
+      ),
+      HangUpIntent: HangUpAction(
+        callStatusNotifier: _callStatusNotifier,
+        stopTalking: _stopTalking,
+      ),
+      UpdateVoiceVolumeIntent: UpdateVoiceVolumeAction(),
+      ToggleMicIntent: ToggleMicAction(),
+    });
+
+    return MultiProvider(
+      providers: [
+        ValueListenableProvider.value(value: _callStatusNotifier),
+      ],
+      child: actionWrap,
+    );
   }
 
   @override
@@ -228,39 +350,6 @@ class _VoiceCallBusinessState extends SingleChildState<VoiceCallBusiness> {
     _callStatusNotifier.dispose();
     _messageSubscription.cancel();
     super.dispose();
-  }
-
-  @override
-  Widget buildWithChild(BuildContext context, Widget? child) {
-    return Actions(
-      actions: <Type, Action<Intent>>{
-        StartCallingRequestIntent: StartCallingRequestAction(
-          callStatusNotifier: _callStatusNotifier,
-          hopeList: _hopeList,
-          timeOutTimer: _requestTimeOutTimer,
-        ),
-        CancelCallingRequestIntent: _cancelAction,
-        RejectCallingRequestIntent: RejectCallingRequestAction(
-          hoperList: _hoperList,
-          callStatusNotifier: _callStatusNotifier,
-        ),
-        AcceptCallingRequestIntent: AcceptCallingRequestAction(
-          callStatusNotifier: _callStatusNotifier,
-          hoperList: _hoperList,
-          startTalking: _startTalking,
-        ),
-        HangUpIntent: HangUpAction(
-          callStatusNotifier: _callStatusNotifier,
-          stopTalking: _stopTalking,
-        ),
-      },
-      child: MultiProvider(
-        providers: [
-          ValueListenableProvider.value(value: _callStatusNotifier),
-        ],
-        child: child,
-      ),
-    );
   }
 
   // Call ring

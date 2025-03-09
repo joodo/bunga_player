@@ -33,10 +33,15 @@ class _ShortcutSettingsState extends State<ShortcutSettings> {
     '互动': {
       '弹幕聊天': ShortcutKey.danmaku,
     },
+    '语音': {
+      '增加语音音量': ShortcutKey.voiceVolumeUp,
+      '减少语音音量': ShortcutKey.voiceVolumeDown,
+      '闭麦': ShortcutKey.muteMic,
+    },
   };
 
-  late final ShortcutMapping _shortcutMapNotifier =
-      context.read<ShortcutMapping>();
+  late final ShortcutMappingNotifier _shortcutMapNotifier =
+      context.read<ShortcutMappingNotifier>();
   late Map<ShortcutKey, SingleActivator?> _shortcutMap =
       Map.from(_shortcutMapNotifier.value);
 
@@ -79,7 +84,7 @@ class _ShortcutSettingsState extends State<ShortcutSettings> {
           .expand((list) => list),
       OutlinedButton(
         onPressed: () => setState(() {
-          _shortcutMap = Map.from(ShortcutMapping.defaultMapping);
+          _shortcutMap = Map.from(ShortcutMappingNotifier.defaultMapping);
         }),
         child: const Text('恢复默认键位'),
       ).padding(top: 24.0).center(),

@@ -143,7 +143,7 @@ class _ShortcutsWrapper extends SingleChildStatelessWidget {
 
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
-    return Consumer<ShortcutMapping>(
+    return Consumer<ShortcutMappingNotifier>(
       builder: (context, shortcutMapping, child) => Shortcuts(
         shortcuts: (_intentMapping.map((shortcutKey, intent) =>
                 MapEntry(shortcutMapping.value[shortcutKey], intent))

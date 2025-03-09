@@ -3,8 +3,6 @@ import 'dart:async';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:bunga_player/bunga_server/models/bunga_client_info.dart';
 import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/services/preferences.dart';
-import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/business/platform.dart';
 import 'package:bunga_player/utils/models/volume.dart';
 import 'package:flutter/material.dart';
@@ -27,10 +25,6 @@ class AgoraClient extends VoiceCallClient {
       channelToken: info.voiceCall!.channelToken,
     );
     await client._init();
-
-    final pref = getIt<Preferences>();
-    final volume = pref.get('call_volume') ?? 50;
-    client.volumeNotifier.value = Volume(volume: volume);
 
     return client;
   }

@@ -60,13 +60,9 @@ class _SettingsDialogState extends State<SettingsDialog> {
                   label: Text(tab.label),
                 ))
             .toList(),
-      ),
+      ).padding(top: 16.0),
       const VerticalDivider(width: 0),
       [
-        StyledWidget(IconButton(
-          onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.close),
-        )).padding(top: 8.0, right: 16.0).alignment(Alignment.topRight),
         PageTransitionSwitcher(
           duration: const Duration(milliseconds: 300),
           transitionBuilder: (child, animation, secondaryAnimation) =>
@@ -79,10 +75,21 @@ class _SettingsDialogState extends State<SettingsDialog> {
           reverse: _reverse,
           child: KeyedSubtree(
             key: ValueKey<int>(_selectedIndex),
-            child: _tabs[_selectedIndex],
+            child: _tabs[_selectedIndex]
+                .padding(top: 16.0)
+                .constrained(
+                  maxWidth: 480,
+                  minHeight: MediaQuery.of(context).size.height - 16.0,
+                )
+                .alignment(Alignment.topCenter)
+                .scrollable(padding: EdgeInsets.only(bottom: 16.0)),
           ),
-        ).constrained(maxWidth: 480).alignment(Alignment.topCenter),
+        ),
+        StyledWidget(IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.close),
+        )).padding(top: 8.0, right: 16.0).alignment(Alignment.topRight),
       ].toStack().flexible(),
-    ].toRow().padding(top: 8.0);
+    ].toRow();
   }
 }

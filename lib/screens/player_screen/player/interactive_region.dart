@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:bunga_player/play/busuness.dart';
 import 'package:bunga_player/play/service/service.dart';
-import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/ui/providers.dart';
 import 'package:bunga_player/utils/business/value_listenable.dart';
@@ -200,9 +199,11 @@ class _TouchInteractiveRegionState extends State<TouchInteractiveRegion> {
               } else {
                 if (_volumeAdjustType == _VolumeAdjustType.voice) {
                   // Adjust voice
-                  voiceNotifier.value = Volume(
+                  final newVolume = Volume(
                     volume: (_dragStartDeviceValue + delta).toInt(),
                   );
+                  Actions.invoke(context, UpdateVoiceVolumeIntent(newVolume));
+
                   if (!_canAdjustVoice() ||
                       _farthestX - details.localPosition.dx > 30.0) {
                     _volumeAdjustType = _VolumeAdjustType.media;
@@ -214,9 +215,11 @@ class _TouchInteractiveRegionState extends State<TouchInteractiveRegion> {
                   }
                 } else {
                   // Adjust media
-                  play.volumeNotifier.value = Volume(
+                  final newVolume = Volume(
                     volume: (_dragStartDeviceValue + delta).toInt(),
                   );
+                  Actions.invoke(context, UpdateVolumeIntent(newVolume));
+
                   if (!_canAdjustVoice()) return;
                   if (details.localPosition.dx - _farthestX > 30.0) {
                     _volumeAdjustType = _VolumeAdjustType.voice;
@@ -234,9 +237,8 @@ class _TouchInteractiveRegionState extends State<TouchInteractiveRegion> {
           : (details) {
               if (!_isAdjustingBrightness) {
                 // Save volumes
-                final pref = getIt<Preferences>();
-                pref.set('play_volume', play.volumeNotifier.value.volume);
-                pref.set('call_volume', voiceNotifier.value.volume);
+                Actions.invoke(context, UpdateVolumeIntent.save());
+                Actions.invoke(context, UpdateVoiceVolumeIntent.save());
               }
             },
       child: ValueListenableBuilder(

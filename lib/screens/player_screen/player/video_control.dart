@@ -1,28 +1,28 @@
 import 'package:animations/animations.dart';
-import 'package:bunga_player/play/busuness.dart';
-import 'package:bunga_player/play_sync/business.dart';
-import 'package:bunga_player/services/preferences.dart';
-import 'package:bunga_player/utils/business/preference_notifier.dart';
-import 'package:bunga_player/play/models/play_payload.dart';
-import 'package:bunga_player/play/service/service.dart';
-import 'package:bunga_player/screens/dialogs/open_video/open_video.dart';
-import 'package:bunga_player/screens/player_screen/actions.dart';
-import 'package:bunga_player/screens/player_screen/business.dart';
-import 'package:bunga_player/screens/player_screen/panel/video_source_panel.dart';
-import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/utils/business/platform.dart';
-import 'package:bunga_player/utils/extensions/styled_widget.dart';
-import 'package:bunga_player/utils/models/volume.dart';
-import 'package:bunga_player/ui/providers.dart';
-import 'package:bunga_player/utils/extensions/comparable.dart';
-import 'package:bunga_player/utils/extensions/duration.dart';
-import 'package:bunga_player/utils/business/value_listenable.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
-import 'package:bunga_player/screens/widgets/divider.dart';
 
+import 'package:bunga_player/play/busuness.dart';
+import 'package:bunga_player/play/models/play_payload.dart';
+import 'package:bunga_player/play/service/service.dart';
+import 'package:bunga_player/play_sync/business.dart';
+import 'package:bunga_player/screens/dialogs/open_video/open_video.dart';
+import 'package:bunga_player/screens/widgets/divider.dart';
+import 'package:bunga_player/services/services.dart';
+import 'package:bunga_player/utils/business/preference_notifier.dart';
+import 'package:bunga_player/utils/business/platform.dart';
+import 'package:bunga_player/utils/extensions/styled_widget.dart';
+import 'package:bunga_player/utils/models/volume.dart';
+import 'package:bunga_player/utils/extensions/comparable.dart';
+import 'package:bunga_player/utils/extensions/duration.dart';
+import 'package:bunga_player/utils/business/value_listenable.dart';
+import 'package:bunga_player/ui/providers.dart';
+
+import '../actions.dart';
+import '../business.dart';
 import '../panel/audio_track_panel.dart';
+import '../panel/video_source_panel.dart';
 import '../panel/playlist_panel.dart';
 import '../panel/subtitle_panel.dart';
 import '../panel/video_eq_panel.dart';
@@ -164,8 +164,10 @@ class _SliderSection extends StatelessWidget {
               ? const Icon(Icons.volume_off)
               : const Icon(Icons.volume_up),
           onPressed: () {
-            play.volumeNotifier.value =
-                play.volumeNotifier.value.copyWithToggleMute();
+            Actions.invoke(
+              context,
+              UpdateVolumeIntent(volume.copyWith(mute: !volume.mute)),
+            );
           },
         ),
         Slider(
@@ -173,10 +175,16 @@ class _SliderSection extends StatelessWidget {
           max: Volume.max.toDouble(),
           label: '${volume.volume}%',
           onChanged: (value) {
+            Actions.invoke(
+              context,
+              UpdateVolumeIntent(Volume(volume: value.toInt())),
+            );
             play.volumeNotifier.value = Volume(volume: value.toInt());
           },
-          onChangeEnd: (value) =>
-              getIt<Preferences>().set('play_volume', value.toInt()),
+          onChangeEnd: (value) => Actions.invoke(
+            context,
+            UpdateVolumeIntent.save(),
+          ),
           focusNode: FocusNode(canRequestFocus: false),
         ).controlSliderTheme(context).constrained(height: 24).flexible(),
       ].toRow(),

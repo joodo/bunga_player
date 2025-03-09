@@ -1,7 +1,5 @@
 import 'package:bunga_player/chat/models/user.dart';
 import 'package:bunga_player/client_info/models/client_account.dart';
-import 'package:bunga_player/services/preferences.dart';
-import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/ui/providers.dart';
 import 'package:bunga_player/utils/models/volume.dart';
 import 'package:bunga_player/voice_call/business.dart';
@@ -107,12 +105,17 @@ class _CallButtonState extends State<CallButton> {
                         value: volume.volume.toDouble(),
                         label: '${volume.volume}%',
                         onChanged: (double value) {
-                          client.volumeNotifier.value =
-                              Volume(volume: value.toInt());
+                          final newVolume = Volume(volume: value.toInt());
+                          Actions.invoke(
+                            context,
+                            UpdateVoiceVolumeIntent(newVolume),
+                          );
                         },
                         onChangeEnd: (value) {
-                          final pref = getIt<Preferences>();
-                          pref.set('call_volume', value.toInt());
+                          Actions.invoke(
+                            context,
+                            UpdateVoiceVolumeIntent.save(),
+                          );
                         },
                       ),
                     ),
@@ -123,24 +126,17 @@ class _CallButtonState extends State<CallButton> {
                   Consumer<AgoraClient>(
                     builder: (context, client, child) => ValueListenableBuilder(
                       valueListenable: client.micMuteNotifier,
-                      builder: (context, muted, child) => muted
-                          ? IconButton(
-                              style: const ButtonStyle(
+                      builder: (context, muted, child) => IconButton(
+                        style: muted
+                            ? const ButtonStyle(
                                 backgroundColor:
                                     WidgetStatePropertyAll<Color>(Colors.red),
-                              ),
-                              color: Colors.white70,
-                              onPressed: () {
-                                client.micMuteNotifier.value = false;
-                              },
-                              icon: Icon(Icons.mic_off),
-                            )
-                          : IconButton.outlined(
-                              onPressed: () {
-                                client.micMuteNotifier.value = true;
-                              },
-                              icon: Icon(Icons.mic),
-                            ),
+                              )
+                            : null,
+                        color: Colors.white70,
+                        onPressed: Actions.handler(context, ToggleMicIntent()),
+                        icon: Icon(muted ? Icons.mic_off : Icons.mic),
+                      ),
                     ),
                   ),
                   _createCallOperateButton(

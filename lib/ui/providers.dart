@@ -156,9 +156,12 @@ enum ShortcutKey {
   togglePlay,
   screenshot,
   danmaku,
+  voiceVolumeUp,
+  voiceVolumeDown,
+  muteMic,
 }
 
-class ShortcutMapping
+class ShortcutMappingNotifier
     extends ValueNotifier<Map<ShortcutKey, SingleActivator?>> {
   static const defaultMapping = {
     ShortcutKey.volumeUp: SingleActivator(LogicalKeyboardKey.arrowUp),
@@ -168,9 +171,12 @@ class ShortcutMapping
     ShortcutKey.togglePlay: SingleActivator(LogicalKeyboardKey.space),
     ShortcutKey.screenshot: SingleActivator(LogicalKeyboardKey.keyS),
     ShortcutKey.danmaku: SingleActivator(LogicalKeyboardKey.keyT),
+    ShortcutKey.voiceVolumeUp: SingleActivator(LogicalKeyboardKey.period),
+    ShortcutKey.voiceVolumeDown: SingleActivator(LogicalKeyboardKey.comma),
+    ShortcutKey.muteMic: SingleActivator(LogicalKeyboardKey.keyM),
   };
 
-  ShortcutMapping() : super(defaultMapping) {
+  ShortcutMappingNotifier() : super(defaultMapping) {
     bindPreference<String>(
       preferences: getIt<Preferences>(),
       key: 'shortcut_mapping',
@@ -194,6 +200,21 @@ class ShortcutMapping
           (key, value) => MapEntry(key.name, value?.serialize() ?? ''),
         ),
       ),
+    );
+  }
+}
+
+extension ApplyShortcuts on Widget {
+  Widget applyShortcuts(Map<ShortcutKey, Intent> mapping) {
+    return Consumer<ShortcutMappingNotifier>(
+      builder: (context, shortcutMapping, child) => Shortcuts(
+        shortcuts: (mapping.map((shortcutKey, intent) =>
+                MapEntry(shortcutMapping.value[shortcutKey], intent))
+              ..remove(null))
+            .map((key, value) => MapEntry(key!, value)),
+        child: child!,
+      ),
+      child: this,
     );
   }
 }
@@ -244,6 +265,6 @@ final uiProviders = MultiProvider(
       lazy: false,
     ),
     ChangeNotifierProvider(create: (context) => AutoJoinChannel()),
-    ChangeNotifierProvider(create: (context) => ShortcutMapping()),
+    ChangeNotifierProvider(create: (context) => ShortcutMappingNotifier()),
   ],
 );

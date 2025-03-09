@@ -1,13 +1,21 @@
+import 'dart:io';
+
 import 'package:async/async.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:bunga_player/console/service.dart';
 import 'package:bunga_player/play/providers.dart';
+import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
 import 'package:bunga_player/ui/providers.dart';
 import 'package:bunga_player/utils/extensions/comparable.dart';
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
+import 'package:bunga_player/utils/models/volume.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
+import 'package:path/path.dart' as path_tool;
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
 import 'models/history.dart';
@@ -32,7 +40,50 @@ class SavedPositionNotifier extends ValueNotifier<Duration?> {
   SavedPositionNotifier() : super(null);
 }
 
+const _playVolumeKey = 'play_volume';
+
 // Actions
+
+@immutable
+class UpdateVolumeIntent extends Intent {
+  final Volume? volume;
+  final int? offset;
+  final bool save;
+  const UpdateVolumeIntent(this.volume)
+      : offset = null,
+        save = false;
+  const UpdateVolumeIntent.increase(this.offset)
+      : volume = null,
+        save = true;
+  const UpdateVolumeIntent.save()
+      : volume = null,
+        offset = null,
+        save = true;
+}
+
+class UpdateVolumeAction extends ContextAction<UpdateVolumeIntent> {
+  @override
+  Future<void> invoke(UpdateVolumeIntent intent,
+      [BuildContext? context]) async {
+    if (intent.volume != null) {
+      getIt<PlayService>().volumeNotifier.value = intent.volume!;
+    }
+    if (intent.offset != null) {
+      final currentVolume = getIt<PlayService>().volumeNotifier.value;
+      final newVolume = Volume(
+        volume: (currentVolume.volume + intent.offset!)
+            .clamp(Volume.min, Volume.max),
+      );
+      getIt<PlayService>().volumeNotifier.value = newVolume;
+    }
+    if (intent.save) {
+      getIt<Preferences>().set(
+        _playVolumeKey,
+        getIt<PlayService>().volumeNotifier.value.volume,
+      );
+    }
+  }
+}
 
 @immutable
 class OpenVideoIntent extends Intent {
@@ -156,6 +207,46 @@ class SetSubtitleTrackAction extends ContextAction<SetSubtitleTrackIntent> {
 }
 
 @immutable
+class ScreenshotIntent extends Intent {
+  const ScreenshotIntent();
+}
+
+class ScreenshotAction extends ContextAction<ScreenshotIntent> {
+  final ValueListenable<PlayPayload?> playPayloadNotifier;
+
+  ScreenshotAction({required this.playPayloadNotifier});
+
+  @override
+  Future<File> invoke(ScreenshotIntent intent, [BuildContext? context]) async {
+    final positionStr = context!.read<PlayPosition>().value.toString();
+    final positionStamp = positionStr
+        .substring(0, positionStr.length - 4)
+        .replaceAll(RegExp(r'[:|.]'), '_');
+    final videoFileName = playPayloadNotifier.value!.record.title;
+    final videoName = path_tool.basenameWithoutExtension(videoFileName);
+    final fileName = '${videoName}_$positionStamp.jpg';
+
+    final data = await getIt<PlayService>().screenshot();
+    assert(data != null);
+
+    final documentDir = await getApplicationDocumentsDirectory();
+    final picturePath = '${documentDir.parent.path}/Pictures/Bunga';
+    final pictureDir = await Directory(picturePath).create(recursive: true);
+
+    final file = File('${pictureDir.path}/$fileName');
+    await file.writeAsBytes(data!);
+
+    getIt<Toast>().show('已截图 $fileName');
+    AudioPlayer().play(
+      AssetSource('sounds/screenshot.mp3'),
+      mode: PlayerMode.lowLatency,
+    );
+
+    return file;
+  }
+}
+
+@immutable
 class RefreshDirIntent extends Intent {
   const RefreshDirIntent();
 }
@@ -273,7 +364,7 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
   final _dirInfoNotifier = ValueNotifier<DirInfo?>(null);
 
   // History
-  late final _history = context.read<History>();
+  late final History _history;
   late final RestartableTimer _saveWatchProgressTimer = RestartableTimer(
     const Duration(seconds: 3),
     () {
@@ -299,11 +390,45 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
     });
 
     // History
-    _history;
+    _history = context.read<History>();
+
+    // Load init volume
+    getIt<PlayService>().volumeNotifier.value = Volume(
+      volume: getIt<Preferences>().get(_playVolumeKey) ?? Volume.max,
+    );
   }
 
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
+    final shortcuts = child!.applyShortcuts({
+      ShortcutKey.volumeUp: UpdateVolumeIntent.increase(10),
+      ShortcutKey.volumeDown: UpdateVolumeIntent.increase(-10),
+      ShortcutKey.forward5Sec: SeekIntent.increase(Duration(seconds: 5)),
+      ShortcutKey.backward5Sec: SeekIntent.increase(Duration(seconds: -5)),
+      ShortcutKey.togglePlay: ToggleIntent(),
+      ShortcutKey.screenshot: ScreenshotIntent(),
+    });
+
+    final actions = shortcuts.actions(actions: {
+      UpdateVolumeIntent: UpdateVolumeAction(),
+      OpenVideoIntent: OpenVideoAction(
+        busyCountNotifier: _busyCountNotifer,
+        dirInfoNotifier: _dirInfoNotifier,
+        payloadNotifer: _playPayloadNotifier,
+        savedPositionNotifier: _savedPositionNotifier,
+      ),
+      StopPlayingIntent: StopPlayingAction(),
+      ToggleIntent: ToggleAction(
+        saveWatchProgressTimer: _saveWatchProgressTimer,
+        savedPositionNotifier: _savedPositionNotifier,
+      ),
+      SeekIntent: SeekAction(),
+      SetSubtitleTrackIntent: SetSubtitleTrackAction(),
+      ScreenshotIntent:
+          ScreenshotAction(playPayloadNotifier: _playPayloadNotifier),
+      RefreshDirIntent: RefreshDirAction(dirInfoNotifier: _dirInfoNotifier),
+    });
+
     return MultiProvider(
       providers: [
         ValueListenableProvider.value(value: _playPayloadNotifier),
@@ -311,22 +436,7 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
         ValueListenableProvider.value(value: _dirInfoNotifier),
         ValueListenableProvider.value(value: _busyCountNotifer),
       ],
-      child: child?.actions(actions: {
-        OpenVideoIntent: OpenVideoAction(
-          busyCountNotifier: _busyCountNotifer,
-          dirInfoNotifier: _dirInfoNotifier,
-          payloadNotifer: _playPayloadNotifier,
-          savedPositionNotifier: _savedPositionNotifier,
-        ),
-        StopPlayingIntent: StopPlayingAction(),
-        ToggleIntent: ToggleAction(
-          saveWatchProgressTimer: _saveWatchProgressTimer,
-          savedPositionNotifier: _savedPositionNotifier,
-        ),
-        SeekIntent: SeekAction(),
-        SetSubtitleTrackIntent: SetSubtitleTrackAction(),
-        RefreshDirIntent: RefreshDirAction(dirInfoNotifier: _dirInfoNotifier),
-      }),
+      child: actions,
     );
   }
 

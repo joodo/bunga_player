@@ -4,6 +4,7 @@ import 'package:bunga_player/chat/actions.dart';
 import 'package:bunga_player/chat/models/message_data.dart';
 import 'package:bunga_player/chat/models/user.dart';
 import 'package:bunga_player/danmaku/business.dart';
+import 'package:bunga_player/ui/providers.dart';
 import 'package:bunga_player/utils/business/platform.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -36,34 +37,49 @@ class _DanmakuControlState extends State<DanmakuControl> {
     final danmakuField = [
       StyledWidget(IconButton(
         icon: const Icon(Icons.keyboard_arrow_down),
-        onPressed: Actions.handler(
-          context,
-          ToggleDanmakuControlIntent(show: false),
-        ),
+        onPressed: () {
+          _focusNode.nextFocus();
+          Actions.invoke(
+            context,
+            ToggleDanmakuControlIntent(show: false),
+          );
+        },
       )).padding(left: 8.0),
       DefaultTextEditingShortcuts(
-        child: TextField(
-          style: const TextStyle(height: 1.0),
-          controller: _controller,
-          autofocus: kIsDesktop,
-          focusNode: _focusNode,
-          onTapOutside: (event) {},
-          decoration: InputDecoration(
-            border: OutlineInputBorder(),
-            focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(
-                color: Theme.of(context).colorScheme.secondary,
-                width: 2.0,
-              ),
-            ),
-            hintText: '按回车键发送弹幕',
-            floatingLabelBehavior: FloatingLabelBehavior.never,
+        child: Shortcuts(
+          shortcuts: Map.fromEntries(
+            context
+                .read<ShortcutMappingNotifier>()
+                .value
+                .values
+                .where((e) => e != null)
+                .map(
+                  (key) => MapEntry(key!, DoNothingAndStopPropagationIntent()),
+                ),
           ),
-          onSubmitted: (value) {
-            _sendDanmaku(value);
-            _controller.clear();
-            if (kIsDesktop) _focusNode.requestFocus();
-          },
+          child: TextField(
+            style: const TextStyle(height: 1.0),
+            controller: _controller,
+            autofocus: kIsDesktop,
+            focusNode: _focusNode,
+            onTapOutside: (event) {},
+            decoration: InputDecoration(
+              border: OutlineInputBorder(),
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(
+                  color: Theme.of(context).colorScheme.secondary,
+                  width: 2.0,
+                ),
+              ),
+              hintText: '按换行键发送弹幕',
+              floatingLabelBehavior: FloatingLabelBehavior.never,
+            ),
+            onSubmitted: (value) {
+              _sendDanmaku(value);
+              _controller.clear();
+              if (kIsDesktop) _focusNode.requestFocus();
+            },
+          ),
         ),
       ).padding(left: 8.0).flexible(),
     ].toRow();

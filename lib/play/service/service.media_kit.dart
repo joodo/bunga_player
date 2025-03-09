@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:bunga_player/play/models/play_payload.dart';
 import 'package:bunga_player/play/models/track.dart';
 import 'package:bunga_player/services/permissions.dart';
-import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/utils/models/volume.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/network/service.dart';
@@ -75,7 +74,7 @@ class MediaKitPlayService implements PlayService {
   // Volume
   @override
   late final volumeNotifier = ValueNotifier<Volume>(
-    Volume(volume: getIt<Preferences>().get<int>('play_volume') ?? Volume.max),
+    Volume(volume: Volume.max),
   )..addListener(() {
       final target =
           volumeNotifier.value.mute ? 0 : volumeNotifier.value.volume;
