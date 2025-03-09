@@ -1,11 +1,9 @@
-import 'package:bunga_player/play/providers.dart';
 import 'package:bunga_player/services/exit_callbacks.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
-import 'package:wakelock_plus/wakelock_plus.dart';
 
 import 'providers.dart';
 
@@ -51,9 +49,6 @@ class _UIActionsState extends SingleChildState<UIActions> {
       );
       await Future.delayed(const Duration(milliseconds: 3500));
     });
-
-    // TODO::wakeLock
-//    _videoEntryNotifier.addListener(_wakeLock);
   }
 
   @override
@@ -76,14 +71,5 @@ class _UIActionsState extends SingleChildState<UIActions> {
       },
       child: shortcuts,
     );
-  }
-
-  void _wakeLock() {
-    // TODO::
-    /*if (_videoEntryNotifier.value == null) {
-      WakelockPlus.disable();
-    } else {
-      WakelockPlus.enable();
-    }*/
   }
 }

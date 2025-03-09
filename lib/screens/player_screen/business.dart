@@ -16,6 +16,7 @@ import 'package:bunga_player/voice_call/business.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 import 'actions.dart';
 import 'panel/panel.dart';
@@ -56,6 +57,8 @@ class _WidgetBusinessState extends SingleChildState<_WidgetBusiness> {
       () => getIt<Toast>().setOffset(
           _showDanmakuControlNotifier.value ? PlayerScreen.danmakuHeight : 0),
     );
+
+    WakelockPlus.enable();
   }
 
   @override
@@ -97,6 +100,8 @@ class _WidgetBusinessState extends SingleChildState<_WidgetBusiness> {
 
   @override
   void dispose() {
+    WakelockPlus.disable();
+
     _panelNotifier.dispose();
     _showDanmakuControlNotifier.dispose();
     super.dispose();
