@@ -24,7 +24,9 @@ abstract class WatchProgress with _$WatchProgress {
   factory WatchProgress.fromJson(Map<String, dynamic> json) =>
       _$WatchProgressFromJson(json);
 
-  double get ratio => position.inMilliseconds / duration.inMilliseconds;
+  double get ratio => duration.inMilliseconds == 0
+      ? 0
+      : position.inMilliseconds / duration.inMilliseconds;
 }
 
 @freezed
