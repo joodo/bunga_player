@@ -1,6 +1,6 @@
 import 'package:bunga_player/client_info/providers.dart';
 import 'package:bunga_player/screens/dialogs/settings/widgets.dart';
-import 'package:bunga_player/screens/player_section/danmaku_player.dart';
+import 'package:bunga_player/screens/player_screen/player/danmaku_player.dart';
 import 'package:bunga_player/screens/widgets/input_builder.dart';
 import 'package:bunga_player/screens/widgets/slider_dense_track_shape.dart';
 import 'package:bunga_player/ui/providers.dart';

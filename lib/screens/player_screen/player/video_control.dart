@@ -127,7 +127,8 @@ class _PlayButtonState extends State<_PlayButton>
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<PlayStatus>(
+    return ValueListenableBuilder(
+      valueListenable: getIt<PlayService>().playStatusNotifier,
       builder: (context, status, child) {
         status.isPlaying ? controller.forward() : controller.reverse();
         return Selector<BusyCount, bool>(

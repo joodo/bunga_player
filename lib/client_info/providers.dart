@@ -1,5 +1,6 @@
 import 'package:bunga_player/console/service.dart';
 import 'package:flutter/material.dart';
+import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
@@ -39,35 +40,43 @@ class ClientColorHue extends ValueNotifier<int> {
   }
 }
 
-final clientInfoProviders = MultiProvider(
-  providers: [
-    ValueListenableProvider.value(
-      value: ValueNotifier(
-        ClientAccount(
-          id: getIt<Preferences>().getOrCreate(
-            'client_id',
-            const Uuid().v4(),
-          ),
-          password: getIt<Preferences>().getOrCreate(
-            'client_pwd',
-            generatePassword(),
-          ),
+class ClientInfoGlobalBusiness extends SingleChildStatelessWidget {
+  const ClientInfoGlobalBusiness({super.key});
+
+  @override
+  Widget buildWithChild(BuildContext context, Widget? child) {
+    return MultiProvider(
+      providers: [
+        ValueListenableProvider.value(
+          value: ValueNotifier(
+            ClientAccount(
+              id: getIt<Preferences>().getOrCreate(
+                'client_id',
+                const Uuid().v4(),
+              ),
+              password: getIt<Preferences>().getOrCreate(
+                'client_pwd',
+                generatePassword(),
+              ),
+            ),
+          )..watchInConsole('Client Account'),
         ),
-      )..watchInConsole('Client Account'),
-    ),
-    ChangeNotifierProxyProvider<ClientAccount, ClientColorHue?>(
-      create: (context) => null,
-      update: (context, cliendAccount, previous) {
-        if (previous == null) {
-          return ClientColorHue(cliendAccount.id.hashCode % 360);
-        } else {
-          return previous;
-        }
-      },
-    ),
-    ChangeNotifierProvider(
-      create: (context) => ClientNicknameNotifier(),
-      lazy: false,
-    ),
-  ],
-);
+        ChangeNotifierProxyProvider<ClientAccount, ClientColorHue?>(
+          create: (context) => null,
+          update: (context, cliendAccount, previous) {
+            if (previous == null) {
+              return ClientColorHue(cliendAccount.id.hashCode % 360);
+            } else {
+              return previous;
+            }
+          },
+        ),
+        ChangeNotifierProvider(
+          create: (context) => ClientNicknameNotifier(),
+          lazy: false,
+        ),
+      ],
+      child: child,
+    );
+  }
+}

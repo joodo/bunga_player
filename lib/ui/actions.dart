@@ -31,8 +31,6 @@ class UIActions extends SingleChildStatefulWidget {
 }
 
 class _UIActionsState extends SingleChildState<UIActions> {
-  late final _videoEntryNotifier = context.read<PlayVideoEntry>();
-
   @override
   void initState() {
     super.initState();
@@ -54,12 +52,12 @@ class _UIActionsState extends SingleChildState<UIActions> {
       await Future.delayed(const Duration(milliseconds: 3500));
     });
 
-    _videoEntryNotifier.addListener(_wakeLock);
+    // TODO::wakeLock
+//    _videoEntryNotifier.addListener(_wakeLock);
   }
 
   @override
   void dispose() {
-    _videoEntryNotifier.removeListener(_wakeLock);
     super.dispose();
   }
 
@@ -82,10 +80,10 @@ class _UIActionsState extends SingleChildState<UIActions> {
 
   void _wakeLock() {
     // TODO::
-    if (_videoEntryNotifier.value == null) {
+    /*if (_videoEntryNotifier.value == null) {
       WakelockPlus.disable();
     } else {
       WakelockPlus.enable();
-    }
+    }*/
   }
 }

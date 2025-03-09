@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:async/async.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:bunga_player/console/service.dart';
-import 'package:bunga_player/play/providers.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
@@ -218,7 +217,7 @@ class ScreenshotAction extends ContextAction<ScreenshotIntent> {
 
   @override
   Future<File> invoke(ScreenshotIntent intent, [BuildContext? context]) async {
-    final positionStr = context!.read<PlayPosition>().value.toString();
+    final positionStr = getIt<PlayService>().positionNotifier.value.toString();
     final positionStamp = positionStr
         .substring(0, positionStr.length - 4)
         .replaceAll(RegExp(r'[:|.]'), '_');
@@ -351,7 +350,8 @@ class PlayBusiness extends SingleChildStatefulWidget {
 class _PlayBusinessState extends SingleChildState<PlayBusiness> {
   // Progress indicator
   final _busyCountNotifer = ValueNotifier(const BusyCount(0));
-  late final _isVideoBufferingNotifier = context.read<PlayIsBuffering>();
+  late final _isVideoBufferingNotifier =
+      getIt<PlayService>().isBufferingNotifier;
   void _updateBusyCount() {
     _busyCountNotifer.value = _isVideoBufferingNotifier.value
         ? _busyCountNotifer.value.increase

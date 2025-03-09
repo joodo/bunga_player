@@ -4,13 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 
-import 'package:bunga_player/bunga_server/global_business.dart';
-import 'package:bunga_player/chat/actions.dart';
-import 'package:bunga_player/danmaku/actions.dart';
+import 'package:bunga_player/chat/global_business.dart';
 import 'package:bunga_player/play/actions.dart';
 import 'package:bunga_player/ui/actions.dart';
-import 'package:bunga_player/play_sync/actions.dart';
-import 'package:bunga_player/voice_call/business.dart';
 
 class ActionsLeaf {
   late BuildContext _leafContext;
@@ -30,12 +26,11 @@ class ActionsWrapper extends SingleChildStatelessWidget {
   Widget buildWithChild(BuildContext context, Widget? child) {
     return Nested(
       children: [
+        // TODO:remove
         Provider(create: (context) => ActionsLeaf()),
         const UIActions(),
         const PlayActions(),
-        const ChatActions(),
-        //const PlaySyncActions(),
-        const DanmakuActions(),
+        const ChatGlobalBusiness(),
         const AListGlobalBusiness(),
         const ConsoleActions(),
         SingleChildBuilder(builder: (context, child) {

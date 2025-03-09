@@ -1,9 +1,8 @@
-import 'package:bunga_player/play/models/play_payload.dart';
-import 'package:bunga_player/play/models/track.dart';
 import 'package:bunga_player/utils/models/volume.dart';
 import 'package:flutter/foundation.dart';
 
-import '../models/video_entries/video_entry.dart';
+import '../models/play_payload.dart';
+import '../models/track.dart';
 
 enum PlayStatus {
   play,
@@ -37,9 +36,6 @@ abstract class PlayService {
   Future<void> setRate(double rate);
 
   Future<Uint8List?> screenshot();
-
-  Stream<VideoEntry?> get videoEntryStream;
-  Stream<int?> get sourceIndexStream;
 
   ValueNotifier<Iterable<AudioTrack>> get audioTracksNotifier;
   ValueNotifier<AudioTrack> get audioTrackNotifier;

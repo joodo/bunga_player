@@ -4,7 +4,6 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:bunga_player/bunga_server/global_business.dart';
 import 'package:bunga_player/client_info/models/client_account.dart';
 import 'package:bunga_player/console/service.dart';
-import 'package:bunga_player/play/providers.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
@@ -82,12 +81,6 @@ class _ConsoleDialogState extends State<ConsoleDialog> {
           onPressed: () =>
               getIt<Toast>().show('New toast: ${_randomSentence()}.'),
           child: const Text('Show a toast'),
-        ),
-        const SizedBox(height: 8),
-        FilledButton(
-          onPressed: () => setState(context.read<PlayVideoSessions>().clearAll),
-          child: Text(
-              'Clear all watch progress (${context.read<PlayVideoSessions>().count})'),
         ),
         const SizedBox(height: 8),
         FilledButton(

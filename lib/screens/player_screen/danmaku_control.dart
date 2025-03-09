@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:bunga_player/chat/actions.dart';
+import 'package:bunga_player/chat/global_business.dart';
 import 'package:bunga_player/chat/models/message_data.dart';
 import 'package:bunga_player/chat/models/user.dart';
 import 'package:bunga_player/danmaku/business.dart';

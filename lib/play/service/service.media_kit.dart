@@ -1,12 +1,4 @@
 import 'dart:async';
-
-import 'package:bunga_player/play/models/play_payload.dart';
-import 'package:bunga_player/play/models/track.dart';
-import 'package:bunga_player/services/permissions.dart';
-import 'package:bunga_player/utils/models/volume.dart';
-import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/network/service.dart';
-import 'package:bunga_player/services/services.dart';
 import 'package:collection/collection.dart';
 import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
@@ -16,7 +8,14 @@ import 'package:media_kit_video/media_kit_video_controls/src/controls/extensions
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 
-import '../models/video_entries/video_entry.dart';
+import 'package:bunga_player/services/permissions.dart';
+import 'package:bunga_player/services/logger.dart';
+import 'package:bunga_player/network/service.dart';
+import 'package:bunga_player/services/services.dart';
+import 'package:bunga_player/utils/models/volume.dart';
+
+import '../models/play_payload.dart';
+import '../models/track.dart';
 import 'service.dart';
 
 class MediaKitPlayService implements PlayService {
@@ -122,18 +121,9 @@ class MediaKitPlayService implements PlayService {
   }
 
   // Video loading
-
-  final _sourceIndexController = StreamController<int?>.broadcast();
-  @override
-  Stream<int?> get sourceIndexStream => _sourceIndexController.stream;
-
-  final _videoEntryController = StreamController<VideoEntry?>.broadcast();
-  VideoEntry? _videoEntry;
   // After opened, video need some time to load.
   // So set it complete when duration got not zero value
   Completer<Null>? _openCompleter;
-  @override
-  Stream<VideoEntry?> get videoEntryStream => _videoEntryController.stream;
   @override
   Future<void> open(PlayPayload payload) async {
     assert(payload.sources.videos.length > payload.videoSourceIndex);
@@ -142,12 +132,6 @@ class MediaKitPlayService implements PlayService {
       _openCompleter?.complete();
     }
     _openCompleter = Completer();
-
-    // Update stream
-    // TODO: onprogress
-    //_videoEntry = entry;
-    _videoEntryController.add(_videoEntry);
-    _sourceIndexController.add(payload.videoSourceIndex);
 
     // open video
     final videoUrl = payload.sources.videos[payload.videoSourceIndex];
