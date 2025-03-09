@@ -4,6 +4,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:bunga_player/chat/global_business.dart';
 import 'package:bunga_player/client_info/models/client_account.dart';
 import 'package:bunga_player/console/service.dart';
+import 'package:bunga_player/services/exit_callbacks.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
 import 'package:bunga_player/utils/business/provider.dart';
@@ -93,6 +94,13 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
   final _talkerIdsNotifier = ValueNotifier<Set<String>>({})
     ..watchInConsole('Talkers Id');
 
+  // Leave message for app exit
+  Future<void> _sendLeaveMessage() {
+    final myId = context.read<ClientAccount>().id;
+    final byeData = ByeMessageData(userId: myId);
+    return Actions.invoke(context, SendMessageIntent(byeData)) as Future;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -129,6 +137,9 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
     // Get watchers
     if (!mounted) return;
     _refreshWatchersAction.invoke(const RefreshWatchersIntent(), context);
+
+    // Register leave message sender
+    getIt<ExitCallbacks>().add(_sendLeaveMessage);
   }
 
   @override
@@ -152,6 +163,7 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
     _watchersNotifier.dispose();
     _talkerIdsNotifier.dispose();
     _streamSubscription.cancel();
+    getIt<ExitCallbacks>().remove(_sendLeaveMessage);
     super.dispose();
   }
 
