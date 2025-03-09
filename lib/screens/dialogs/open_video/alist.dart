@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:bunga_player/alist/actions.dart';
+import 'package:bunga_player/alist/business.dart';
 import 'package:bunga_player/alist/extensions.dart';
 import 'package:bunga_player/play/models/history.dart';
 import 'package:bunga_player/screens/dialogs/open_video/open_video.dart';

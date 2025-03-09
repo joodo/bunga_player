@@ -1,4 +1,4 @@
-import 'package:bunga_player/alist/actions.dart';
+import 'package:bunga_player/alist/business.dart';
 import 'package:bunga_player/console/actions.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
@@ -36,7 +36,7 @@ class ActionsWrapper extends SingleChildStatelessWidget {
         const ChatActions(),
         //const PlaySyncActions(),
         const DanmakuActions(),
-        const AListActions(),
+        const AListGlobalBusiness(),
         const ConsoleActions(),
         SingleChildBuilder(builder: (context, child) {
           context.read<ActionsLeaf>().registerContext(context);
