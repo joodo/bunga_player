@@ -68,6 +68,7 @@ class AListFileDetail extends AListFileInfo {
 
   factory AListFileDetail.fromJson(Map<String, dynamic> json) =>
       _$AListFileDetailFromJson(json);
+  @override
   Map<String, dynamic> toJson() => _$AListFileDetailToJson(this);
 
   @override
@@ -87,6 +88,7 @@ class AListSearchResult extends AListFileInfo {
 
   factory AListSearchResult.fromJson(Map<String, dynamic> json) =>
       _$AListSearchResultFromJson(json);
+  @override
   Map<String, dynamic> toJson() => _$AListSearchResultToJson(this);
 
   @override

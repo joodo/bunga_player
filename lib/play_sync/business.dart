@@ -229,34 +229,50 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
   }
 
   void _dealWithProjection(StartProjectionMessageData data) async {
-    var newRecord = data.videoRecord;
+    getIt<Toast>().show('${data.sharer.name} 分享了视频');
+
+    VideoRecord? newRecord = data.videoRecord;
 
     if (newRecord.source == 'local' && !File(newRecord.path).existsSync()) {
+      newRecord = null;
+
       // If current playing is local, try to find file in same dir
       final currentRecord = context.read<PlayPayload?>()?.record;
       if (currentRecord?.source == 'local') {
         final currentDir = path_tool.dirname(currentRecord!.path);
-        final newBasename = path_tool.basename(newRecord.path);
-        if (!File(path_tool.join(currentDir, newBasename)).existsSync()) {
-          // Same dir file not exist too
-          final selectedPath = await LocalVideoEntryDialog.exec();
-          if (selectedPath == null) return;
-
-          final file = File(selectedPath);
-          final crc = await file.crcString();
-
-          if (!mounted) return;
-          // New selected file conflict, needs confirm
-          if (!currentRecord.id.endsWith(crc)) {
-            final confirmOpen = await showModal<bool>(
-              context: context,
-              builder: VideoConflictDialog.builder,
-            );
-            if (!mounted || confirmOpen != true) return;
-          }
-
-          newRecord = newRecord.copyWith(path: selectedPath);
+        final newBasename = path_tool.basename(data.videoRecord.path);
+        final sameDirPath = path_tool.join(currentDir, newBasename);
+        if (File(sameDirPath).existsSync()) {
+          newRecord = data.videoRecord.copyWith(path: sameDirPath);
         }
+      }
+
+      if (newRecord == null) {
+        // Same dir file not exist too, or just not playing local video
+        final selectedPath = await LocalVideoDialog.exec();
+        if (selectedPath == null) {
+          if (mounted) Navigator.of(context).pop();
+          return;
+        }
+
+        final file = File(selectedPath);
+        final crc = await file.crcString();
+
+        if (!mounted) return;
+        // New selected file conflict, needs confirm
+        if (!data.videoRecord.id.endsWith(crc)) {
+          final confirmOpen = await showModal<bool>(
+            context: context,
+            builder: VideoConflictDialog.builder,
+          );
+          if (!mounted) return;
+          if (confirmOpen != true) {
+            Navigator.of(context).pop();
+            return;
+          }
+        }
+
+        newRecord = data.videoRecord.copyWith(path: selectedPath);
       }
     }
 

@@ -196,20 +196,6 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
 }
 
 @immutable
-class StopPlayingIntent extends Intent {
-  const StopPlayingIntent();
-}
-
-class StopPlayingAction extends ContextAction<StopPlayingIntent> {
-  @override
-  void invoke(StopPlayingIntent intent, [BuildContext? context]) async {
-    context!.read<WindowTitle>().reset();
-    context.read<History>().save();
-    getIt<PlayService>().stop();
-  }
-}
-
-@immutable
 class SetSubtitleTrackIntent extends Intent {
   final String trackId;
   const SetSubtitleTrackIntent(this.trackId);
@@ -439,7 +425,6 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
         payloadNotifer: _playPayloadNotifier,
         savedPositionNotifier: _savedPositionNotifier,
       ),
-      StopPlayingIntent: StopPlayingAction(),
       ToggleIntent: ToggleAction(
         saveWatchProgressTimer: _saveWatchProgressTimer,
         savedPositionNotifier: _savedPositionNotifier,
@@ -470,6 +455,7 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
 
     _isVideoBufferingNotifier.removeListener(_updateBusyCount);
 
+    _history.save();
     _saveWatchProgressTimer.cancel();
     _savedPositionNotifier.dispose();
 

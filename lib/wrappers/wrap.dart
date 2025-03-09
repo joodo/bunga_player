@@ -1,6 +1,6 @@
 import 'package:nested/nested.dart';
 
-import '../screens/welcome_screen.dart';
+import '../screens/welcome_screen/welcome_screen.dart';
 import 'app.dart';
 import 'theme.dart';
 import 'update_and_clean.dart';

@@ -77,7 +77,7 @@ class _DirectLinkTabState extends State<DirectLinkTab> {
         label: const Text('打开本地文件'),
         avatar: const Icon(Icons.folder_open),
         onPressed: () async {
-          final path = await LocalVideoEntryDialog.exec();
+          final path = await LocalVideoDialog.exec();
           if (path != null) {
             if (!context.mounted) return;
             Actions.invoke(context, SelectUrlIntent(Uri.file(path)));
@@ -88,7 +88,7 @@ class _DirectLinkTabState extends State<DirectLinkTab> {
   }
 }
 
-class LocalVideoEntryDialog {
+class LocalVideoDialog {
   static const typeGroup = XTypeGroup(
     label: 'videos',
     uniformTypeIdentifiers: ['public.movie'],

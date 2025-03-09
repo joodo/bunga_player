@@ -17,7 +17,7 @@ class PlayerScreen extends StatelessWidget {
   // Panel
   @override
   Widget build(BuildContext context) {
-    return Consumer2<Panel?, DanmakuVisible>(
+    final body = Consumer2<Panel?, DanmakuVisible>(
       builder: (context, panel, danmakuVisible, child) => [
         child!.card(margin: EdgeInsets.all(0)).positioned(
               top: 0,
@@ -56,6 +56,8 @@ class PlayerScreen extends StatelessWidget {
           .toStack()
           .animate(const Duration(milliseconds: 350), Curves.easeOutCubic),
       child: const Player(),
-    ).material().playScreenBusiness();
+    );
+
+    return body.material().playScreenBusiness();
   }
 }

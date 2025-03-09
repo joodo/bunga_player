@@ -338,10 +338,7 @@ class _MoreActionsButton extends StatelessWidget {
             // Leave Button
             MenuItemButton(
               leadingIcon: const Icon(Icons.logout),
-              onPressed: () {
-                Actions.invoke(context, const StopPlayingIntent());
-                Navigator.of(context).pop();
-              },
+              onPressed: Navigator.of(context).pop,
               child: const Text('离开房间'),
             ),
           ],

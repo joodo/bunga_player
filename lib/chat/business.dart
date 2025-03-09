@@ -4,7 +4,6 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:bunga_player/chat/global_business.dart';
 import 'package:bunga_player/client_info/models/client_account.dart';
 import 'package:bunga_player/console/service.dart';
-import 'package:bunga_player/play/busuness.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
 import 'package:bunga_player/utils/business/provider.dart';
@@ -55,26 +54,6 @@ class TalkerId {
 }
 
 // Actions
-
-class LeaveChannelAction extends ContextAction<StopPlayingIntent> {
-  final WatchersNotifier watchersNotifier;
-  final BuildContext businessContext;
-
-  LeaveChannelAction({
-    required this.watchersNotifier,
-    required this.businessContext,
-  });
-
-  @override
-  Future<void> invoke(StopPlayingIntent intent, [BuildContext? context]) async {
-    final myId = context!.read<ClientAccount>().id;
-    final messageData = ByeMessageData(userId: myId);
-    Actions.invoke(context, SendMessageIntent(messageData));
-
-    // Pass intent to stop playing
-    Actions.invoke(businessContext, intent);
-  }
-}
 
 @immutable
 class RefreshWatchersIntent extends Intent {
@@ -163,10 +142,6 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
         ),
       ],
       child: child?.actions(actions: {
-        StopPlayingIntent: LeaveChannelAction(
-          watchersNotifier: _watchersNotifier,
-          businessContext: context,
-        ),
         RefreshWatchersIntent: _refreshWatchersAction,
       }),
     );
