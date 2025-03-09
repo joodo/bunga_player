@@ -118,7 +118,12 @@ class _AdjustIndicatorState extends State<AdjustIndicator> {
           if (showTalk)
             rightIndicator
                 .opacity(hightlightTalk ? 1.0 : 0.5, animate: true)
-                .positioned(top: 0, bottom: 0, right: 0, width: 60),
+                .positioned(
+                  top: 0,
+                  bottom: 0,
+                  right: 0,
+                  width: indicatorWidth,
+                ),
         ]
             .toStack()
             .constrained(
@@ -198,6 +203,9 @@ class _AdjustIndicatorState extends State<AdjustIndicator> {
           .clipRRect(all: 12.0)
           .flexible(),
       Icon(icon).padding(top: 12.0),
-    ].toColumn().padding(horizontal: 12.0, vertical: 16.0);
+    ]
+        .toColumn()
+        .padding(horizontal: 12.0, vertical: 16.0)
+        .card(color: Colors.black12, elevation: 0);
   }
 }

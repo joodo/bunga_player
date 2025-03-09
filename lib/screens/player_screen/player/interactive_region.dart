@@ -199,13 +199,14 @@ class _TouchInteractiveRegionState extends State<TouchInteractiveRegion> {
               } else {
                 if (_volumeAdjustType == _VolumeAdjustType.voice) {
                   // Adjust voice
+                  final value = (_dragStartDeviceValue + delta).toInt();
                   final newVolume = Volume(
-                    volume: (_dragStartDeviceValue + delta).toInt(),
+                    volume: value.clamp(Volume.min, Volume.max),
                   );
                   Actions.invoke(context, UpdateVoiceVolumeIntent(newVolume));
 
                   if (!_canAdjustVoice() ||
-                      _farthestX - details.localPosition.dx > 30.0) {
+                      _farthestX - details.localPosition.dx > 20.0) {
                     _volumeAdjustType = _VolumeAdjustType.media;
                     _dragStartDeviceValue =
                         play.volumeNotifier.value.volume.toDouble();
@@ -215,13 +216,14 @@ class _TouchInteractiveRegionState extends State<TouchInteractiveRegion> {
                   }
                 } else {
                   // Adjust media
+                  final value = (_dragStartDeviceValue + delta).toInt();
                   final newVolume = Volume(
-                    volume: (_dragStartDeviceValue + delta).toInt(),
+                    volume: value.clamp(Volume.min, Volume.max),
                   );
                   Actions.invoke(context, UpdateVolumeIntent(newVolume));
 
                   if (!_canAdjustVoice()) return;
-                  if (details.localPosition.dx - _farthestX > 30.0) {
+                  if (details.localPosition.dx - _farthestX > 20.0) {
                     _volumeAdjustType = _VolumeAdjustType.voice;
                     _dragStartDeviceValue =
                         voiceNotifier.value.volume.toDouble();
