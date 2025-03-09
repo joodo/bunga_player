@@ -53,15 +53,16 @@ class VideoControl extends StatelessWidget {
               if (constraints.maxWidth > 420) const ControlDivider(),
 
               // Danmaku Button
-              Selector<DanmakuVisible, bool>(
-                selector: (context, visible) => visible.value,
-                builder: (context, visible, child) => IconButton(
+              Consumer2<DanmakuVisible, IsInChannel>(
+                builder: (context, visible, inChannel, child) => IconButton(
                   icon: const Icon(Icons.mood),
-                  isSelected: visible,
-                  onPressed: Actions.handler(
-                    context,
-                    ToggleDanmakuControlIntent(),
-                  ),
+                  isSelected: visible.value,
+                  onPressed: inChannel.value
+                      ? Actions.handler(
+                          context,
+                          ToggleDanmakuControlIntent(),
+                        )
+                      : null,
                 ),
               ),
 
