@@ -50,6 +50,7 @@ class MediaKitPlayService implements PlayService {
     });
 
     // Initiate lazy value
+    volumeNotifier;
     audioTrackNotifier;
     audioTracksNotifier;
     subtitleTrackNotifier;

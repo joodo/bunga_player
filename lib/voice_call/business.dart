@@ -298,11 +298,6 @@ class _VoiceCallBusinessState extends SingleChildState<VoiceCallBusiness> {
               action: CallMessageData.fromJson(message.data).action,
             ))
         .listen(_dealResponse);
-
-    // Load init volume
-    context.read<AgoraClient>().volumeNotifier.value = Volume(
-      volume: getIt<Preferences>().get(_voiceVolumeKey) ?? Volume.max,
-    );
   }
 
   @override
@@ -477,8 +472,17 @@ class VoiceCallGlobalBusiness extends SingleChildStatelessWidget {
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
     return ProxyFutureProvider<AgoraClient?, BungaClientInfo?>(
-      proxy: (clientInfo) =>
-          clientInfo == null ? null : AgoraClient.create(clientInfo),
+      proxy: (clientInfo) async {
+        if (clientInfo == null) return null;
+
+        // Load init volume
+        final client = await AgoraClient.create(clientInfo);
+        client?.volumeNotifier.value = Volume(
+          volume: getIt<Preferences>().get(_voiceVolumeKey) ?? Volume.max,
+        );
+
+        return client;
+      },
       initialData: null,
       child: child,
     );
