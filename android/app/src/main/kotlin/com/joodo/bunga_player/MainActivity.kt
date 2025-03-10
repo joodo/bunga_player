@@ -1,4 +1,4 @@
-package com.example.bunga_player
+package com.joodo.bunga_player
 
 import io.flutter.embedding.android.FlutterActivity
 
