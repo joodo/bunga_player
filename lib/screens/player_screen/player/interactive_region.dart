@@ -146,12 +146,12 @@ class _TouchInteractiveRegionState extends State<TouchInteractiveRegion> {
               final positionOffset = Duration(
                 seconds: xOffset.toInt() ~/ 5,
               );
+
+              if (_isPlayingBeforeDrag) play.play();
               Actions.invoke(
                 context,
                 SeekIntent(_dargStartVideoPosition + positionOffset),
               );
-
-              if (_isPlayingBeforeDrag) play.play();
 
               context.read<ShouldShowHUD>().unlock('drag');
             },
