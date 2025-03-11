@@ -33,71 +33,79 @@ class _PlaylistPanelState extends State<PlaylistPanel> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<DirInfo?>(
-      builder: (context, dirInfo, child) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _scrollToCurrent();
-        });
-        return PanelWidget(
-          title: dirInfo?.name ?? '',
-          actions: [
-            Consumer<PlayPayload?>(
-              builder: (context, value, child) => IconButton(
-                icon: const Icon(Icons.refresh),
-                tooltip: '刷新目录',
-                onPressed: Actions.handler(context, RefreshDirIntent()),
-              ),
-            ),
-          ],
-          child: dirInfo == null
-              ? const Text('没有其他视频').center()
-              : ListView.separated(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.only(bottom: 24.0),
-                  itemBuilder: (context, index) {
-                    final epInfo = dirInfo.info[index];
-                    final current = dirInfo.current == index;
-                    return ListTile(
-                      key: ValueKey('ep$index'),
-                      selected: current,
-                      title: Text(
-                        epInfo.name,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      subtitle: current ? const Text('当前播放') : null,
-                      trailing: epInfo.thumb != null
-                          ? Image.network(
-                              epInfo.thumb!,
-                              key: ValueKey(epInfo.thumb!),
-                            ).clipRRect(all: 8.0)
-                          : null,
-                      onTap: current
-                          ? null
-                          : () async {
-                              final act = Actions.invoke(
-                                context,
-                                OpenVideoIntent.url(epInfo.url),
-                              ) as Future<PlayPayload>;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToCurrent();
+    });
 
-                              final payload = await act;
-                              if (context.mounted &&
-                                  context.read<IsInChannel>().value) {
-                                Actions.invoke(
-                                  context,
-                                  ShareVideoIntent(payload.record),
-                                );
-                              }
-                            },
-                    ).animatedSize(
-                      duration: const Duration(milliseconds: 200),
-                    );
-                  },
-                  separatorBuilder: (context, index) =>
-                      const Divider(indent: 16.0),
-                  itemCount: dirInfo.info.length),
-        );
-      },
+    final dirInfo = context.read<DirInfo?>();
+    return PanelWidget(
+      title: dirInfo?.name ?? '',
+      actions: [
+        Consumer<PlayPayload?>(
+          builder: (context, value, child) => IconButton(
+            icon: const Icon(Icons.refresh),
+            tooltip: '刷新目录',
+            onPressed: () async {
+              final busyNotifier = context.read<PanelBusyNotifier>();
+
+              try {
+                busyNotifier.value = true;
+                final act =
+                    Actions.invoke(context, RefreshDirIntent()) as Future;
+                await act;
+                setState(() {});
+              } finally {
+                busyNotifier.value = false;
+              }
+            },
+          ),
+        ),
+      ],
+      child: dirInfo == null
+          ? const Text('没有其他视频').center()
+          : ListView.separated(
+              controller: _scrollController,
+              padding: const EdgeInsets.only(bottom: 24.0),
+              itemBuilder: (context, index) {
+                final epInfo = dirInfo.info[index];
+                // Move consumer inside ListTile to avoid rebuild all list
+                return Selector<DirInfo, bool>(
+                  selector: (context, dirInfo) => dirInfo.current == index,
+                  builder: (context, current, child) => ListTile(
+                    selected: current,
+                    title: Text(
+                      epInfo.name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    subtitle: current ? const Text('当前播放') : null,
+                    trailing: epInfo.thumb != null
+                        ? Image.network(epInfo.thumb!).clipRRect(all: 8.0)
+                        : null,
+                    onTap: current
+                        ? null
+                        : () async {
+                            final act = Actions.invoke(
+                              context,
+                              OpenVideoIntent.url(epInfo.url),
+                            ) as Future<PlayPayload>;
+
+                            final payload = await act;
+                            if (context.mounted &&
+                                context.read<IsInChannel>().value) {
+                              Actions.invoke(
+                                context,
+                                ShareVideoIntent(payload.record),
+                              );
+                            }
+                          },
+                  ).animatedSize(
+                    duration: const Duration(milliseconds: 200),
+                  ),
+                );
+              },
+              separatorBuilder: (context, index) => const Divider(indent: 16.0),
+              itemCount: dirInfo.info.length),
     );
   }
 

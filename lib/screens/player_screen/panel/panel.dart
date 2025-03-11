@@ -29,7 +29,7 @@ class _PanelWidgetState extends SingleChildState<PanelWidget> {
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
     // FIXME: change to side sheet. See https://m3.material.io/components/side-sheets/guidelines
-    return [
+    final body = [
       [
         CloseButton(onPressed: Actions.handler(context, ClosePanelIntent())),
         if (widget.title != null)
@@ -53,11 +53,13 @@ class _PanelWidgetState extends SingleChildState<PanelWidget> {
                 height: 4.0,
               ),
       ),
-      ListenableProvider.value(
-        value: _busyNotifier,
-        child: child!.material(color: Colors.transparent).expanded(),
-      ),
+      child!.material(color: Colors.transparent).expanded(),
     ].toColumn(crossAxisAlignment: CrossAxisAlignment.stretch);
+
+    return ListenableProvider.value(
+      value: _busyNotifier,
+      child: body,
+    );
   }
 
   @override
