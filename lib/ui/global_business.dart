@@ -152,10 +152,10 @@ extension ApplyShortcuts on Widget {
 class ScreenBrightnessNotifier extends ValueNotifier<double> {
   ScreenBrightnessNotifier() : super(0) {
     ScreenBrightness().setAnimate(false);
-    ScreenBrightness().current.then((brightness) {
+    ScreenBrightness().application.then((brightness) {
       value = brightness;
       addListener(() {
-        ScreenBrightness().setScreenBrightness(value);
+        ScreenBrightness().setApplicationScreenBrightness(value);
       });
     });
   }
