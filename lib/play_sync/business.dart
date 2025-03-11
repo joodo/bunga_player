@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:animations/animations.dart';
 import 'package:bunga_player/console/service.dart';
+import 'package:bunga_player/ui/global_business.dart';
+import 'package:bunga_player/utils/business/action.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:path/path.dart' as path_tool;
@@ -47,64 +49,6 @@ class SubtitleTrackIdOfUrl {
 }
 
 // Actions
-
-class SyncToggleAction extends ContextAction<ToggleIntent> {
-  final BuildContext businessContext;
-
-  SyncToggleAction({required this.businessContext});
-
-  @override
-  void invoke(ToggleIntent intent, [BuildContext? context]) {
-    final remoteJustToggled = context!.read<RemoteJustToggled>().value;
-    if (remoteJustToggled) return;
-
-    // Toggle is invoked by me, not remote, so I can forget saved position.
-    Actions.maybeInvoke(businessContext, intent);
-
-    if (intent.forgetSavedPosition) {
-      // Forget saved position means this action is invoked by myself
-      // Try to send play status to channel
-      SendPlayStatusAction().invoke(SendPlayStatusIntent(), context);
-    }
-  }
-}
-
-class SyncSeekAction extends ContextAction<SeekIntent> {
-  final BuildContext businessContext;
-
-  SyncSeekAction({required this.businessContext});
-
-  @override
-  void invoke(SeekIntent intent, [BuildContext? context]) {
-    Actions.maybeInvoke(businessContext, intent);
-
-    // Try to send play status to channel
-    final action = SendPlayStatusAction();
-    if (action.isActionEnabled) action.invoke(SendPlayStatusIntent(), context);
-  }
-}
-
-@immutable
-class SendPlayStatusIntent extends Intent {}
-
-class SendPlayStatusAction extends ContextAction<SendPlayStatusIntent> {
-  @override
-  void invoke(SendPlayStatusIntent intent, [BuildContext? context]) {
-    final playService = getIt<PlayService>();
-    final messageData = PlayAtMessageData(
-      sender: User.fromContext(context!),
-      position: playService.positionNotifier.value,
-      isPlaying: playService.playStatusNotifier.value.isPlaying,
-      when: DateTime.now().toUtc(),
-    );
-    Actions.invoke(context, SendMessageIntent(messageData));
-  }
-
-  @override
-  bool isEnabled(SendPlayStatusIntent intent, [BuildContext? context]) {
-    return context?.read<List<User>?>() != null;
-  }
-}
 
 @immutable
 class ShareVideoIntent extends Intent {
@@ -208,6 +152,25 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
 
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
+    final shortcuts = child!.applyShortcuts({
+      ShortcutKey.forward5Sec: SeekIntent.increase(Duration(seconds: 5)),
+      ShortcutKey.backward5Sec: SeekIntent.increase(Duration(seconds: -5)),
+      ShortcutKey.togglePlay: ToggleIntent(),
+    });
+
+    final actions = shortcuts.actions(actions: {
+      ToggleIntent: CallbackAction<ToggleIntent>(
+        onInvoke: (intent) => _sendPlayStatus(),
+      ).passthrough(context, invokeAfterParent: true),
+      SeekIntent: CallbackAction<SeekIntent>(
+        onInvoke: (intent) => _sendPlayStatus(),
+      ).passthrough(context, invokeAfterParent: true),
+      ShareVideoIntent: ShareVideoAction(
+        shouldAnswerWhereSetter: () => _shouldAnswerWhere = true,
+      ),
+      AskPositionIntent: AskPositionAction(),
+    });
+
     return MultiProvider(
       providers: [
         ValueListenableProvider.value(value: _channelSubtitleNotifier),
@@ -217,15 +180,19 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
           proxy: (value) => RemoteJustToggled(value),
         ),
       ],
-      child: child?.actions(actions: {
-        ToggleIntent: SyncToggleAction(businessContext: context),
-        SeekIntent: SyncSeekAction(businessContext: context),
-        ShareVideoIntent: ShareVideoAction(
-          shouldAnswerWhereSetter: () => _shouldAnswerWhere = true,
-        ),
-        AskPositionIntent: AskPositionAction(),
-      }),
+      child: actions,
     );
+  }
+
+  void _sendPlayStatus() {
+    final playService = getIt<PlayService>();
+    final messageData = PlayAtMessageData(
+      sender: User.fromContext(context),
+      position: playService.positionNotifier.value,
+      isPlaying: playService.playStatusNotifier.value.isPlaying,
+      when: DateTime.now().toUtc(),
+    );
+    Actions.invoke(context, SendMessageIntent(messageData));
   }
 
   void _dealWithProjection(StartProjectionMessageData data) async {
@@ -287,8 +254,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
     // No history, not even played
     if (!history.containsKey(record?.id)) return;
 
-    final action = SendPlayStatusAction();
-    action.invoke(SendPlayStatusIntent(), context);
+    _sendPlayStatus();
   }
 
   void _dealWithPlayAt(PlayAtMessageData data) {
