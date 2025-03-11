@@ -12,7 +12,6 @@ class SettingProxy extends ValueNotifier<String?> {
       getIt<NetworkService>().setProxy(value);
     });
     bindPreference<String>(
-      preferences: getIt<Preferences>(),
       key: 'proxy',
       load: (pref) => pref,
       update: (value) => value,

@@ -1,4 +1,5 @@
 import 'package:bunga_player/services/logger.dart';
+import 'package:bunga_player/services/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -76,20 +77,19 @@ class Preferences {
 
 extension BindPreference<R> on ValueNotifier<R> {
   void bindPreference<T>({
-    required Preferences preferences,
     required String key,
     required R Function(T pref) load,
     required T? Function(R value) update,
   }) {
-    addListener(() {
-      preferences.set(key, update(value));
-    });
+    final pref = getIt<Preferences>();
 
-    final pref = preferences.get<T>(key);
-    if (pref != null) {
-      value = load(pref);
-    } else {
-      preferences.set(key, update(value));
+    final prefValue = pref.get<T>(key);
+    if (prefValue != null) {
+      value = load(prefValue);
     }
+
+    addListener(() {
+      pref.set(key, update(value));
+    });
   }
 }

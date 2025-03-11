@@ -9,7 +9,6 @@ import 'package:vector_graphics/vector_graphics.dart';
 import 'package:bunga_player/chat/global_business.dart';
 import 'package:bunga_player/chat/models/message_data.dart';
 import 'package:bunga_player/chat/models/user.dart';
-import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:bunga_player/services/preferences.dart';
 
@@ -21,7 +20,6 @@ class RecentPopmojisNotifier extends ValueNotifier<List<String>> {
   RecentPopmojisNotifier()
       : super(["🎆", "😆", "😭", "😍", "🤤", "🫣", "🤮", "🤡", "🔥"]) {
     bindPreference<List<String>>(
-      preferences: getIt<Preferences>(),
       key: 'recent_popmojis',
       load: (pref) => value,
       update: (value) => value,

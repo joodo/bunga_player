@@ -21,7 +21,6 @@ class ClientId extends ValueNotifier<String> {
 class ClientNicknameNotifier extends ValueNotifier<String> {
   ClientNicknameNotifier() : super('') {
     bindPreference<String>(
-      preferences: getIt<Preferences>(),
       key: 'user_name',
       load: (pref) => pref,
       update: (value) => value,
@@ -32,7 +31,6 @@ class ClientNicknameNotifier extends ValueNotifier<String> {
 class ClientColorHue extends ValueNotifier<int> {
   ClientColorHue(super._value) {
     bindPreference<int>(
-      preferences: getIt<Preferences>(),
       key: 'color_hue',
       load: (pref) => pref,
       update: (value) => value,

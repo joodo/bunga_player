@@ -23,7 +23,6 @@ class AlwaysOnTopNotifier extends ValueNotifier<bool> {
       windowManager.setAlwaysOnTop(value);
     });
     bindPreference<bool>(
-      preferences: getIt<Preferences>(),
       key: 'always_on_top',
       load: (pref) => pref,
       update: (value) => value,
@@ -73,7 +72,6 @@ class ScreenLockedNotifier extends ValueNotifier<bool> {
 class AutoJoinChannelNotifier extends ValueNotifier<bool> {
   AutoJoinChannelNotifier() : super(true) {
     bindPreference<bool>(
-      preferences: getIt<Preferences>(),
       key: 'auto_join_channel',
       load: (pref) => pref,
       update: (value) => value,
@@ -111,7 +109,6 @@ class ShortcutMappingNotifier
 
   ShortcutMappingNotifier() : super(defaultMapping) {
     bindPreference<String>(
-      preferences: getIt<Preferences>(),
       key: 'shortcut_mapping',
       load: (pref) {
         final savedMap = (jsonDecode(pref) as Map<String, dynamic>)
