@@ -126,13 +126,14 @@ class _CallButtonState extends State<CallButton> {
                   Consumer<AgoraClient>(
                     builder: (context, client, child) => ValueListenableBuilder(
                       valueListenable: client.micMuteNotifier,
-                      builder: (context, muted, child) => IconButton(
-                        style: muted
-                            ? const ButtonStyle(
-                                backgroundColor:
-                                    WidgetStatePropertyAll<Color>(Colors.red),
-                              )
-                            : null,
+                      builder: (context, muted, child) => IconButton.outlined(
+                        style: const ButtonStyle(
+                          backgroundColor: WidgetStateProperty.fromMap({
+                            WidgetState.selected: Colors.red,
+                            WidgetState.any: null,
+                          }),
+                        ),
+                        isSelected: muted,
                         color: Colors.white70,
                         onPressed: Actions.handler(context, ToggleMicIntent()),
                         icon: Icon(muted ? Icons.mic_off : Icons.mic),
