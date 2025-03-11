@@ -7,6 +7,7 @@ import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:bunga_player/voice_call/business.dart';
 import 'package:bunga_player/voice_call/client/client.agora.dart';
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
@@ -17,9 +18,10 @@ class AdjustIndicator extends StatefulWidget {
   State<AdjustIndicator> createState() => _AdjustIndicatorState();
 }
 
-enum ChangedValue { brightness, volume, voiceVolume, micMute }
+enum ChangedValue { brightness, volume, voiceVolume, micMute, lockScreen }
 
-class _AdjustIndicatorState extends State<AdjustIndicator> {
+class _AdjustIndicatorState extends State<AdjustIndicator>
+    with SingleTickerProviderStateMixin {
   final _visibleNotifier = AutoResetNotifier(const Duration(seconds: 1));
   ChangedValue? _changedValue = ChangedValue.brightness;
 
@@ -27,6 +29,13 @@ class _AdjustIndicatorState extends State<AdjustIndicator> {
   late final _volumeNotifier = getIt<PlayService>().volumeNotifier;
   late final _voiceNotifier = context.read<AgoraClient>().volumeNotifier;
   late final _micMuteNotifier = context.read<AgoraClient>().micMuteNotifier;
+  late final _screenLockedNotifier = context.read<ScreenLockedNotifier>();
+
+  late final _lockAnimationController = AnimationController(
+    vsync: this,
+    upperBound: 0.5,
+    duration: const Duration(milliseconds: 300),
+  );
 
   @override
   void initState() {
@@ -36,6 +45,7 @@ class _AdjustIndicatorState extends State<AdjustIndicator> {
     _volumeNotifier.addListener(_onChangeVolume);
     _voiceNotifier.addListener(_onChangeVoiceVolume);
     _micMuteNotifier.addListener(_onChangeMicMute);
+    _screenLockedNotifier.addListener(_onChangeLockScreen);
   }
 
   @override
@@ -48,9 +58,32 @@ class _AdjustIndicatorState extends State<AdjustIndicator> {
         child: [
           Icon(
             _micMuteNotifier.value ? Icons.mic_off : Icons.mic,
-            size: 60,
+            size: 60.0,
           ),
           Text(_micMuteNotifier.value ? '麦克已关闭' : '麦克已打开')
+              .textColor(Colors.white)
+              .padding(top: 12.0),
+        ]
+            .toColumn()
+            .padding(horizontal: 12.0, vertical: 16.0)
+            .card(color: colorScheme.tertiary.withAlpha(170)),
+      );
+    }
+
+    if (_changedValue == ChangedValue.lockScreen) {
+      _screenLockedNotifier.value
+          ? _lockAnimationController.reverse()
+          : _lockAnimationController.forward();
+      return PopupWidget(
+        visibleNotifier: _visibleNotifier,
+        child: [
+          Lottie.asset(
+            'assets/images/lock.json',
+            controller: _lockAnimationController,
+          )
+              .overflow(maxHeight: 80.0, minWidth: 80.0)
+              .constrained(width: 60.0, height: 60.0),
+          Text(_screenLockedNotifier.value ? '已锁屏' : '已解锁')
               .textColor(Colors.white)
               .padding(top: 12.0),
         ]
@@ -151,6 +184,9 @@ class _AdjustIndicatorState extends State<AdjustIndicator> {
     _volumeNotifier.removeListener(_onChangeVolume);
     _voiceNotifier.removeListener(_onChangeVoiceVolume);
     _micMuteNotifier.removeListener(_onChangeMicMute);
+    _screenLockedNotifier.removeListener(_onChangeLockScreen);
+
+    _lockAnimationController.dispose();
 
     super.dispose();
   }
@@ -163,7 +199,7 @@ class _AdjustIndicatorState extends State<AdjustIndicator> {
   }
 
   void _onChangeVolume() {
-    if (context.read<ShouldShowHUD>().value) return;
+    if (context.read<ShouldShowHUDNotifier>().value) return;
 
     _visibleNotifier.mark();
     setState(() {
@@ -172,7 +208,9 @@ class _AdjustIndicatorState extends State<AdjustIndicator> {
   }
 
   void _onChangeVoiceVolume() {
-    if (context.read<ShouldShowHUD>().locks.contains('call button')) return;
+    if (context.read<ShouldShowHUDNotifier>().locks.contains('call button')) {
+      return;
+    }
     _visibleNotifier.mark();
     setState(() {
       _changedValue = ChangedValue.voiceVolume;
@@ -180,10 +218,19 @@ class _AdjustIndicatorState extends State<AdjustIndicator> {
   }
 
   void _onChangeMicMute() {
-    if (context.read<ShouldShowHUD>().locks.contains('call button')) return;
+    if (context.read<ShouldShowHUDNotifier>().locks.contains('call button')) {
+      return;
+    }
     _visibleNotifier.mark();
     setState(() {
       _changedValue = ChangedValue.micMute;
+    });
+  }
+
+  void _onChangeLockScreen() {
+    _visibleNotifier.mark();
+    setState(() {
+      _changedValue = ChangedValue.lockScreen;
     });
   }
 

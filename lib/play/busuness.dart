@@ -158,7 +158,7 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
       await play.open(payload);
 
       if (!context.mounted) throw StateError('Context unmounted.');
-      context.read<WindowTitle>().value = payload.record.title;
+      context.read<WindowTitleNotifier>().value = payload.record.title;
 
       payloadNotifer.value = payload;
     } catch (e) {
@@ -389,7 +389,7 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
 
     _isVideoBufferingNotifier.addListener(_updateBusyCount);
     _busyCountNotifer.addListener(() {
-      final showHUDNotifier = context.read<ShouldShowHUD>();
+      final showHUDNotifier = context.read<ShouldShowHUDNotifier>();
       if (_busyCountNotifer.value.isBusy) {
         showHUDNotifier.lockUp('busy');
       } else {

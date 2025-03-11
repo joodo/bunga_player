@@ -57,7 +57,7 @@ class _VideoProgressBarState extends State<VideoProgressBar> {
         player.bufferNotifier,
       ]),
       builder: (context, child) {
-        final showHUDNotifier = context.read<ShouldShowHUD>();
+        final showHUDNotifier = context.read<ShouldShowHUDNotifier>();
 
         final duration = player.durationNotifier.value;
         final position = Duration(milliseconds: _currentPosition.toInt());

@@ -42,7 +42,7 @@ class PlayerUI extends StatelessWidget {
       ),
     ].toStack(fit: StackFit.expand);
 
-    return Consumer<ShouldShowHUD>(
+    return Consumer<ShouldShowHUDNotifier>(
       builder: (context, showNotfier, child) => ValueListenableBuilder(
         valueListenable: showNotfier,
         builder: (context, show, child) => IgnorePointer(

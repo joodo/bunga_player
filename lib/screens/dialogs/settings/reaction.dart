@@ -58,7 +58,7 @@ class _ReactionSettingsState extends State<ReactionSettings> {
           .padding(all: 16.0)
           .sectionContainer(),
       const Text('行为').sectionTitle(),
-      Consumer<AutoJoinChannel>(
+      Consumer<AutoJoinChannelNotifier>(
         builder: (context, autoJoinNotifier, child) => SwitchListTile(
           title: const Text('频道中有人分享时自动加入'),
           value: autoJoinNotifier.value,

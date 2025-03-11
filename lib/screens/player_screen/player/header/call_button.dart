@@ -30,7 +30,7 @@ class _CallButtonState extends State<CallButton> {
   void initState() {
     super.initState();
     _overlayVisibleNotifier.addListener(() {
-      final showHUDNotifier = context.read<ShouldShowHUD>();
+      final showHUDNotifier = context.read<ShouldShowHUDNotifier>();
       if (_overlayVisibleNotifier.value) {
         _overlayController.show();
         showHUDNotifier.lockUp('call button');

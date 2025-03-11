@@ -20,7 +20,7 @@ class DesktopInteractiveRegion extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ShouldShowHUD>(
+    return Consumer<ShouldShowHUDNotifier>(
       builder: (context, shouldShowHUDNotifier, child) => MouseRegion(
         opaque: false,
         cursor: shouldShowHUDNotifier.value
@@ -40,7 +40,7 @@ class DesktopInteractiveRegion extends StatelessWidget {
             context,
             ToggleIntent(forgetSavedPosition: true),
           ),
-          onDoubleTap: context.read<IsFullScreen>().toggle,
+          onDoubleTap: context.read<IsFullScreenNotifier>().toggle,
         ),
       ),
     );
@@ -73,7 +73,7 @@ class TouchInteractiveRegion extends StatefulWidget {
 }
 
 class _TouchInteractiveRegionState extends State<TouchInteractiveRegion> {
-  late final _showHUDNotifier = context.read<ShouldShowHUD>();
+  late final _showHUDNotifier = context.read<ShouldShowHUDNotifier>();
 
   Offset _dragStartPoint = Offset.zero;
 
@@ -90,7 +90,6 @@ class _TouchInteractiveRegionState extends State<TouchInteractiveRegion> {
   // Lock button
   final _lockButtonVisibleNotifier =
       AutoResetNotifier(const Duration(seconds: 5))..mark();
-  bool _locked = false;
 
   @override
   void initState() {
@@ -102,10 +101,11 @@ class _TouchInteractiveRegionState extends State<TouchInteractiveRegion> {
   Widget build(BuildContext context) {
     final play = getIt<PlayService>();
     final voiceNotifier = context.read<AgoraClient>().volumeNotifier;
+    final lockedNotifier = context.watch<ScreenLockedNotifier>();
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onTap: () {
-        if (_locked) {
+        if (lockedNotifier.value) {
           _lockButtonVisibleNotifier.mark();
         } else {
           _showHUDNotifier.value
@@ -113,13 +113,13 @@ class _TouchInteractiveRegionState extends State<TouchInteractiveRegion> {
               : _showHUDNotifier.mark();
         }
       },
-      onDoubleTap: _locked
+      onDoubleTap: lockedNotifier.value
           ? null
           : Actions.handler(
               context,
               ToggleIntent(forgetSavedPosition: true),
             ),
-      onHorizontalDragStart: _locked
+      onHorizontalDragStart: lockedNotifier.value
           ? null
           : (details) {
               _showHUDNotifier.lockUp('drag');
@@ -130,7 +130,7 @@ class _TouchInteractiveRegionState extends State<TouchInteractiveRegion> {
               _isPlayingBeforeDrag = play.playStatusNotifier.value.isPlaying;
               play.pause();
             },
-      onHorizontalDragUpdate: _locked
+      onHorizontalDragUpdate: lockedNotifier.value
           ? null
           : (details) {
               final xOffset = details.localPosition.dx - _dragStartPoint.dx;
@@ -139,7 +139,7 @@ class _TouchInteractiveRegionState extends State<TouchInteractiveRegion> {
               );
               play.seek(_dargStartVideoPosition + positionOffset);
             },
-      onHorizontalDragEnd: _locked
+      onHorizontalDragEnd: lockedNotifier.value
           ? null
           : (details) {
               final xOffset = details.localPosition.dx - _dragStartPoint.dx;
@@ -153,9 +153,9 @@ class _TouchInteractiveRegionState extends State<TouchInteractiveRegion> {
                 SeekIntent(_dargStartVideoPosition + positionOffset),
               );
 
-              context.read<ShouldShowHUD>().unlock('drag');
+              context.read<ShouldShowHUDNotifier>().unlock('drag');
             },
-      onVerticalDragStart: _locked
+      onVerticalDragStart: lockedNotifier.value
           ? null
           : (details) {
               _dragStartPoint = details.localPosition;
@@ -185,7 +185,7 @@ class _TouchInteractiveRegionState extends State<TouchInteractiveRegion> {
                     play.volumeNotifier.value.volume.toDouble();
               }
             },
-      onVerticalDragUpdate: _locked
+      onVerticalDragUpdate: lockedNotifier.value
           ? null
           : (details) {
               final delta = _dragStartPoint.dy - details.localPosition.dy;
@@ -234,7 +234,7 @@ class _TouchInteractiveRegionState extends State<TouchInteractiveRegion> {
                 }
               }
             },
-      onVerticalDragEnd: _locked
+      onVerticalDragEnd: lockedNotifier.value
           ? null
           : (details) {
               if (!_isAdjustingBrightness) {
@@ -249,19 +249,15 @@ class _TouchInteractiveRegionState extends State<TouchInteractiveRegion> {
           visible: visible,
           child: IconButton.outlined(
             onPressed: () {
-              if (_locked) {
-                setState(() {
-                  _locked = false;
-                });
+              if (lockedNotifier.value) {
+                lockedNotifier.value = false;
                 _showHUDNotifier.mark();
               } else {
-                setState(() {
-                  _locked = true;
-                });
+                lockedNotifier.value = true;
                 _showHUDNotifier.reset();
               }
             },
-            icon: Icon(_locked ? Icons.lock : Icons.lock_open),
+            icon: Icon(lockedNotifier.value ? Icons.lock : Icons.lock_open),
           ),
         ).padding(right: 18.0).alignment(Alignment.centerRight),
       ),
@@ -280,7 +276,11 @@ class _TouchInteractiveRegionState extends State<TouchInteractiveRegion> {
       _lockButtonVisibleNotifier.lockUp('hud');
     } else {
       _lockButtonVisibleNotifier.unlock('hud');
-      if (!_locked) _lockButtonVisibleNotifier.reset();
+      // If hide HUD isn't caused by lock button, hide button immediately
+      // else keep showing lock button for a while
+      if (!context.read<ScreenLockedNotifier>().value) {
+        _lockButtonVisibleNotifier.reset();
+      }
     }
   }
 

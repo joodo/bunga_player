@@ -32,7 +32,7 @@ class VideoControl extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final showHud = context.read<ShouldShowHUD>();
+    final showHud = context.read<ShouldShowHUDNotifier>();
 
     return LayoutBuilder(
         builder: (context, constraints) => [
@@ -87,7 +87,7 @@ class VideoControl extends StatelessWidget {
 
               // Full screen button
               if (kIsDesktop)
-                Consumer<IsFullScreen>(
+                Consumer<IsFullScreenNotifier>(
                   builder: (context, isFullScreen, child) => IconButton(
                     icon: isFullScreen.value
                         ? const Icon(Icons.fullscreen_exit)

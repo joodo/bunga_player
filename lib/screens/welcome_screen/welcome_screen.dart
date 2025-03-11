@@ -99,7 +99,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   }
 
   void _dealWithProjection(StartProjectionMessageData data) {
-    final autoJoin = context.read<AutoJoinChannel>().value;
+    final autoJoin = context.read<AutoJoinChannelNotifier>().value;
     final isCurrent = ModalRoute.of(context)?.isCurrent ?? false;
     final isFirstShare = _currentProjection == null;
 
@@ -181,7 +181,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         if (!mounted) return;
 
         // Stop playing
-        context.read<WindowTitle>().reset();
+        context.read<WindowTitleNotifier>().reset();
         getIt<PlayService>().stop();
 
         // Send bye message

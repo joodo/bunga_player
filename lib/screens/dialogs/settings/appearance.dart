@@ -20,7 +20,7 @@ class AppearanceSettings extends StatelessWidget with SettingsTab {
   Widget build(BuildContext context) {
     return [
       const Text('窗口').sectionTitle(),
-      Consumer<AlwaysOnTop>(
+      Consumer<AlwaysOnTopNotifier>(
         builder: (context, alwaysOnTopNotifier, child) => SwitchListTile(
           title: const Text('总在最前'),
           value: alwaysOnTopNotifier.value,

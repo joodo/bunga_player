@@ -14,8 +14,8 @@ import 'package:screen_brightness/screen_brightness.dart';
 import 'package:styled_widget/styled_widget.dart';
 import 'package:window_manager/window_manager.dart';
 
-class AlwaysOnTop extends ValueNotifier<bool> {
-  AlwaysOnTop() : super(false) {
+class AlwaysOnTopNotifier extends ValueNotifier<bool> {
+  AlwaysOnTopNotifier() : super(false) {
     addListener(() async {
       final fullscreen = await windowManager.isFullScreen();
       if (fullscreen) return;
@@ -31,9 +31,9 @@ class AlwaysOnTop extends ValueNotifier<bool> {
   }
 }
 
-class IsFullScreen extends ValueNotifier<bool> {
-  final AlwaysOnTop alwaysOnTop;
-  IsFullScreen(this.alwaysOnTop) : super(false) {
+class IsFullScreenNotifier extends ValueNotifier<bool> {
+  final AlwaysOnTopNotifier alwaysOnTop;
+  IsFullScreenNotifier(this.alwaysOnTop) : super(false) {
     if (!kIsDesktop) {
       value = true;
       return;
@@ -52,8 +52,8 @@ class IsFullScreen extends ValueNotifier<bool> {
   }
 }
 
-class WindowTitle extends ValueNotifierWithReset<String> {
-  WindowTitle() : super('👍 棒嘎大影院，你我来相见') {
+class WindowTitleNotifier extends ValueNotifierWithReset<String> {
+  WindowTitleNotifier() : super('👍 棒嘎大影院，你我来相见') {
     if (!kIsDesktop) return;
     addListener(() {
       windowManager.setTitle(value);
@@ -62,12 +62,16 @@ class WindowTitle extends ValueNotifierWithReset<String> {
   }
 }
 
-class ShouldShowHUD extends AutoResetNotifier {
-  ShouldShowHUD() : super(Duration(seconds: kIsDesktop ? 3 : 5));
+class ShouldShowHUDNotifier extends AutoResetNotifier {
+  ShouldShowHUDNotifier() : super(Duration(seconds: kIsDesktop ? 3 : 5));
 }
 
-class AutoJoinChannel extends ValueNotifier<bool> {
-  AutoJoinChannel() : super(true) {
+class ScreenLockedNotifier extends ValueNotifier<bool> {
+  ScreenLockedNotifier() : super(false);
+}
+
+class AutoJoinChannelNotifier extends ValueNotifier<bool> {
+  AutoJoinChannelNotifier() : super(true) {
     bindPreference<bool>(
       preferences: getIt<Preferences>(),
       key: 'auto_join_channel',
@@ -192,24 +196,28 @@ class _UIGlobalBusinessState extends SingleChildState<UIGlobalBusiness> {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create: (context) => AlwaysOnTop(),
+          create: (context) => AlwaysOnTopNotifier(),
           lazy: false,
         ),
         ChangeNotifierProvider(
-          create: (context) => IsFullScreen(context.read<AlwaysOnTop>()),
+          create: (context) =>
+              IsFullScreenNotifier(context.read<AlwaysOnTopNotifier>()),
         ),
         ChangeNotifierProvider(
-          create: (context) => WindowTitle(),
+          create: (context) => WindowTitleNotifier(),
           lazy: false,
         ),
         ChangeNotifierProvider(
           create: (context) => ScreenBrightnessNotifier(),
           lazy: false,
         ),
-        ChangeNotifierProvider<ShouldShowHUD>(
-          create: (context) => ShouldShowHUD()..mark(),
+        ChangeNotifierProvider<ShouldShowHUDNotifier>(
+          create: (context) => ShouldShowHUDNotifier()..mark(),
         ),
-        ChangeNotifierProvider(create: (context) => AutoJoinChannel()),
+        ChangeNotifierProvider<ScreenLockedNotifier>(
+          create: (context) => ScreenLockedNotifier(),
+        ),
+        ChangeNotifierProvider(create: (context) => AutoJoinChannelNotifier()),
         ChangeNotifierProvider(create: (context) => ShortcutMappingNotifier()),
       ],
       child: child,
