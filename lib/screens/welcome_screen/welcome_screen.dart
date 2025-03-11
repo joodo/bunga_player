@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:animations/animations.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:bunga_player/voice_call/client/client.agora.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
@@ -190,6 +191,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           final byeData = ByeMessageData(userId: myId);
           Actions.invoke(context, SendMessageIntent(byeData));
         }
+
+        // Stop talking
+        context.read<AgoraClient?>()?.leaveChannel();
       },
     );
   }

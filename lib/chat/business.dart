@@ -187,6 +187,9 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
 
   void _dealWithBye(ByeMessageData data) {
     _watchersNotifier.removeUser(data.userId);
+    if (_talkerIdsNotifier.value.contains(data.userId)) {
+      _dealWithTalkStatus(data.userId, TalkStatus.end);
+    }
   }
 
   void _dealWithTalkStatus(String senderId, TalkStatus status) {
