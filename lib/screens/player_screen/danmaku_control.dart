@@ -107,7 +107,7 @@ class _DanmakuControlState extends State<DanmakuControl> {
                   context,
                   ShowPanelIntent(builder: (context) => const PopmojiPanel()),
                 ),
-                icon: Icon(Icons.more_horiz),
+                icon: Icon(Icons.add_circle_outline),
               ),
             ].toRow();
           },
