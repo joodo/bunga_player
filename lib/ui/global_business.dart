@@ -11,7 +11,6 @@ import 'package:flutter/services.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 import 'package:screen_brightness/screen_brightness.dart';
-import 'package:styled_widget/styled_widget.dart';
 import 'package:window_manager/window_manager.dart';
 
 class AlwaysOnTopNotifier extends ValueNotifier<bool> {
@@ -173,18 +172,8 @@ class _UIGlobalBusinessState extends SingleChildState<UIGlobalBusiness> {
   void initState() {
     super.initState();
 
-    getIt<ExitCallbacks>().setShutter(() async {
-      await Future.delayed(const Duration(milliseconds: 500));
-
-      if (!mounted) return;
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => CircularProgressIndicator()
-            .constrained(height: 32.0, width: 32.0)
-            .center(),
-      );
-      await Future.delayed(const Duration(milliseconds: 3000));
+    getIt<ExitCallbacks>().setShutter(() {
+      return Future.delayed(const Duration(milliseconds: 3000));
     });
   }
 

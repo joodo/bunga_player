@@ -85,6 +85,8 @@ class ChannelBusiness extends SingleChildStatefulWidget {
 class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
   late final StreamSubscription _streamSubscription;
 
+  late final _myId = context.read<ClientAccount>().id;
+
   // Watchers
   final _watchersNotifier = WatchersNotifier()..watchInConsole('Watchers');
   late final _refreshWatchersAction =
@@ -96,8 +98,7 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
 
   // Leave message for app exit
   Future<void> _sendLeaveMessage() {
-    final myId = context.read<ClientAccount>().id;
-    final byeData = ByeMessageData(userId: myId);
+    final byeData = ByeMessageData(userId: _myId);
     return Actions.invoke(context, SendMessageIntent(byeData)) as Future;
   }
 
@@ -106,23 +107,22 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
     super.initState();
 
     // Listen to message
-    final myId = context.read<ClientAccount>().id;
     final messageStream = context.read<Stream<Message>>();
 
     _streamSubscription = messageStream.listen((message) {
       switch (message.data['type']) {
         case AlohaMessageData.messageType:
-          if (message.senderId == myId) break;
+          if (message.senderId == _myId) break;
           _dealWithAloha(
             AlohaMessageData.fromJson(message.data),
           );
         case HereIsMessageData.messageType:
-          if (message.senderId == myId) break;
+          if (message.senderId == _myId) break;
           _dealWithHereIs(
             HereIsMessageData.fromJson(message.data),
           );
         case ByeMessageData.messageType:
-          if (message.senderId == myId) break;
+          if (message.senderId == _myId) break;
           _dealWithBye(
             ByeMessageData.fromJson(message.data),
           );
@@ -206,9 +206,8 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
         if (_talkerIdsNotifier.value.remove(senderId)) {
           _talkerIdsNotifier.value = {..._talkerIdsNotifier.value};
 
-          final myId = context.read<ClientAccount>().id;
           if (_talkerIdsNotifier.value.length == 1 &&
-              _talkerIdsNotifier.value.first == myId) {
+              _talkerIdsNotifier.value.first == _myId) {
             getIt<Toast>().show('通话已结束');
             Actions.invoke(context, const HangUpIntent());
           }

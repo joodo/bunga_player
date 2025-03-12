@@ -46,6 +46,8 @@ class _AdjustIndicatorState extends State<AdjustIndicator>
     _voiceNotifier.addListener(_onChangeVoiceVolume);
     _micMuteNotifier.addListener(_onChangeMicMute);
     _screenLockedNotifier.addListener(_onChangeLockScreen);
+
+    _lockAnimationController;
   }
 
   @override
