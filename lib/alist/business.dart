@@ -121,35 +121,42 @@ class AListGlobalBusiness extends SingleChildStatelessWidget {
     return Consumer<BungaClientInfo?>(
       builder: (context, clientInfo, child) {
         final alistInfo = clientInfo?.alist;
-        if (alistInfo == null) return child!;
-
-        Future aListRequest(String path, Map<String, Object?> payload) async {
-          final url = Uri.parse(alistInfo.host).resolve(path);
-          final header = {
-            'Authorization': alistInfo.token,
-            'content-type': 'application/json',
-          };
-
-          final response = await http.post(
-            url,
-            headers: header,
-            body: jsonEncode(payload),
-          );
-
-          if (!response.isSuccess) {
-            throw Exception('AList: get file info failed: $path');
-          }
-
-          return jsonDecode(response.body)['data'];
-        }
-
-        return child!.actions(actions: {
-          ListIntent: ListAction(callback: aListRequest),
-          SearchIntent: SearchAction(callback: aListRequest),
-          GetIntent: GetAction(callback: aListRequest),
-        });
+        return child!.actions(
+          actions: alistInfo == null ? {} : _createType(alistInfo),
+        );
       },
       child: child,
     );
+  }
+
+  Map<Type, Action> _createType(AListInfo info) {
+    final callback = _createCallback(info);
+    return {
+      ListIntent: ListAction(callback: callback),
+      SearchIntent: SearchAction(callback: callback),
+      GetIntent: GetAction(callback: callback),
+    };
+  }
+
+  AlistRequestCallback _createCallback(AListInfo info) {
+    return (String path, Map<String, Object?> payload) async {
+      final url = Uri.parse(info.host).resolve(path);
+      final header = {
+        'Authorization': info.token,
+        'content-type': 'application/json',
+      };
+
+      final response = await http.post(
+        url,
+        headers: header,
+        body: jsonEncode(payload),
+      );
+
+      if (!response.isSuccess) {
+        throw Exception('AList: get file info failed: $path');
+      }
+
+      return jsonDecode(response.body)['data'];
+    };
   }
 }
