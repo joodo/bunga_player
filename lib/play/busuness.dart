@@ -388,14 +388,6 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
     super.initState();
 
     _isVideoBufferingNotifier.addListener(_updateBusyCount);
-    _busyCountNotifer.addListener(() {
-      final showHUDNotifier = context.read<ShouldShowHUDNotifier>();
-      if (_busyCountNotifer.value.isBusy) {
-        showHUDNotifier.lockUp('busy');
-      } else {
-        showHUDNotifier.unlock('busy');
-      }
-    });
 
     // History
     _history = context.read<History>();

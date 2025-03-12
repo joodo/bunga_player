@@ -1,3 +1,4 @@
+import 'package:bunga_player/play/busuness.dart';
 import 'package:bunga_player/ui/global_business.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -47,7 +48,19 @@ class PlayerUI extends StatelessWidget {
         valueListenable: showNotfier,
         builder: (context, show, child) => IgnorePointer(
           ignoring: !show,
-          child: ui.opacity(show ? 1.0 : 0.0, animate: true).animate(
+          child: [
+            ui.opacity(show ? 1.0 : 0.0, animate: true),
+            Consumer<BusyCount>(builder: (context, busyCount, child) {
+              return CircularProgressIndicator(
+                strokeWidth: 3.0,
+                strokeCap: StrokeCap.round,
+              )
+                  .constrained(height: 12.0, width: 12.0)
+                  .opacity(!show && busyCount.isBusy ? 1.0 : 0.0, animate: true)
+                  .padding(all: 16.0)
+                  .alignment(Alignment.bottomLeft);
+            }),
+          ].toStack().animate(
                 const Duration(milliseconds: 300),
                 Curves.easeOutCubic,
               ),
