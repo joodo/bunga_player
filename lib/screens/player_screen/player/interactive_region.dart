@@ -257,6 +257,7 @@ class _TouchInteractiveRegionState extends State<TouchInteractiveRegion> {
                 _showHUDNotifier.reset();
               }
             },
+            isSelected: lockedNotifier.value,
             icon: Icon(lockedNotifier.value ? Icons.lock : Icons.lock_open),
           ),
         ).padding(right: 18.0).alignment(Alignment.centerRight),
