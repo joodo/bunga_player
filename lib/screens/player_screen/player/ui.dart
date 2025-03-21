@@ -49,7 +49,6 @@ class PlayerUI extends StatelessWidget {
         builder: (context, show, child) => IgnorePointer(
           ignoring: !show,
           child: [
-            ui.opacity(show ? 1.0 : 0.0, animate: true),
             Consumer<BusyCount>(builder: (context, busyCount, child) {
               return CircularProgressIndicator(
                 strokeWidth: 3.0,
@@ -60,6 +59,7 @@ class PlayerUI extends StatelessWidget {
                   .padding(all: 16.0)
                   .alignment(Alignment.bottomLeft);
             }),
+            ui.opacity(show ? 1.0 : 0.0, animate: true),
           ].toStack().animate(
                 const Duration(milliseconds: 300),
                 Curves.easeOutCubic,
