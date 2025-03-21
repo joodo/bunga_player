@@ -62,23 +62,10 @@ class _HistoryTabState extends State<HistoryTab> {
                         .center())
                 .constrained(width: 60)
                 .clipRRect(all: 16.0),
-            title: RichText(
-                text: TextSpan(
-              text: entry.videoRecord.title,
-              children: [
-                const TextSpan(text: '   '),
-                WidgetSpan(
-                  alignment: PlaceholderAlignment.middle,
-                  child: Text('已看 ${(entry.progress!.ratio * 100).toInt()}%')
-                      .textStyle(theme.textTheme.labelSmall!)
-                      .padding(horizontal: 8.0, vertical: 4.0)
-                      .decorated(
-                        color: theme.colorScheme.primaryContainer,
-                        borderRadius: BorderRadius.all(Radius.circular(8.0)),
-                      ),
-                ),
-              ],
-            )).padding(bottom: 2.0),
+            title: TitleWithProgress(
+              title: entry.videoRecord.title,
+              progress: entry.progress!.ratio,
+            ).padding(bottom: 4.0),
             subtitle:
                 Text(PlayPayloadParser.getFriendlyPath(entry.videoRecord)),
             trailing: Text(entry.updatedAt.relativeString),
@@ -92,5 +79,40 @@ class _HistoryTabState extends State<HistoryTab> {
         );
       },
     ).material(color: theme.colorScheme.surfaceContainer);
+  }
+}
+
+class TitleWithProgress extends StatelessWidget {
+  final double progress;
+  final String title;
+
+  const TitleWithProgress({
+    super.key,
+    required this.progress,
+    required this.title,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final style = DefaultTextStyle.of(context).style;
+    return RichText(
+        text: TextSpan(
+      text: title,
+      style: style,
+      children: [
+        const TextSpan(text: '  '),
+        WidgetSpan(
+          alignment: PlaceholderAlignment.middle,
+          child: Text('已看 ${(progress * 100).toInt()}%')
+              .textStyle(theme.textTheme.labelSmall!)
+              .padding(horizontal: 8.0, vertical: 4.0)
+              .decorated(
+                color: theme.colorScheme.primaryContainer,
+                borderRadius: BorderRadius.all(Radius.circular(8.0)),
+              ),
+        ),
+      ],
+    ));
   }
 }

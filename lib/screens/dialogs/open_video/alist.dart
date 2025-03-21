@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:bunga_player/alist/business.dart';
 import 'package:bunga_player/alist/extensions.dart';
 import 'package:bunga_player/play/models/history.dart';
+import 'package:bunga_player/screens/dialogs/open_video/history.dart';
 import 'package:bunga_player/screens/dialogs/open_video/open_video.dart';
 import 'package:bunga_player/utils/extensions/int.dart';
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
@@ -407,13 +408,13 @@ class _DirEntry extends StatelessWidget {
                 ))
           .constrained(width: 60)
           .clipRRect(all: 16.0),
-      title: Text(info.name),
+      title: (watchPercent == null
+              ? Text(info.name)
+              : TitleWithProgress(title: info.name, progress: watchPercent!))
+          .padding(bottom: 4.0),
       subtitle: info.type == AListFileType.folder
           ? null
           : Text(info.size.formatBytes),
-      trailing: watchPercent != null
-          ? Text('已看 ${(watchPercent! * 100).toInt()}%')
-          : null,
       onTap: onTap,
     );
 
