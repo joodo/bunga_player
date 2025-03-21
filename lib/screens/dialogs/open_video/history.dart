@@ -1,4 +1,5 @@
 import 'package:bunga_player/play/models/history.dart';
+import 'package:bunga_player/play/payload_parser.dart';
 import 'package:bunga_player/utils/extensions/datetime.dart';
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:collection/collection.dart';
@@ -50,20 +51,37 @@ class _HistoryTabState extends State<HistoryTab> {
             });
           },
           child: ListTile(
-            leading: (entry.videoRecord.thumbUrl == null
-                    ? const Icon(Icons.movie_creation_outlined)
-                        .iconSize(32.0)
-                        .center()
-                    : Image.network(
+            leading: (entry.videoRecord.thumbUrl?.isEmpty == false
+                    ? Image.network(
                         entry.videoRecord.thumbUrl!,
                         fit: BoxFit.cover,
                         height: double.maxFinite,
-                      ))
+                      )
+                    : const Icon(Icons.movie_creation_outlined)
+                        .iconSize(32.0)
+                        .center())
                 .constrained(width: 60)
                 .clipRRect(all: 16.0),
-            title: Text(entry.videoRecord.title),
-            subtitle: Text(entry.updatedAt.relativeString),
-            trailing: Text('已看 ${(entry.progress!.ratio * 100).toInt()}%'),
+            title: RichText(
+                text: TextSpan(
+              text: entry.videoRecord.title,
+              children: [
+                const TextSpan(text: '   '),
+                WidgetSpan(
+                  alignment: PlaceholderAlignment.middle,
+                  child: Text('已看 ${(entry.progress!.ratio * 100).toInt()}%')
+                      .textStyle(theme.textTheme.labelSmall!)
+                      .padding(horizontal: 8.0, vertical: 4.0)
+                      .decorated(
+                        color: theme.colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                      ),
+                ),
+              ],
+            )).padding(bottom: 2.0),
+            subtitle:
+                Text(PlayPayloadParser.getFriendlyPath(entry.videoRecord)),
+            trailing: Text(entry.updatedAt.relativeString),
             onTap: Actions.handler(
                 context,
                 SelectUrlIntent(Uri(

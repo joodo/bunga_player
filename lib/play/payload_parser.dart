@@ -39,6 +39,25 @@ class PlayPayloadParser {
   final BuildContext context;
   PlayPayloadParser(this.context);
 
+  static String getFriendlyPath(VideoRecord record) {
+    switch (record.source) {
+      case _LocalFileParser.recordSource:
+        return '${record.path} (本地文件)';
+      case _AListParser.recordSource:
+        return '${record.path} (网盘文件)';
+      case _HttpParser.recordSource:
+        return '${record.path} (网络链接)';
+      case _BiliVideoParser.recordSource:
+        final [bvid, p, _] = record.path.split('/');
+        return 'https://www.bilibili.com/video/BV$bvid?p=$p (B 站视频)';
+      case _BiliBangumiParser.recordSource:
+        final [_, ep] = record.path.split('/');
+        return 'https://www.bilibili.com/bangumi/play/ep$ep (B 站番剧)';
+      default:
+        throw ArgumentError.value(record.source, 'record.source');
+    }
+  }
+
   Future<PlayPayload> parse({Uri? url, VideoRecord? record}) async {
     if (record != null) {
       if (url != null) logger.w('"record" provided, url will not work.');
