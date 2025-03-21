@@ -48,6 +48,7 @@ class _AListTabState extends State<AListTab> {
   final _recentScrollController = ScrollController();
   final _recentPaths =
       getIt<Preferences>().getOrCreate<List<String>>(_AListPrefKey.recent, []);
+  bool _showRemoveRecent = false;
 
   @override
   void initState() {
@@ -117,7 +118,7 @@ class _AListTabState extends State<AListTab> {
             const Icon(Icons.schedule, size: 14.0)
                 .opacity(0.8)
                 .padding(left: 16.0),
-            const Text('最近').padding(left: 4.0),
+            const Text('最近').padding(left: 4.0, right: 12.0),
             _recentPaths
                 .map(
                   (path) => InputChip(
@@ -125,11 +126,13 @@ class _AListTabState extends State<AListTab> {
                     label: Text(getName(path)),
                     onPressed: () => _cd(path),
                     deleteButtonTooltipMessage: '删除',
-                    onDeleted: () => setState(() {
-                      _recentPaths.remove(path);
-                      getIt<Preferences>()
-                          .set(_AListPrefKey.recent, _recentPaths);
-                    }),
+                    onDeleted: _showRemoveRecent
+                        ? () => setState(() {
+                              _recentPaths.remove(path);
+                              getIt<Preferences>()
+                                  .set(_AListPrefKey.recent, _recentPaths);
+                            })
+                        : null,
                   ),
                 )
                 .toList()
@@ -137,10 +140,22 @@ class _AListTabState extends State<AListTab> {
                 .scrollable(
                   scrollDirection: Axis.horizontal,
                   controller: _recentScrollController,
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  padding: EdgeInsets.only(right: 16.0),
                 )
                 .scrollOptimizer(_recentScrollController)
+                .fadeOutShader()
                 .expanded(),
+            StyledWidget(ChoiceChip(
+              selected: _showRemoveRecent,
+              showCheckmark: false,
+              avatar: const Icon(Icons.delete),
+              label: const Text('删除'),
+              onSelected: (value) {
+                setState(() {
+                  _showRemoveRecent = value;
+                });
+              },
+            )).padding(horizontal: 12.0),
           ].toRow().padding(top: 16.0);
     final dirTitleBar = [
       pathSection,
@@ -455,7 +470,7 @@ extension _ShaderMaskStyle on Widget {
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
           colors: [Colors.transparent, Colors.purple],
-          stops: [0.95, 1.0],
+          stops: [0.98, 1.0],
         ).createShader(rect),
         blendMode: BlendMode.dstOut,
         child: this,
