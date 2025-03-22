@@ -104,7 +104,7 @@ class _AListTabState extends State<AListTab> {
           .scrollOptimizer(_dirScrollController)
           .fadeOutShader()
           .expanded(),
-      StyledWidget(IconButton(
+      StyledWidget(IconButton.outlined(
         onPressed: () {
           setState(() {
             _searchMode = true;
@@ -112,7 +112,7 @@ class _AListTabState extends State<AListTab> {
           _searchFieldFocusNode.requestFocus();
         },
         icon: const Icon(Icons.search),
-      )).padding(right: 16.0),
+      )).padding(right: 12.0),
     ].toRow();
     final recentSection = _recentPaths.isEmpty
         ? const SizedBox.shrink()
@@ -148,18 +148,17 @@ class _AListTabState extends State<AListTab> {
                 .scrollOptimizer(_recentScrollController)
                 .fadeOutShader()
                 .expanded(),
-            StyledWidget(ChoiceChip(
-              selected: _showRemoveRecent,
-              showCheckmark: false,
-              avatar: const Icon(Icons.delete),
-              label: const Text('删除'),
-              onSelected: (value) {
+            StyledWidget(IconButton(
+              isSelected: _showRemoveRecent,
+              icon: const Icon(Icons.delete),
+              iconSize: 18.0,
+              onPressed: () {
                 setState(() {
-                  _showRemoveRecent = value;
+                  _showRemoveRecent = !_showRemoveRecent;
                 });
               },
             )).padding(horizontal: 12.0),
-          ].toRow().padding(top: 16.0);
+          ].toRow().padding(top: 8.0);
     final dirTitleBar = [
       pathSection,
       recentSection,
@@ -182,7 +181,7 @@ class _AListTabState extends State<AListTab> {
         )).padding(right: 8.0),
       ),
       onSubmitted: _search,
-    ).padding(horizontal: 24.0, bottom: 4.0);
+    ).padding(horizontal: 12.0, bottom: 4.0, top: 12.0);
 
     final dialogTitle =
         (_searchMode ? searchTitleBar : dirTitleBar).animatedSize(
