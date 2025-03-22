@@ -6,11 +6,9 @@ class AppWrapper extends SingleChildStatelessWidget {
 
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
-    return SafeArea(
-      child: MaterialApp(
-        theme: Theme.of(context),
-        home: child,
-      ),
+    return MaterialApp(
+      theme: Theme.of(context),
+      home: child,
     );
   }
 }
