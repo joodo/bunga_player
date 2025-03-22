@@ -1,13 +1,9 @@
-import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
 import 'package:bunga_player/play/busuness.dart';
-import 'package:bunga_player/play/models/play_payload.dart';
 import 'package:bunga_player/play/service/service.dart';
-import 'package:bunga_player/play_sync/business.dart';
-import 'package:bunga_player/screens/dialogs/open_video/open_video.dart';
 import 'package:bunga_player/screens/widgets/divider.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/business/preference_notifier.dart';
@@ -21,11 +17,8 @@ import 'package:bunga_player/ui/global_business.dart';
 
 import '../actions.dart';
 import '../business.dart';
-import '../panel/audio_track_panel.dart';
-import '../panel/video_source_panel.dart';
 import '../panel/playlist_panel.dart';
-import '../panel/subtitle_panel.dart';
-import '../panel/video_eq_panel.dart';
+import 'menu_builder.dart';
 
 class VideoControl extends StatelessWidget {
   const VideoControl({super.key});
@@ -80,10 +73,22 @@ class VideoControl extends StatelessWidget {
               )).padding(right: 8.0),
 
               // More button
-              _MoreActionsButton(
-                onMenuOpen: () => showHud.lockUp('popup menu'),
-                onMenuClose: () => showHud.unlock('popup menu'),
-              ).padding(right: 8.0),
+              if (!kIsDesktop)
+                MenuBuilder(
+                  builder: (context, menuChildren, child) => MenuAnchor(
+                    builder: (context, controller, child) => IconButton(
+                      onPressed: controller.isOpen
+                          ? controller.close
+                          : controller.open,
+                      icon: const Icon(Icons.more_horiz),
+                    ),
+                    onOpen: () => showHud.lockUp('popup menu'),
+                    onClose: () => showHud.unlock('popup menu'),
+                    consumeOutsideTap: true,
+                    alignmentOffset: Offset(-48.0, 16.0),
+                    menuChildren: menuChildren,
+                  ),
+                ).padding(right: 8.0),
 
               // Full screen button
               if (kIsDesktop)
@@ -239,143 +244,5 @@ class _DurationButtonState extends State<_DurationButton> {
         );
       },
     );
-  }
-}
-
-class _MoreActionsButton extends StatelessWidget {
-  final VoidCallback? onMenuOpen, onMenuClose;
-  const _MoreActionsButton({this.onMenuOpen, this.onMenuClose});
-
-  @override
-  Widget build(BuildContext context) {
-    return Consumer<PlayPayload?>(
-      builder: (context, payload, child) {
-        final isLocalVideo = {'local', null}.contains(payload?.record.source);
-        return MenuAnchor(
-          builder: (context, controller, child) => IconButton(
-            onPressed: controller.isOpen ? controller.close : controller.open,
-            icon: const Icon(Icons.more_horiz),
-          ),
-          onOpen: onMenuOpen,
-          onClose: onMenuClose,
-          consumeOutsideTap: true,
-          menuChildren: [
-            if (!isLocalVideo) ...[
-              // Reload button
-              MenuItemButton(
-                leadingIcon: const Icon(Icons.refresh),
-                onPressed: Actions.handler(
-                  context,
-                  OpenVideoIntent.record(
-                    payload!.record,
-                  ),
-                ),
-                child: const Text('重新载入    '),
-              ),
-
-              // Source button
-              MenuItemButton(
-                leadingIcon: const Icon(Icons.rss_feed),
-                onPressed: Actions.handler(
-                  context,
-                  ShowPanelIntent(
-                    builder: (context) => const VideoSourcePanel(),
-                  ),
-                ),
-                child: Text('片源 (${payload.sources.videos.length})'),
-              ),
-
-              const Divider(),
-            ],
-
-            SubmenuButton(
-              leadingIcon: const Icon(Icons.tune),
-              menuChildren: [
-                // Video button
-                MenuItemButton(
-                  leadingIcon: const Icon(Icons.image),
-                  onPressed: Actions.handler(
-                    context,
-                    ShowPanelIntent(
-                      builder: (context) => const VideoEqPanel(),
-                    ),
-                  ),
-                  child: const Text('画面   '),
-                ),
-                // Audio button
-                MenuItemButton(
-                  leadingIcon: const Icon(Icons.music_note),
-                  onPressed: Actions.handler(
-                    context,
-                    ShowPanelIntent(
-                      builder: (context) => const AudioTrackPanel(),
-                    ),
-                  ),
-                  child: const Text('音轨'),
-                ),
-                // Subtitle Button
-                MenuItemButton(
-                  leadingIcon: const Icon(Icons.subtitles),
-                  onPressed: Actions.handler(
-                    context,
-                    ShowPanelIntent(
-                      builder: (context) => const SubtitlePanel(),
-                    ),
-                  ),
-                  child: const Text('字幕'),
-                ),
-              ],
-              child: const Text('调整'),
-            ),
-
-            // Change Video Button
-            MenuItemButton(
-              leadingIcon: const Icon(Icons.movie_filter),
-              onPressed: _changeVideo(
-                context,
-                context.read<IsInChannel>().value,
-              ),
-              child: const Text('换片'),
-            ),
-
-            // Leave Button
-            MenuItemButton(
-              leadingIcon: const Icon(Icons.logout),
-              onPressed: Navigator.of(context).pop,
-              child: const Text('离开房间'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  VoidCallback _changeVideo(BuildContext context, bool isCurrentSharing) {
-    return () async {
-      final result = await showModal<OpenVideoDialogResult>(
-        context: context,
-        builder: (BuildContext context) => Dialog.fullscreen(
-          child: OpenVideoDialog(
-            shareToChannel: isCurrentSharing,
-            forceShareToChannel: isCurrentSharing,
-          ),
-        ),
-      );
-      if (result == null) return;
-      if (context.mounted) {
-        final act = Actions.invoke(
-          context,
-          OpenVideoIntent.url(result.url),
-        ) as Future<PlayPayload>;
-
-        final payload = await act;
-        if (context.mounted && !result.onlyForMe) {
-          Actions.invoke(
-            context,
-            ShareVideoIntent(payload.record),
-          );
-        }
-      }
-    };
   }
 }

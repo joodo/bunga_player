@@ -13,6 +13,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
+import 'menu_builder.dart';
 import 'ui.dart';
 
 class DesktopInteractiveRegion extends StatelessWidget {
@@ -20,6 +21,7 @@ class DesktopInteractiveRegion extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final menuController = MenuController();
     return Consumer<ShouldShowHUDNotifier>(
       builder: (context, shouldShowHUDNotifier, child) => MouseRegion(
         opaque: false,
@@ -35,12 +37,23 @@ class DesktopInteractiveRegion extends StatelessWidget {
             shouldShowHUDNotifier.mark();
           }
         },
-        child: GestureDetector(
-          onTap: Actions.handler(
-            context,
-            ToggleIntent(forgetSavedPosition: true),
+        child: MenuBuilder(
+          builder: (context, menuChildren, child) => MenuAnchor(
+            controller: menuController,
+            consumeOutsideTap: true,
+            menuChildren: menuChildren,
+            child: child!.center(),
           ),
-          onDoubleTap: context.read<IsFullScreenNotifier>().toggle,
+          child: GestureDetector(
+            onTap: Actions.handler(
+              context,
+              ToggleIntent(forgetSavedPosition: true),
+            ),
+            onDoubleTap: context.read<IsFullScreenNotifier>().toggle,
+            onSecondaryTapDown: (details) {
+              menuController.open(position: details.localPosition);
+            },
+          ),
         ),
       ),
     );
