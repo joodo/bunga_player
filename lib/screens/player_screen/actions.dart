@@ -19,7 +19,9 @@ class ShowPanelAction extends ContextAction<ShowPanelIntent> {
 }
 
 @immutable
-class ClosePanelIntent extends Intent {}
+class ClosePanelIntent extends Intent {
+  const ClosePanelIntent();
+}
 
 class ClosePanelAction extends ContextAction<ClosePanelIntent> {
   final ValueNotifier<Widget?> widgetNotifier;
