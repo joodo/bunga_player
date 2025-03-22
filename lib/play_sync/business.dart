@@ -190,7 +190,6 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
       sender: User.fromContext(context),
       position: playService.positionNotifier.value,
       isPlaying: playService.playStatusNotifier.value.isPlaying,
-      when: DateTime.now().toUtc(),
     );
     Actions.invoke(context, SendMessageIntent(messageData));
   }
@@ -274,13 +273,10 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
       _remoteJustToggledNotifier.mark();
     }
 
-    Duration remotePosition = data.position;
-    if (data.isPlaying) {
-      remotePosition += DateTime.now().toUtc().difference(data.when);
-    }
-    if (data.isPlaying &&
-            !playService.positionNotifier.value.near(remotePosition) ||
-        playService.positionNotifier.value != remotePosition) {
+    final remotePosition = data.position;
+    final localPosition = playService.positionNotifier.value;
+    if (data.isPlaying && !localPosition.near(remotePosition) ||
+        localPosition != remotePosition) {
       toastType ??= 'seek';
       playService.seek(remotePosition);
     }

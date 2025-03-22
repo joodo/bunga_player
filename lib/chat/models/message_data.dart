@@ -150,13 +150,11 @@ class PlayAtMessageData extends MessageData {
   final User sender;
   final Duration position;
   final bool isPlaying;
-  final DateTime when;
 
   PlayAtMessageData({
     required this.sender,
     required this.position,
     required this.isPlaying,
-    required this.when,
   });
 
   factory PlayAtMessageData.fromJson(Map<String, dynamic> json) =>
