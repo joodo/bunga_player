@@ -139,29 +139,33 @@ class _ShortcutListTile extends StatelessWidget {
   Future<SingleActivator?> _showDialog(BuildContext context, Rect rect) {
     return showDialog<SingleActivator?>(
       context: context,
-      builder: (context) => Dialog(
-        alignment: Alignment.topLeft,
-        insetPadding: EdgeInsets.only(left: rect.left, top: rect.top),
-        child: ListTile(
-          title: Text(title),
-          trailing: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('取消'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context)
-                  .pop(const SingleActivator(LogicalKeyboardKey(0))),
-              child: const Text('清空'),
-            ),
-            const SizedBox(width: 8),
-            _ShortcutRecorder(
-              placeholder: const Text('输入新快捷键'),
-              onFinished: (value) => Navigator.of(context).pop(value),
-            ),
-          ].toRow(mainAxisSize: MainAxisSize.min),
-        ).constrained(width: rect.width, height: rect.height),
-      ),
+      builder: (context) {
+        final safePadding = MediaQuery.of(context).viewInsets;
+        final offset = rect.topLeft - safePadding.topLeft;
+        return Dialog(
+          alignment: Alignment.topLeft,
+          insetPadding: EdgeInsets.only(left: offset.dx, top: offset.dy),
+          child: ListTile(
+            title: Text(title),
+            trailing: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('取消'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context)
+                    .pop(const SingleActivator(LogicalKeyboardKey(0))),
+                child: const Text('清空'),
+              ),
+              const SizedBox(width: 8),
+              _ShortcutRecorder(
+                placeholder: const Text('输入新快捷键'),
+                onFinished: (value) => Navigator.of(context).pop(value),
+              ),
+            ].toRow(mainAxisSize: MainAxisSize.min),
+          ).constrained(width: rect.width, height: rect.height),
+        );
+      },
     );
   }
 }
