@@ -201,7 +201,9 @@ class _AdjustIndicatorState extends State<AdjustIndicator>
   }
 
   void _onChangeVolume() {
-    if (context.read<ShouldShowHUDNotifier>().value) return;
+    if (context.read<ShouldShowHUDNotifier>().locks.contains('volume slider')) {
+      return;
+    }
 
     _visibleNotifier.mark();
     setState(() {
@@ -210,7 +212,7 @@ class _AdjustIndicatorState extends State<AdjustIndicator>
   }
 
   void _onChangeVoiceVolume() {
-    if (context.read<ShouldShowHUDNotifier>().locks.contains('call button')) {
+    if (context.read<ShouldShowHUDNotifier>().locks.contains('voice slider')) {
       return;
     }
     _visibleNotifier.mark();

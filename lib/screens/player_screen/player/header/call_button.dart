@@ -104,6 +104,11 @@ class _CallButtonState extends State<CallButton> {
                         max: 100,
                         value: volume.volume.toDouble(),
                         label: '${volume.volume}%',
+                        onChangeStart: (value) {
+                          context
+                              .read<ShouldShowHUDNotifier>()
+                              .lockUp('voice slider');
+                        },
                         onChanged: (double value) {
                           final newVolume = Volume(volume: value.toInt());
                           Actions.invoke(
@@ -116,6 +121,9 @@ class _CallButtonState extends State<CallButton> {
                             context,
                             UpdateVoiceVolumeIntent.save(),
                           );
+                          context
+                              .read<ShouldShowHUDNotifier>()
+                              .unlock('voice slider');
                         },
                       ),
                     ),

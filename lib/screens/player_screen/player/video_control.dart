@@ -176,17 +176,20 @@ class _SliderSection extends StatelessWidget {
           value: volume.mute ? 0.0 : volume.volume.toDouble(),
           max: Volume.max.toDouble(),
           label: '${volume.volume}%',
-          onChanged: (value) {
+          onChangeStart: (value) {
+            context.read<ShouldShowHUDNotifier>().lockUp('volume slider');
+          },
+          onChanged: (value) => Actions.invoke(
+            context,
+            UpdateVolumeIntent(Volume(volume: value.toInt())),
+          ),
+          onChangeEnd: (value) {
             Actions.invoke(
               context,
-              UpdateVolumeIntent(Volume(volume: value.toInt())),
+              UpdateVolumeIntent.save(),
             );
-            play.volumeNotifier.value = Volume(volume: value.toInt());
+            context.read<ShouldShowHUDNotifier>().unlock('volume slider');
           },
-          onChangeEnd: (value) => Actions.invoke(
-            context,
-            UpdateVolumeIntent.save(),
-          ),
           focusNode: FocusNode(canRequestFocus: false),
         ).controlSliderTheme(context).constrained(height: 24).flexible(),
       ].toRow(),
