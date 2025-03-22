@@ -23,18 +23,26 @@ class ConsoleDialog extends StatefulWidget {
 class _ConsoleDialogState extends State<ConsoleDialog> {
   @override
   Widget build(BuildContext context) {
-    final logView = TextField(
-      controller: widget.logTextController,
-      decoration: const InputDecoration(
-        border: OutlineInputBorder(),
-      ),
-      style: Theme.of(context).textTheme.labelMedium,
-      expands: true,
-      textAlignVertical: TextAlignVertical.top,
-      keyboardType: TextInputType.multiline,
-      maxLines: null,
-      readOnly: true,
-    );
+    final logView = [
+      FilledButton(
+        onPressed: () {
+          widget.logTextController.clear();
+        },
+        child: const Text('Clear logs'),
+      ).padding(bottom: 8.0),
+      TextField(
+        controller: widget.logTextController,
+        decoration: const InputDecoration(
+          border: OutlineInputBorder(),
+        ),
+        style: Theme.of(context).textTheme.labelMedium,
+        expands: true,
+        textAlignVertical: TextAlignVertical.top,
+        keyboardType: TextInputType.multiline,
+        maxLines: null,
+        readOnly: true,
+      ).expanded(),
+    ].toColumn();
 
     final actionView = Column(
       children: [
