@@ -104,13 +104,14 @@ class TitleWithProgress extends StatelessWidget {
         const TextSpan(text: '  '),
         WidgetSpan(
           alignment: PlaceholderAlignment.middle,
-          child: Text('已看 ${(progress * 100).toInt()}%')
-              .textStyle(theme.textTheme.labelSmall!)
-              .padding(horizontal: 8.0, vertical: 4.0)
-              .decorated(
-                color: theme.colorScheme.primaryContainer,
-                borderRadius: BorderRadius.all(Radius.circular(8.0)),
-              ),
+          child:
+              Text(progress < 0.95 ? '已看 ${(progress * 100).toInt()}%' : '已看完')
+                  .textStyle(theme.textTheme.labelSmall!)
+                  .padding(horizontal: 8.0, vertical: 4.0)
+                  .decorated(
+                    color: theme.colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                  ),
         ),
       ],
     ));

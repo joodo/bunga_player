@@ -250,8 +250,10 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
 
     final history = context.read<History>().value;
     final record = context.read<PlayPayload?>()?.record;
-    // No history, not even played
-    if (!history.containsKey(record?.id)) return;
+
+    final isPlaying = getIt<PlayService>().playStatusNotifier.value.isPlaying;
+    // No history, not even played, should not answer
+    if (!isPlaying && !history.containsKey(record?.id)) return;
 
     _sendPlayStatus();
   }

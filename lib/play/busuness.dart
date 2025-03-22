@@ -374,7 +374,7 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
   // History
   late final History _history;
   late final RestartableTimer _saveWatchProgressTimer = RestartableTimer(
-    const Duration(seconds: 3),
+    const Duration(seconds: 7),
     () {
       _updateProgress();
       _saveWatchProgressTimer.reset();
