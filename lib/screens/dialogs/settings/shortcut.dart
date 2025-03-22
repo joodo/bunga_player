@@ -137,10 +137,10 @@ class _ShortcutListTile extends StatelessWidget {
   }
 
   Future<SingleActivator?> _showDialog(BuildContext context, Rect rect) {
+    final safePadding = MediaQuery.of(context).padding;
     return showDialog<SingleActivator?>(
       context: context,
       builder: (context) {
-        final safePadding = MediaQuery.of(context).padding;
         final offset = rect.topLeft - safePadding.topLeft;
         return Dialog(
           alignment: Alignment.topLeft,
