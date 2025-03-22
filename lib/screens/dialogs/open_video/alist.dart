@@ -1,21 +1,22 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:flutter/material.dart';
+import 'package:path/path.dart' as path_tool;
+import 'package:provider/provider.dart';
+import 'package:styled_widget/styled_widget.dart';
+
+import 'package:bunga_player/services/preferences.dart';
+import 'package:bunga_player/services/services.dart';
+import 'package:bunga_player/alist/models.dart';
 import 'package:bunga_player/alist/business.dart';
 import 'package:bunga_player/alist/extensions.dart';
 import 'package:bunga_player/play/models/history.dart';
+import 'package:bunga_player/screens/widgets/scroll_optimizer.dart';
 import 'package:bunga_player/screens/dialogs/open_video/history.dart';
 import 'package:bunga_player/screens/dialogs/open_video/open_video.dart';
 import 'package:bunga_player/utils/extensions/int.dart';
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:styled_widget/styled_widget.dart';
-
-import 'package:bunga_player/alist/models.dart';
-import 'package:bunga_player/screens/widgets/scroll_optimizer.dart';
-import 'package:bunga_player/services/preferences.dart';
-import 'package:bunga_player/services/services.dart';
 
 class _AListPrefKey {
   static const recent = 'alist_recent';
@@ -124,7 +125,8 @@ class _AListTabState extends State<AListTab> {
                 .map(
                   (path) => InputChip(
                     key: ValueKey(path),
-                    label: Text(getName(path)),
+                    label: Text(path_tool.basename(path)),
+                    tooltip: path,
                     onPressed: () => _cd(path),
                     deleteButtonTooltipMessage: '删除',
                     onDeleted: _showRemoveRecent
@@ -272,11 +274,6 @@ class _AListTabState extends State<AListTab> {
       dialogTitle,
       dialogContent.padding(top: 8.0).flexible(),
     ].toColumn();
-  }
-
-  String getName(String path) {
-    final split = path.split('/')..removeWhere((e) => e.isEmpty);
-    return split.isEmpty ? '' : split.last;
   }
 
   late String _lastSuccessPath = _currentPath;
