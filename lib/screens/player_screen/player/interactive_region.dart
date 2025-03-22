@@ -170,17 +170,7 @@ class _TouchInteractiveRegionState extends State<TouchInteractiveRegion> {
               } else {
                 // Adjust volume
                 _farthestX = _dragStartPoint.dx;
-                if (_volumeAdjustType == _VolumeAdjustType.voice) {
-                  if (_canAdjustVoice()) {
-                    _dragStartDeviceValue =
-                        voiceNotifier.value.volume.toDouble();
-                    return;
-                  } else {
-                    // Last time adjust voice, but cannot adjust this time
-                    _volumeAdjustType = _VolumeAdjustType.media;
-                  }
-                }
-
+                _volumeAdjustType = _VolumeAdjustType.media;
                 _dragStartDeviceValue =
                     play.volumeNotifier.value.volume.toDouble();
               }
