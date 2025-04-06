@@ -75,27 +75,29 @@ class _SubtitlePanelState extends State<SubtitlePanel> {
               builder: (context, tracks, child) => ValueListenableBuilder(
                 valueListenable: player.subtitleTrackNotifier,
                 builder: (context, currentTrack, child) => [
-                  ...tracks.where((e) => !e.id.startsWith('\$n')).map((e) =>
-                      RadioListTile(
-                        key: ValueKey(e.id),
-                        title: Text(_toTitle(e)),
-                        value: e.id,
-                        groupValue: currentTrack.id,
-                        secondary: isInChannel.value && e.id.startsWith('\$e')
-                            ? IconButton(
-                                icon: Icon(Icons.ios_share),
-                                tooltip: '分享给他人',
-                                onPressed: () {
-                                  _shareSubtitle(e.id);
-                                },
-                              )
-                            : null,
-                        onChanged: (String? id) {
-                          if (id == null) return;
-                          Actions.invoke(context, SetSubtitleTrackIntent(id));
-                        },
-                      )),
-                  if (isInChannel.value)
+                  ...tracks
+                      .where((e) => !e.id.startsWith('\$n'))
+                      .map((e) => RadioListTile(
+                            key: ValueKey(e.id),
+                            title: Text(_toTitle(e)),
+                            value: e.id,
+                            groupValue: currentTrack.id,
+                            secondary: isInChannel && e.id.startsWith('\$e')
+                                ? IconButton(
+                                    icon: Icon(Icons.ios_share),
+                                    tooltip: '分享给他人',
+                                    onPressed: () {
+                                      _shareSubtitle(e.id);
+                                    },
+                                  )
+                                : null,
+                            onChanged: (String? id) {
+                              if (id == null) return;
+                              Actions.invoke(
+                                  context, SetSubtitleTrackIntent(id));
+                            },
+                          )),
+                  if (isInChannel)
                     Consumer<Map<String, ChannelSubtitle>>(
                       builder: (context, channelSubtitles, child) =>
                           channelSubtitles.values

@@ -48,11 +48,7 @@ class WatchersNotifier extends ValueNotifier<List<User>> {
   }
 }
 
-@immutable
-class TalkerId {
-  final String value;
-  const TalkerId(this.value);
-}
+extension type TalkerId(String value) {}
 
 // Actions
 

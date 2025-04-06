@@ -24,8 +24,8 @@ class ReactionSettings extends StatefulWidget with SettingsTab {
 
 class _ReactionSettingsState extends State<ReactionSettings> {
   late final _nicknameNotifier = context.read<ClientNicknameNotifier>();
-  late final _hueProvider = context.read<ClientColorHue>();
-  late int _hue = _hueProvider.value;
+  late final _hueNotifier = context.read<ClientColorHueNotifier>();
+  late int _hue = _hueNotifier.value;
 
   @override
   Widget build(BuildContext context) {
@@ -70,7 +70,7 @@ class _ReactionSettingsState extends State<ReactionSettings> {
 
   @override
   void dispose() {
-    Future.microtask(() => _hueProvider.value = _hue);
+    Future.microtask(() => _hueNotifier.value = _hue);
     super.dispose();
   }
 }

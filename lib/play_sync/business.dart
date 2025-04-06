@@ -32,11 +32,8 @@ import 'package:bunga_player/utils/extensions/styled_widget.dart';
 
 // Data types
 
-@immutable
-class RemoteJustToggled {
-  final bool value;
-  const RemoteJustToggled(this.value);
-}
+// TODO: useless?
+extension type RemoteJustToggled(bool value) implements bool {}
 
 typedef ChannelSubtitle = ({
   String title,

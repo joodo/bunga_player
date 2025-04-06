@@ -102,7 +102,7 @@ class MenuBuilder extends SingleChildStatelessWidget {
             leadingIcon: const Icon(Icons.movie_filter),
             onPressed: _changeVideo(
               context,
-              context.read<IsInChannel>().value,
+              context.read<IsInChannel>(),
             ),
             child: const Text('换片'),
           ),

@@ -26,25 +26,24 @@ class NetworkSettings extends StatelessWidget with SettingsTab {
       Consumer3<BungaClientInfo?, FetchingBungaClient, BungaHostAddress>(
         builder: (context, clientInfo, fetching, hostAddress, child) =>
             InputBuilder(
-          initValue: hostAddress.value,
+          initValue: hostAddress,
           builder: (context, textEditingController, focusNode, child) =>
               TextField(
             decoration: InputDecoration(
               labelText: 'Bunga 服务器',
-              errorText: clientInfo == null && !fetching.value
-                  ? hostAddress.value.isEmpty
+              errorText: clientInfo == null && !fetching
+                  ? hostAddress.isEmpty
                       ? '设置服务器地址'
                       : '无法连接'
                   : null,
               border: const OutlineInputBorder(),
               suffixIcon: ValueListenableBuilder(
                 valueListenable: textEditingController,
-                builder: (context, hostFieldValue, child) => fetching.value
+                builder: (context, hostFieldValue, child) => fetching
                     ? const LoadingButtonIcon()
                         .center()
                         .constrained(width: 36.0, height: 36.0)
-                    : hostFieldValue.text == hostAddress.value &&
-                            clientInfo != null
+                    : hostFieldValue.text == hostAddress && clientInfo != null
                         ? const Icon(Icons.check)
                             .iconSize(IconTheme.of(context).size!)
                             .iconColor(Colors.greenAccent)
@@ -57,7 +56,7 @@ class NetworkSettings extends StatelessWidget with SettingsTab {
                           ),
               ).padding(right: 8.0),
             ),
-            enabled: !fetching.value,
+            enabled: !fetching,
             controller: textEditingController,
           ),
         ),

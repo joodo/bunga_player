@@ -92,7 +92,7 @@ class _PlaylistPanelState extends State<PlaylistPanel> {
 
                             final payload = await act;
                             if (context.mounted &&
-                                context.read<IsInChannel>().value) {
+                                context.read<IsInChannel>()) {
                               Actions.invoke(
                                 context,
                                 ShareVideoIntent(payload.record),
