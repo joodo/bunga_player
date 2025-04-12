@@ -38,7 +38,10 @@ class SettingButton extends StatelessWidget {
                   curve: Curves.easeOutCubic,
                 ),
             onPressed: openContainer,
-          ).colorScheme(seedColor: failed ? Colors.red : Colors.green);
+          ).colorScheme(
+            seedColor: failed ? Colors.red : Colors.green,
+            brightness: theme.brightness,
+          );
         },
       ),
       closedColor: theme.primaryColor,

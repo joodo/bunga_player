@@ -9,28 +9,28 @@ extension BungaStyledWidget on Widget {
           .fade(duration: 1000.ms, begin: 0.5, end: 1.0)
           .then(delay: 300.ms)
           .fade(duration: 1000.ms, end: 0.5);
+
   Widget colorScheme({
     ColorScheme? scheme,
     Color? seedColor,
     Brightness? brightness,
-  }) =>
-      Builder(
-        builder: (context) {
-          final theme = Theme.of(context);
-          return Theme(
-            data: ThemeData(
-              colorScheme: seedColor != null
-                  ? ColorScheme.fromSeed(
-                      seedColor: seedColor,
-                      brightness: brightness ?? theme.brightness,
-                    )
-                  : scheme,
-              brightness: brightness ?? theme.brightness,
-            ),
-            child: this,
-          );
-        },
-      );
+  }) {
+    assert(
+      scheme != null || seedColor != null && brightness != null,
+      'Either scheme or seedColor&brightness must be provided',
+    );
+    return Theme(
+      data: ThemeData(
+        colorScheme: seedColor != null
+            ? ColorScheme.fromSeed(
+                seedColor: seedColor,
+                brightness: brightness!,
+              )
+            : scheme,
+      ),
+      child: this,
+    );
+  }
 
   Widget animatedSwitcher({
     Key? key,

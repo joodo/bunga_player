@@ -72,7 +72,9 @@ class _SavedPositionHintState extends State<SavedPositionHint>
         )
         // FIXME: Deal with theme..toast...action
         .colorScheme(
-            seedColor: ThemeWrapper.seedColor, brightness: Brightness.light);
+          seedColor: ThemeWrapper.seedColor,
+          brightness: Brightness.light,
+        );
 
     final animedCard = AnimatedBuilder(
       animation: _controller,
