@@ -16,8 +16,8 @@ class OpenVideoButton extends StatelessWidget {
         child: const Text('我来放'),
       ).constrained(width: 100.0),
       closedColor: theme.primaryColor,
-      openBuilder: (dialogContext, closeContainer) => const Dialog.fullscreen(
-        child: OpenVideoDialog(),
+      openBuilder: (dialogContext, closeContainer) => Dialog.fullscreen(
+        child: OpenVideoDialog().safeArea(),
       ),
       openColor: theme.primaryColor,
       onClosed: (data) {
