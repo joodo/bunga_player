@@ -51,10 +51,9 @@ class PlayerUI extends StatelessWidget {
           child: [
             Consumer<BusyCount>(builder: (context, busyCount, child) {
               return CircularProgressIndicator(
-                strokeWidth: 3.0,
                 strokeCap: StrokeCap.round,
               )
-                  .constrained(height: 12.0, width: 12.0)
+                  .constrained(height: 24.0, width: 24.0)
                   .opacity(!show && busyCount.isBusy ? 1.0 : 0.0, animate: true)
                   .padding(all: 16.0)
                   .alignment(Alignment.bottomLeft);
