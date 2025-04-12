@@ -350,8 +350,7 @@ class _VoiceCallBusinessState extends SingleChildState<VoiceCallBusiness> {
   // Call ring
   final _callRinger = AudioPlayer()
     ..setSource(AssetSource('sounds/call.mp3'))
-    ..setReleaseMode(ReleaseMode.loop)
-    ..setPlayerMode(PlayerMode.lowLatency);
+    ..setReleaseMode(ReleaseMode.loop);
   void _soundCallRing() {
     if (_callStatusNotifier.value == CallStatus.callIn ||
         _callStatusNotifier.value == CallStatus.callOut) {
