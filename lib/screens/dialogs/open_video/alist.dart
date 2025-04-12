@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:bunga_player/screens/widgets/context_menu_region.dart';
 import 'package:flutter/material.dart';
-import 'package:path/path.dart' as path_tool;
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
@@ -50,7 +50,6 @@ class _AListTabState extends State<AListTab> {
   final _recentScrollController = ScrollController();
   final _recentPaths =
       getIt<Preferences>().getOrCreate<List<String>>(_AListPrefKey.recent, []);
-  bool _showRemoveRecent = false;
 
   @override
   void initState() {
@@ -116,49 +115,35 @@ class _AListTabState extends State<AListTab> {
     ].toRow();
     final recentSection = _recentPaths.isEmpty
         ? const SizedBox.shrink()
-        : <Widget>[
-            const Icon(Icons.schedule, size: 14.0)
-                .opacity(0.8)
-                .padding(left: 16.0),
-            const Text('最近').padding(left: 4.0, right: 12.0),
-            _recentPaths
-                .map(
-                  (path) => InputChip(
-                    key: ValueKey(path),
-                    label: Text(path_tool.basename(path)),
-                    tooltip: path,
-                    onPressed: () => _cd(path),
-                    deleteButtonTooltipMessage: '删除',
-                    onDeleted: _showRemoveRecent
-                        ? () => setState(() {
-                              _recentPaths.remove(path);
-                              getIt<Preferences>()
-                                  .set(_AListPrefKey.recent, _recentPaths);
-                            })
-                        : null,
-                  ),
-                )
-                .toList()
-                .toRow(separator: const SizedBox(width: 8))
-                .scrollable(
-                  scrollDirection: Axis.horizontal,
-                  controller: _recentScrollController,
-                  padding: EdgeInsets.only(right: 16.0),
-                )
-                .scrollOptimizer(_recentScrollController)
-                .fadeOutShader()
-                .expanded(),
-            StyledWidget(IconButton(
-              isSelected: _showRemoveRecent,
-              icon: const Icon(Icons.delete),
-              iconSize: 18.0,
-              onPressed: () {
-                setState(() {
-                  _showRemoveRecent = !_showRemoveRecent;
-                });
-              },
-            )).padding(horizontal: 12.0),
-          ].toRow().padding(top: 8.0);
+        : _recentPaths
+            .map(
+              (path) => ContextMenuRegion(
+                items: [
+                  PopupMenuItem(
+                    onTap: () => setState(() {
+                      _recentPaths.remove(path);
+                      getIt<Preferences>()
+                          .set(_AListPrefKey.recent, _recentPaths);
+                    }),
+                    child: Text('删除'),
+                  )
+                ],
+                child: InputChip(
+                  key: ValueKey(path),
+                  label: Text(path),
+                  onPressed: () => _cd(path),
+                ),
+              ),
+            )
+            .toList()
+            .toRow(separator: const SizedBox(width: 8))
+            .scrollable(
+              scrollDirection: Axis.horizontal,
+              controller: _recentScrollController,
+              padding: EdgeInsets.symmetric(horizontal: 16.0),
+            )
+            .scrollOptimizer(_recentScrollController)
+            .padding(vertical: 8.0);
     final dirTitleBar = [
       pathSection,
       recentSection,
