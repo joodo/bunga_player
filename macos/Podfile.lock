@@ -159,7 +159,7 @@ SPEC CHECKSUMS:
   audio_session: eaca2512cf2b39212d724f35d11f46180ad3a33e
   audioplayers_darwin: 761f2948df701d05b5db603220c384fb55720012
   file_selector_macos: 6280b52b459ae6c590af5d78fc35c7267a3c4b31
-  FlutterMacOS: 8f6f14fa908a6fb3fba0cd85dbd81ec4b251fb24
+  FlutterMacOS: d0db08ddef1a9af05a5ec4b724367152bb0500b1
   HydraAsync: 8d589bd725b0224f899afafc9a396327405f8063
   iris_method_channel: 2d6fa907b586c973a1cf06f0e6c7df1ef8375ffa
   media_kit_libs_macos_video: 85a23e549b5f480e72cae3e5634b5514bc692f65
