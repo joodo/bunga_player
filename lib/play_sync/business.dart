@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:animations/animations.dart';
 import 'package:bunga_player/console/service.dart';
 import 'package:bunga_player/ui/global_business.dart';
-import 'package:bunga_player/utils/business/action.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:path/path.dart' as path_tool;
@@ -160,11 +159,21 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
 
     final actions = shortcuts.actions(actions: {
       ToggleIntent: CallbackAction<ToggleIntent>(
-        onInvoke: (intent) => _sendPlayStatus(),
-      ).passthrough(context, invokeAfterParent: true),
+        onInvoke: (intent) {
+          if (_remoteJustToggledNotifier.value) return;
+          Actions.invoke(context, intent);
+          _sendPlayStatus();
+          return;
+        },
+      ),
       SeekIntent: CallbackAction<SeekIntent>(
-        onInvoke: (intent) => _sendPlayStatus(),
-      ).passthrough(context, invokeAfterParent: true),
+        onInvoke: (intent) {
+          if (_remoteJustToggledNotifier.value) return;
+          Actions.invoke(context, intent);
+          _sendPlayStatus();
+          return;
+        },
+      ),
       ShareVideoIntent: ShareVideoAction(
         shouldAnswerWhereSetter: () => _shouldAnswerWhere = true,
       ),

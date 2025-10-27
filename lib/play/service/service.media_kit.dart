@@ -171,13 +171,7 @@ class MediaKitPlayService implements PlayService {
   );
 
   @override
-  void play() {
-    playStatusNotifier.value = PlayStatus.play;
-    final s = (_player.platform! as media_kit.NativePlayer)
-        .getProperty('stream-buffer-size');
-    s.then((value) => print(value));
-  }
-
+  void play() => playStatusNotifier.value = PlayStatus.play;
   @override
   void pause() => playStatusNotifier.value = PlayStatus.pause;
   @override
