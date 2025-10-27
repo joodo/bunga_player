@@ -121,11 +121,18 @@ class _DanmakuControlState extends State<DanmakuControl> {
     );
   }
 
+  static const _easterEgg = {
+    '陈子祎': '🐖',
+    '张丰年': '🤡',
+  };
   void _sendDanmaku(String message) {
     final me = User.fromContext(context);
-    final messageData = message == '陈子祎'
-        ? PopmojiMessageData(code: '🐖', sender: me)
+
+    final easterCode = _easterEgg[message];
+    final messageData = easterCode != null
+        ? PopmojiMessageData(code: easterCode, sender: me)
         : DanmakuMessageData(message: message, sender: me);
+
     Actions.invoke(context, SendMessageIntent(messageData));
   }
 }

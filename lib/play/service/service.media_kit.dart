@@ -44,8 +44,6 @@ class MediaKitPlayService implements PlayService {
         _clampSeek(_seekCache!);
         _seekCache = null;
       }
-
-      _openCompleter?.complete();
     });
 
     // Initiate lazy value
@@ -121,17 +119,9 @@ class MediaKitPlayService implements PlayService {
   }
 
   // Video loading
-  // After opened, video need some time to load.
-  // So set it complete when duration got not zero value
-  Completer<Null>? _openCompleter;
   @override
   Future<void> open(PlayPayload payload) async {
     assert(payload.sources.videos.length > payload.videoSourceIndex);
-
-    if (_openCompleter?.isCompleted == false) {
-      _openCompleter?.complete();
-    }
-    _openCompleter = Completer();
 
     // open video
     final videoUrl = payload.sources.videos[payload.videoSourceIndex];
@@ -155,8 +145,6 @@ class MediaKitPlayService implements PlayService {
 
     // Avoid open after stop, play status keep Stop
     playStatusNotifier.value = PlayStatus.pause;
-
-    return _openCompleter!.future;
   }
 
   // Play status

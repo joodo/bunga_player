@@ -142,7 +142,6 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
     assert(context != null);
 
     final parser = PlayPayloadParser(context!);
-    final play = getIt<PlayService>();
     late final PlayPayload payload;
 
     // Open video
@@ -155,10 +154,23 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
             record: intent.record,
           );
 
-      await play.open(payload);
-
       if (!context.mounted) throw StateError('Context unmounted.');
+
+      // Window title
       context.read<WindowTitleNotifier>().value = payload.record.title;
+
+      // History
+      final session = context.read<History>().value[payload.record.id];
+      savedPositionNotifier.value = session?.progress?.position;
+      final subPath = session?.subtitlePath;
+
+      _loadDir(payload, parser);
+      await _loadVideo(
+        payload: payload,
+        parser: parser,
+        position: savedPositionNotifier.value,
+        subtitlePath: subPath,
+      );
 
       payloadNotifer.value = payload;
     } catch (e) {
@@ -168,30 +180,30 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
       busyCountNotifier.value = busyCountNotifier.value.decrease;
     }
 
-    // Load history
-    if (!context.mounted) throw StateError('Context unmounted.');
-    final session = context.read<History>().value[payload.record.id];
+    return payload;
+  }
 
-    final savedPostion = session?.progress?.position;
-    if (savedPostion != null) {
-      play.seek(savedPostion);
-      savedPositionNotifier.value = savedPostion;
-    } else {
-      savedPositionNotifier.value = null;
-    }
+  Future<void> _loadVideo({
+    required PlayPayload payload,
+    required PlayPayloadParser parser,
+    Duration? position,
+    String? subtitlePath,
+  }) async {
+    final play = getIt<PlayService>();
+    await play.open(payload);
 
-    final subPath = session?.subtitlePath;
-    if (subPath != null) {
-      final track = await play.loadSubtitleTrack(subPath);
+    // load history
+    if (position != null) play.seek(position);
+    if (subtitlePath != null) {
+      final track = await play.loadSubtitleTrack(subtitlePath);
       play.setSubtitleTrack(track.id);
     }
+  }
 
-    // Load dir info
-    parser.dirInfo(payload.record).then((info) {
+  Future<void> _loadDir(PlayPayload payload, PlayPayloadParser parser) {
+    return parser.dirInfo(payload.record).then((info) {
       dirInfoNotifier.value = info;
     });
-
-    return payload;
   }
 }
 
