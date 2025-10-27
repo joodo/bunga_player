@@ -36,6 +36,10 @@ class MediaKitPlayService implements PlayService {
     // Subtitles
     _setProperty('sub-visibility', 'yes'); // use mpv subtitle, not media_kit
 
+    // Cache
+    _setProperty('cache-on-disk', 'yes');
+    _setProperty('demuxer-max-bytes', '500MiB');
+
     // When video loaded
     _player.stream.duration.listen((duration) {
       if (duration <= Duration.zero) return;
@@ -167,7 +171,13 @@ class MediaKitPlayService implements PlayService {
   );
 
   @override
-  void play() => playStatusNotifier.value = PlayStatus.play;
+  void play() {
+    playStatusNotifier.value = PlayStatus.play;
+    final s = (_player.platform! as media_kit.NativePlayer)
+        .getProperty('stream-buffer-size');
+    s.then((value) => print(value));
+  }
+
   @override
   void pause() => playStatusNotifier.value = PlayStatus.pause;
   @override
