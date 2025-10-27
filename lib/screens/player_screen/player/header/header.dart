@@ -18,7 +18,7 @@ class Header extends StatelessWidget {
     final payload = context.watch<PlayPayload?>();
     if (payload == null) return const SizedBox.shrink();
 
-    if (!context.watch<IsInChannel>()) {
+    if (!context.watch<IsInChannel>().value) {
       return TextButton(
         onPressed: Actions.handler(
           context,
@@ -68,7 +68,7 @@ class _WatcherLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isTalking = context.select<List<TalkerId>, bool>(
-      (value) => value.any((e) => e as String == user.id),
+      (value) => value.any((e) => e.value == user.id),
     );
     return Text(isTalking ? '🎤${user.name}' : user.name)
         .textColor(user.getColor(brightness: 0.95))

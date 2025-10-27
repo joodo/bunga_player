@@ -10,9 +10,16 @@ import 'package:http/http.dart' as http;
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 
-extension type FetchingBungaClient(bool value) implements bool {}
+@immutable
+class FetchingBungaClient {
+  final bool value;
+  const FetchingBungaClient(this.value);
+}
 
-extension type BungaHostAddress(String value) implements String {
+@immutable
+class BungaHostAddress {
+  final String value;
+  const BungaHostAddress(this.value);
   Uri get uri => Uri.parse(value);
 }
 

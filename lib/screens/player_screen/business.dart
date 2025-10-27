@@ -22,9 +22,17 @@ import 'actions.dart';
 import 'panel/panel.dart';
 import 'player_screen.dart';
 
-extension type DanmakuVisible(bool value) implements bool {}
+@immutable
+class DanmakuVisible {
+  final bool value;
+  const DanmakuVisible(this.value);
+}
 
-extension type IsInChannel(bool value) implements bool {}
+@immutable
+class IsInChannel {
+  final bool value;
+  const IsInChannel(this.value);
+}
 
 class _WidgetBusiness extends SingleChildStatefulWidget {
   const _WidgetBusiness({super.key, super.child});

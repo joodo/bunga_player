@@ -25,8 +25,8 @@ class Player extends StatelessWidget {
     return Consumer<IsInChannel>(
       builder: (context, inChannel, child) => [
         _mediaKitPlayer(),
-        if (inChannel) const DanmakuPlayer(),
-        if (inChannel) const PopmojiPlayer(),
+        if (inChannel.value) const DanmakuPlayer(),
+        if (inChannel.value) const PopmojiPlayer(),
         kIsDesktop
             ? const DesktopInteractiveRegion()
             : const TouchInteractiveRegion(),

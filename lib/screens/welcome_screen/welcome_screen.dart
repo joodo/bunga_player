@@ -91,8 +91,10 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     }
 
     return Consumer2<BungaClientInfo?, FetchingBungaClient>(
-      builder: (context, infoNotifier, fetching, child) =>
-          infoNotifier == null && !fetching ? Arrow() : WaitWidget(),
+      builder: (context, infoNotifier, fetchingNotifier, child) =>
+          infoNotifier == null && !fetchingNotifier.value
+              ? Arrow()
+              : WaitWidget(),
     );
   }
 

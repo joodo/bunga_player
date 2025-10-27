@@ -28,8 +28,8 @@ class ClientNicknameNotifier extends ValueNotifier<String> {
   }
 }
 
-class ClientColorHueNotifier extends ValueNotifier<int> {
-  ClientColorHueNotifier(super._value) {
+class ClientColorHue extends ValueNotifier<int> {
+  ClientColorHue(super._value) {
     bindPreference<int>(
       key: 'color_hue',
       load: (pref) => pref,
@@ -59,11 +59,11 @@ class ClientInfoGlobalBusiness extends SingleChildStatelessWidget {
             ),
           )..watchInConsole('Client Account'),
         ),
-        ChangeNotifierProxyProvider<ClientAccount, ClientColorHueNotifier?>(
+        ChangeNotifierProxyProvider<ClientAccount, ClientColorHue?>(
           create: (context) => null,
           update: (context, cliendAccount, previous) {
             if (previous == null) {
-              return ClientColorHueNotifier(cliendAccount.id.hashCode % 360);
+              return ClientColorHue(cliendAccount.id.hashCode % 360);
             } else {
               return previous;
             }

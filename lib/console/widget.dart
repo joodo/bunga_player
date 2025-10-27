@@ -68,7 +68,7 @@ class _ConsoleDialogState extends State<ConsoleDialog> {
             );
             accountNotifier.value = newAccount;
 
-            final host = context.read<BungaHostAddress>();
+            final host = context.read<BungaHostAddress>().value;
             final act = Actions.invoke(
               context,
               ConnectToHostIntent(host),

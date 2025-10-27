@@ -17,16 +17,16 @@ class SettingButton extends StatelessWidget {
     return OpenContainer(
       closedBuilder: (context, openContainer) =>
           Consumer2<BungaClientInfo?, FetchingBungaClient>(
-        builder: (context, clientInfo, fetching, child) {
-          final failed = !fetching.value && clientInfo == null;
+        builder: (context, clientInfo, fetchingNotifer, child) {
+          final failed = !fetchingNotifer.value && clientInfo == null;
           return OutlinedButton.icon(
-            icon: (fetching
+            icon: (fetchingNotifer.value
                     ? const LoadingButtonIcon(key: ValueKey('loading'))
                     : clientInfo == null
                         ? const Icon(key: ValueKey('error'), Icons.error)
                         : const Icon(key: ValueKey('settings'), Icons.settings))
                 .animatedSwitcher(duration: const Duration(milliseconds: 200)),
-            label: (fetching
+            label: (fetchingNotifer.value
                     ? const Text('正在载入', key: ValueKey('loading'))
                     : Text(
                         clientInfo?.channel.name ?? '设置服务器',

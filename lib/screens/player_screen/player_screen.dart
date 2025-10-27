@@ -22,18 +22,18 @@ class PlayerScreen extends StatelessWidget {
       builder: (context, panel, danmakuVisible, child) => [
         child!.card(margin: EdgeInsets.all(0)).positioned(
               top: 0,
-              bottom: danmakuVisible ? danmakuHeight : 0,
+              bottom: danmakuVisible.value ? danmakuHeight : 0,
               left: 0,
               right: panel != null ? panelWidth + 8.0 : 0,
               animate: true,
             ),
         Consumer<IsInChannel>(
-          builder: (context, inChannel, child) => inChannel
+          builder: (context, inChannel, child) => inChannel.value
               ? const DanmakuControl().positioned(
                   left: 0,
                   right: panel != null ? panelWidth + 8.0 : 0,
                   height: danmakuHeight,
-                  bottom: danmakuVisible ? 0 : -danmakuHeight,
+                  bottom: danmakuVisible.value ? 0 : -danmakuHeight,
                   animate: true,
                 )
               : const SizedBox.shrink(),

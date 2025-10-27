@@ -35,7 +35,7 @@ class User {
 
   factory User.fromContext(BuildContext context) {
     final nickname = context.read<ClientNicknameNotifier>().value;
-    final hue = context.read<ClientColorHueNotifier?>()?.value;
+    final hue = context.read<ClientColorHue?>()?.value;
     final id = context.read<ClientAccount>().id;
     return User(id: id, name: nickname, colorHue: hue);
   }

@@ -49,8 +49,8 @@ class VideoControl extends StatelessWidget {
               Consumer2<DanmakuVisible, IsInChannel>(
                 builder: (context, visible, inChannel, child) => IconButton(
                   icon: const Icon(Icons.mood),
-                  isSelected: visible,
-                  onPressed: inChannel
+                  isSelected: visible.value,
+                  onPressed: inChannel.value
                       ? Actions.handler(
                           context,
                           ToggleDanmakuControlIntent(),
