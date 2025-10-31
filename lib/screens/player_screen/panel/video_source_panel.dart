@@ -3,6 +3,7 @@ import 'package:bunga_player/play/busuness.dart';
 import 'package:bunga_player/play/models/play_payload.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/extensions/int.dart';
+import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
@@ -53,20 +54,22 @@ class _VideoSourcePanelState extends State<VideoSourcePanel> {
                         ? '测速失败'
                         : '${info.bps.formatBytes} / s'),
                 value: index,
-                groupValue: payload.videoSourceIndex,
-                onChanged: (int? value) {
-                  assert(value != null);
-                  Actions.invoke(
-                    context,
-                    OpenVideoIntent.payload(
-                      payload.copyWith(videoSourceIndex: value!),
-                    ),
-                  );
-                },
               );
             })
             .toList()
-            .toColumn(),
+            .toColumn()
+            .radioGroup(
+              groupValue: payload.videoSourceIndex,
+              onChanged: (int? value) {
+                assert(value != null);
+                Actions.invoke(
+                  context,
+                  OpenVideoIntent.payload(
+                    payload.copyWith(videoSourceIndex: value!),
+                  ),
+                );
+              },
+            ),
       ),
     );
   }

@@ -1,6 +1,7 @@
 import 'package:bunga_player/play/models/track.dart';
 import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/services/services.dart';
+import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:styled_widget/styled_widget.dart';
 
@@ -26,16 +27,18 @@ class AudioTrackPanel extends StatelessWidget implements Panel {
                     key: ValueKey(e.id),
                     title: Text(_toTitle(e)),
                     value: e,
-                    groupValue: currentTrack,
-                    onChanged: (AudioTrack? value) {
-                      if (value != null) {
-                        player.audioTrackNotifier.value = value;
-                      }
-                    },
                   ))
               .toList()
               .toColumn()
-              .scrollable(padding: EdgeInsets.only(bottom: 16.0)),
+              .scrollable(padding: EdgeInsets.only(bottom: 16.0))
+              .radioGroup(
+                groupValue: currentTrack,
+                onChanged: (AudioTrack? value) {
+                  if (value != null) {
+                    player.audioTrackNotifier.value = value;
+                  }
+                },
+              ),
         ),
       ),
     );

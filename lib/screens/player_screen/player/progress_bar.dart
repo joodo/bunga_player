@@ -137,7 +137,7 @@ class _VideoProgressBarState extends State<VideoProgressBar> {
                     ),
                     trackHeight: 2 + 2 * value,
                     trackShape: SliderDenseTrackShape(),
-                    showValueIndicator: ShowValueIndicator.always,
+                    showValueIndicator: ShowValueIndicator.onDrag,
                     // for buffer
                     activeTrackColor: trackColor,
                     secondaryActiveTrackColor: trackColor,

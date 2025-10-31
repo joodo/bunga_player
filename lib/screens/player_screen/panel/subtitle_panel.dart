@@ -9,6 +9,7 @@ import 'package:bunga_player/screens/player_screen/business.dart';
 import 'package:bunga_player/screens/widgets/slider_item.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
+import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as path_tool;
@@ -75,26 +76,32 @@ class _SubtitlePanelState extends State<SubtitlePanel> {
               builder: (context, tracks, child) => ValueListenableBuilder(
                 valueListenable: player.subtitleTrackNotifier,
                 builder: (context, currentTrack, child) => [
-                  ...tracks.where((e) => !e.id.startsWith('\$n')).map((e) =>
-                      RadioListTile(
-                        key: ValueKey(e.id),
-                        title: Text(_toTitle(e)),
-                        value: e.id,
+                  tracks
+                      .where((e) => !e.id.startsWith('\$n'))
+                      .map((e) => RadioListTile(
+                            key: ValueKey(e.id),
+                            title: Text(_toTitle(e)),
+                            value: e.id,
+                            secondary:
+                                isInChannel.value && e.id.startsWith('\$e')
+                                    ? IconButton(
+                                        icon: Icon(Icons.ios_share),
+                                        tooltip: '分享给他人',
+                                        onPressed: () {
+                                          _shareSubtitle(e.id);
+                                        },
+                                      )
+                                    : null,
+                          ))
+                      .toList()
+                      .toColumn()
+                      .radioGroup(
                         groupValue: currentTrack.id,
-                        secondary: isInChannel.value && e.id.startsWith('\$e')
-                            ? IconButton(
-                                icon: Icon(Icons.ios_share),
-                                tooltip: '分享给他人',
-                                onPressed: () {
-                                  _shareSubtitle(e.id);
-                                },
-                              )
-                            : null,
                         onChanged: (String? id) {
                           if (id == null) return;
                           Actions.invoke(context, SetSubtitleTrackIntent(id));
                         },
-                      )),
+                      ),
                   if (isInChannel.value)
                     Consumer<Map<String, ChannelSubtitle>>(
                       builder: (context, channelSubtitles, child) =>

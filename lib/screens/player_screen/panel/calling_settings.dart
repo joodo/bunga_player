@@ -1,3 +1,4 @@
+import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:bunga_player/voice_call/client/client.agora.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -37,12 +38,13 @@ class CallingSettingsPanel extends StatelessWidget implements Panel {
                         title: Text(e.deviceName ?? '未知设备'),
                         subtitle: Text(e.deviceTypeName ?? ''),
                         value: e.deviceId,
-                        groupValue: currentId,
-                        onChanged: (value) {
-                          client.inputDeviceNotifier.value = value!;
-                        },
                       )),
-                ].toColumn(),
+                ].toColumn().radioGroup(
+                      groupValue: currentId,
+                      onChanged: (value) {
+                        client.inputDeviceNotifier.value = value!;
+                      },
+                    ),
               );
             },
           ),
@@ -55,13 +57,15 @@ class CallingSettingsPanel extends StatelessWidget implements Panel {
                 .map((e) => RadioListTile(
                       title: Text(names[e.index]),
                       value: e,
-                      groupValue: level,
-                      onChanged: (value) {
-                        client.noiseSuppressionLevelNotifier.value = value!;
-                      },
                     ))
                 .toList()
-                .toColumn(),
+                .toColumn()
+                .radioGroup(
+                  groupValue: level,
+                  onChanged: (value) {
+                    client.noiseSuppressionLevelNotifier.value = value!;
+                  },
+                ),
           ),
         ].toColumn().scrollable(padding: EdgeInsets.only(bottom: 16.0)),
       ),

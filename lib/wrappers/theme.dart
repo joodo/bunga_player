@@ -25,7 +25,7 @@ class ThemeWrapper extends SingleChildStatelessWidget {
         brightness: Brightness.dark,
       ),
       sliderTheme: const SliderThemeData(
-        showValueIndicator: ShowValueIndicator.always,
+        showValueIndicator: ShowValueIndicator.onDrag,
         year2023: false,
       ),
     ).useSystemChineseFont(Brightness.dark);

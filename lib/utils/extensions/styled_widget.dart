@@ -131,6 +131,19 @@ extension BungaStyledWidget on Widget {
         },
         child: this,
       );
+
+  RadioGroup<T> radioGroup<T>({
+    Key? key,
+    T? groupValue,
+    required ValueChanged<T?> onChanged,
+  }) {
+    return RadioGroup<T>(
+      key: key,
+      groupValue: groupValue,
+      onChanged: onChanged,
+      child: this,
+    );
+  }
 }
 
 extension ControlSliderTheme on Widget {
@@ -144,7 +157,7 @@ extension ControlSliderTheme on Widget {
         thumbSize: const WidgetStatePropertyAll(Size(4.0, 32.0)),
         overlayShape: const RoundSliderOverlayShape(overlayRadius: 20.0),
         padding: const EdgeInsets.all(0),
-        showValueIndicator: ShowValueIndicator.always,
+        showValueIndicator: ShowValueIndicator.onDrag,
         year2023: false,
       ),
       child: this,

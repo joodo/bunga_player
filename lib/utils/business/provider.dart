@@ -46,7 +46,7 @@ class ProxyFutureProvider<T, R> extends SingleChildStatelessWidget {
       builder: (context, value, child) => FutureProvider<T>.value(
         value: proxy(value),
         initialData: initialData,
-        builder: this.builder,
+        builder: builder,
         child: child,
       ),
       child: child,
