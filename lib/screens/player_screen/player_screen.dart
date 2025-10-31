@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
-import 'actions.dart';
 import 'panel/panel.dart';
 import 'player/player.dart';
 import 'danmaku_control.dart';
@@ -53,16 +52,6 @@ class PlayerScreen extends StatelessWidget {
               right: panel == null ? -panelWidth : 0,
               animate: true,
             ),
-        if (panel != null)
-          GestureDetector(
-            onTap: Actions.handler(context, const ClosePanelIntent()),
-          ).positioned(
-            top: 0,
-            bottom: 0,
-            left: 0,
-            right: panelWidth,
-            animate: true,
-          ),
       ]
           .toStack()
           .animate(const Duration(milliseconds: 350), Curves.easeOutCubic),
