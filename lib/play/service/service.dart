@@ -32,9 +32,6 @@ abstract class PlayService {
   void toggle();
   void stop();
 
-  // TODO: change to notifier
-  Future<void> setRate(double rate);
-
   Future<Uint8List?> screenshot();
 
   ValueNotifier<Iterable<AudioTrack>> get audioTracksNotifier;

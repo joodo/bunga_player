@@ -180,11 +180,6 @@ class MediaKitPlayService implements PlayService {
   @override
   void stop() => playStatusNotifier.value = PlayStatus.stop;
 
-  @override
-  Future<void> setRate(double rate) {
-    return _player.setRate(rate);
-  }
-
   // Screenshot
   @override
   Future<Uint8List?> screenshot() => _player.screenshot();
