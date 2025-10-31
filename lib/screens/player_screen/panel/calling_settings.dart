@@ -38,13 +38,13 @@ class CallingSettingsPanel extends StatelessWidget implements Panel {
                         title: Text(e.deviceName ?? '未知设备'),
                         subtitle: Text(e.deviceTypeName ?? ''),
                         value: e.deviceId,
+                        // FIXME: use RadioGroup cause child not recognize it
+                        groupValue: currentId,
+                        onChanged: (value) {
+                          client.inputDeviceNotifier.value = value!;
+                        },
                       )),
-                ].toColumn().radioGroup(
-                      groupValue: currentId,
-                      onChanged: (value) {
-                        client.inputDeviceNotifier.value = value!;
-                      },
-                    ),
+                ].toColumn(),
               );
             },
           ),
