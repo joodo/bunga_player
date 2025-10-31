@@ -52,4 +52,6 @@ abstract class PlayService {
   ValueNotifier<double> get subDelayNotifier;
   ValueNotifier<double> get subSizeNotifier;
   ValueNotifier<double> get subPosNotifier;
+
+  ValueNotifier<String?> get proxyNotifier;
 }

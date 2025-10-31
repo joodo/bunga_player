@@ -1,6 +1,7 @@
 import 'package:bunga_player/network/service.dart';
 import 'package:bunga_player/play/busuness.dart';
 import 'package:bunga_player/play/models/play_payload.dart';
+import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/extensions/int.dart';
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
@@ -31,6 +32,7 @@ class _VideoSourcePanelState extends State<VideoSourcePanel> {
 
   @override
   Widget build(BuildContext context) {
+    final proxy = getIt<PlayService>().proxyNotifier.value;
     return PanelWidget(
       title: '片源选择',
       actions: [
@@ -41,35 +43,41 @@ class _VideoSourcePanelState extends State<VideoSourcePanel> {
         ),
       ],
       child: Consumer<PlayPayload>(
-        builder: (context, payload, child) => payload.sources.videos.indexed
-            .map((entry) => entry.$1)
-            .map((index) {
-              final info = _sourceInfo[index];
-              return RadioListTile(
-                key: ValueKey('Source $index'),
-                title: Text(info?.location ?? '未知'),
-                subtitle: Text(info == null
-                    ? '正在测速……'
-                    : info.bps < 0
-                        ? '测速失败'
-                        : '${info.bps.formatBytes} / s'),
-                value: index,
-              );
-            })
-            .toList()
-            .toColumn()
-            .radioGroup(
-              groupValue: payload.videoSourceIndex,
-              onChanged: (int? value) {
-                assert(value != null);
-                Actions.invoke(
-                  context,
-                  OpenVideoIntent.payload(
-                    payload.copyWith(videoSourceIndex: value!),
-                  ),
+        builder: (context, payload, child) => [
+          payload.sources.videos.indexed
+              .map((entry) => entry.$1)
+              .map((index) {
+                final info = _sourceInfo[index];
+                return RadioListTile(
+                  key: ValueKey('Source $index'),
+                  title: Text(info?.location ?? '未知'),
+                  subtitle: Text(info == null
+                      ? '正在测速……'
+                      : info.bps < 0
+                          ? '测速失败'
+                          : '${info.bps.formatBytes} / s'),
+                  value: index,
                 );
-              },
-            ),
+              })
+              .toList()
+              .toColumn()
+              .radioGroup(
+                groupValue: payload.videoSourceIndex,
+                onChanged: (int? value) {
+                  assert(value != null);
+                  Actions.invoke(
+                    context,
+                    OpenVideoIntent.payload(
+                      payload.copyWith(videoSourceIndex: value!),
+                    ),
+                  );
+                },
+              ),
+          if (proxy != null)
+            Text('当前使用代理：$proxy')
+                .textStyle(Theme.of(context).textTheme.bodySmall!)
+                .padding(horizontal: 8.0, vertical: 20.0),
+        ].toColumn(crossAxisAlignment: CrossAxisAlignment.start),
       ),
     );
   }

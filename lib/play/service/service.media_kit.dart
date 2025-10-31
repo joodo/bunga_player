@@ -61,6 +61,7 @@ class MediaKitPlayService implements PlayService {
     durationNotifier;
     isBufferingNotifier;
     positionNotifier;
+    proxyNotifier;
 
     // Log
     _player.stream.log.listen((log) => logger.w('Media kit log: ${log.text}'));
@@ -378,6 +379,20 @@ class MediaKitPlayService implements PlayService {
     ..addListener(() {
       _setProperty('hue', hueNotifier.value.toString());
     });
+
+  // Proxy
+  @override
+  late final proxyNotifier = ValueNotifier<String?>(null)
+    ..addListener(
+      () {
+        final proxy = proxyNotifier.value;
+        if (proxy == null || proxy.isEmpty) {
+          _setProperty('http-proxy', '');
+        } else {
+          _setProperty('http-proxy', 'http://$proxy');
+        }
+      },
+    );
 
   // MPV command
   Future<void> _setProperty(String key, String value) {

@@ -69,6 +69,7 @@ class NetworkSettings extends StatelessWidget with SettingsTab {
             TextField(
           decoration: const InputDecoration(
             labelText: '网络代理',
+            helperText: '格式示例：127.0.0.1:7890，留空表示不使用代理',
             border: OutlineInputBorder(),
           ),
           controller: textEditingController,

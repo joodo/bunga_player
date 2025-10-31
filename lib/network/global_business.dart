@@ -1,3 +1,4 @@
+import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +11,7 @@ class SettingProxy extends ValueNotifier<String?> {
   SettingProxy() : super(null) {
     addListener(() {
       getIt<NetworkService>().setProxy(value);
+      getIt<PlayService>().proxyNotifier.value = value;
     });
     bindPreference<String>(
       key: 'proxy',
