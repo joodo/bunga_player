@@ -29,76 +29,78 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    compileSdkVersion flutter.compileSdkVersion
+    compileSdk flutter.compileSdkVersion
     ndkVersion "28.0.13004108"
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = '17'
     }
-
     packagingOptions {
-      exclude 'lib/armeabi-v7a/libagora_audio_beauty_extension.so'
-      exclude 'lib/armeabi-v7a/libagora_clear_vision_extension.so'
-      exclude 'lib/armeabi-v7a/libagora_content_inspect_extension.so'
-      exclude 'lib/armeabi-v7a/libagora_pvc_extension.so'
-      exclude 'lib/armeabi-v7a/libagora_spatial_audio_extension.so'
-      exclude 'lib/armeabi-v7a/libagora_segmentation_extension.so'
-      exclude 'lib/armeabi-v7a/libagora_drm_loader_extension.so'
-      exclude 'lib/armeabi-v7a/libagora_udrm3_extension.so'
-      exclude 'lib/armeabi-v7a/libagora_face_capture_extension.so'
-      exclude 'lib/armeabi-v7a/libagora_face_detection_extension.so'
-      exclude 'lib/armeabi-v7a/libagora_super_resolution_extension.so'
-      exclude 'lib/armeabi-v7a/libagora_screen_capture_extension.so'
-      exclude 'lib/armeabi-v7a/libagora_video_quality_analyzer_extension.so'
-      exclude 'lib/armeabi-v7a/libagora_video_encoder_extension.so'
-      exclude 'lib/armeabi-v7a/libagora_video_decoder_extension.so'
-      exclude 'lib/armeabi-v7a/libagora_video_av1_decoder_extension.so'
-      exclude 'lib/armeabi-v7a/video_enc.so'
-      exclude 'lib/armeabi-v7a/video_dec.so'
-
-      exclude 'lib/arm64-v8a/libagora_audio_beauty_extension.so'
-      exclude 'lib/arm64-v8a/libagora_clear_vision_extension.so'
-      exclude 'lib/arm64-v8a/libagora_content_inspect_extension.so'
-      exclude 'lib/arm64-v8a/libagora_pvc_extension.so'
-      exclude 'lib/arm64-v8a/libagora_spatial_audio_extension.so'
-      exclude 'lib/arm64-v8a/libagora_segmentation_extension.so'
-      exclude 'lib/arm64-v8a/libagora_drm_loader_extension.so'
-      exclude 'lib/arm64-v8a/libagora_udrm3_extension.so'
-      exclude 'lib/arm64-v8a/libagora_face_capture_extension.so'
-      exclude 'lib/arm64-v8a/libagora_face_detection_extension.so'
-      exclude 'lib/arm64-v8a/libagora_super_resolution_extension.so'
-      exclude 'lib/arm64-v8a/libagora_screen_capture_extension.so'
-      exclude 'lib/arm64-v8a/libagora_video_quality_analyzer_extension.so'
-      exclude 'lib/arm64-v8a/libagora_video_encoder_extension.so'
-      exclude 'lib/arm64-v8a/libagora_video_decoder_extension.so'
-      exclude 'lib/arm64-v8a/libagora_video_av1_decoder_extension.so'
-      exclude 'lib/arm64-v8a/video_enc.so'
-      exclude 'lib/arm64-v8a/video_dec.so'
-
-      exclude 'lib/x86_64/libagora_audio_beauty_extension.so'
-      exclude 'lib/x86_64/libagora_clear_vision_extension.so'
-      exclude 'lib/x86_64/libagora_content_inspect_extension.so'
-      exclude 'lib/x86_64/libagora_pvc_extension.so'
-      exclude 'lib/x86_64/libagora_spatial_audio_extension.so'
-      exclude 'lib/x86_64/libagora_segmentation_extension.so'
-      exclude 'lib/x86_64/libagora_drm_loader_extension.so'
-      exclude 'lib/x86_64/libagora_udrm3_extension.so'
-      exclude 'lib/x86_64/libagora_face_capture_extension.so'
-      exclude 'lib/x86_64/libagora_face_detection_extension.so'
-      exclude 'lib/x86_64/libagora_super_resolution_extension.so'
-      exclude 'lib/x86_64/libagora_screen_capture_extension.so'
-      exclude 'lib/x86_64/libagora_video_quality_analyzer_extension.so'
-      exclude 'lib/x86_64/libagora_video_encoder_extension.so'
-      exclude 'lib/x86_64/libagora_video_decoder_extension.so'
-      exclude 'lib/x86_64/libagora_video_av1_decoder_extension.so'
-      exclude 'lib/x86_64/video_enc.so'
-      exclude 'lib/x86_64/video_dec.so'
+        jniLibs {
+            excludes += [
+                'lib/armeabi-v7a/libagora_audio_beauty_extension.so',
+                'lib/armeabi-v7a/libagora_clear_vision_extension.so',
+                'lib/armeabi-v7a/libagora_content_inspect_extension.so',
+                'lib/armeabi-v7a/libagora_pvc_extension.so',
+                'lib/armeabi-v7a/libagora_spatial_audio_extension.so',
+                'lib/armeabi-v7a/libagora_segmentation_extension.so',
+                'lib/armeabi-v7a/libagora_drm_loader_extension.so',
+                'lib/armeabi-v7a/libagora_udrm3_extension.so',
+                'lib/armeabi-v7a/libagora_face_capture_extension.so',
+                'lib/armeabi-v7a/libagora_face_detection_extension.so',
+                'lib/armeabi-v7a/libagora_super_resolution_extension.so',
+                'lib/armeabi-v7a/libagora_screen_capture_extension.so',
+                'lib/armeabi-v7a/libagora_video_quality_analyzer_extension.so',
+                'lib/armeabi-v7a/libagora_video_encoder_extension.so',
+                'lib/armeabi-v7a/libagora_video_decoder_extension.so',
+                'lib/armeabi-v7a/libagora_video_av1_decoder_extension.so',
+                'lib/armeabi-v7a/video_enc.so',
+                'lib/armeabi-v7a/video_dec.so',
+                'lib/arm64-v8a/libagora_audio_beauty_extension.so',
+                'lib/arm64-v8a/libagora_clear_vision_extension.so',
+                'lib/arm64-v8a/libagora_content_inspect_extension.so',
+                'lib/arm64-v8a/libagora_pvc_extension.so',
+                'lib/arm64-v8a/libagora_spatial_audio_extension.so',
+                'lib/arm64-v8a/libagora_segmentation_extension.so',
+                'lib/arm64-v8a/libagora_drm_loader_extension.so',
+                'lib/arm64-v8a/libagora_udrm3_extension.so',
+                'lib/arm64-v8a/libagora_face_capture_extension.so',
+                'lib/arm64-v8a/libagora_face_detection_extension.so',
+                'lib/arm64-v8a/libagora_super_resolution_extension.so',
+                'lib/arm64-v8a/libagora_screen_capture_extension.so',
+                'lib/arm64-v8a/libagora_video_quality_analyzer_extension.so',
+                'lib/arm64-v8a/libagora_video_encoder_extension.so',
+                'lib/arm64-v8a/libagora_video_decoder_extension.so',
+                'lib/arm64-v8a/libagora_video_av1_decoder_extension.so',
+                'lib/arm64-v8a/video_enc.so',
+                'lib/arm64-v8a/video_dec.so',
+                'lib/x86_64/libagora_audio_beauty_extension.so',
+                'lib/x86_64/libagora_clear_vision_extension.so',
+                'lib/x86_64/libagora_content_inspect_extension.so',
+                'lib/x86_64/libagora_pvc_extension.so',
+                'lib/x86_64/libagora_spatial_audio_extension.so',
+                'lib/x86_64/libagora_segmentation_extension.so',
+                'lib/x86_64/libagora_drm_loader_extension.so',
+                'lib/x86_64/libagora_udrm3_extension.so',
+                'lib/x86_64/libagora_face_capture_extension.so',
+                'lib/x86_64/libagora_face_detection_extension.so',
+                'lib/x86_64/libagora_super_resolution_extension.so',
+                'lib/x86_64/libagora_screen_capture_extension.so',
+                'lib/x86_64/libagora_video_quality_analyzer_extension.so',
+                'lib/x86_64/libagora_video_encoder_extension.so',
+                'lib/x86_64/libagora_video_decoder_extension.so',
+                'lib/x86_64/libagora_video_av1_decoder_extension.so',
+                'lib/x86_64/video_enc.so',
+                'lib/x86_64/video_dec.so'
+            ]
+        }
     }
+
 
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
@@ -108,8 +110,8 @@ android {
         applicationId "com.joodo.bunga_player"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-build-configuration.
-        minSdkVersion flutter.minSdkVersion
-        targetSdkVersion flutter.targetSdkVersion
+        minSdk flutter.minSdkVersion
+        targetSdk flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
