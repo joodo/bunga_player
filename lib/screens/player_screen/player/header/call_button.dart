@@ -230,14 +230,20 @@ class _CallButtonState extends State<CallButton> {
                   )
                   .then(delay: 1000.ms)
                   .shake(duration: 1500.ms),
-            CallStatus.talking => IconButton(
-                style: const ButtonStyle(
-                  backgroundColor: WidgetStatePropertyAll<Color>(Colors.green),
+            CallStatus.talking => Consumer<AgoraClient>(
+                builder: (context, client, child) => ValueListenableBuilder(
+                  valueListenable: client.micMuteNotifier,
+                  builder: (context, muted, child) => IconButton(
+                    style: ButtonStyle(
+                      backgroundColor: WidgetStatePropertyAll<Color>(
+                          muted ? Colors.yellow[800]! : Colors.green),
+                    ),
+                    color: Colors.white70,
+                    onPressed: () => _overlayVisibleNotifier.value = true,
+                    icon: Icon(Icons.phone),
+                  ),
                 ),
-                color: Colors.white70,
-                onPressed: () => _overlayVisibleNotifier.value = true,
-                icon: Icon(Icons.phone),
-              ),
+              )
           };
         },
       ),
