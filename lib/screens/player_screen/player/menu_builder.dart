@@ -10,6 +10,7 @@ import 'package:bunga_player/screens/player_screen/panel/video_source_panel.dart
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
+import 'package:styled_widget/styled_widget.dart';
 
 import '../actions.dart';
 import '../business.dart';
@@ -128,7 +129,7 @@ class MenuBuilder extends SingleChildStatelessWidget {
           child: OpenVideoDialog(
             shareToChannel: isCurrentSharing,
             forceShareToChannel: isCurrentSharing,
-          ),
+          ).safeArea(),
         ),
       );
       if (result == null) return;
