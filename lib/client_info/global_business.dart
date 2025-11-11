@@ -1,4 +1,5 @@
 import 'package:bunga_player/console/service.dart';
+import 'package:bunga_player/utils/business/generate_username.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
@@ -19,7 +20,7 @@ class ClientId extends ValueNotifier<String> {
 }
 
 class ClientNicknameNotifier extends ValueNotifier<String> {
-  ClientNicknameNotifier() : super('') {
+  ClientNicknameNotifier(super.defaultName) {
     bindPreference<String>(
       key: 'user_name',
       load: (pref) => pref,
@@ -43,15 +44,16 @@ class ClientInfoGlobalBusiness extends SingleChildStatelessWidget {
 
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
+    final clientId = getIt<Preferences>().getOrCreate(
+      'client_id',
+      const Uuid().v4(),
+    );
     return MultiProvider(
       providers: [
         ValueListenableProvider.value(
           value: ValueNotifier(
             ClientAccount(
-              id: getIt<Preferences>().getOrCreate(
-                'client_id',
-                const Uuid().v4(),
-              ),
+              id: clientId,
               password: getIt<Preferences>().getOrCreate(
                 'client_pwd',
                 generatePassword(),
@@ -70,7 +72,8 @@ class ClientInfoGlobalBusiness extends SingleChildStatelessWidget {
           },
         ),
         ChangeNotifierProvider(
-          create: (context) => ClientNicknameNotifier(),
+          create: (context) =>
+              ClientNicknameNotifier(generateUsername(clientId)),
           lazy: false,
         ),
       ],
