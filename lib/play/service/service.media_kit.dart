@@ -38,7 +38,6 @@ class MediaKitPlayService implements PlayService {
 
     // Cache
     _setProperty('cache-on-disk', 'yes');
-    _setProperty('demuxer-max-bytes', '500MiB');
 
     // When video loaded
     _player.stream.duration.listen((duration) {
@@ -393,6 +392,11 @@ class MediaKitPlayService implements PlayService {
         }
       },
     );
+
+  void setCacheSize(int sizeInMB) {
+    _setProperty('demuxer-max-bytes', '${sizeInMB}MiB');
+    print('Set cache size to ${sizeInMB}MiB');
+  }
 
   // MPV command
   Future<void> _setProperty(String key, String value) {
