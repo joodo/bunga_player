@@ -184,7 +184,7 @@ class _CallButtonState extends State<CallButton> {
           child: [
             item.card(elevation: 4.0).positioned(
                   width: 220.0,
-                  left: offset.dx - 220.0,
+                  right: 12.0,
                   top: offset.dy,
                 )
           ].toStack(),
