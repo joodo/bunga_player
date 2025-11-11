@@ -78,6 +78,16 @@ class AutoJoinChannelNotifier extends ValueNotifier<bool> {
   }
 }
 
+class DialogShareModeNotifier extends ValueNotifier<bool> {
+  DialogShareModeNotifier() : super(true) {
+    bindPreference<bool>(
+      key: 'dialog_share_mode',
+      load: (pref) => pref,
+      update: (value) => value,
+    );
+  }
+}
+
 enum ShortcutKey {
   volumeUp,
   volumeDown,
@@ -204,6 +214,7 @@ class _UIGlobalBusinessState extends SingleChildState<UIGlobalBusiness> {
           create: (context) => ScreenLockedNotifier(),
         ),
         ChangeNotifierProvider(create: (context) => AutoJoinChannelNotifier()),
+        ChangeNotifierProvider(create: (context) => DialogShareModeNotifier()),
         ChangeNotifierProvider(create: (context) => ShortcutMappingNotifier()),
       ],
       child: child,

@@ -1,5 +1,7 @@
 import 'package:animations/animations.dart';
 import 'package:bunga_player/bunga_server/models/bunga_client_info.dart';
+import 'package:bunga_player/ui/global_business.dart';
+import 'package:bunga_player/utils/business/value_listenable.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
@@ -14,10 +16,8 @@ typedef OpenVideoDialogResult = ({Uri url, bool onlyForMe});
 
 class OpenVideoDialog extends StatefulWidget {
   final bool forceShareToChannel;
-  final bool shareToChannel;
   const OpenVideoDialog({
     super.key,
-    this.shareToChannel = true,
     this.forceShareToChannel = false,
   });
 
@@ -26,76 +26,75 @@ class OpenVideoDialog extends StatefulWidget {
 }
 
 class _OpenVideoDialogState extends State<OpenVideoDialog> {
-  late bool _onlyForMe = !widget.shareToChannel;
-
   @override
   Widget build(BuildContext context) {
     final aListEnabled = context.read<BungaClientInfo?>()?.alist != null;
     final theme = Theme.of(context);
-    final body = [
-      AnimatedTheme(
-        data: _onlyForMe
-            ? theme.copyWith(
-                colorScheme: ColorScheme.fromSeed(
-                  seedColor: theme.colorScheme.tertiary,
-                  brightness: theme.brightness,
+    final body = Consumer<DialogShareModeNotifier>(
+      builder: (context, shareModeNotifier, child) => [
+        AnimatedTheme(
+          data: shareModeNotifier.value
+              ? theme
+              : theme.copyWith(
+                  colorScheme: ColorScheme.fromSeed(
+                    seedColor: theme.colorScheme.tertiary,
+                    brightness: theme.brightness,
+                  ),
                 ),
-              )
-            : theme,
-        curve: Curves.easeOutCubic,
-        duration: const Duration(milliseconds: 300),
-        child: [
-          StyledWidget(IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () => Navigator.pop(context),
-          )).alignment(Alignment.centerLeft),
-          const TabBar(
-            tabAlignment: TabAlignment.center,
-            indicatorSize: TabBarIndicatorSize.tab,
-            dividerHeight: 0,
-            tabs: <Widget>[
-              Tab(text: '网络链接', icon: Icon(Icons.link)),
-              Tab(text: '　网盘　', icon: Icon(Icons.cloud_outlined)),
-              Tab(text: '　历史　', icon: Icon(Icons.history)),
-            ],
-          ),
-          (widget.forceShareToChannel
-                  ? const Text('视频将分享到频道')
-                      .textStyle(Theme.of(context).textTheme.labelMedium!)
-                  : FilledButton(
-                      onPressed: () {
-                        setState(() {
-                          _onlyForMe = !_onlyForMe;
-                        });
-                      },
-                      child: Text(_onlyForMe ? '自己观看' : '分享到频道'),
-                    ))
-              .alignment(Alignment.centerRight),
-        ].toStack(alignment: Alignment.center),
-      ).padding(horizontal: 16.0),
-      Divider(
-        color: theme.tabBarTheme.dividerColor,
-        height: 1.0,
+          curve: Curves.easeOutCubic,
+          duration: const Duration(milliseconds: 300),
+          child: [
+            StyledWidget(IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => Navigator.pop(context),
+            )).alignment(Alignment.centerLeft),
+            const TabBar(
+              tabAlignment: TabAlignment.center,
+              indicatorSize: TabBarIndicatorSize.tab,
+              dividerHeight: 0,
+              tabs: <Widget>[
+                Tab(text: '网络链接', icon: Icon(Icons.link)),
+                Tab(text: '　网盘　', icon: Icon(Icons.cloud_outlined)),
+                Tab(text: '　历史　', icon: Icon(Icons.history)),
+              ],
+            ),
+            (widget.forceShareToChannel
+                    ? const Text('视频将分享到频道')
+                        .textStyle(Theme.of(context).textTheme.labelMedium!)
+                    : FilledButton(
+                        onPressed: shareModeNotifier.toggle,
+                        child: Text(shareModeNotifier.value ? '分享到频道' : '自己观看'),
+                      ))
+                .alignment(Alignment.centerRight),
+          ].toStack(alignment: Alignment.center),
+        ).padding(horizontal: 16.0),
+        Divider(
+          color: theme.tabBarTheme.dividerColor,
+          height: 1.0,
+        ),
+        _SharedAxisTabView(
+          children: <Widget>[
+            const DirectLinkTab().colorScheme(
+              seedColor: Colors.blue,
+              brightness: theme.brightness,
+            ),
+            aListEnabled
+                ? const AListTab().colorScheme(
+                    seedColor: Colors.red,
+                    brightness: theme.brightness,
+                  )
+                : const Text('网盘服务不可用，请到控制台设置')
+                    .textStyle(theme.textTheme.labelLarge!),
+            const HistoryTab(),
+          ],
+        ).expanded(),
+      ].toColumn().actions(
+        actions: {
+          SelectUrlIntent:
+              _SelectUrlAction(onlyForMe: !shareModeNotifier.value),
+        },
       ),
-      _SharedAxisTabView(
-        children: <Widget>[
-          const DirectLinkTab().colorScheme(
-            seedColor: Colors.blue,
-            brightness: theme.brightness,
-          ),
-          aListEnabled
-              ? const AListTab().colorScheme(
-                  seedColor: Colors.red,
-                  brightness: theme.brightness,
-                )
-              : const Text('网盘服务不可用，请到控制台设置')
-                  .textStyle(theme.textTheme.labelLarge!),
-          const HistoryTab(),
-        ],
-      ).expanded(),
-    ].toColumn().actions(actions: {
-      SelectUrlIntent: _SelectUrlAction(onlyForMe: _onlyForMe),
-    });
+    );
 
     return DefaultTabController(length: 3, child: body);
   }

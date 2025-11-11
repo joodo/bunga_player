@@ -127,7 +127,6 @@ class MenuBuilder extends SingleChildStatelessWidget {
         context: context,
         builder: (BuildContext context) => Dialog.fullscreen(
           child: OpenVideoDialog(
-            shareToChannel: isCurrentSharing,
             forceShareToChannel: isCurrentSharing,
           ).safeArea(),
         ),
