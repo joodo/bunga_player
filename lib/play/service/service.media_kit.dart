@@ -395,7 +395,6 @@ class MediaKitPlayService implements PlayService {
 
   void setCacheSize(int sizeInMB) {
     _setProperty('demuxer-max-bytes', '${sizeInMB}MiB');
-    print('Set cache size to ${sizeInMB}MiB');
   }
 
   // MPV command

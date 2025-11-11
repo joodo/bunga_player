@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:async/async.dart';
-import 'package:audioplayers/audioplayers.dart';
 import 'package:bunga_player/bunga_server/models/bunga_client_info.dart';
 import 'package:bunga_player/chat/global_business.dart';
 import 'package:bunga_player/chat/models/message_data.dart';
@@ -9,7 +8,8 @@ import 'package:bunga_player/client_info/models/client_account.dart';
 import 'package:bunga_player/chat/models/message.dart';
 import 'package:bunga_player/services/permissions.dart';
 import 'package:bunga_player/services/preferences.dart';
-import 'package:bunga_player/ui/global_business.dart';
+import 'package:bunga_player/ui/audio_player.dart';
+import 'package:bunga_player/ui/shortcuts.dart';
 import 'package:bunga_player/utils/business/provider.dart';
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:bunga_player/utils/models/volume.dart';
@@ -238,10 +238,7 @@ class HangUpAction extends ContextAction<HangUpIntent> {
   @override
   void invoke(HangUpIntent intent, [BuildContext? context]) {
     callStatusNotifier.value = CallStatus.none;
-    AudioPlayer().play(
-      AssetSource('sounds/hang_up.mp3'),
-      mode: PlayerMode.lowLatency,
-    );
+    context!.read<BungaAudioPlayer>().playSfx('hang_up');
 
     stopTalking();
   }
@@ -348,15 +345,13 @@ class _VoiceCallBusinessState extends SingleChildState<VoiceCallBusiness> {
   }
 
   // Call ring
-  final _callRinger = AudioPlayer()
-    ..setSource(AssetSource('sounds/call.mp3'))
-    ..setReleaseMode(ReleaseMode.loop);
   void _soundCallRing() {
+    final player = context.read<BungaAudioPlayer>();
     if (_callStatusNotifier.value == CallStatus.callIn ||
         _callStatusNotifier.value == CallStatus.callOut) {
-      _callRinger.resume();
+      player.startRing();
     } else {
-      _callRinger.stop();
+      player.stopRing();
     }
   }
 

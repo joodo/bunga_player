@@ -1,12 +1,13 @@
 import 'dart:io';
 
 import 'package:async/async.dart';
-import 'package:audioplayers/audioplayers.dart';
 import 'package:bunga_player/console/service.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
+import 'package:bunga_player/ui/audio_player.dart';
 import 'package:bunga_player/ui/global_business.dart';
+import 'package:bunga_player/ui/shortcuts.dart';
 import 'package:bunga_player/utils/extensions/comparable.dart';
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:bunga_player/utils/models/volume.dart';
@@ -256,11 +257,9 @@ class ScreenshotAction extends ContextAction<ScreenshotIntent> {
     await file.writeAsBytes(data!);
 
     getIt<Toast>().show('已截图 $fileName');
-    AudioPlayer().play(
-      AssetSource('sounds/screenshot.mp3'),
-      mode: PlayerMode.lowLatency,
-    );
-
+    if (context != null && context.mounted) {
+      context.read<BungaAudioPlayer>().playSfx('screenshot');
+    }
     return file;
   }
 }

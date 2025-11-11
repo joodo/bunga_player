@@ -1,5 +1,5 @@
 import 'package:bunga_player/screens/dialogs/settings/widgets.dart';
-import 'package:bunga_player/ui/global_business.dart';
+import 'package:bunga_player/ui/shortcuts.dart';
 import 'package:bunga_player/utils/extensions/single_activator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

@@ -9,7 +9,7 @@ import 'package:bunga_player/play_sync/business.dart';
 import 'package:bunga_player/screens/dialogs/open_video/open_video.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
-import 'package:bunga_player/ui/global_business.dart';
+import 'package:bunga_player/ui/shortcuts.dart';
 import 'package:bunga_player/utils/business/provider.dart';
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:bunga_player/voice_call/business.dart';

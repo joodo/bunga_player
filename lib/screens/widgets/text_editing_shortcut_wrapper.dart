@@ -1,4 +1,4 @@
-import 'package:bunga_player/ui/global_business.dart';
+import 'package:bunga_player/ui/shortcuts.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';

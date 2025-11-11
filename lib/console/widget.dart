@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import 'package:audioplayers/audioplayers.dart';
 import 'package:bunga_player/bunga_server/global_business.dart';
 import 'package:bunga_player/client_info/models/client_account.dart';
 import 'package:bunga_player/console/service.dart';
@@ -89,14 +88,6 @@ class _ConsoleDialogState extends State<ConsoleDialog> {
           onPressed: () =>
               getIt<Toast>().show('New toast: ${_randomSentence()}.'),
           child: const Text('Show a toast'),
-        ),
-        const SizedBox(height: 8),
-        FilledButton(
-          onPressed: () => AudioPlayer().play(
-            AssetSource('sounds/call.mp3'),
-            mode: PlayerMode.lowLatency,
-          ),
-          child: const Text('Play sound'),
         ),
       ],
     );

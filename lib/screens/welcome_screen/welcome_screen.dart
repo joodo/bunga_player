@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:animations/animations.dart';
-import 'package:audioplayers/audioplayers.dart';
+import 'package:bunga_player/ui/audio_player.dart';
 import 'package:bunga_player/voice_call/client/client.agora.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -107,10 +107,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     setState(() {});
 
     if (isCurrent) {
-      AudioPlayer().play(
-        AssetSource('sounds/start_play.mp3'),
-        mode: PlayerMode.lowLatency,
-      );
+      context.read<BungaAudioPlayer>().playSfx('start_play');
     }
 
     if (autoJoin && isCurrent && isFirstShare) _joinChannel();

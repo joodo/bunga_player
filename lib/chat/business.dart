@@ -1,6 +1,10 @@
 import 'dart:async';
 
-import 'package:audioplayers/audioplayers.dart';
+import 'package:bunga_player/ui/audio_player.dart';
+import 'package:flutter/material.dart';
+import 'package:nested/nested.dart';
+import 'package:provider/provider.dart';
+
 import 'package:bunga_player/chat/global_business.dart';
 import 'package:bunga_player/client_info/models/client_account.dart';
 import 'package:bunga_player/console/service.dart';
@@ -10,9 +14,6 @@ import 'package:bunga_player/services/toast.dart';
 import 'package:bunga_player/utils/business/provider.dart';
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:bunga_player/voice_call/business.dart';
-import 'package:flutter/material.dart';
-import 'package:nested/nested.dart';
-import 'package:provider/provider.dart';
 
 import 'models/message.dart';
 import 'models/message_data.dart';
@@ -25,11 +26,8 @@ class WatchersNotifier extends ValueNotifier<List<User>> {
 
   void addUser(User user) {
     if (containsId(user.id)) return;
+
     value = [...value, user];
-    AudioPlayer().play(
-      AssetSource('sounds/user_join.mp3'),
-      mode: PlayerMode.lowLatency,
-    );
   }
 
   void removeUser(String id) {
@@ -37,10 +35,6 @@ class WatchersNotifier extends ValueNotifier<List<User>> {
     if (index < 0) return;
 
     value = [...value..removeAt(index)];
-    AudioPlayer().play(
-      AssetSource('sounds/user_leave.mp3'),
-      mode: PlayerMode.lowLatency,
-    );
   }
 
   bool containsId(String id) {
@@ -168,7 +162,7 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
   }
 
   void _dealWithAloha(AlohaMessageData data) {
-    _watchersNotifier.addUser(data.user);
+    _addUser(data.user);
 
     final me = User.fromContext(context);
     final messageData = HereIsMessageData(
@@ -179,14 +173,15 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
   }
 
   void _dealWithHereIs(HereIsMessageData data) {
-    _watchersNotifier.addUser(data.user);
+    _addUser(data.user);
+
     if (data.isTalking && _talkerIdsNotifier.value.add(data.user.id)) {
       _talkerIdsNotifier.value = {..._talkerIdsNotifier.value};
     }
   }
 
   void _dealWithBye(ByeMessageData data) {
-    _watchersNotifier.removeUser(data.userId);
+    _removeUser(data.userId);
     if (_talkerIdsNotifier.value.contains(data.userId)) {
       _dealWithTalkStatus(data.userId, TalkStatus.end);
     }
@@ -197,10 +192,7 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
       case TalkStatus.start:
         if (_talkerIdsNotifier.value.add(senderId)) {
           _talkerIdsNotifier.value = {..._talkerIdsNotifier.value};
-          AudioPlayer().play(
-            AssetSource('sounds/user_speak.mp3'),
-            mode: PlayerMode.lowLatency,
-          );
+          context.read<BungaAudioPlayer>().playSfx('user_speak');
         }
       case TalkStatus.end:
         if (_talkerIdsNotifier.value.remove(senderId)) {
@@ -213,6 +205,16 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
           }
         }
     }
+  }
+
+  void _addUser(User user) {
+    _watchersNotifier.addUser(user);
+    context.read<BungaAudioPlayer>().playSfx('user_join');
+  }
+
+  void _removeUser(String id) {
+    _watchersNotifier.removeUser(id);
+    context.read<BungaAudioPlayer>().playSfx('user_leave');
   }
 }
 
