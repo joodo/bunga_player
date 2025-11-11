@@ -24,10 +24,10 @@ class _SettingsDialogState extends State<SettingsDialog> {
   bool _reverse = false;
 
   final _tabs = <SettingsTab>[
-    const NetworkSettings(),
     const ReactionSettings(),
     if (kIsDesktop) const AppearanceSettings(),
     const ShortcutSettings(),
+    const NetworkSettings(),
     const AboutSetting(),
   ];
 
