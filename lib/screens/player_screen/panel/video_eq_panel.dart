@@ -84,24 +84,20 @@ class VideoEqPanel extends StatelessWidget implements Panel {
           },
         ),
         ...tuneItems.map(
-          (item) => SliderItem(
-            icon: item.icon,
-            title: item.name,
-            slider: ValueListenableBuilder(
+          (item) => ValueListenableBuilder(
               valueListenable: item.notifier,
-              builder: (context, value, child) => Slider(
-                min: -1.0,
-                max: 1.0,
-                value: value / 100.0,
-                label: value.toString(),
-                onChanged: (value) {
-                  context.read<PlayEqPresetNotifier>().value = null;
-                  final percent = value * 100;
-                  item.notifier.value = percent.toInt();
-                },
-              ),
-            ),
-          ).padding(vertical: 2.0),
+              builder: (context, value, child) => SliderItemWithTextInput(
+                    icon: item.icon,
+                    title: item.name,
+                    min: -1.0,
+                    max: 1.0,
+                    value: value / 100.0,
+                    onChanged: (value) {
+                      context.read<PlayEqPresetNotifier>().value = null;
+                      final percent = value * 100;
+                      item.notifier.value = percent.toInt();
+                    },
+                  ).padding(vertical: 2.0)),
         ),
       ]
           .toColumn(crossAxisAlignment: CrossAxisAlignment.start)

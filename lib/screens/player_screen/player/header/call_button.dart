@@ -94,41 +94,37 @@ class _CallButtonState extends State<CallButton> {
                 ).padding(vertical: 16.0).center(),
               ],
             CallStatus.talking => [
-                SliderItem(
-                  icon: Icons.headphones,
-                  title: '语音音量',
-                  slider: Consumer<AgoraClient>(
+                Consumer<AgoraClient>(
                     builder: (context, client, child) => ValueListenableBuilder(
-                      valueListenable: client.volumeNotifier,
-                      builder: (context, volume, child) => Slider(
-                        max: 100,
-                        value: volume.volume.toDouble(),
-                        label: '${volume.volume}%',
-                        onChangeStart: (value) {
-                          context
-                              .read<ShouldShowHUDNotifier>()
-                              .lockUp('voice slider');
-                        },
-                        onChanged: (double value) {
-                          final newVolume = Volume(volume: value.toInt());
-                          Actions.invoke(
-                            context,
-                            UpdateVoiceVolumeIntent(newVolume),
-                          );
-                        },
-                        onChangeEnd: (value) {
-                          Actions.invoke(
-                            context,
-                            UpdateVoiceVolumeIntent.save(),
-                          );
-                          context
-                              .read<ShouldShowHUDNotifier>()
-                              .unlock('voice slider');
-                        },
-                      ),
-                    ),
-                  ),
-                ).padding(horizontal: 16.0),
+                        valueListenable: client.volumeNotifier,
+                        builder: (context, volume, child) => SliderItem(
+                              icon: Icons.headphones,
+                              title: '语音音量',
+                              value: volume.volume.toDouble(),
+                              label: '${volume.volume}%',
+                              max: 100.0,
+                              onChangeStart: (value) {
+                                context
+                                    .read<ShouldShowHUDNotifier>()
+                                    .lockUp('voice slider');
+                              },
+                              onChanged: (double value) {
+                                final newVolume = Volume(volume: value.toInt());
+                                Actions.invoke(
+                                  context,
+                                  UpdateVoiceVolumeIntent(newVolume),
+                                );
+                              },
+                              onChangeEnd: (value) {
+                                Actions.invoke(
+                                  context,
+                                  UpdateVoiceVolumeIntent.save(),
+                                );
+                                context
+                                    .read<ShouldShowHUDNotifier>()
+                                    .unlock('voice slider');
+                              },
+                            ).padding(horizontal: 16.0))),
                 const Divider(),
                 [
                   Consumer<AgoraClient>(

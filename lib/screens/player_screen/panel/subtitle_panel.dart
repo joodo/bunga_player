@@ -34,7 +34,9 @@ typedef _TuneArgumentData = ({
   ValueNotifier<double> notifier,
   double min,
   double max,
-  String Function(double value) labelFunc,
+  String Function(double value) labelFormatter,
+  String? suffix,
+  bool allowExceed,
 });
 
 class _SubtitlePanelState extends State<SubtitlePanel> {
@@ -45,7 +47,9 @@ class _SubtitlePanelState extends State<SubtitlePanel> {
       notifier: getIt<PlayService>().subDelayNotifier,
       min: -20.0,
       max: 20.0,
-      labelFunc: (value) => '${value.toStringAsFixed(2)} s',
+      labelFormatter: (value) => value.toStringAsFixed(1),
+      suffix: 's',
+      allowExceed: true,
     ),
     (
       icon: Icons.format_size,
@@ -53,7 +57,9 @@ class _SubtitlePanelState extends State<SubtitlePanel> {
       notifier: getIt<PlayService>().subSizeNotifier,
       min: 20.0,
       max: 72.0,
-      labelFunc: (value) => value.toInt().toString(),
+      labelFormatter: (value) => value.toInt().toString(),
+      suffix: null,
+      allowExceed: true,
     ),
     (
       icon: Icons.height,
@@ -61,7 +67,9 @@ class _SubtitlePanelState extends State<SubtitlePanel> {
       notifier: getIt<PlayService>().subPosNotifier,
       min: -100.0,
       max: 50.0,
-      labelFunc: (value) => '${value.toInt()} %',
+      labelFormatter: (value) => value.toInt().toString(),
+      suffix: '%',
+      allowExceed: false,
     ),
   ];
 
@@ -122,22 +130,21 @@ class _SubtitlePanelState extends State<SubtitlePanel> {
           .textStyle(theme.textTheme.labelMedium!)
           .padding(horizontal: 16.0, top: 24.0, bottom: 8.0),
       ..._tuneArguments.map(
-        (e) => SliderItem(
-          icon: e.icon,
-          title: e.title,
-          slider: ValueListenableBuilder(
+        (e) => ValueListenableBuilder(
             valueListenable: e.notifier,
-            builder: (context, value, child) => Slider(
-              min: e.min,
-              max: e.max,
-              value: value,
-              label: e.labelFunc(value),
-              onChanged: (value) {
-                e.notifier.value = value;
-              },
-            ),
-          ),
-        ).padding(horizontal: 16.0),
+            builder: (context, value, child) => SliderItemWithTextInput(
+                  icon: e.icon,
+                  title: e.title,
+                  min: e.min,
+                  max: e.max,
+                  value: value,
+                  labelFormatter: e.labelFormatter,
+                  allowExceed: e.allowExceed,
+                  suffix: e.suffix,
+                  onChanged: (value) {
+                    e.notifier.value = value;
+                  },
+                ).padding(horizontal: 16.0)),
       ),
     ].toColumn();
 

@@ -4,7 +4,7 @@ import 'package:bunga_player/chat/global_business.dart';
 import 'package:bunga_player/chat/models/message_data.dart';
 import 'package:bunga_player/chat/models/user.dart';
 import 'package:bunga_player/danmaku/business.dart';
-import 'package:bunga_player/ui/global_business.dart';
+import 'package:bunga_player/screens/widgets/text_editing_shortcut_wrapper.dart';
 import 'package:bunga_player/utils/business/platform.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -45,41 +45,29 @@ class _DanmakuControlState extends State<DanmakuControl> {
           );
         },
       )).padding(left: 8.0),
-      DefaultTextEditingShortcuts(
-        child: Shortcuts(
-          shortcuts: Map.fromEntries(
-            context
-                .read<ShortcutMappingNotifier>()
-                .value
-                .values
-                .where((e) => e != null)
-                .map(
-                  (key) => MapEntry(key!, DoNothingAndStopPropagationIntent()),
-                ),
-          ),
-          child: TextField(
-            style: const TextStyle(height: 1.0),
-            controller: _controller,
-            autofocus: kIsDesktop,
-            focusNode: _focusNode,
-            onTapOutside: (event) {},
-            decoration: InputDecoration(
-              border: OutlineInputBorder(),
-              focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide(
-                  color: Theme.of(context).colorScheme.secondary,
-                  width: 2.0,
-                ),
+      TextEditingShortcutWrapper(
+        child: TextField(
+          style: const TextStyle(height: 1.0),
+          controller: _controller,
+          autofocus: kIsDesktop,
+          focusNode: _focusNode,
+          onTapOutside: (event) {},
+          decoration: InputDecoration(
+            border: OutlineInputBorder(),
+            focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide(
+                color: Theme.of(context).colorScheme.secondary,
+                width: 2.0,
               ),
-              hintText: '按换行键发送弹幕',
-              floatingLabelBehavior: FloatingLabelBehavior.never,
             ),
-            onSubmitted: (value) {
-              _sendDanmaku(value);
-              _controller.clear();
-              if (kIsDesktop) _focusNode.requestFocus();
-            },
+            hintText: '按换行键发送弹幕',
+            floatingLabelBehavior: FloatingLabelBehavior.never,
           ),
+          onSubmitted: (value) {
+            _sendDanmaku(value);
+            _controller.clear();
+            if (kIsDesktop) _focusNode.requestFocus();
+          },
         ),
       ).padding(left: 8.0).flexible(),
     ].toRow();
