@@ -45,7 +45,26 @@ post_install do |installer|
     # Reduce agora app size
     # See https://docs.agora.io/en/video-calling/best-practices/app-size-optimization?platform=flutter#ios-and-macos
     targets_to_weaklink=['Pods-Runner', "agora_rtc_engine"]
-    frameworks_to_weaklink=["AgoraAudioBeautyExtension", "AgoraClearVisionExtension", "AgoraContentInspectExtension", "AgoraDrmLoaderExtension", "AgoraSpatialAudioExtension", "AgoraVideoSegmentationExtension", "AgoraFaceCaptureExtension", "AgoraFaceDetectionExtension", "AgoraSuperResolutionExtension", "AgoraScreenCaptureExtension", "AgoraVideoQualityAnalyzerExtension", "AgoraVideoEncoderExtension", "video_enc", "AgoraVideoDecoderExtension", "video_dec", "AgoraVideoAv1DecoderExtension", "AgoraLipSyncExtension"]
+    frameworks_to_weaklink=[
+      "AgoraAudioBeautyExtension",
+      "AgoraClearVisionExtension",
+      "AgoraContentInspectExtension",
+      "AgoraDrmLoaderExtension",
+      "AgoraSpatialAudioExtension",
+      "AgoraVideoSegmentationExtension",
+      "AgoraFaceCaptureExtension",
+      "AgoraFaceDetectionExtension",
+      "AgoraSuperResolutionExtension",
+      "AgoraScreenCaptureExtension",
+      "AgoraVideoQualityAnalyzerExtension",
+      "AgoraVideoEncoderExtension",
+      "AgoraVideoDecoderExtension",
+      "AgoraVideoAv1EncoderExtension",
+      "AgoraVideoAv1DecoderExtension",
+      "AgoraLipSyncExtension",
+      "video_enc",
+      "video_dec"
+    ]
     next unless targets_to_weaklink.include?(target.name)
     target.build_configurations.each do |config|
       base_config_reference = config.base_configuration_reference
