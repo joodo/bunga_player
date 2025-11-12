@@ -11,15 +11,17 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
-class ConsoleDialog extends StatefulWidget {
+import 'global_business.dart';
+
+class Console extends StatefulWidget {
   final TextEditingController logTextController;
-  const ConsoleDialog({super.key, required this.logTextController});
+  const Console({super.key, required this.logTextController});
 
   @override
-  State<ConsoleDialog> createState() => _ConsoleDialogState();
+  State<Console> createState() => _ConsoleState();
 }
 
-class _ConsoleDialogState extends State<ConsoleDialog> {
+class _ConsoleState extends State<Console> {
   @override
   Widget build(BuildContext context) {
     final logView = [
@@ -94,17 +96,23 @@ class _ConsoleDialogState extends State<ConsoleDialog> {
 
     final consoleView = DefaultTabController(
       length: 3,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const TabBar(
+      child: [
+        [
+          TabBar(
             tabs: [
               Tab(text: 'Logs'),
               Tab(text: 'Variables'),
               Tab(text: 'Actions'),
             ],
+          ).flexible(),
+          CloseButton(
+            onPressed: Actions.handler(
+              context,
+              ToggleConsoleIntent(),
+            ),
           ),
-        ),
-        body: TabBarView(
+        ].toRow(),
+        TabBarView(
           children: [
             Padding(
               padding: const EdgeInsets.all(8),
@@ -119,8 +127,8 @@ class _ConsoleDialogState extends State<ConsoleDialog> {
               child: actionView,
             ),
           ],
-        ),
-      ),
+        ).flexible(),
+      ].toColumn(),
     );
 
     return consoleView;

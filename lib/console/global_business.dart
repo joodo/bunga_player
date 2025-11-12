@@ -1,49 +1,69 @@
-import 'dart:async';
-
+import 'package:bunga_player/screens/widgets/split_view.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:nested/nested.dart';
+import 'package:styled_widget/styled_widget.dart';
 
 import 'service.dart';
 import 'widget.dart';
 
-class ShowConsoleIntent extends Intent {}
+class ToggleConsoleIntent extends Intent {}
 
-class ShowConsoleAction extends ContextAction<ShowConsoleIntent> {
-  ShowConsoleAction();
-
-  @override
-  Future<void> invoke(Intent intent, [BuildContext? context]) async {
-    showDialog(
-      context: context!,
-      builder: (context) => Dialog.fullscreen(
-        child: ConsoleDialog(
-          logTextController: getIt<ConsoleService>().logTextController,
-        ),
-      ),
-    );
-  }
-}
-
-class ConsoleGlobalBusiness extends SingleChildStatelessWidget {
+class ConsoleGlobalBusiness extends SingleChildStatefulWidget {
   const ConsoleGlobalBusiness({super.key, super.child});
 
   @override
+  State<ConsoleGlobalBusiness> createState() => ConsoleGlobalBusinessState();
+}
+
+class ConsoleGlobalBusinessState
+    extends SingleChildState<ConsoleGlobalBusiness> {
+  bool _showConsole = false;
+  @override
   Widget buildWithChild(BuildContext context, Widget? child) {
-    return Shortcuts(
-      shortcuts: {
-        const SingleActivator(LogicalKeyboardKey.f12): ShowConsoleIntent(),
-      },
-      child: Actions(
-        actions: {
-          ShowConsoleIntent: ShowConsoleAction(),
-        },
-        child: Focus(
-          autofocus: true,
-          child: child ?? const SizedBox.shrink(),
+    final focus = Focus(
+      autofocus: true,
+      child: child ?? const SizedBox.shrink(),
+    );
+
+    final console = Console(
+      logTextController: getIt<ConsoleService>().logTextController,
+    ).splitView(
+      minSize: 300.0,
+      size: 400.0,
+      maxSize: 1000.0,
+      direction: AxisDirection.right,
+    );
+
+    final row = [
+      if (_showConsole) console,
+      focus.expanded(),
+    ].toRow();
+
+    final actions = Actions(
+      actions: {
+        ToggleConsoleIntent: CallbackAction<ToggleConsoleIntent>(
+          onInvoke: (intent) {
+            setState(() {
+              _showConsole = !_showConsole;
+            });
+            return null;
+          },
         ),
-      ),
+      },
+      child: row,
+    );
+
+    final shortcuts = Shortcuts(
+      shortcuts: {
+        const SingleActivator(LogicalKeyboardKey.f12): ToggleConsoleIntent(),
+      },
+      child: actions,
+    );
+
+    return MaterialApp(
+      home: Material(child: shortcuts),
     );
   }
 }

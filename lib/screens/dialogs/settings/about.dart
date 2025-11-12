@@ -33,7 +33,7 @@ class AboutSetting extends StatelessWidget with SettingsTab {
         child: const Text('查看许可'),
       ).padding(top: 8.0),
       TextButton(
-        onPressed: Actions.handler(context, ShowConsoleIntent()),
+        onPressed: Actions.handler(context, ToggleConsoleIntent()),
         child: const Text('控制台'),
       ),
     ].toColumn(crossAxisAlignment: CrossAxisAlignment.center);
