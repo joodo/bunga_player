@@ -1,50 +1,50 @@
 PODS:
   - agora_rtc_engine (0.0.1):
-    - AgoraIrisRTC_macOS (= 4.5.0-build.1)
-    - AgoraRtcEngine_macOS (= 4.5.0)
+    - AgoraIrisRTC_macOS (= 4.5.2-build.2)
+    - AgoraRtcEngine_macOS (= 4.5.2)
     - FlutterMacOS
-  - AgoraInfra_macOS (1.2.13)
-  - AgoraIrisRTC_macOS (4.5.0-build.1)
-  - AgoraRtcEngine_macOS (4.5.0):
-    - AgoraRtcEngine_macOS/AIAEC (= 4.5.0)
-    - AgoraRtcEngine_macOS/AIAECLL (= 4.5.0)
-    - AgoraRtcEngine_macOS/AINS (= 4.5.0)
-    - AgoraRtcEngine_macOS/AINSLL (= 4.5.0)
-    - AgoraRtcEngine_macOS/AudioBeauty (= 4.5.0)
-    - AgoraRtcEngine_macOS/ClearVision (= 4.5.0)
-    - AgoraRtcEngine_macOS/ContentInspect (= 4.5.0)
-    - AgoraRtcEngine_macOS/FaceCapture (= 4.5.0)
-    - AgoraRtcEngine_macOS/FaceDetection (= 4.5.0)
-    - AgoraRtcEngine_macOS/LipSync (= 4.5.0)
-    - AgoraRtcEngine_macOS/RtcBasic (= 4.5.0)
-    - AgoraRtcEngine_macOS/ScreenCapture (= 4.5.0)
-    - AgoraRtcEngine_macOS/SpatialAudio (= 4.5.0)
-    - AgoraRtcEngine_macOS/VideoAv1CodecDec (= 4.5.0)
-    - AgoraRtcEngine_macOS/VideoAv1CodecEnc (= 4.5.0)
-    - AgoraRtcEngine_macOS/VideoCodecDec (= 4.5.0)
-    - AgoraRtcEngine_macOS/VideoCodecEnc (= 4.5.0)
-    - AgoraRtcEngine_macOS/VirtualBackground (= 4.5.0)
-    - AgoraRtcEngine_macOS/VQA (= 4.5.0)
-  - AgoraRtcEngine_macOS/AIAEC (4.5.0)
-  - AgoraRtcEngine_macOS/AIAECLL (4.5.0)
-  - AgoraRtcEngine_macOS/AINS (4.5.0)
-  - AgoraRtcEngine_macOS/AINSLL (4.5.0)
-  - AgoraRtcEngine_macOS/AudioBeauty (4.5.0)
-  - AgoraRtcEngine_macOS/ClearVision (4.5.0)
-  - AgoraRtcEngine_macOS/ContentInspect (4.5.0)
-  - AgoraRtcEngine_macOS/FaceCapture (4.5.0)
-  - AgoraRtcEngine_macOS/FaceDetection (4.5.0)
-  - AgoraRtcEngine_macOS/LipSync (4.5.0)
-  - AgoraRtcEngine_macOS/RtcBasic (4.5.0):
-    - AgoraInfra_macOS (= 1.2.13)
-  - AgoraRtcEngine_macOS/ScreenCapture (4.5.0)
-  - AgoraRtcEngine_macOS/SpatialAudio (4.5.0)
-  - AgoraRtcEngine_macOS/VideoAv1CodecDec (4.5.0)
-  - AgoraRtcEngine_macOS/VideoAv1CodecEnc (4.5.0)
-  - AgoraRtcEngine_macOS/VideoCodecDec (4.5.0)
-  - AgoraRtcEngine_macOS/VideoCodecEnc (4.5.0)
-  - AgoraRtcEngine_macOS/VirtualBackground (4.5.0)
-  - AgoraRtcEngine_macOS/VQA (4.5.0)
+  - AgoraInfra_macOS (1.2.13.1)
+  - AgoraIrisRTC_macOS (4.5.2-build.2)
+  - AgoraRtcEngine_macOS (4.5.2):
+    - AgoraRtcEngine_macOS/AIAEC (= 4.5.2)
+    - AgoraRtcEngine_macOS/AIAECLL (= 4.5.2)
+    - AgoraRtcEngine_macOS/AINS (= 4.5.2)
+    - AgoraRtcEngine_macOS/AINSLL (= 4.5.2)
+    - AgoraRtcEngine_macOS/AudioBeauty (= 4.5.2)
+    - AgoraRtcEngine_macOS/ClearVision (= 4.5.2)
+    - AgoraRtcEngine_macOS/ContentInspect (= 4.5.2)
+    - AgoraRtcEngine_macOS/FaceCapture (= 4.5.2)
+    - AgoraRtcEngine_macOS/FaceDetection (= 4.5.2)
+    - AgoraRtcEngine_macOS/LipSync (= 4.5.2)
+    - AgoraRtcEngine_macOS/RtcBasic (= 4.5.2)
+    - AgoraRtcEngine_macOS/ScreenCapture (= 4.5.2)
+    - AgoraRtcEngine_macOS/SpatialAudio (= 4.5.2)
+    - AgoraRtcEngine_macOS/VideoAv1CodecDec (= 4.5.2)
+    - AgoraRtcEngine_macOS/VideoAv1CodecEnc (= 4.5.2)
+    - AgoraRtcEngine_macOS/VideoCodecDec (= 4.5.2)
+    - AgoraRtcEngine_macOS/VideoCodecEnc (= 4.5.2)
+    - AgoraRtcEngine_macOS/VirtualBackground (= 4.5.2)
+    - AgoraRtcEngine_macOS/VQA (= 4.5.2)
+  - AgoraRtcEngine_macOS/AIAEC (4.5.2)
+  - AgoraRtcEngine_macOS/AIAECLL (4.5.2)
+  - AgoraRtcEngine_macOS/AINS (4.5.2)
+  - AgoraRtcEngine_macOS/AINSLL (4.5.2)
+  - AgoraRtcEngine_macOS/AudioBeauty (4.5.2)
+  - AgoraRtcEngine_macOS/ClearVision (4.5.2)
+  - AgoraRtcEngine_macOS/ContentInspect (4.5.2)
+  - AgoraRtcEngine_macOS/FaceCapture (4.5.2)
+  - AgoraRtcEngine_macOS/FaceDetection (4.5.2)
+  - AgoraRtcEngine_macOS/LipSync (4.5.2)
+  - AgoraRtcEngine_macOS/RtcBasic (4.5.2):
+    - AgoraInfra_macOS (= 1.2.13.1)
+  - AgoraRtcEngine_macOS/ScreenCapture (4.5.2)
+  - AgoraRtcEngine_macOS/SpatialAudio (4.5.2)
+  - AgoraRtcEngine_macOS/VideoAv1CodecDec (4.5.2)
+  - AgoraRtcEngine_macOS/VideoAv1CodecEnc (4.5.2)
+  - AgoraRtcEngine_macOS/VideoCodecDec (4.5.2)
+  - AgoraRtcEngine_macOS/VideoCodecEnc (4.5.2)
+  - AgoraRtcEngine_macOS/VirtualBackground (4.5.2)
+  - AgoraRtcEngine_macOS/VQA (4.5.2)
   - audio_session (0.0.1):
     - FlutterMacOS
   - audioplayers_darwin (0.0.1):
@@ -152,16 +152,16 @@ EXTERNAL SOURCES:
     :path: Flutter/ephemeral/.symlinks/plugins/window_manager/macos
 
 SPEC CHECKSUMS:
-  agora_rtc_engine: 7b4568a3453dbec060cba21b00599d25162eca85
-  AgoraInfra_macOS: 65ed0889c332d398679ec5268d272b365af092f7
-  AgoraIrisRTC_macOS: d8d0b1e38ab8919cdd7a67981f8f332dcca61ffb
-  AgoraRtcEngine_macOS: cebc823327a62aae349695b1f954898e25da776b
+  agora_rtc_engine: c76a42e7b1b617c4d7b23d84bd6d26c4f53a2bd6
+  AgoraInfra_macOS: 9bc9cea2486446c87d3ee3e69325cdb45ecf99c2
+  AgoraIrisRTC_macOS: 66c134edf52e1dd9863b00494207345e2140b286
+  AgoraRtcEngine_macOS: ca423379ffb023c12a267e9ce6234f90a431f4d2
   audio_session: eaca2512cf2b39212d724f35d11f46180ad3a33e
   audioplayers_darwin: 761f2948df701d05b5db603220c384fb55720012
   file_selector_macos: 6280b52b459ae6c590af5d78fc35c7267a3c4b31
   FlutterMacOS: d0db08ddef1a9af05a5ec4b724367152bb0500b1
   HydraAsync: 8d589bd725b0224f899afafc9a396327405f8063
-  iris_method_channel: 2d6fa907b586c973a1cf06f0e6c7df1ef8375ffa
+  iris_method_channel: 06ef372f01b31866748a3c45da2c89c93b666daa
   media_kit_libs_macos_video: 85a23e549b5f480e72cae3e5634b5514bc692f65
   media_kit_video: fa6564e3799a0a28bff39442334817088b7ca758
   open_file_mac: 01874b6d6a2c1485ac9b126d7105b99102dea2cf
@@ -176,6 +176,6 @@ SPEC CHECKSUMS:
   wakelock_plus: 917609be14d812ddd9e9528876538b2263aaa03b
   window_manager: b729e31d38fb04905235df9ea896128991cad99e
 
-PODFILE CHECKSUM: 8ddd1ba7217e3cecc1d7aa2da7149112280caffb
+PODFILE CHECKSUM: 858751da4d73ce58789ea633b6328b774ec92a73
 
 COCOAPODS: 1.16.2
