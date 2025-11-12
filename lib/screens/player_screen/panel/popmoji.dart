@@ -1,5 +1,6 @@
 import 'package:bunga_player/danmaku/business.dart';
 import 'package:bunga_player/danmaku/models/data.dart';
+import 'package:bunga_player/screens/widgets/text_editing_shortcut_wrapper.dart';
 import 'package:bunga_player/utils/business/platform.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -30,27 +31,29 @@ class _PopmojiPanelState extends State<PopmojiPanel> {
     const buttonSize = 56.0;
     return PanelWidget(
       actions: [
-        TextField(
-          autofocus: kIsDesktop,
-          decoration: const InputDecoration(
-            hintText: '搜索表情',
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(36)),
+        TextEditingShortcutWrapper(
+          child: TextField(
+            autofocus: kIsDesktop,
+            decoration: const InputDecoration(
+              hintText: '搜索表情',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(36)),
+              ),
+              contentPadding: EdgeInsets.symmetric(horizontal: 24),
             ),
-            contentPadding: EdgeInsets.symmetric(horizontal: 24),
-          ),
-          onChanged: (value) {
-            if (value.isEmpty) {
-              setState(() {
-                _data = _categories;
-              });
-              return;
-            }
+            onChanged: (value) {
+              if (value.isEmpty) {
+                setState(() {
+                  _data = _categories;
+                });
+                return;
+              }
 
-            setState(() {
-              _data = _emojisByTag(value);
-            });
-          },
+              setState(() {
+                _data = _emojisByTag(value);
+              });
+            },
+          ),
         ).padding(left: 8.0).flexible(),
       ],
       child: ListView.builder(
