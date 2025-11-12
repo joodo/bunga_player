@@ -87,6 +87,7 @@ class _DanmakuControlState extends State<DanmakuControl> {
                   .map((emoji) => PopmojiButton(
                         emoji,
                         size: buttonSize,
+                        waitDuration: Duration(milliseconds: 500),
                         onPressed:
                             Actions.handler(context, SendPopmojiIntent(emoji)),
                       )),
