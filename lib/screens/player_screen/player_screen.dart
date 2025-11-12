@@ -1,3 +1,4 @@
+import 'package:bunga_player/screens/widgets/split_view.dart';
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -18,46 +19,44 @@ class PlayerScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final body = Consumer2<Panel?, DanmakuVisible>(
-      builder: (context, panel, danmakuVisible, child) => [
-        child!.card(margin: EdgeInsets.all(0)).positioned(
-              top: 0,
-              bottom: danmakuVisible.value ? danmakuHeight : 0,
-              left: 0,
-              right: panel != null ? panelWidth + 8.0 : 0,
-              animate: true,
-            ),
-        Consumer<IsInChannel>(
-          builder: (context, inChannel, child) => inChannel.value
-              ? const DanmakuControl().positioned(
-                  left: 0,
-                  right: panel != null ? panelWidth + 8.0 : 0,
-                  height: danmakuHeight,
-                  bottom: danmakuVisible.value ? 0 : -danmakuHeight,
-                  animate: true,
-                )
-              : const SizedBox.shrink(),
-        ),
-        (panel?.card(
-                  key: ValueKey(panel.type),
-                  margin: const EdgeInsets.all(0),
-                  color: Theme.of(context).colorScheme.surfaceContainerHigh,
-                ) ??
-                const SizedBox.shrink(key: ValueKey('none')))
-            .fadeThroughTransitionSwitcher(
-                duration: const Duration(milliseconds: 300))
-            .positioned(
-              width: panelWidth,
-              top: 0,
-              bottom: 0,
-              right: panel == null ? -panelWidth : 0,
-              animate: true,
-            ),
-      ]
-          .toStack()
-          .animate(const Duration(milliseconds: 350), Curves.easeOutCubic),
+      builder: (context, panel, danmakuVisible, child) {
+        final playerWidget = child!.card(margin: EdgeInsets.all(0));
+        final danmakuWidget = danmakuVisible.value
+            ? const DanmakuControl()
+                .constrained(key: Key('danmaku'), height: danmakuHeight)
+            : const SizedBox.shrink(key: Key('none'));
+        final panelWidget = panel?.splitView(
+              minSize: 260.0,
+              size: 300.0,
+              maxSize: 450.0,
+              direction: AxisDirection.left,
+            ) ??
+            const SizedBox.shrink(key: ValueKey('none'));
+        return [
+          [
+            playerWidget.flexible(),
+            _animate(danmakuWidget, Axis.vertical),
+          ].toColumn().flexible(),
+          _animate(panelWidget, Axis.horizontal),
+        ]
+            .toRow()
+            .animate(const Duration(milliseconds: 350), Curves.easeOutCubic);
+      },
       child: const Player(),
     );
 
     return body.material().playScreenBusiness();
   }
+
+  Widget _animate(Widget widget, Axis axis) => widget.animatedSwitcher(
+        duration: const Duration(milliseconds: 350),
+        switchInCurve: Curves.easeOutCubic,
+        switchOutCurve: Curves.easeInCubic,
+        transitionBuilder: (child, animation) => SizeTransition(
+          sizeFactor: animation,
+          axis: axis,
+          axisAlignment: -1.0,
+          child: child,
+        ),
+      );
 }
