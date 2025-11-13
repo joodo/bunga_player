@@ -1,18 +1,37 @@
+import 'package:flutter/foundation.dart';
 import 'package:logger/logger.dart';
+import 'package:path_provider/path_provider.dart';
 
-final logger = BungaLogger(StreamOutput());
+late final BungaLogger logger;
+Future<void> initializeLogger() async {
+  final dir = await getApplicationSupportDirectory();
+  final logPath = '${dir.path}/logs/';
+  logger = BungaLogger(logPath);
+
+  FlutterError.onError = (FlutterErrorDetails details) {
+    logger.e(details.toString());
+  };
+}
 
 class BungaLogger extends Logger {
-  BungaLogger(StreamOutput streamOutput)
-      : _streamOutput = streamOutput,
-        super(
-          output: MultiOutput([streamOutput, ConsoleOutput()]),
+  static final streamOutput = StreamOutput();
+
+  BungaLogger(this.path)
+      : super(
+          output: MultiOutput([
+            streamOutput,
+            AdvancedFileOutput(
+              path: path,
+              maxFileSizeKB: 512,
+              maxRotatedFilesCount: 3,
+            ),
+            ConsoleOutput(),
+          ]),
           printer: SimplePrinter(colors: false),
           filter: ProductionFilter(),
           level: Level.info,
         );
 
-  final StreamOutput _streamOutput;
-  late final Stream<List<String>> stream =
-      _streamOutput.stream.asBroadcastStream();
+  final String path;
+  final Stream<List<String>> stream = streamOutput.stream.asBroadcastStream();
 }

@@ -11,18 +11,16 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
 
-void main() {
+void main() async {
   Animate.restartOnHotReload = true;
 
   Provider.debugCheckInvalidValueType = null;
 
-  FlutterError.onError = (FlutterErrorDetails details) {
-    logger.e(details);
-  };
-
   runZonedGuarded(
     () async {
       WidgetsFlutterBinding.ensureInitialized();
+
+      await initializeLogger();
 
       await services.init();
 

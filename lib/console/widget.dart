@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:bunga_player/bunga_server/global_business.dart';
 import 'package:bunga_player/client_info/models/client_account.dart';
 import 'package:bunga_player/console/service.dart';
+import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
@@ -25,12 +26,13 @@ class _ConsoleState extends State<Console> {
   @override
   Widget build(BuildContext context) {
     final logView = [
-      FilledButton(
-        onPressed: () {
-          widget.logTextController.clear();
-        },
-        child: const Text('Clear logs'),
-      ).padding(bottom: 8.0),
+      [
+        SelectableText(logger.path).flexible(),
+        FilledButton(
+          onPressed: widget.logTextController.clear,
+          child: const Text('Clear'),
+        )
+      ].toRow().padding(bottom: 8.0),
       TextField(
         controller: widget.logTextController,
         decoration: const InputDecoration(
@@ -99,6 +101,8 @@ class _ConsoleState extends State<Console> {
       child: [
         [
           TabBar(
+            isScrollable: true,
+            tabAlignment: TabAlignment.start,
             tabs: [
               Tab(text: 'Logs'),
               Tab(text: 'Variables'),
