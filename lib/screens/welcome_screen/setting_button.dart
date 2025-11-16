@@ -14,41 +14,39 @@ class SettingButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return OpenContainer(
-      closedBuilder: (context, openContainer) =>
-          Consumer2<BungaClientInfo?, FetchingBungaClient>(
+    return Consumer2<BungaClientInfo?, FetchingBungaClient>(
         builder: (context, clientInfo, fetchingNotifer, child) {
-          final failed = !fetchingNotifer.value && clientInfo == null;
-          return OutlinedButton.icon(
-            icon: (fetchingNotifer.value
-                    ? const LoadingButtonIcon(key: ValueKey('loading'))
-                    : clientInfo == null
-                        ? const Icon(key: ValueKey('error'), Icons.error)
-                        : const Icon(key: ValueKey('settings'), Icons.settings))
-                .animatedSwitcher(duration: const Duration(milliseconds: 200)),
-            label: (fetchingNotifer.value
-                    ? const Text('正在载入', key: ValueKey('loading'))
-                    : Text(
-                        clientInfo?.channel.name ?? '设置服务器',
-                        key: const ValueKey('finished'),
-                      ))
-                .animatedSwitcher(duration: const Duration(milliseconds: 200))
-                .animatedSize(
-                  duration: const Duration(milliseconds: 350),
-                  curve: Curves.easeOutCubic,
-                ),
-            onPressed: openContainer,
-          ).colorScheme(
-            seedColor: failed ? Colors.red : Colors.green,
-            brightness: theme.brightness,
-          );
-        },
-      ),
-      closedColor: theme.primaryColor,
-      openBuilder: (dialogContext, closeContainer) => const Dialog.fullscreen(
-        child: SettingsDialog(page: NetworkSettings),
-      ),
-      openColor: theme.primaryColor,
-    );
+      final failed = !fetchingNotifer.value && clientInfo == null;
+      return OpenContainer(
+        closedBuilder: (context, openContainer) => OutlinedButton.icon(
+          icon: (fetchingNotifer.value
+                  ? const LoadingButtonIcon(key: ValueKey('loading'))
+                  : clientInfo == null
+                      ? const Icon(key: ValueKey('error'), Icons.error)
+                      : const Icon(key: ValueKey('settings'), Icons.settings))
+              .animatedSwitcher(duration: const Duration(milliseconds: 200)),
+          label: (fetchingNotifer.value
+                  ? const Text('正在载入', key: ValueKey('loading'))
+                  : Text(
+                      clientInfo?.channel.name ?? '设置服务器',
+                      key: const ValueKey('finished'),
+                    ))
+              .animatedSwitcher(duration: const Duration(milliseconds: 200))
+              .animatedSize(
+                duration: const Duration(milliseconds: 350),
+                curve: Curves.easeOutCubic,
+              ),
+          onPressed: openContainer,
+        ).colorScheme(
+          seedColor: failed ? Colors.red : Colors.green,
+          brightness: theme.brightness,
+        ),
+        closedColor: theme.primaryColor,
+        openBuilder: (dialogContext, closeContainer) => Dialog.fullscreen(
+          child: SettingsDialog(page: failed ? NetworkSettings : null),
+        ),
+        openColor: theme.primaryColor,
+      );
+    });
   }
 }
