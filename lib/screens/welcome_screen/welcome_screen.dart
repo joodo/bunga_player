@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
-import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:bunga_player/chat/models/message_data.dart';
 import 'package:bunga_player/screens/dialogs/open_video/open_video.dart';
 import 'package:bunga_player/screens/dialogs/open_video/direct_link.dart';
@@ -78,7 +77,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       ].toRow(),
       _getContent().padding(vertical: 16.0).flexible(),
       OpenVideoButton(onFinished: _videoSelected),
-    ].toColumn().padding(all: 16.0).material();
+    ].toColumn().padding(all: 16.0);
   }
 
   Widget _getContent() {

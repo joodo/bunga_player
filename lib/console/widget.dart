@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:bunga_player/bunga_server/global_business.dart';
 import 'package:bunga_player/client_info/models/client_account.dart';
 import 'package:bunga_player/console/service.dart';
+import 'package:bunga_player/restart/global_business.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
@@ -12,7 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
-import 'global_business.dart';
+import 'wrapper.dart';
 
 class Console extends StatefulWidget {
   final TextEditingController logTextController;
@@ -47,54 +48,54 @@ class _ConsoleState extends State<Console> {
       ).expanded(),
     ].toColumn();
 
-    final actionView = Column(
-      children: [
-        FilledButton(
-          onPressed: () async {
-            final accountNotifier =
-                getIt<ConsoleService>().watchingValueNotifiers['Client Account']
-                    as ValueNotifier<ClientAccount>;
+    final actionView = [
+      FilledButton(
+        onPressed: Actions.handler(context, RestartAppIntent()),
+        child: const Text('Restart app'),
+      ),
+      FilledButton(
+        onPressed: () async {
+          final accountNotifier =
+              getIt<ConsoleService>().watchingValueNotifiers['Client Account']
+                  as ValueNotifier<ClientAccount>;
 
-            final currentID = accountNotifier.value.id;
-            final split = currentID.split('__');
+          final currentID = accountNotifier.value.id;
+          final split = currentID.split('__');
 
-            late final String newID;
-            if (split.length == 1) {
-              newID = '${currentID}__1';
-            } else {
-              newID = '${split.first}__${int.parse(split.last) + 1}';
-            }
+          late final String newID;
+          if (split.length == 1) {
+            newID = '${currentID}__1';
+          } else {
+            newID = '${split.first}__${int.parse(split.last) + 1}';
+          }
 
-            final newAccount = ClientAccount(
-              id: newID,
-              password: accountNotifier.value.password,
-            );
-            accountNotifier.value = newAccount;
+          final newAccount = ClientAccount(
+            id: newID,
+            password: accountNotifier.value.password,
+          );
+          accountNotifier.value = newAccount;
 
-            final host = context.read<BungaHostAddress>().value;
-            final act = Actions.invoke(
-              context,
-              ConnectToHostIntent(host),
-            ) as Future;
-            await act;
+          final host = context.read<BungaHostAddress>().value;
+          final act = Actions.invoke(
+            context,
+            ConnectToHostIntent(host),
+          ) as Future;
+          await act;
 
-            getIt<Toast>().show('User ID has changed to $newID');
-          },
-          child: const Text('Change Client ID'),
-        ),
-        const SizedBox(height: 8),
-        FilledButton(
-          onPressed: () => throw 'Exception!',
-          child: const Text('Throw an exception'),
-        ),
-        const SizedBox(height: 8),
-        FilledButton(
-          onPressed: () =>
-              getIt<Toast>().show('New toast: ${_randomSentence()}.'),
-          child: const Text('Show a toast'),
-        ),
-      ],
-    );
+          getIt<Toast>().show('User ID has changed to $newID');
+        },
+        child: const Text('Change Client ID'),
+      ),
+      FilledButton(
+        onPressed: () => throw 'Exception!',
+        child: const Text('Throw an exception'),
+      ),
+      FilledButton(
+        onPressed: () =>
+            getIt<Toast>().show('New toast: ${_randomSentence()}.'),
+        child: const Text('Show a toast'),
+      ),
+    ].toColumn(separator: const SizedBox(height: 8));
 
     final consoleView = DefaultTabController(
       length: 3,

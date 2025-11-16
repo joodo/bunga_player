@@ -10,6 +10,11 @@ extension BungaStyledWidget on Widget {
           .then(delay: 300.ms)
           .fade(duration: 1000.ms, end: 0.5);
 
+  Widget theme({required ThemeData data}) => Theme(
+        data: data,
+        child: this,
+      );
+
   Widget colorScheme({
     ColorScheme? scheme,
     Color? seedColor,
@@ -19,17 +24,15 @@ extension BungaStyledWidget on Widget {
       scheme != null || seedColor != null && brightness != null,
       'Either scheme or seedColor&brightness must be provided',
     );
-    return Theme(
-      data: ThemeData(
-        colorScheme: seedColor != null
-            ? ColorScheme.fromSeed(
-                seedColor: seedColor,
-                brightness: brightness!,
-              )
-            : scheme,
-      ),
-      child: this,
-    );
+    return theme(
+        data: ThemeData(
+      colorScheme: seedColor != null
+          ? ColorScheme.fromSeed(
+              seedColor: seedColor,
+              brightness: brightness!,
+            )
+          : scheme,
+    ));
   }
 
   Widget animatedSwitcher({

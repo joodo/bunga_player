@@ -78,6 +78,8 @@ PODS:
     - HydraAsync
     - TXIMSDK_Plus_Mac (= 8.4.6675)
   - TXIMSDK_Plus_Mac (8.4.6675)
+  - url_launcher_macos (0.0.1):
+    - FlutterMacOS
   - volume_controller (0.0.1):
     - FlutterMacOS
   - wakelock_plus (0.0.1):
@@ -101,6 +103,7 @@ DEPENDENCIES:
   - screen_retriever_macos (from `Flutter/ephemeral/.symlinks/plugins/screen_retriever_macos/macos`)
   - shared_preferences_foundation (from `Flutter/ephemeral/.symlinks/plugins/shared_preferences_foundation/darwin`)
   - tencent_cloud_chat_sdk (from `Flutter/ephemeral/.symlinks/plugins/tencent_cloud_chat_sdk/macos`)
+  - url_launcher_macos (from `Flutter/ephemeral/.symlinks/plugins/url_launcher_macos/macos`)
   - volume_controller (from `Flutter/ephemeral/.symlinks/plugins/volume_controller/macos`)
   - wakelock_plus (from `Flutter/ephemeral/.symlinks/plugins/wakelock_plus/macos`)
   - window_manager (from `Flutter/ephemeral/.symlinks/plugins/window_manager/macos`)
@@ -144,6 +147,8 @@ EXTERNAL SOURCES:
     :path: Flutter/ephemeral/.symlinks/plugins/shared_preferences_foundation/darwin
   tencent_cloud_chat_sdk:
     :path: Flutter/ephemeral/.symlinks/plugins/tencent_cloud_chat_sdk/macos
+  url_launcher_macos:
+    :path: Flutter/ephemeral/.symlinks/plugins/url_launcher_macos/macos
   volume_controller:
     :path: Flutter/ephemeral/.symlinks/plugins/volume_controller/macos
   wakelock_plus:
@@ -172,6 +177,7 @@ SPEC CHECKSUMS:
   shared_preferences_foundation: 9e1978ff2562383bd5676f64ec4e9aa8fa06a6f7
   tencent_cloud_chat_sdk: 3cdb352cf9dd3ee0ef3b81c3c42be5e001f8eda0
   TXIMSDK_Plus_Mac: 1678a147e3c44e3727f48f2fd7dfd7946ba12b2c
+  url_launcher_macos: f87a979182d112f911de6820aefddaf56ee9fbfd
   volume_controller: 5c068e6d085c80dadd33fc2c918d2114b775b3dd
   wakelock_plus: 917609be14d812ddd9e9528876538b2263aaa03b
   window_manager: b729e31d38fb04905235df9ea896128991cad99e

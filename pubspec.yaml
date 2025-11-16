@@ -74,6 +74,7 @@ dependencies:
   vector_graphics: ^1.1.18
   styled_widget: ^0.4.1
   crypto: ^3.0.6
+  url_launcher: ^6.3.2
 
 dependency_overrides:
 

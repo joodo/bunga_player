@@ -10,15 +10,14 @@ import 'widget.dart';
 
 class ToggleConsoleIntent extends Intent {}
 
-class ConsoleGlobalBusiness extends SingleChildStatefulWidget {
-  const ConsoleGlobalBusiness({super.key, super.child});
+class ConsoleWrapper extends SingleChildStatefulWidget {
+  const ConsoleWrapper({super.key, super.child});
 
   @override
-  State<ConsoleGlobalBusiness> createState() => ConsoleGlobalBusinessState();
+  State<ConsoleWrapper> createState() => ConsoleGlobalBusinessState();
 }
 
-class ConsoleGlobalBusinessState
-    extends SingleChildState<ConsoleGlobalBusiness> {
+class ConsoleGlobalBusinessState extends SingleChildState<ConsoleWrapper> {
   bool _showConsole = false;
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
@@ -62,8 +61,6 @@ class ConsoleGlobalBusinessState
       child: actions,
     );
 
-    return MaterialApp(
-      home: Material(child: shortcuts),
-    );
+    return shortcuts;
   }
 }

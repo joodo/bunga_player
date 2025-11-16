@@ -45,7 +45,7 @@ class PlayerScreen extends StatelessWidget {
       child: const Player(),
     );
 
-    return body.material().playScreenBusiness();
+    return body.playScreenBusiness();
   }
 
   Widget _animate(Widget widget, Axis axis) => widget.animatedSwitcher(

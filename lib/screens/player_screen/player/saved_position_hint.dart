@@ -1,11 +1,11 @@
 import 'package:animations/animations.dart';
 import 'package:bunga_player/play/busuness.dart';
+import 'package:bunga_player/ui/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
 import 'package:bunga_player/play/service/service.dart';
-import 'package:bunga_player/wrappers/theme.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/extensions/duration.dart';
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
@@ -70,11 +70,7 @@ class _SavedPositionHintState extends State<SavedPositionHint>
           shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(2.0))),
         )
-        // FIXME: Deal with theme..toast...action
-        .colorScheme(
-          seedColor: ThemeWrapper.seedColor,
-          brightness: Brightness.light,
-        );
+        .theme(data: lightTheme);
 
     final animedCard = AnimatedBuilder(
       animation: _controller,

@@ -1,12 +1,12 @@
 import 'package:bunga_player/screens/widgets/popup_widget.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
+import 'package:bunga_player/ui/theme.dart';
 import 'package:bunga_player/utils/business/value_listenable.dart';
+import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:styled_widget/styled_widget.dart';
-
-import 'theme.dart';
 
 class ToastWrapper extends SingleChildStatefulWidget {
   const ToastWrapper({super.key, super.child});
@@ -51,24 +51,19 @@ class ToastWrapperState extends SingleChildState<ToastWrapper>
       builder: (context, text, child) => text != null
           ? Text(text).padding(horizontal: 16.0, vertical: 12.0)
           : const SizedBox.shrink(),
-    ).card(
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(
-          Radius.circular(2.0),
-        ),
-      ),
-    );
-
-    final themedCard = Theme(
-      data: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: ThemeWrapper.seedColor),
-      ),
-      child: card,
-    );
+    )
+        .card(
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(
+              Radius.circular(2.0),
+            ),
+          ),
+        )
+        .theme(data: lightTheme);
 
     final popup = PopupWidget(
       visibleNotifier: _visibleNotifier,
-      child: themedCard,
+      child: card,
     );
 
     final body = ValueListenableBuilder(
@@ -82,10 +77,7 @@ class ToastWrapperState extends SingleChildState<ToastWrapper>
       child: child,
     );
 
-    return Directionality(
-      textDirection: TextDirection.ltr,
-      child: body,
-    );
+    return body;
   }
 
   void show(String text) {
