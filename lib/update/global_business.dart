@@ -67,8 +67,9 @@ class _UpdateGlobalBusinessState
   static const _latestUrl =
       'https://gitee.com/api/v5/repos/joodo2/bunga_player/releases/latest';
 
-  final _updateStatusNotifier =
-      ValueNotifier<UpdateStatus>(UpdateStatus.updated);
+  final _updateStatusNotifier = ValueNotifier<UpdateStatus>(
+    UpdateStatus.updated,
+  );
   final _updateLastCheckedNotifier = UpdateLastCheckedNotifier();
   final _updateDownloadProgressNotifier =
       ValueNotifier<UpdateDownloadProgress?>(null);
@@ -92,13 +93,11 @@ class _UpdateGlobalBusinessState
       return;
     }
 
-    _checkUpdate().onError(
-      (error, stackTrace) {
-        getIt<Toast>().show('检查更新失败，请稍后再试。');
-        logger.e('Update: error: $error');
-        return false;
-      },
-    );
+    _checkUpdate().onError((error, stackTrace) {
+      getIt<Toast>().show('检查更新失败，请稍后再试。');
+      logger.e('Update: error: $error');
+      return false;
+    });
   }
 
   @override
@@ -135,18 +134,21 @@ class _UpdateGlobalBusinessState
   }
 
   Future<bool> _checkUpdate() async {
-    assert(_updateStatusNotifier.value == UpdateStatus.updated ||
-        _updateStatusNotifier.value == UpdateStatus.error);
+    assert(
+      _updateStatusNotifier.value == UpdateStatus.updated ||
+          _updateStatusNotifier.value == UpdateStatus.error,
+    );
 
     final response = await http.get(Uri.parse(_latestUrl));
-    final responseData = jsonDecode(utf8.decode(response.body.runes.toList()));
+    final responseData = jsonDecode(response.body);
 
     final latestVersion = responseData['tag_name'] as String;
     final latestName = responseData['name'];
     final latestBody = responseData['body'];
     final installerFileName = _installerFileName(latestVersion);
     final downloadUrl = (responseData['assets'] as List).firstWhere(
-        (e) => e['name'] == installerFileName)['browser_download_url'];
+      (e) => e['name'] == installerFileName,
+    )['browser_download_url'];
     _updateLastCheckedNotifier.value = UpdateInfo(
       checkedAt: DateTime.now(),
       version: latestVersion,
@@ -156,8 +158,9 @@ class _UpdateGlobalBusinessState
     );
 
     final currentVersion = getIt<PackageInfo>().version;
-    logger
-        .i('Current version: $currentVersion, Latest version: $latestVersion');
+    logger.i(
+      'Current version: $currentVersion, Latest version: $latestVersion',
+    );
     if (Version.parse(latestVersion) <= Version.parse(currentVersion)) {
       _updateStatusNotifier.value = UpdateStatus.updated;
       return false;
@@ -169,8 +172,10 @@ class _UpdateGlobalBusinessState
     if (!await File(_installFilePath).exists()) {
       _updateStatusNotifier.value = UpdateStatus.downloading;
 
-      await for (final progress in getIt<NetworkService>()
-          .downloadFile(downloadUrl, _installFilePath)) {
+      await for (final progress in getIt<NetworkService>().downloadFile(
+        downloadUrl,
+        _installFilePath,
+      )) {
         _updateDownloadProgressNotifier.value = UpdateDownloadProgress(
           total: progress.total,
           current: progress.current,
@@ -199,8 +204,9 @@ class _UpdateGlobalBusinessState
       'windows' => '.exe',
       'macos' => '.dmg',
       'android' => '_arm64-v8a.apk',
-      String() =>
-        throw Exception('Update: unknown platform ${Platform.operatingSystem}'),
+      String() => throw Exception(
+        'Update: unknown platform ${Platform.operatingSystem}',
+      ),
     };
 
     return '${prefix}v$version$suffix';

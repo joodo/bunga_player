@@ -40,11 +40,9 @@ class AboutSetting extends StatelessWidget with SettingsTab {
             onPressed: enabled
                 ? Actions.handler(context, ShowUpdateDetailIntent())
                 : null,
-            child: const Text('查看更新日志'),
+            child: const Text('更新日志'),
           ),
-        ].toRow(
-          mainAxisAlignment: MainAxisAlignment.center,
-        ),
+        ].toRow(mainAxisAlignment: MainAxisAlignment.center),
       ),
       const SizedBox(height: 16.0),
       [
@@ -64,8 +62,9 @@ class AboutSetting extends StatelessWidget with SettingsTab {
         separator: const SizedBox(width: 12.0),
       ),
     ].toColumn(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        separator: const SizedBox(height: 8.0));
+      crossAxisAlignment: CrossAxisAlignment.center,
+      separator: const SizedBox(height: 8.0),
+    );
   }
 
   void _forceCheckUpdate(BuildContext context) async {
