@@ -37,7 +37,7 @@ dependencies:
   animations: ^2.0.11
   file_selector: ^1.0.3
   window_manager: ^0.5.1
-  flutter_markdown: ^0.7.6
+  flutter_markdown_plus: ^1.0.5
   flutter_lazy_indexed_stack: ^0.1.0
   chinese_font_library: ^1.2.0
 
