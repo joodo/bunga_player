@@ -61,13 +61,16 @@ class _FireworkOverlayState extends State<_FireworkOverlay>
     super.initState();
     _subscription = context
         .read<Stream<Message>>()
-        .where((message) =>
-            message.data['type'] == PopmojiMessageData.messageType &&
-            message.data['code'] == '🎆')
+        .where(
+          (message) =>
+              message.data['code'] == PopmojiMessageData.messageCode &&
+              message.data['code'] == '🎆',
+        )
         .map((message) {
-      final data = PopmojiMessageData.fromJson(message.data);
-      return data.sender;
-    }).listen(_startFireworks);
+          final data = PopmojiMessageData.fromJson(message.data);
+          return data.sender;
+        })
+        .listen(_startFireworks);
   }
 
   @override
@@ -84,8 +87,9 @@ class _FireworkOverlayState extends State<_FireworkOverlay>
 
   void _startFireworks(User sender) {
     getIt<Toast>().show('${sender.name} 在放大呲花');
-    _fireworkController.autoLaunchDuration =
-        Duration(milliseconds: kIsDesktop ? 100 : 400);
+    _fireworkController.autoLaunchDuration = Duration(
+      milliseconds: kIsDesktop ? 100 : 400,
+    );
     _fireworkTimer.reset();
   }
 }
@@ -110,13 +114,16 @@ class _PopmojiOverlayState extends State<_PopmojiOverlay> {
     super.initState();
     _subscription = context
         .read<Stream<Message>>()
-        .where((message) =>
-            message.data['type'] == PopmojiMessageData.messageType &&
-            message.data['code'] != '🎆')
+        .where(
+          (message) =>
+              message.data['code'] == PopmojiMessageData.messageCode &&
+              message.data['code'] != '🎆',
+        )
         .map((message) {
-      final data = PopmojiMessageData.fromJson(message.data);
-      return (data.sender, data.code);
-    }).listen(_showPopmoji);
+          final data = PopmojiMessageData.fromJson(message.data);
+          return (data.sender, data.code);
+        })
+        .listen(_showPopmoji);
   }
 
   @override
@@ -152,11 +159,7 @@ class _PopmojiOverlayState extends State<_PopmojiOverlay> {
     setState(() {
       _popmojis = [
         ..._popmojis,
-        (
-          id: _popmojiId++,
-          sender: data.$1,
-          code: data.$2,
-        ),
+        (id: _popmojiId++, sender: data.$1, code: data.$2),
       ];
     });
   }
@@ -191,55 +194,55 @@ class _EmojiAnimationState extends State<_EmojiAnimation>
 
     _sizeAnime = TweenSequence([
       TweenSequenceItem(
-        tween: Tween<double>(begin: 0, end: maxSize)
-            .chain(CurveTween(curve: Curves.easeOutCubic)),
+        tween: Tween<double>(
+          begin: 0,
+          end: maxSize,
+        ).chain(CurveTween(curve: Curves.easeOutCubic)),
         weight: 1,
       ),
+      TweenSequenceItem(tween: ConstantTween<double>(maxSize), weight: 3),
       TweenSequenceItem(
-        tween: ConstantTween<double>(maxSize),
-        weight: 3,
-      ),
-      TweenSequenceItem(
-        tween: Tween<double>(begin: maxSize, end: 0)
-            .chain(CurveTween(curve: Curves.easeInCubic)),
+        tween: Tween<double>(
+          begin: maxSize,
+          end: 0,
+        ).chain(CurveTween(curve: Curves.easeInCubic)),
         weight: 1,
       ),
     ]).animate(_animationController);
     _emojiSizeAnime = TweenSequence<double>([
       TweenSequenceItem<double>(
-        tween: Tween<double>(begin: 0, end: maxEmojiSize)
-            .chain(CurveTween(curve: Curves.elasticOut)),
+        tween: Tween<double>(
+          begin: 0,
+          end: maxEmojiSize,
+        ).chain(CurveTween(curve: Curves.elasticOut)),
         weight: 4,
       ),
       TweenSequenceItem<double>(
-        tween: Tween<double>(begin: maxEmojiSize, end: 0)
-            .chain(CurveTween(curve: Curves.easeInCubic)),
+        tween: Tween<double>(
+          begin: maxEmojiSize,
+          end: 0,
+        ).chain(CurveTween(curve: Curves.easeInCubic)),
         weight: 1,
       ),
     ]).animate(_animationController);
     _textOpacityAnime = TweenSequence<double>([
+      TweenSequenceItem(tween: ConstantTween<double>(0), weight: 0.5),
       TweenSequenceItem(
-        tween: ConstantTween<double>(0),
-        weight: 0.5,
-      ),
-      TweenSequenceItem(
-        tween: Tween<double>(begin: 0, end: 1)
-            .chain(CurveTween(curve: Curves.easeOutCubic)),
+        tween: Tween<double>(
+          begin: 0,
+          end: 1,
+        ).chain(CurveTween(curve: Curves.easeOutCubic)),
         weight: 1,
       ),
+      TweenSequenceItem(tween: ConstantTween<double>(1), weight: 2),
       TweenSequenceItem(
-        tween: ConstantTween<double>(1),
-        weight: 2,
-      ),
-      TweenSequenceItem(
-        tween: Tween<double>(begin: 1, end: 0)
-            .chain(CurveTween(curve: Curves.easeInCubic)),
+        tween: Tween<double>(
+          begin: 1,
+          end: 0,
+        ).chain(CurveTween(curve: Curves.easeInCubic)),
         weight: 1,
       ),
-      TweenSequenceItem(
-        tween: ConstantTween<double>(0),
-        weight: 0.5,
-      ),
+      TweenSequenceItem(tween: ConstantTween<double>(0), weight: 0.5),
     ]).animate(_animationController);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -261,27 +264,29 @@ class _EmojiAnimationState extends State<_EmojiAnimation>
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _animationController,
-      builder: (context, child) => [
-        SizedOverflowBox(
-          size: Size(_sizeAnime.value, 30),
-          alignment: Alignment.topLeft,
-          child: Text('${widget.info.sender.name}:')
-              .textStyle(Theme.of(context).textTheme.bodyLarge!)
-              .padding(all: 8.0)
-              .backgroundColor(
-                  widget.info.sender.getColor(brightness: 0.3).withAlpha(200))
-              .borderRadius(all: 4.0)
-              .constrained(maxWidth: _EmojiAnimation.maxSize)
-              .opacity(_textOpacityAnime.value),
-        ),
-        child!
-            .constrained(width: _emojiSizeAnime.value)
-            .center()
-            .constrained(height: _sizeAnime.value, width: _sizeAnime.value),
-      ].toColumn(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-      ),
+      builder: (context, child) =>
+          [
+            SizedOverflowBox(
+              size: Size(_sizeAnime.value, 30),
+              alignment: Alignment.topLeft,
+              child: Text('${widget.info.sender.name}:')
+                  .textStyle(Theme.of(context).textTheme.bodyLarge!)
+                  .padding(all: 8.0)
+                  .backgroundColor(
+                    widget.info.sender.getColor(brightness: 0.3).withAlpha(200),
+                  )
+                  .borderRadius(all: 4.0)
+                  .constrained(maxWidth: _EmojiAnimation.maxSize)
+                  .opacity(_textOpacityAnime.value),
+            ),
+            child!
+                .constrained(width: _emojiSizeAnime.value)
+                .center()
+                .constrained(height: _sizeAnime.value, width: _sizeAnime.value),
+          ].toColumn(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+          ),
       child: Lottie.asset(
         EmojiData.lottiePath(widget.info.code),
         repeat: false,

@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:bunga_player/bunga_server/global_business.dart';
-import 'package:bunga_player/bunga_server/models/bunga_client_info.dart';
+import 'package:bunga_player/bunga_server/models/bunga_server_info.dart';
 import 'package:bunga_player/play/models/history.dart';
 import 'package:bunga_player/utils/extensions/file.dart';
 import 'package:flutter/material.dart';
@@ -27,12 +27,7 @@ import 'models/video_record.dart';
 typedef DirInfo = ({
   String name,
   int current,
-  List<
-      ({
-        String name,
-        Uri url,
-        String? thumb,
-      })> info,
+  List<({String name, Uri url, String? thumb})> info,
 });
 
 class PlayPayloadParser {
@@ -135,10 +130,9 @@ class _LocalFileParser implements _Parser {
   @override
   Future<PlayPayload> parseVideoRecord(VideoRecord record) {
     assert(record.source == recordSource);
-    return Future.value(PlayPayload(
-      record: record,
-      sources: VideoSources.single(record.path),
-    ));
+    return Future.value(
+      PlayPayload(record: record, sources: VideoSources.single(record.path)),
+    );
   }
 
   @override
@@ -150,18 +144,16 @@ class _LocalFileParser implements _Parser {
     final files = dir.listSync();
 
     final info = files
-        .where((entry) => videoFileExtensions.contains(path_tool
-            .extension(entry.path)
-            .replaceFirst('.', '')
-            .toLowerCase()))
+        .where(
+          (entry) => videoFileExtensions.contains(
+            path_tool.extension(entry.path).replaceFirst('.', '').toLowerCase(),
+          ),
+        )
         .map((entry) {
-      final filename = path_tool.basename(entry.path);
-      return (
-        name: filename,
-        url: Uri.file(entry.path),
-        thumb: null,
-      );
-    }).sorted((a, b) => compareNatural(a.name, b.name));
+          final filename = path_tool.basename(entry.path);
+          return (name: filename, url: Uri.file(entry.path), thumb: null);
+        })
+        .sorted((a, b) => compareNatural(a.name, b.name));
 
     final filename = path_tool.basename(record.path);
     final current = info.indexWhere((e) => e.name == filename);
@@ -190,36 +182,37 @@ class _AListParser implements _Parser {
     final path = Uri.decodeComponent(url.path);
 
     const encode = Uri.encodeComponent;
-    final channelId = context.read<BungaClientInfo>().channel.id;
+    final channelId = context.read<BungaServerInfo>().channel.id;
     final host = context.read<BungaHostAddress>().uri;
     final thumbUrl = host.resolve(
-        '/api/channels/${encode(channelId)}/alist-thumbnail?path=${encode(path)}');
+      '/api/channels/${encode(channelId)}/alist-thumbnail?path=${encode(path)}',
+    );
 
     // Record
     final name = path_tool.basenameWithoutExtension(path);
 
-    return Future.value(VideoRecord(
-      id: path.asPathToAListId(),
-      title: name,
-      source: recordSource,
-      thumbUrl: thumbUrl.toString(),
-      path: path,
-    ));
+    return Future.value(
+      VideoRecord(
+        id: path.asPathToAListId(),
+        title: name,
+        source: recordSource,
+        thumbUrl: thumbUrl.toString(),
+        path: path,
+      ),
+    );
   }
 
   @override
   Future<PlayPayload> parseVideoRecord(VideoRecord record) async {
     assert(record.source == recordSource);
 
-    final act = Actions.invoke(context, GetIntent(record.path))
-        as Future<AListFileDetail>;
+    final act =
+        Actions.invoke(context, GetIntent(record.path))
+            as Future<AListFileDetail>;
     final info = await act;
     return PlayPayload(
       record: record,
-      sources: VideoSources.single(
-        info.rawUrl!,
-        requestHeaders: _baiduHeaders,
-      ),
+      sources: VideoSources.single(info.rawUrl!, requestHeaders: _baiduHeaders),
     );
   }
 
@@ -234,8 +227,9 @@ class _AListParser implements _Parser {
     var infos = _infoResponseCache[dirPath];
 
     if (refresh || infos == null) {
-      final act = Actions.invoke(context, ListIntent(dirPath, refresh: true))
-          as Future<List<AListFileDetail>>;
+      final act =
+          Actions.invoke(context, ListIntent(dirPath, refresh: true))
+              as Future<List<AListFileDetail>>;
       infos = await act;
     }
 
@@ -244,22 +238,20 @@ class _AListParser implements _Parser {
 
     final info = infos
         .where((entry) => entry.type == AListFileType.video)
-        .map((entry) => (
-              name: entry.name,
-              url: Uri(
-                scheme: 'alist',
-                path: path_tool.join(dirPath, entry.name),
-              ),
-              thumb: entry.thumb,
-            ))
+        .map(
+          (entry) => (
+            name: entry.name,
+            url: Uri(
+              scheme: 'alist',
+              path: path_tool.join(dirPath, entry.name),
+            ),
+            thumb: entry.thumb,
+          ),
+        )
         .sorted((a, b) => compareNatural(a.name, b.name));
 
     final current = info.indexWhere((e) => e.name == recordFilename);
-    return (
-      name: dirName,
-      info: info,
-      current: current,
-    );
+    return (name: dirName, info: info, current: current);
   }
 }
 
@@ -281,7 +273,8 @@ class _HttpParser implements _Parser {
         contentType != 'application/vnd.apple.mpegurl' &&
             contentType.startsWith('video')) {
       throw Exception(
-          'fetch record failed: unknown content-type "$contentType"');
+        'fetch record failed: unknown content-type "$contentType"',
+      );
     }
 
     return VideoRecord(
@@ -295,10 +288,9 @@ class _HttpParser implements _Parser {
   @override
   Future<PlayPayload> parseVideoRecord(VideoRecord record) {
     assert(record.source == recordSource);
-    return Future.value(PlayPayload(
-      record: record,
-      sources: VideoSources.single(record.path),
-    ));
+    return Future.value(
+      PlayPayload(record: record, sources: VideoSources.single(record.path)),
+    );
   }
 
   @override
@@ -317,7 +309,7 @@ class _BiliParser implements _Parser {
   final BuildContext context;
   _BiliParser(this.context);
 
-  late final biliToken = context.read<BungaClientInfo?>()?.bilibili;
+  late final biliToken = context.read<BungaServerInfo?>()?.bilibili;
   late final biliHeaders = biliToken == null
       ? null
       : {
@@ -360,23 +352,14 @@ class _BiliParser implements _Parser {
       final videoUrls = dashData['video'][0];
       final audioUrls = dashData['audio'][0];
       return VideoSources(
-        videos: [
-          videoUrls['base_url'],
-          ...videoUrls['backup_url'] ?? [],
-        ],
-        audios: [
-          audioUrls['base_url'],
-          ...audioUrls['backup_url'] ?? [],
-        ],
+        videos: [videoUrls['base_url'], ...videoUrls['backup_url'] ?? []],
+        audios: [audioUrls['base_url'], ...audioUrls['backup_url'] ?? []],
         requestHeaders: _biliHeaders,
       );
     } else if (data['durl'] != null) {
       final durlData = data['durl'][0];
       return VideoSources(
-        videos: [
-          durlData['url'],
-          ...durlData['backup_url'] ?? [],
-        ],
+        videos: [durlData['url'], ...durlData['backup_url'] ?? []],
         requestHeaders: _biliHeaders,
       );
     } else {
@@ -535,8 +518,9 @@ class _BiliBangumiParser extends _BiliParser {
     final idString = url.pathSegments[2];
 
     final epId = idString.startsWith('ep') ? idString.substring(2) : null;
-    int? seasonId =
-        idString.startsWith('ss') ? int.parse(idString.substring(2)) : null;
+    int? seasonId = idString.startsWith('ss')
+        ? int.parse(idString.substring(2))
+        : null;
 
     if (epId == null && seasonId == null) {
       throw Exception('Failed to resolve bungami id: $idString');
@@ -549,8 +533,9 @@ class _BiliBangumiParser extends _BiliParser {
 
     // fetch video info
     final query = epId != null ? 'ep_id=$epId' : 'season_id=$seasonId';
-    final response = await http
-        .get(Uri.parse('https://api.bilibili.com/pgc/view/web/season?$query'));
+    final response = await http.get(
+      Uri.parse('https://api.bilibili.com/pgc/view/web/season?$query'),
+    );
     final json = jsonDecode(utf8.decoder.convert(response.bodyBytes));
     if (json['code'] != 0) {
       throw Exception('Bilibili: cannot get video info: $query');
@@ -596,7 +581,8 @@ class _BiliBangumiParser extends _BiliParser {
 
     final response = await http.get(
       Uri.parse(
-          'https://api.bilibili.com/pgc/player/web/playurl?ep_id=$ep&fnval=16'),
+        'https://api.bilibili.com/pgc/player/web/playurl?ep_id=$ep&fnval=16',
+      ),
       headers: biliHeaders,
     );
     final json = jsonDecode(response.body);
@@ -623,7 +609,8 @@ class _BiliBangumiParser extends _BiliParser {
     dynamic responseData = _infoResponseCache[int.parse(season)];
     if (refresh || responseData == null) {
       final response = await http.get(
-          Uri.parse('https://api.bilibili.com/pgc/view/web/season?ep_id=$ep'));
+        Uri.parse('https://api.bilibili.com/pgc/view/web/season?ep_id=$ep'),
+      );
       final json = jsonDecode(utf8.decoder.convert(response.bodyBytes));
       if (json['code'] != 0) {
         throw Exception('Bilibili: cannot get bangumi info: $ep');

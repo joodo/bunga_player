@@ -7,25 +7,22 @@ import 'user.dart';
 part 'message_data.g.dart';
 
 abstract class MessageData {
-  String get type;
+  String get code;
   Map<String, dynamic> toJson();
 }
 
 /// Send when sharing video
 @JsonSerializable()
 class StartProjectionMessageData extends MessageData {
-  static const messageType = 'start-projection';
+  static const messageCode = 'start-projection';
   @override
   @JsonKey(includeFromJson: false, includeToJson: true)
-  final type = messageType;
+  final code = messageCode;
 
   final User sharer;
   final VideoRecord videoRecord;
 
-  StartProjectionMessageData({
-    required this.sharer,
-    required this.videoRecord,
-  });
+  StartProjectionMessageData({required this.sharer, required this.videoRecord});
 
   factory StartProjectionMessageData.fromJson(Map<String, dynamic> json) =>
       _$StartProjectionMessageDataFromJson(json);
@@ -36,10 +33,10 @@ class StartProjectionMessageData extends MessageData {
 /// Send when asking what's playing
 @JsonSerializable()
 class WhatsOnMessageData extends MessageData {
-  static const messageType = 'whats-on';
+  static const messageCode = 'whats-on';
   @override
   @JsonKey(includeFromJson: false, includeToJson: true)
-  final type = messageType;
+  final code = messageCode;
 
   WhatsOnMessageData();
 
@@ -52,10 +49,10 @@ class WhatsOnMessageData extends MessageData {
 /// Send when answering what's playing
 @JsonSerializable()
 class NowPlayingMessageData extends MessageData {
-  static const messageType = 'now-playing';
+  static const messageCode = 'now-playing';
   @override
   @JsonKey(includeFromJson: false, includeToJson: true)
-  final type = messageType;
+  final code = messageCode;
 
   final VideoRecord videoRecord;
   final User sharer;
@@ -71,10 +68,10 @@ class NowPlayingMessageData extends MessageData {
 /// Send when join watching
 @JsonSerializable()
 class AlohaMessageData extends MessageData {
-  static const messageType = 'aloha';
+  static const messageCode = 'aloha';
   @override
   @JsonKey(includeFromJson: false, includeToJson: true)
-  final type = messageType;
+  final code = messageCode;
 
   final User user;
 
@@ -89,10 +86,10 @@ class AlohaMessageData extends MessageData {
 /// Send when answering aloha
 @JsonSerializable()
 class HereIsMessageData extends MessageData {
-  static const messageType = 'here-is';
+  static const messageCode = 'here-is';
   @override
   @JsonKey(includeFromJson: false, includeToJson: true)
-  final type = messageType;
+  final code = messageCode;
 
   final User user;
   final bool isTalking;
@@ -108,10 +105,10 @@ class HereIsMessageData extends MessageData {
 /// Send when leave watching
 @JsonSerializable()
 class ByeMessageData extends MessageData {
-  static const messageType = 'bye';
+  static const messageCode = 'bye';
   @override
   @JsonKey(includeFromJson: false, includeToJson: true)
-  final type = messageType;
+  final code = messageCode;
 
   final String userId;
 
@@ -126,10 +123,10 @@ class ByeMessageData extends MessageData {
 /// Send when asking playing position
 @JsonSerializable()
 class WhereMessageData extends MessageData {
-  static const messageType = 'where';
+  static const messageCode = 'where';
   @override
   @JsonKey(includeFromJson: false, includeToJson: true)
-  final type = messageType;
+  final code = messageCode;
 
   WhereMessageData();
 
@@ -142,10 +139,10 @@ class WhereMessageData extends MessageData {
 /// Send when answering playing position
 @JsonSerializable()
 class PlayAtMessageData extends MessageData {
-  static const messageType = 'play-at';
+  static const messageCode = 'play-at';
   @override
   @JsonKey(includeFromJson: false, includeToJson: true)
-  final type = messageType;
+  final code = messageCode;
 
   final User sender;
   final Duration position;
@@ -166,18 +163,15 @@ class PlayAtMessageData extends MessageData {
 /// Send popmoji
 @JsonSerializable()
 class PopmojiMessageData extends MessageData {
-  static const messageType = 'popmoji';
+  static const messageCode = 'popmoji';
   @override
   @JsonKey(includeFromJson: false, includeToJson: true)
-  final type = messageType;
+  final code = messageCode;
 
   final User sender;
-  final String code;
+  final String popmojiCode;
 
-  PopmojiMessageData({
-    required this.sender,
-    required this.code,
-  });
+  PopmojiMessageData({required this.sender, required this.popmojiCode});
 
   factory PopmojiMessageData.fromJson(Map<String, dynamic> json) =>
       _$PopmojiMessageDataFromJson(json);
@@ -188,18 +182,15 @@ class PopmojiMessageData extends MessageData {
 /// Send danmaku
 @JsonSerializable()
 class DanmakuMessageData extends MessageData {
-  static const messageType = 'danmaku';
+  static const messageCode = 'danmaku';
   @override
   @JsonKey(includeFromJson: false, includeToJson: true)
-  final type = messageType;
+  final code = messageCode;
 
   final User sender;
   final String message;
 
-  DanmakuMessageData({
-    required this.sender,
-    required this.message,
-  });
+  DanmakuMessageData({required this.sender, required this.message});
 
   factory DanmakuMessageData.fromJson(Map<String, dynamic> json) =>
       _$DanmakuMessageDataFromJson(json);
@@ -212,10 +203,10 @@ enum CallAction { ask, yes, no, cancel }
 
 @JsonSerializable()
 class CallMessageData extends MessageData {
-  static const messageType = 'call';
+  static const messageCode = 'call';
   @override
   @JsonKey(includeFromJson: false, includeToJson: true)
-  final type = messageType;
+  final code = messageCode;
 
   final CallAction action;
 
@@ -232,10 +223,10 @@ enum TalkStatus { start, end }
 
 @JsonSerializable()
 class TalkStatusMessageData extends MessageData {
-  static const messageType = 'talk-status';
+  static const messageCode = 'talk-status';
   @override
   @JsonKey(includeFromJson: false, includeToJson: true)
-  final type = messageType;
+  final code = messageCode;
 
   final TalkStatus status;
 
@@ -250,10 +241,10 @@ class TalkStatusMessageData extends MessageData {
 /// Send when sharing subtitle
 @JsonSerializable()
 class ShareSubMessageData extends MessageData {
-  static const messageType = 'share-sub';
+  static const messageCode = 'share-sub';
   @override
   @JsonKey(includeFromJson: false, includeToJson: true)
-  final type = messageType;
+  final code = messageCode;
 
   final String url;
   final User sharer;

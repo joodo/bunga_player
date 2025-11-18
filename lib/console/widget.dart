@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:bunga_player/bunga_server/global_business.dart';
+import 'package:bunga_player/bunga_server/models/bunga_server_info.dart';
 import 'package:bunga_player/client_info/models/client_account.dart';
 import 'package:bunga_player/console/service.dart';
 import 'package:bunga_player/restart/global_business.dart';
@@ -32,13 +33,11 @@ class _ConsoleState extends State<Console> {
         FilledButton(
           onPressed: widget.logTextController.clear,
           child: const Text('Clear'),
-        )
+        ),
       ].toRow().padding(bottom: 8.0),
       TextField(
         controller: widget.logTextController,
-        decoration: const InputDecoration(
-          border: OutlineInputBorder(),
-        ),
+        decoration: const InputDecoration(border: OutlineInputBorder()),
         style: Theme.of(context).textTheme.labelMedium,
         expands: true,
         textAlignVertical: TextAlignVertical.top,
@@ -76,10 +75,8 @@ class _ConsoleState extends State<Console> {
           accountNotifier.value = newAccount;
 
           final host = context.read<BungaHostAddress>().value;
-          final act = Actions.invoke(
-            context,
-            ConnectToHostIntent(host),
-          ) as Future;
+          final act =
+              Actions.invoke(context, ConnectToHostIntent(host)) as Future;
           await act;
 
           getIt<Toast>().show('User ID has changed to $newID');
@@ -94,6 +91,10 @@ class _ConsoleState extends State<Console> {
         onPressed: () =>
             getIt<Toast>().show('New toast: ${_randomSentence()}.'),
         child: const Text('Show a toast'),
+      ),
+      FilledButton(
+        onPressed: context.read<BungaServerInfo>().refreshToken,
+        child: const Text('Refresh Token'),
       ),
     ].toColumn(separator: const SizedBox(height: 8));
 
@@ -111,26 +112,14 @@ class _ConsoleState extends State<Console> {
             ],
           ).flexible(),
           CloseButton(
-            onPressed: Actions.handler(
-              context,
-              ToggleConsoleIntent(),
-            ),
+            onPressed: Actions.handler(context, ToggleConsoleIntent()),
           ),
         ].toRow(),
         TabBarView(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(8),
-              child: logView,
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8),
-              child: _VariablesView(),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8),
-              child: actionView,
-            ),
+            Padding(padding: const EdgeInsets.all(8), child: logView),
+            Padding(padding: const EdgeInsets.all(8), child: _VariablesView()),
+            Padding(padding: const EdgeInsets.all(8), child: actionView),
           ],
         ).flexible(),
       ].toColumn(),
@@ -163,27 +152,26 @@ class _VariablesViewState extends State<_VariablesView> {
         0: IntrinsicColumnWidth(),
         1: FlexColumnWidth(),
       },
-      children: getIt<ConsoleService>().watchingValueNotifiers.entries.map(
-        (entry) {
-          // Check disposed or not
-          // ignore: invalid_use_of_protected_member
-          final content = !entry.value.hasListeners
-              ? const SelectableText('(disposed)')
-              : ValueListenableBuilder(
-                  valueListenable: entry.value,
-                  builder: (context, value, child) =>
-                      SelectableText(value.toString()),
-                );
+      children: getIt<ConsoleService>().watchingValueNotifiers.entries.map((
+        entry,
+      ) {
+        // Check disposed or not
+        // ignore: invalid_use_of_protected_member
+        final content = !entry.value.hasListeners
+            ? const SelectableText('(disposed)')
+            : ValueListenableBuilder(
+                valueListenable: entry.value,
+                builder: (context, value, child) =>
+                    SelectableText(value.toString()),
+              );
 
-          return TableRow(
-            children: [
-              SelectableText(entry.key)
-                  .padding(vertical: 8.0, horizontal: 16.0),
-              content.padding(vertical: 8.0, horizontal: 16.0),
-            ],
-          );
-        },
-      ).toList(),
+        return TableRow(
+          children: [
+            SelectableText(entry.key).padding(vertical: 8.0, horizontal: 16.0),
+            content.padding(vertical: 8.0, horizontal: 16.0),
+          ],
+        );
+      }).toList(),
     );
 
     // Preferences
@@ -202,10 +190,11 @@ class _VariablesViewState extends State<_VariablesView> {
               children: [
                 SelectableText(key).padding(vertical: 8.0, horizontal: 16.0),
                 [
-                  SelectableText(ellipsisKeys.contains(key)
-                          ? '...'
-                          : pref.get(key).toString())
-                      .padding(vertical: 8.0, horizontal: 16.0),
+                  SelectableText(
+                    ellipsisKeys.contains(key)
+                        ? '...'
+                        : pref.get(key).toString(),
+                  ).padding(vertical: 8.0, horizontal: 16.0),
                   TextButton(
                     onPressed: () async {
                       await pref.remove(key);
@@ -221,12 +210,13 @@ class _VariablesViewState extends State<_VariablesView> {
     );
 
     return [
-      const Text('Environment')
-          .textStyle(Theme.of(context).textTheme.titleMedium!),
+      const Text(
+        'Environment',
+      ).textStyle(Theme.of(context).textTheme.titleMedium!),
       variables.padding(top: 8.0),
-      const Text('Preferences')
-          .textStyle(Theme.of(context).textTheme.titleMedium!)
-          .padding(top: 16.0),
+      const Text(
+        'Preferences',
+      ).textStyle(Theme.of(context).textTheme.titleMedium!).padding(top: 16.0),
       prefs.padding(top: 8.0),
     ].toColumn(crossAxisAlignment: CrossAxisAlignment.start).scrollable();
   }

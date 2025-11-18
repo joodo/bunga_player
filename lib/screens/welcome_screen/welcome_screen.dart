@@ -12,7 +12,7 @@ import 'package:bunga_player/screens/dialogs/open_video/open_video.dart';
 import 'package:bunga_player/screens/dialogs/open_video/direct_link.dart';
 import 'package:bunga_player/screens/dialogs/video_conflict.dart';
 import 'package:bunga_player/bunga_server/global_business.dart';
-import 'package:bunga_player/bunga_server/models/bunga_client_info.dart';
+import 'package:bunga_player/bunga_server/models/bunga_server_info.dart';
 import 'package:bunga_player/chat/global_business.dart';
 import 'package:bunga_player/chat/models/message.dart';
 import 'package:bunga_player/client_info/models/client_account.dart';
@@ -38,20 +38,20 @@ class WelcomeScreen extends StatefulWidget {
 }
 
 class _WelcomeScreenState extends State<WelcomeScreen> {
-  late final _messageSubscription = context.read<Stream<Message>>().listen(
-    (message) {
-      switch (message.data['type']) {
-        case StartProjectionMessageData.messageType:
-          final data = StartProjectionMessageData.fromJson(message.data);
-          _dealWithProjection(data);
-        case WhatsOnMessageData.messageType:
-          _dealWithWhatsOn();
-        case NowPlayingMessageData.messageType:
-          final data = NowPlayingMessageData.fromJson(message.data);
-          _dealWithNotPlaying(data);
-      }
-    },
-  );
+  late final _messageSubscription = context.read<Stream<Message>>().listen((
+    message,
+  ) {
+    switch (message.data['code']) {
+      case StartProjectionMessageData.messageCode:
+        final data = StartProjectionMessageData.fromJson(message.data);
+        _dealWithProjection(data);
+      case WhatsOnMessageData.messageCode:
+        _dealWithWhatsOn();
+      case NowPlayingMessageData.messageCode:
+        final data = NowPlayingMessageData.fromJson(message.data);
+        _dealWithNotPlaying(data);
+    }
+  });
 
   StartProjectionMessageData? _currentProjection;
 
@@ -70,11 +70,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   @override
   Widget build(BuildContext context) {
     return [
-      [
-        const NameButton(),
-        const Spacer(),
-        const SettingButton(),
-      ].toRow(),
+      [const NameButton(), const Spacer(), const SettingButton()].toRow(),
       _getContent().padding(vertical: 16.0).flexible(),
       OpenVideoButton(onFinished: _videoSelected),
     ].toColumn().padding(all: 16.0);
@@ -89,11 +85,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       );
     }
 
-    return Consumer2<BungaClientInfo?, FetchingBungaClient>(
+    return Consumer2<BungaServerInfo?, FetchingBungaClient>(
       builder: (context, infoNotifier, fetchingNotifier, child) =>
           infoNotifier == null && !fetchingNotifier.value
-              ? Arrow()
-              : WaitWidget(),
+          ? Arrow()
+          : WaitWidget(),
     );
   }
 
@@ -124,10 +120,12 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
   void _dealWithNotPlaying(NowPlayingMessageData data) {
     if (_currentProjection != null) return;
-    _dealWithProjection(StartProjectionMessageData(
-      sharer: data.sharer,
-      videoRecord: data.videoRecord,
-    ));
+    _dealWithProjection(
+      StartProjectionMessageData(
+        sharer: data.sharer,
+        videoRecord: data.videoRecord,
+      ),
+    );
   }
 
   void _videoSelected(OpenVideoDialogResult? result) async {
@@ -168,29 +166,25 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       context,
       MaterialPageRoute(
         builder: (context) => const PlayerScreen(),
-        settings: RouteSettings(
-          arguments: argument,
-        ),
+        settings: RouteSettings(arguments: argument),
       ),
-    ).then(
-      (value) {
-        if (!mounted) return;
+    ).then((value) {
+      if (!mounted) return;
 
-        // Stop playing
-        context.read<WindowTitleNotifier>().reset();
-        getIt<PlayService>().stop();
+      // Stop playing
+      context.read<WindowTitleNotifier>().reset();
+      getIt<PlayService>().stop();
 
-        // Send bye message
-        if (argument is OpenVideoDialogResult && !argument.onlyForMe ||
-            argument is VideoRecord) {
-          final myId = context.read<ClientAccount>().id;
-          final byeData = ByeMessageData(userId: myId);
-          Actions.invoke(context, SendMessageIntent(byeData));
-        }
+      // Send bye message
+      if (argument is OpenVideoDialogResult && !argument.onlyForMe ||
+          argument is VideoRecord) {
+        final myId = context.read<ClientAccount>().id;
+        final byeData = ByeMessageData(userId: myId);
+        Actions.invoke(context, SendMessageIntent(byeData));
+      }
 
-        // Stop talking
-        context.read<AgoraClient?>()?.leaveChannel();
-      },
-    );
+      // Stop talking
+      context.read<AgoraClient?>()?.leaveChannel();
+    });
   }
 }

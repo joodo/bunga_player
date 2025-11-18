@@ -35,16 +35,15 @@ class _DanmakuControlState extends State<DanmakuControl> {
   @override
   Widget build(BuildContext context) {
     final danmakuField = [
-      StyledWidget(IconButton(
-        icon: const Icon(Icons.keyboard_arrow_down),
-        onPressed: () {
-          _focusNode.nextFocus();
-          Actions.invoke(
-            context,
-            ToggleDanmakuControlIntent(show: false),
-          );
-        },
-      )).padding(left: 8.0),
+      StyledWidget(
+        IconButton(
+          icon: const Icon(Icons.keyboard_arrow_down),
+          onPressed: () {
+            _focusNode.nextFocus();
+            Actions.invoke(context, ToggleDanmakuControlIntent(show: false));
+          },
+        ),
+      ).padding(left: 8.0),
       TextEditingShortcutWrapper(
         child: TextField(
           style: const TextStyle(height: 1.0),
@@ -83,14 +82,20 @@ class _DanmakuControlState extends State<DanmakuControl> {
             return [
               ...recentPopmojis.value
                   .sublist(
-                      0, min(recentPopmojis.value.length, maxPopmojisCount))
-                  .map((emoji) => PopmojiButton(
-                        emoji,
-                        size: buttonSize,
-                        waitDuration: Duration(milliseconds: 500),
-                        onPressed:
-                            Actions.handler(context, SendPopmojiIntent(emoji)),
-                      )),
+                    0,
+                    min(recentPopmojis.value.length, maxPopmojisCount),
+                  )
+                  .map(
+                    (emoji) => PopmojiButton(
+                      emoji,
+                      size: buttonSize,
+                      waitDuration: Duration(milliseconds: 500),
+                      onPressed: Actions.handler(
+                        context,
+                        SendPopmojiIntent(emoji),
+                      ),
+                    ),
+                  ),
               IconButton(
                 onPressed: Actions.handler(
                   context,
@@ -110,16 +115,13 @@ class _DanmakuControlState extends State<DanmakuControl> {
     );
   }
 
-  static const _easterEgg = {
-    '陈子祎': '🐖',
-    '张丰年': '🤡',
-  };
+  static const _easterEgg = {'陈子祎': '🐖', '张丰年': '🤡'};
   void _sendDanmaku(String message) {
     final me = User.fromContext(context);
 
     final easterCode = _easterEgg[message];
     final messageData = easterCode != null
-        ? PopmojiMessageData(code: easterCode, sender: me)
+        ? PopmojiMessageData(popmojiCode: easterCode, sender: me)
         : DanmakuMessageData(message: message, sender: me);
 
     Actions.invoke(context, SendMessageIntent(messageData));

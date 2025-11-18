@@ -5,7 +5,6 @@ part 'message.freezed.dart';
 @freezed
 abstract class Message with _$Message {
   const factory Message({
-    required String id,
     required Map<String, dynamic> data,
     required String senderId,
   }) = _Message;

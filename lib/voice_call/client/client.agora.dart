@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
-import 'package:bunga_player/bunga_server/models/bunga_client_info.dart';
+import 'package:bunga_player/bunga_server/models/bunga_server_info.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/utils/business/platform.dart';
 import 'package:bunga_player/utils/models/volume.dart';
@@ -16,7 +16,7 @@ class AgoraClient extends VoiceCallClient {
   final String channelId;
   final String channelToken;
 
-  static Future<AgoraClient?> create(BungaClientInfo info) async {
+  static Future<AgoraClient?> create(BungaServerInfo info) async {
     if (info.voiceCall == null) return null;
 
     final client = AgoraClient._(
@@ -73,10 +73,12 @@ class AgoraClient extends VoiceCallClient {
   final _engine = createAgoraRtcEngine();
   Future<void> _init() async {
     // Engine
-    await _engine.initialize(RtcEngineContext(
-      appId: key,
-      logConfig: const LogConfig(level: LogLevel.logLevelWarn),
-    ));
+    await _engine.initialize(
+      RtcEngineContext(
+        appId: key,
+        logConfig: const LogConfig(level: LogLevel.logLevelWarn),
+      ),
+    );
 
     // Events
     _engine.registerEventHandler(
@@ -87,15 +89,17 @@ class AgoraClient extends VoiceCallClient {
         onUserJoined: (RtcConnection connection, int remoteUid, int elapsed) {
           logger.i('Voice call: Remote user uid:$remoteUid joined.');
         },
-        onUserOffline: (
-          RtcConnection connection,
-          int remoteUid,
-          UserOfflineReasonType reason,
-        ) {
-          if (connection.localUid == remoteUid) return;
-          logger.i(
-              'Voice call: Remote user uid:$remoteUid left. Reason: $reason.');
-        },
+        onUserOffline:
+            (
+              RtcConnection connection,
+              int remoteUid,
+              UserOfflineReasonType reason,
+            ) {
+              if (connection.localUid == remoteUid) return;
+              logger.i(
+                'Voice call: Remote user uid:$remoteUid left. Reason: $reason.',
+              );
+            },
       ),
     );
 
@@ -106,19 +110,21 @@ class AgoraClient extends VoiceCallClient {
     );
 
     if (kIsDesktop) {
-      inputDeviceNotifier.value =
-          await _engine.getAudioDeviceManager().getRecordingDevice();
+      inputDeviceNotifier.value = await _engine
+          .getAudioDeviceManager()
+          .getRecordingDevice();
       inputDeviceNotifier.addListener(() {
-        _engine
-            .getAudioDeviceManager()
-            .setRecordingDevice(inputDeviceNotifier.value);
+        _engine.getAudioDeviceManager().setRecordingDevice(
+          inputDeviceNotifier.value,
+        );
       });
     }
   }
 
   // Noise suppress
-  final noiseSuppressionLevelNotifier =
-      ValueNotifier<NoiseSuppressionLevel>(NoiseSuppressionLevel.high);
+  final noiseSuppressionLevelNotifier = ValueNotifier<NoiseSuppressionLevel>(
+    NoiseSuppressionLevel.high,
+  );
 
   // Volume
   @override

@@ -83,8 +83,9 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
 
   // Watchers
   final _watchersNotifier = WatchersNotifier()..watchInConsole('Watchers');
-  late final _refreshWatchersAction =
-      RefreshWatchersAction(watchersNotifier: _watchersNotifier);
+  late final _refreshWatchersAction = RefreshWatchersAction(
+    watchersNotifier: _watchersNotifier,
+  );
 
   // Talk
   final _talkerIdsNotifier = ValueNotifier<Set<String>>({})
@@ -104,23 +105,17 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
     final messageStream = context.read<Stream<Message>>();
 
     _streamSubscription = messageStream.listen((message) {
-      switch (message.data['type']) {
-        case AlohaMessageData.messageType:
+      switch (message.data['code']) {
+        case AlohaMessageData.messageCode:
           if (message.senderId == _myId) break;
-          _dealWithAloha(
-            AlohaMessageData.fromJson(message.data),
-          );
-        case HereIsMessageData.messageType:
+          _dealWithAloha(AlohaMessageData.fromJson(message.data));
+        case HereIsMessageData.messageCode:
           if (message.senderId == _myId) break;
-          _dealWithHereIs(
-            HereIsMessageData.fromJson(message.data),
-          );
-        case ByeMessageData.messageType:
+          _dealWithHereIs(HereIsMessageData.fromJson(message.data));
+        case ByeMessageData.messageCode:
           if (message.senderId == _myId) break;
-          _dealWithBye(
-            ByeMessageData.fromJson(message.data),
-          );
-        case TalkStatusMessageData.messageType:
+          _dealWithBye(ByeMessageData.fromJson(message.data));
+        case TalkStatusMessageData.messageCode:
           _dealWithTalkStatus(
             message.senderId,
             TalkStatusMessageData.fromJson(message.data).status,
@@ -146,9 +141,9 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
           proxy: (value) => value.map((e) => TalkerId(e)).toList(),
         ),
       ],
-      child: child?.actions(actions: {
-        RefreshWatchersIntent: _refreshWatchersAction,
-      }),
+      child: child?.actions(
+        actions: {RefreshWatchersIntent: _refreshWatchersAction},
+      ),
     );
   }
 

@@ -13,7 +13,4 @@ _ClientAccount _$ClientAccountFromJson(Map<String, dynamic> json) =>
     );
 
 Map<String, dynamic> _$ClientAccountToJson(_ClientAccount instance) =>
-    <String, dynamic>{
-      'username': instance.id,
-      'password': instance.password,
-    };
+    <String, dynamic>{'username': instance.id, 'password': instance.password};

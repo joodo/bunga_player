@@ -1,4 +1,5 @@
-import 'package:bunga_player/chat/client/client.tencent.dart';
+import 'package:bunga_player/bunga_server/global_business.dart';
+import 'package:bunga_player/chat/client/client.dart';
 import 'package:bunga_player/chat/models/message_data.dart';
 import 'package:bunga_player/chat/models/user.dart';
 import 'package:bunga_player/play/busuness.dart';
@@ -79,51 +80,55 @@ class _SubtitlePanelState extends State<SubtitlePanel> {
     final theme = Theme.of(context);
 
     final tracksSection = Consumer<IsInChannel>(
-        builder: (context, isInChannel, child) => ValueListenableBuilder(
-              valueListenable: player.subtitleTracksNotifier,
-              builder: (context, tracks, child) => ValueListenableBuilder(
-                valueListenable: player.subtitleTrackNotifier,
-                builder: (context, currentTrack, child) => [
-                  tracks
-                      .where((e) => !e.id.startsWith('\$n'))
-                      .map((e) => RadioListTile(
-                            key: ValueKey(e.id),
-                            title: Text(_toTitle(e)),
-                            value: e.id,
-                            secondary:
-                                isInChannel.value && e.id.startsWith('\$e')
-                                    ? IconButton(
-                                        icon: Icon(Icons.ios_share),
-                                        tooltip: '分享给他人',
-                                        onPressed: () {
-                                          _shareSubtitle(e.id);
-                                        },
-                                      )
-                                    : null,
-                          ))
-                      .toList()
-                      .toColumn()
-                      .radioGroup(
+      builder: (context, isInChannel, child) => ValueListenableBuilder(
+        valueListenable: player.subtitleTracksNotifier,
+        builder: (context, tracks, child) => ValueListenableBuilder(
+          valueListenable: player.subtitleTrackNotifier,
+          builder: (context, currentTrack, child) => [
+            tracks
+                .where((e) => !e.id.startsWith('\$n'))
+                .map(
+                  (e) => RadioListTile(
+                    key: ValueKey(e.id),
+                    title: Text(_toTitle(e)),
+                    value: e.id,
+                    secondary: isInChannel.value && e.id.startsWith('\$e')
+                        ? IconButton(
+                            icon: Icon(Icons.ios_share),
+                            tooltip: '分享给他人',
+                            onPressed: () {
+                              _shareSubtitle(e.id);
+                            },
+                          )
+                        : null,
+                  ),
+                )
+                .toList()
+                .toColumn()
+                .radioGroup(
+                  groupValue: currentTrack.id,
+                  onChanged: (String? id) {
+                    if (id == null) return;
+                    Actions.invoke(context, SetSubtitleTrackIntent(id));
+                  },
+                ),
+            if (isInChannel.value)
+              Consumer<Map<String, ChannelSubtitle>>(
+                builder: (context, channelSubtitles, child) => channelSubtitles
+                    .values
+                    .map(
+                      (e) => _ChannelSubtitleRadioTile(
+                        info: e,
                         groupValue: currentTrack.id,
-                        onChanged: (String? id) {
-                          if (id == null) return;
-                          Actions.invoke(context, SetSubtitleTrackIntent(id));
-                        },
                       ),
-                  if (isInChannel.value)
-                    Consumer<Map<String, ChannelSubtitle>>(
-                      builder: (context, channelSubtitles, child) =>
-                          channelSubtitles.values
-                              .map((e) => _ChannelSubtitleRadioTile(
-                                    info: e,
-                                    groupValue: currentTrack.id,
-                                  ))
-                              .toList()
-                              .toColumn(),
-                    ),
-                ].toColumn(),
+                    )
+                    .toList()
+                    .toColumn(),
               ),
-            ));
+          ].toColumn(),
+        ),
+      ),
+    );
 
     final tuneSection = [
       const Text('调整')
@@ -131,27 +136,25 @@ class _SubtitlePanelState extends State<SubtitlePanel> {
           .padding(horizontal: 16.0, top: 24.0, bottom: 8.0),
       ..._tuneArguments.map(
         (e) => ValueListenableBuilder(
-            valueListenable: e.notifier,
-            builder: (context, value, child) => SliderItemWithTextInput(
-                  icon: e.icon,
-                  title: e.title,
-                  min: e.min,
-                  max: e.max,
-                  value: value,
-                  labelFormatter: e.labelFormatter,
-                  allowExceed: e.allowExceed,
-                  suffix: e.suffix,
-                  onChanged: (value) {
-                    e.notifier.value = value;
-                  },
-                ).padding(horizontal: 16.0)),
+          valueListenable: e.notifier,
+          builder: (context, value, child) => SliderItemWithTextInput(
+            icon: e.icon,
+            title: e.title,
+            min: e.min,
+            max: e.max,
+            value: value,
+            labelFormatter: e.labelFormatter,
+            allowExceed: e.allowExceed,
+            suffix: e.suffix,
+            onChanged: (value) {
+              e.notifier.value = value;
+            },
+          ).padding(horizontal: 16.0),
+        ),
       ),
     ].toColumn();
 
-    final body = [
-      tracksSection,
-      tuneSection,
-    ].toColumn();
+    final body = [tracksSection, tuneSection].toColumn();
 
     return PanelWidget(
       title: '字幕',
@@ -190,16 +193,18 @@ class _SubtitlePanelState extends State<SubtitlePanel> {
   }
 
   void _shareSubtitle(String trackId) async {
-    final chatClient = context.read<TencentClient>();
+    final chatClient = context.read<ChatClient>();
     final path = getIt<PlayService>().subtitleTrackNotifier.value.path!;
     final me = User.fromContext(context);
 
     try {
-      final url = await chatClient.uploadFile(path);
+      final job =
+          Actions.invoke(context, UploadSubtitleIntent(path)) as Future<Uri>;
+      final url = await job;
 
       final title = path_tool.basenameWithoutExtension(path);
       final messageData = ShareSubMessageData(
-        url: url,
+        url: url.toString(),
         sharer: me,
         title: title,
       );

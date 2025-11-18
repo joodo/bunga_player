@@ -18,7 +18,7 @@ import 'models/data.dart';
 
 class RecentPopmojisNotifier extends ValueNotifier<List<String>> {
   RecentPopmojisNotifier()
-      : super(["🎆", "😆", "😭", "😍", "🤤", "🫣", "🤮", "🤡", "🔥"]) {
+    : super(["🎆", "😆", "😭", "😍", "🤤", "🫣", "🤮", "🤡", "🔥"]) {
     bindPreference<List<String>>(
       key: 'recent_popmojis',
       load: (pref) => value,
@@ -39,7 +39,7 @@ class SendPopmojiAction extends ContextAction<SendPopmojiIntent> {
   @override
   void invoke(SendPopmojiIntent intent, [BuildContext? context]) {
     final messageData = PopmojiMessageData(
-      code: intent.code,
+      popmojiCode: intent.code,
       sender: User.fromContext(context!),
     );
     Actions.invoke(context, SendMessageIntent(messageData));
@@ -79,10 +79,12 @@ class _DanmakuBusinessState extends SingleChildState<DanmakuBusiness> {
       providers: [
         ChangeNotifierProvider(create: (context) => RecentPopmojisNotifier()),
       ],
-      child: child!.actions(actions: {
-        SendPopmojiIntent: SendPopmojiAction(),
-        SendDanmakuIntent: SendDanmakuAction(),
-      }),
+      child: child!.actions(
+        actions: {
+          SendPopmojiIntent: SendPopmojiAction(),
+          SendDanmakuIntent: SendDanmakuAction(),
+        },
+      ),
     );
   }
 }
@@ -100,8 +102,9 @@ class PopmojiGlobalBusiness extends SingleChildStatelessWidget {
       providers: [
         FutureProvider<EmojiData?>(
           create: (context) async {
-            String jsonString = await DefaultAssetBundle.of(context)
-                .loadString('assets/emojis/emojis.json');
+            String jsonString = await DefaultAssetBundle.of(
+              context,
+            ).loadString('assets/emojis/emojis.json');
             final data = EmojiData.fromJson(jsonDecode(jsonString));
 
             _preCacheEmojis(data);

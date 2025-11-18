@@ -7,12 +7,12 @@ part of 'update_info.dart';
 // **************************************************************************
 
 UpdateInfo _$UpdateInfoFromJson(Map<String, dynamic> json) => UpdateInfo(
-      checkedAt: DateTime.parse(json['checked_at'] as String),
-      version: json['version'] as String,
-      name: json['name'] as String,
-      body: json['body'] as String,
-      downloadUrl: json['download_url'] as String,
-    );
+  checkedAt: DateTime.parse(json['checked_at'] as String),
+  version: json['version'] as String,
+  name: json['name'] as String,
+  body: json['body'] as String,
+  downloadUrl: json['download_url'] as String,
+);
 
 Map<String, dynamic> _$UpdateInfoToJson(UpdateInfo instance) =>
     <String, dynamic>{

@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:async/async.dart';
-import 'package:bunga_player/bunga_server/models/bunga_client_info.dart';
+import 'package:bunga_player/bunga_server/models/bunga_server_info.dart';
 import 'package:bunga_player/chat/global_business.dart';
 import 'package:bunga_player/chat/models/message_data.dart';
 import 'package:bunga_player/client_info/models/client_account.dart';
@@ -25,12 +25,7 @@ import 'package:provider/provider.dart';
 
 const _voiceVolumeKey = 'call_volume';
 
-enum CallStatus {
-  none,
-  callIn,
-  callOut,
-  talking,
-}
+enum CallStatus { none, callIn, callOut, talking }
 
 // Actions
 
@@ -39,22 +34,22 @@ class UpdateVoiceVolumeIntent extends Intent {
   final Volume? volume;
   final int? offset;
   final bool save;
-  const UpdateVoiceVolumeIntent(this.volume)
-      : offset = null,
-        save = false;
+  const UpdateVoiceVolumeIntent(this.volume) : offset = null, save = false;
   const UpdateVoiceVolumeIntent.increase(this.offset)
-      : volume = null,
-        save = true;
+    : volume = null,
+      save = true;
   const UpdateVoiceVolumeIntent.save()
-      : volume = null,
-        offset = null,
-        save = true;
+    : volume = null,
+      offset = null,
+      save = true;
 }
 
 class UpdateVoiceVolumeAction extends ContextAction<UpdateVoiceVolumeIntent> {
   @override
-  Future<void> invoke(UpdateVoiceVolumeIntent intent,
-      [BuildContext? context]) async {
+  Future<void> invoke(
+    UpdateVoiceVolumeIntent intent, [
+    BuildContext? context,
+  ]) async {
     final client = context!.read<AgoraClient>();
     if (intent.volume != null) {
       client.volumeNotifier.value = intent.volume!;
@@ -62,8 +57,10 @@ class UpdateVoiceVolumeAction extends ContextAction<UpdateVoiceVolumeIntent> {
     if (intent.offset != null) {
       final currentVolume = client.volumeNotifier.value;
       final newVolume = Volume(
-        volume: (currentVolume.volume + intent.offset!)
-            .clamp(Volume.min, Volume.max),
+        volume: (currentVolume.volume + intent.offset!).clamp(
+          Volume.min,
+          Volume.max,
+        ),
       );
       client.volumeNotifier.value = newVolume;
     }
@@ -178,10 +175,7 @@ class RejectCallingRequestAction
   });
 
   @override
-  void invoke(
-    RejectCallingRequestIntent intent, [
-    BuildContext? context,
-  ]) {
+  void invoke(RejectCallingRequestIntent intent, [BuildContext? context]) {
     final messageData = CallMessageData(action: CallAction.no);
     Actions.invoke(context!, SendMessageIntent(messageData));
 
@@ -209,10 +203,7 @@ class AcceptCallingRequestAction
   });
 
   @override
-  void invoke(
-    AcceptCallingRequestIntent intent, [
-    BuildContext? context,
-  ]) {
+  void invoke(AcceptCallingRequestIntent intent, [BuildContext? context]) {
     final messageData = CallMessageData(action: CallAction.yes);
     Actions.invoke(context!, SendMessageIntent(messageData));
 
@@ -287,13 +278,17 @@ class _VoiceCallBusinessState extends SingleChildState<VoiceCallBusiness> {
     final myId = context.read<ClientAccount>().id;
     _messageSubscription = context
         .read<Stream<Message>>()
-        .where((message) =>
-            message.data['type'] == CallMessageData.messageType &&
-            message.senderId != myId)
-        .map((message) => (
-              senderId: message.senderId,
-              action: CallMessageData.fromJson(message.data).action,
-            ))
+        .where(
+          (message) =>
+              message.data['code'] == CallMessageData.messageCode &&
+              message.senderId != myId,
+        )
+        .map(
+          (message) => (
+            senderId: message.senderId,
+            action: CallMessageData.fromJson(message.data).action,
+          ),
+        )
         .listen(_dealResponse);
   }
 
@@ -305,34 +300,34 @@ class _VoiceCallBusinessState extends SingleChildState<VoiceCallBusiness> {
       ShortcutKey.muteMic: ToggleMicIntent(),
     });
 
-    final actionWrap = shortcuts.actions(actions: {
-      StartCallingRequestIntent: StartCallingRequestAction(
-        callStatusNotifier: _callStatusNotifier,
-        hopeList: _hopeList,
-        timeOutTimer: _requestTimeOutTimer,
-      ),
-      CancelCallingRequestIntent: _cancelAction,
-      RejectCallingRequestIntent: RejectCallingRequestAction(
-        hoperList: _hoperList,
-        callStatusNotifier: _callStatusNotifier,
-      ),
-      AcceptCallingRequestIntent: AcceptCallingRequestAction(
-        callStatusNotifier: _callStatusNotifier,
-        hoperList: _hoperList,
-        startTalking: _startTalking,
-      ),
-      HangUpIntent: HangUpAction(
-        callStatusNotifier: _callStatusNotifier,
-        stopTalking: _stopTalking,
-      ),
-      UpdateVoiceVolumeIntent: UpdateVoiceVolumeAction(),
-      ToggleMicIntent: ToggleMicAction(),
-    });
+    final actionWrap = shortcuts.actions(
+      actions: {
+        StartCallingRequestIntent: StartCallingRequestAction(
+          callStatusNotifier: _callStatusNotifier,
+          hopeList: _hopeList,
+          timeOutTimer: _requestTimeOutTimer,
+        ),
+        CancelCallingRequestIntent: _cancelAction,
+        RejectCallingRequestIntent: RejectCallingRequestAction(
+          hoperList: _hoperList,
+          callStatusNotifier: _callStatusNotifier,
+        ),
+        AcceptCallingRequestIntent: AcceptCallingRequestAction(
+          callStatusNotifier: _callStatusNotifier,
+          hoperList: _hoperList,
+          startTalking: _startTalking,
+        ),
+        HangUpIntent: HangUpAction(
+          callStatusNotifier: _callStatusNotifier,
+          stopTalking: _stopTalking,
+        ),
+        UpdateVoiceVolumeIntent: UpdateVoiceVolumeAction(),
+        ToggleMicIntent: ToggleMicAction(),
+      },
+    );
 
     return MultiProvider(
-      providers: [
-        ValueListenableProvider.value(value: _callStatusNotifier),
-      ],
+      providers: [ValueListenableProvider.value(value: _callStatusNotifier)],
       child: actionWrap,
     );
   }
@@ -414,10 +409,7 @@ class _VoiceCallBusinessState extends SingleChildState<VoiceCallBusiness> {
 
     if (_hopeList.isEmpty) {
       getIt<Toast>().show('呼叫已被拒绝');
-      _cancelAction.invoke(
-        CancelCallingRequestIntent(),
-        context,
-      );
+      _cancelAction.invoke(CancelCallingRequestIntent(), context);
     }
   }
 
@@ -454,10 +446,8 @@ class _VoiceCallBusinessState extends SingleChildState<VoiceCallBusiness> {
 }
 
 extension WrapVoiceCall on Widget {
-  Widget voiceCallBusiness({Key? key}) => VoiceCallBusiness(
-        key: key,
-        child: this,
-      );
+  Widget voiceCallBusiness({Key? key}) =>
+      VoiceCallBusiness(key: key, child: this);
 }
 
 class VoiceCallGlobalBusiness extends SingleChildStatelessWidget {
@@ -465,7 +455,7 @@ class VoiceCallGlobalBusiness extends SingleChildStatelessWidget {
 
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
-    return ProxyFutureProvider<AgoraClient?, BungaClientInfo?>(
+    return ProxyFutureProvider<AgoraClient?, BungaServerInfo?>(
       proxy: (clientInfo) async {
         if (clientInfo == null) return null;
 

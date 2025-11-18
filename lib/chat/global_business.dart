@@ -1,13 +1,14 @@
 import 'dart:async';
 
-import 'package:bunga_player/bunga_server/models/bunga_client_info.dart';
-import 'package:bunga_player/chat/client/client.tencent.dart';
+import 'package:bunga_player/bunga_server/models/bunga_server_info.dart';
+import 'package:bunga_player/chat/client/client.bunga.dart';
 import 'package:bunga_player/utils/business/provider.dart';
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 
+import 'client/client.dart';
 import 'models/message_data.dart';
 import 'models/message.dart';
 
@@ -21,17 +22,14 @@ class SendMessageAction extends ContextAction<SendMessageIntent> {
   SendMessageAction();
 
   @override
-  Future<Message> invoke(
-    SendMessageIntent intent, [
-    BuildContext? context,
-  ]) {
-    final client = context!.read<TencentClient>();
+  Future<Message?> invoke(SendMessageIntent intent, [BuildContext? context]) {
+    final client = context!.read<ChatClient>();
     return client.sendMessage(intent.data.toJson());
   }
 
   @override
   bool isEnabled(SendMessageIntent intent, [BuildContext? context]) {
-    return context?.read<TencentClient?>() != null;
+    return context?.read<ChatClient?>() != null;
   }
 }
 
@@ -56,16 +54,13 @@ class _ChannelActionsState extends SingleChildState<ChatGlobalBusiness> {
     return MultiProvider(
       providers: [
         Provider.value(value: _messageStreamController.stream),
-        ProxyFutureProvider<TencentClient?, BungaClientInfo?>(
+        ProxyFutureProvider<ChatClient?, BungaServerInfo?>(
           proxy: (clientInfo) => clientInfo == null
               ? null
-              : TencentClient.create(
-                  clientInfo: clientInfo,
-                  messageStreamController: _messageStreamController,
-                ),
+              : BungaChatClient.create(clientInfo: clientInfo),
           initialData: null,
           builder: (context, child) {
-            if (context.watch<TencentClient?>() != null) {
+            if (context.watch<ChatClient?>() != null) {
               final messageData = WhatsOnMessageData();
               SendMessageAction().invoke(
                 SendMessageIntent(messageData),
@@ -76,9 +71,7 @@ class _ChannelActionsState extends SingleChildState<ChatGlobalBusiness> {
           },
         ),
       ],
-      child: child!.actions(actions: {
-        SendMessageIntent: SendMessageAction(),
-      }),
+      child: child!.actions(actions: {SendMessageIntent: SendMessageAction()}),
     );
   }
 }

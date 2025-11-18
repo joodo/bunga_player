@@ -37,11 +37,7 @@ class RemoteJustToggled {
   const RemoteJustToggled(this.value);
 }
 
-typedef ChannelSubtitle = ({
-  String title,
-  String url,
-  User sharer,
-});
+typedef ChannelSubtitle = ({String title, String url, User sharer});
 
 class SubtitleTrackIdOfUrl {
   final value = <String, String>{};
@@ -106,37 +102,31 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
   bool _shouldAnswerWhere = false;
 
   // Subtitle sharing
-  final _channelSubtitleNotifier =
-      ValueNotifier<Map<String, ChannelSubtitle>>({})
-        ..watchInConsole('Channel Subtitle');
+  final _channelSubtitleNotifier = ValueNotifier<Map<String, ChannelSubtitle>>(
+    {},
+  )..watchInConsole('Channel Subtitle');
 
   @override
   void initState() {
     super.initState();
 
     final myId = context.read<ClientAccount>().id;
-    final messageStream = context
-        .read<Stream<Message>>()
-        .where((message) => message.senderId != myId);
+    final messageStream = context.read<Stream<Message>>().where(
+      (message) => message.senderId != myId,
+    );
 
     _streamSubscription = messageStream.listen((message) {
-      switch (message.data['type']) {
-        case StartProjectionMessageData.messageType:
+      switch (message.data['code']) {
+        case StartProjectionMessageData.messageCode:
           _dealWithProjection(
             StartProjectionMessageData.fromJson(message.data),
           );
-        case WhereMessageData.messageType:
-          _dealWithWhere(
-            WhereMessageData.fromJson(message.data),
-          );
-        case PlayAtMessageData.messageType:
-          _dealWithPlayAt(
-            PlayAtMessageData.fromJson(message.data),
-          );
-        case ShareSubMessageData.messageType:
-          _dealWithSubSharing(
-            ShareSubMessageData.fromJson(message.data),
-          );
+        case WhereMessageData.messageCode:
+          _dealWithWhere(WhereMessageData.fromJson(message.data));
+        case PlayAtMessageData.messageCode:
+          _dealWithPlayAt(PlayAtMessageData.fromJson(message.data));
+        case ShareSubMessageData.messageCode:
+          _dealWithSubSharing(ShareSubMessageData.fromJson(message.data));
       }
     });
   }
@@ -157,28 +147,30 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
       ShortcutKey.togglePlay: ToggleIntent(),
     });
 
-    final actions = shortcuts.actions(actions: {
-      ToggleIntent: CallbackAction<ToggleIntent>(
-        onInvoke: (intent) {
-          if (_remoteJustToggledNotifier.value) return;
-          Actions.invoke(context, intent);
-          _sendPlayStatus();
-          return;
-        },
-      ),
-      SeekIntent: CallbackAction<SeekIntent>(
-        onInvoke: (intent) {
-          if (_remoteJustToggledNotifier.value) return;
-          Actions.invoke(context, intent);
-          _sendPlayStatus();
-          return;
-        },
-      ),
-      ShareVideoIntent: ShareVideoAction(
-        shouldAnswerWhereSetter: () => _shouldAnswerWhere = true,
-      ),
-      AskPositionIntent: AskPositionAction(),
-    });
+    final actions = shortcuts.actions(
+      actions: {
+        ToggleIntent: CallbackAction<ToggleIntent>(
+          onInvoke: (intent) {
+            if (_remoteJustToggledNotifier.value) return;
+            Actions.invoke(context, intent);
+            _sendPlayStatus();
+            return;
+          },
+        ),
+        SeekIntent: CallbackAction<SeekIntent>(
+          onInvoke: (intent) {
+            if (_remoteJustToggledNotifier.value) return;
+            Actions.invoke(context, intent);
+            _sendPlayStatus();
+            return;
+          },
+        ),
+        ShareVideoIntent: ShareVideoAction(
+          shouldAnswerWhereSetter: () => _shouldAnswerWhere = true,
+        ),
+        AskPositionIntent: AskPositionAction(),
+      },
+    );
 
     return MultiProvider(
       providers: [

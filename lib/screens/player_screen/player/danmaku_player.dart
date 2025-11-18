@@ -28,11 +28,13 @@ class _DanmakuPlayerState extends State<DanmakuPlayer>
     _subscription = context
         .read<Stream<Message>>()
         .where(
-            (message) => message.data['type'] == DanmakuMessageData.messageType)
+          (message) => message.data['code'] == DanmakuMessageData.messageCode,
+        )
         .map((message) {
-      final data = DanmakuMessageData.fromJson(message.data);
-      return (sender: data.sender, message: data.message);
-    }).listen(_addDanmaku);
+          final data = DanmakuMessageData.fromJson(message.data);
+          return (sender: data.sender, message: data.message);
+        })
+        .listen(_addDanmaku);
     _ticker.start();
   }
 
@@ -110,10 +112,7 @@ class _DanmakuPlayerState extends State<DanmakuPlayer>
     }
 
     _danmakuLines[_currentLine].addLast(
-      DanmakuPosition(
-        danmaku: newDanmaku,
-        x: widgetWidth,
-      ),
+      DanmakuPosition(danmaku: newDanmaku, x: widgetWidth),
     );
     _currentLine++;
 
@@ -127,8 +126,10 @@ class _DanmakuPlayerState extends State<DanmakuPlayer>
       for (final danmakuPos in danmakuPoses) {
         danmakuPos.x -= step;
       }
-      danmakuPoses.removeWhere((danmakuPos) =>
-          danmakuPos.x + _getStringWidth(danmakuPos.danmaku.message) < 0);
+      danmakuPoses.removeWhere(
+        (danmakuPos) =>
+            danmakuPos.x + _getStringWidth(danmakuPos.danmaku.message) < 0,
+      );
     }
     setState(() {});
 
@@ -148,25 +149,22 @@ class DanmakuPosition {
 }
 
 class DanmakuText extends StatelessWidget {
-  static const textStyle = TextStyle(
-    fontSize: 40,
-    letterSpacing: 2,
-  );
+  static const textStyle = TextStyle(fontSize: 40, letterSpacing: 2);
 
   final String text;
   final int hue;
 
-  const DanmakuText({
-    super.key,
-    required this.text,
-    required this.hue,
-  });
+  const DanmakuText({super.key, required this.text, required this.hue});
 
   @override
   Widget build(BuildContext context) {
     final borderColor = HSVColor.fromAHSV(1, (hue % 360), 0.5, 0.3).toColor();
-    final foregroundColor =
-        HSVColor.fromAHSV(1, (hue % 360), 0.5, 0.95).toColor();
+    final foregroundColor = HSVColor.fromAHSV(
+      1,
+      (hue % 360),
+      0.5,
+      0.95,
+    ).toColor();
 
     return [
       // Stroked text as border.

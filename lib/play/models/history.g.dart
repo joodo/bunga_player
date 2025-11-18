@@ -21,8 +21,9 @@ Map<String, dynamic> _$WatchProgressToJson(_WatchProgress instance) =>
 _VideoSession _$VideoSessionFromJson(Map<String, dynamic> json) =>
     _VideoSession(
       updatedAt: DateTime.parse(json['updated_at'] as String),
-      videoRecord:
-          VideoRecord.fromJson(json['video_record'] as Map<String, dynamic>),
+      videoRecord: VideoRecord.fromJson(
+        json['video_record'] as Map<String, dynamic>,
+      ),
       progress: json['progress'] == null
           ? null
           : WatchProgress.fromJson(json['progress'] as Map<String, dynamic>),
@@ -38,11 +39,11 @@ Map<String, dynamic> _$VideoSessionToJson(_VideoSession instance) =>
     };
 
 _History _$HistoryFromJson(Map<String, dynamic> json) => _History(
-      value: (json['value'] as Map<String, dynamic>).map(
-        (k, e) => MapEntry(k, VideoSession.fromJson(e as Map<String, dynamic>)),
-      ),
-    );
+  value: (json['value'] as Map<String, dynamic>).map(
+    (k, e) => MapEntry(k, VideoSession.fromJson(e as Map<String, dynamic>)),
+  ),
+);
 
 Map<String, dynamic> _$HistoryToJson(_History instance) => <String, dynamic>{
-      'value': instance.value.map((k, e) => MapEntry(k, e.toJson())),
-    };
+  'value': instance.value.map((k, e) => MapEntry(k, e.toJson())),
+};
