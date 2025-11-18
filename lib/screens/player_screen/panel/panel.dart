@@ -12,12 +12,7 @@ class PanelBusyNotifier extends ValueNotifier<bool> {
 class PanelWidget extends SingleChildStatefulWidget {
   final String? title;
   final List<Widget>? actions;
-  const PanelWidget({
-    super.key,
-    super.child,
-    this.title,
-    this.actions,
-  });
+  const PanelWidget({super.key, super.child, this.title, this.actions});
 
   @override
   State<PanelWidget> createState() => _PanelWidgetState();
@@ -31,11 +26,10 @@ class _PanelWidgetState extends SingleChildState<PanelWidget> {
     final title = [
       CloseButton(onPressed: Actions.handler(context, ClosePanelIntent())),
       if (widget.title != null)
-        Text(
-          widget.title!,
-          overflow: TextOverflow.ellipsis,
-          maxLines: 2,
-        ).fontSize(16.0).padding(left: 12.0).expanded(),
+        Text(widget.title!, overflow: TextOverflow.ellipsis, maxLines: 2)
+            .textStyle(Theme.of(context).textTheme.titleMedium!)
+            .padding(left: 8.0)
+            .flexible(),
       if (widget.actions != null) ...widget.actions!,
     ].toRow(crossAxisAlignment: CrossAxisAlignment.center);
 
@@ -52,10 +46,7 @@ class _PanelWidgetState extends SingleChildState<PanelWidget> {
       child!.material(color: Colors.transparent).expanded(),
     ].toColumn(crossAxisAlignment: CrossAxisAlignment.stretch);
 
-    return ListenableProvider.value(
-      value: _busyNotifier,
-      child: panel,
-    );
+    return ListenableProvider.value(value: _busyNotifier, child: panel);
   }
 
   @override
