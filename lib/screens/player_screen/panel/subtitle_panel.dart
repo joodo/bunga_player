@@ -113,17 +113,14 @@ class _SubtitlePanelState extends State<SubtitlePanel> {
                   },
                 ),
             if (isInChannel.value)
-              Consumer<Map<String, ChannelSubtitle>>(
-                builder: (context, channelSubtitles, child) => channelSubtitles
-                    .values
-                    .map(
-                      (e) => _ChannelSubtitleRadioTile(
-                        info: e,
+              Consumer<ChannelSubtitle?>(
+                builder: (context, channelSubtitle, child) =>
+                    channelSubtitle != null
+                    ? _ChannelSubtitleRadioTile(
+                        info: channelSubtitle,
                         groupValue: currentTrack.id,
-                      ),
-                    )
-                    .toList()
-                    .toColumn(),
+                      )
+                    : const SizedBox.shrink(),
               ),
           ].toColumn(),
         ),
@@ -261,7 +258,7 @@ class _ChannelSubtitleRadioTileState extends State<_ChannelSubtitleRadioTile> {
       final trackId = subtitleTrackIdOfUrl[url]!;
       Actions.invoke(context, SetSubtitleTrackIntent(trackId));
     } catch (e) {
-      getIt<Toast>().show('分享失败');
+      getIt<Toast>().show('获取字幕失败');
       rethrow;
     } finally {
       busyNotifier.value = false;

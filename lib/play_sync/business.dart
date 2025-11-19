@@ -102,9 +102,8 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
   bool _shouldAnswerWhere = false;
 
   // Subtitle sharing
-  final _channelSubtitleNotifier = ValueNotifier<Map<String, ChannelSubtitle>>(
-    {},
-  )..watchInConsole('Channel Subtitle');
+  final _channelSubtitleNotifier = ValueNotifier<ChannelSubtitle?>(null)
+    ..watchInConsole('Channel Subtitle');
 
   @override
   void initState() {
@@ -297,12 +296,12 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
   }
 
   void _dealWithSubSharing(ShareSubMessageData data) {
-    _channelSubtitleNotifier.value[data.sharer.id] = (
+    getIt<Toast>().show('${data.sharer.name} 分享了字幕');
+    _channelSubtitleNotifier.value = (
       title: data.title,
       url: data.url,
       sharer: data.sharer,
     );
-    _channelSubtitleNotifier.value = {..._channelSubtitleNotifier.value};
   }
 }
 
