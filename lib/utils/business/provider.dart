@@ -18,15 +18,14 @@ class ValueListenableProxyProvider<T, R> extends SingleChildStatelessWidget {
   Widget buildWithChild(BuildContext context, Widget? child) {
     return ValueListenableBuilder(
       valueListenable: valueListenable,
-      builder: (context, value, child) => Provider<T>.value(
-        value: proxy(value),
-        child: child,
-      ),
+      builder: (context, value, child) =>
+          Provider<T>.value(value: proxy(value), child: child),
       child: child,
     );
   }
 }
 
+// TODO: swap T, R
 class ProxyFutureProvider<T, R> extends SingleChildStatelessWidget {
   final Future<T>? Function(R value) proxy;
   final T initialData;

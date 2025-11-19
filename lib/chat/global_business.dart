@@ -60,7 +60,10 @@ class _ChannelActionsState extends SingleChildState<ChatGlobalBusiness> {
               : BungaChatClient.create(clientInfo: clientInfo),
           initialData: null,
           builder: (context, child) {
-            if (context.watch<ChatClient?>() != null) {
+            final client = context.watch<ChatClient?>();
+            if (client != null) {
+              _messageStreamController.addStream(client.messageStream);
+
               final messageData = WhatsOnMessageData();
               SendMessageAction().invoke(
                 SendMessageIntent(messageData),
