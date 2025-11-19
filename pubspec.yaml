@@ -13,7 +13,7 @@ dependencies:
     sdk: flutter
 
   # video play
-  media_kit: ^1.2.1
+  media_kit: ^1.2.2
   media_kit_video: ^2.0.0
   media_kit_libs_video: ^1.0.7
   wakelock_plus: ^1.4.0
@@ -33,47 +33,47 @@ dependencies:
 
   # UI
   flutter_animate: ^4.5.2
-  audioplayers: ^6.4.0
-  animations: ^2.0.11
-  file_selector: ^1.0.3
+  audioplayers: ^6.5.1
+  animations: ^2.1.1
+  file_selector: ^1.0.4
   window_manager: ^0.5.1
   flutter_markdown_plus: ^1.0.5
   flutter_lazy_indexed_stack: ^0.1.0
   chinese_font_library: ^1.2.0
 
   # Mobile
-  screen_brightness: ^2.1.2
+  screen_brightness: ^2.1.7
 
   # Popmoji
-  flutter_svg: ^2.0.17
-  lottie: ^3.3.1
+  flutter_svg: ^2.2.2
+  lottie: ^3.3.2
   fireworks:
     git:
       url: https://github.com/joodo/fireworks
       path: fireworks
 
   # Network
-  http: ^1.3.0
+  http: ^1.6.0
 
   # Utils
-  logger: ^2.5.0
-  shared_preferences: ^2.5.2
-  async: ^2.12.0
+  logger: ^2.6.2
+  shared_preferences: ^2.5.3
+  async: ^2.13.0
   collection: ^1.19.1
-  uuid: ^4.5.1
+  uuid: ^4.5.2
   json_annotation: ^4.9.0
-  freezed_annotation: ^3.0.0
+  freezed_annotation: ^3.1.0
   get_it: ^9.0.5
-  provider: ^6.1.2
+  provider: ^6.1.5
   nested: ^1.0.0
   path: ^1.9.1
   path_provider: ^2.1.5
-  win32: ^5.11.0
+  win32: ^5.15.0
   permission_handler: ^12.0.1
   package_info_plus: ^9.0.0
-  vector_graphics: ^1.1.18
+  vector_graphics: ^1.1.19
   styled_widget: ^0.4.1
-  crypto: ^3.0.6
+  crypto: ^3.0.7
   url_launcher: ^6.3.2
 
 dependency_overrides:
@@ -82,10 +82,10 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
-  flutter_launcher_icons: ^0.14.3
-  build_runner: ^2.4.15
-  json_serializable: ^6.9.4
-  freezed: ^3.0.4
+  flutter_launcher_icons: ^0.14.4
+  build_runner: ^2.10.3
+  json_serializable: ^6.11.1
+  freezed: ^3.2.3
   yaml: ^3.1.3
   innosetup:
     git:
