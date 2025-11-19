@@ -2,8 +2,10 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:animations/animations.dart';
+import 'package:bunga_player/bunga_server/global_business.dart';
 import 'package:bunga_player/console/service.dart';
 import 'package:bunga_player/ui/shortcuts.dart';
+import 'package:bunga_player/utils/typedef.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:path/path.dart' as path_tool;
@@ -128,6 +130,8 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
           _dealWithSubSharing(ShareSubMessageData.fromJson(message.data));
       }
     });
+
+    _fetchPlayStatus();
   }
 
   @override
@@ -302,6 +306,22 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
       url: data.url,
       sharer: data.sharer,
     );
+  }
+
+  Future<void> _fetchPlayStatus() async {
+    final watchers = context.read<List<User>>();
+    final job =
+        Actions.invoke(context, FetchChannelStatusIntent()) as Future<JsonMap>;
+    final json = await job;
+
+    final subtitleInfo = json['subtitle'];
+    if (subtitleInfo != null) {
+      _channelSubtitleNotifier.value = (
+        url: subtitleInfo['file'],
+        title: subtitleInfo['name'],
+        sharer: watchers.firstWhere((e) => e.id == subtitleInfo['uploader']),
+      );
+    }
   }
 }
 

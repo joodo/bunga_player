@@ -146,6 +146,47 @@ class UploadSubtitleAction extends ContextAction<UploadSubtitleIntent> {
   }
 }
 
+class FetchChannelStatusIntent extends Intent {
+  const FetchChannelStatusIntent();
+}
+
+class FetchChannelStatusAction extends ContextAction<FetchChannelStatusIntent> {
+  @override
+  Future<JsonMap> invoke(
+    FetchChannelStatusIntent intent, [
+    BuildContext? context,
+  ]) async {
+    assert(context != null);
+    final read = context!.read;
+    final serverInfo = read<BungaServerInfo>();
+    final recordId = read<PlayPayload>().record.id;
+    final url = serverInfo.origin.replace(
+      pathSegments: [
+        'api',
+        'channels',
+        serverInfo.channel.id,
+        'records',
+        recordId,
+      ],
+    );
+
+    Future<http.Response> reqFunc() => http.get(
+      url,
+      headers: {'Authorization': 'Bearer ${serverInfo.token.access}'},
+    );
+
+    try {
+      final json = await _retryIfTokenExpired(
+        serverInfo: serverInfo,
+        doRequest: reqFunc,
+      );
+      return json;
+    } catch (e) {
+      throw Exception('Channel info: fetch failed: $e');
+    }
+  }
+}
+
 class BungaServerGlobalBusiness extends SingleChildStatefulWidget {
   const BungaServerGlobalBusiness({super.key, super.child});
 
@@ -201,6 +242,7 @@ class _BungaServerGlobalBusinessState
         actions: <Type, Action<Intent>>{
           ConnectToHostIntent: _connectToHostAction,
           UploadSubtitleIntent: UploadSubtitleAction(),
+          FetchChannelStatusIntent: FetchChannelStatusAction(),
         },
         child: child!,
       ),
