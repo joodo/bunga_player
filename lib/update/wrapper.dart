@@ -27,14 +27,14 @@ class UpdateWrapper extends SingleChildStatelessWidget {
         child!,
         Visibility(
           visible:
-              status == UpdateStatus.downloading ||
-              status == UpdateStatus.readyToInstall,
+              status == .downloading ||
+              status == .readyToInstall,
           child:
               [
                     ListTile(
                       leading: SizedBox.square(
                         dimension: 24,
-                        child: status == UpdateStatus.readyToInstall
+                        child: status == .readyToInstall
                             ? const Icon(Icons.install_desktop)
                             : Consumer<UpdateDownloadProgress?>(
                                 builder: (context, progress, child) =>
@@ -43,9 +43,9 @@ class UpdateWrapper extends SingleChildStatelessWidget {
                                     ),
                               ),
                       ),
-                      titleAlignment: ListTileTitleAlignment.center,
+                      titleAlignment: .center,
                       title: const Text('新更新可用'),
-                      subtitle: status == UpdateStatus.downloading
+                      subtitle: status == .downloading
                           ? const Text('正在下载……')
                           : Text(
                               '已准备好安装 ${context.read<UpdateInfo?>()?.version} 。',
@@ -56,7 +56,7 @@ class UpdateWrapper extends SingleChildStatelessWidget {
                         onPressed: () => _showUpdateDetail(context),
                         child: const Text('详情'),
                       ),
-                      if (status == UpdateStatus.readyToInstall)
+                      if (status == .readyToInstall)
                         TextButton(
                           onPressed: Actions.handler(
                             context,
@@ -64,9 +64,9 @@ class UpdateWrapper extends SingleChildStatelessWidget {
                           ),
                           child: const Text('现在安装'),
                         ),
-                    ].toRow(mainAxisAlignment: MainAxisAlignment.end),
+                    ].toRow(mainAxisAlignment: .end),
                   ]
-                  .toColumn(mainAxisSize: MainAxisSize.min)
+                  .toColumn(mainAxisSize: .min)
                   .padding(bottom: 8.0, right: 8.0)
                   .card(elevation: 8.0)
                   .positioned(bottom: 72.0, right: 8.0, width: 270.0),

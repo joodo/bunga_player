@@ -41,11 +41,8 @@ class SliderItem extends StatelessWidget {
           onChangeStart: onChangeStart,
           onChangeEnd: onChangeEnd,
         ).controlSliderTheme(context).padding(left: 2.0),
-      ]
-          .toColumn(crossAxisAlignment: CrossAxisAlignment.start)
-          .padding(left: 16.0)
-          .flexible(),
-    ].toRow(crossAxisAlignment: CrossAxisAlignment.center);
+      ].toColumn(crossAxisAlignment: .start).padding(left: 16.0).flexible(),
+    ].toRow(crossAxisAlignment: .center);
   }
 }
 
@@ -133,7 +130,7 @@ class _SliderItemWithTextInputState extends State<SliderItemWithTextInput> {
                   isDense: true,
                   suffixText: widget.suffix,
                 ),
-                textAlign: TextAlign.center,
+                    textAlign: .center,
                 controller: _controller,
                 focusNode: _focusNode,
               ).constrained(minWidth: 70.0),
@@ -148,11 +145,8 @@ class _SliderItemWithTextInputState extends State<SliderItemWithTextInput> {
           onChangeStart: widget.onChangeStart,
           onChangeEnd: widget.onChangeEnd,
         ).controlSliderTheme(context).padding(left: 2.0),
-      ]
-          .toColumn(crossAxisAlignment: CrossAxisAlignment.stretch)
-          .padding(left: 16.0)
-          .flexible(),
-    ].toRow(crossAxisAlignment: CrossAxisAlignment.center);
+      ].toColumn(crossAxisAlignment: .stretch).padding(left: 16.0).flexible(),
+    ].toRow(crossAxisAlignment: .center);
   }
 
   @override

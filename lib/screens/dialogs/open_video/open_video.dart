@@ -47,7 +47,7 @@ class _OpenVideoDialogState extends State<OpenVideoDialog> {
                     icon: const Icon(Icons.arrow_back),
                     onPressed: () => Navigator.pop(context),
                   ),
-                ).alignment(Alignment.centerLeft),
+                ).alignment(.centerLeft),
                 const TabBar(
                   tabAlignment: TabAlignment.center,
                   indicatorSize: TabBarIndicatorSize.tab,
@@ -68,8 +68,8 @@ class _OpenVideoDialogState extends State<OpenVideoDialog> {
                               shareModeNotifier.value ? '分享到频道' : '自己观看',
                             ),
                           ))
-                    .alignment(Alignment.centerRight),
-              ].toStack(alignment: Alignment.center),
+                    .alignment(.centerRight),
+              ].toStack(alignment: .center),
             ).padding(horizontal: 16.0),
             Divider(color: theme.tabBarTheme.dividerColor, height: 1.0),
             _SharedAxisTabView(

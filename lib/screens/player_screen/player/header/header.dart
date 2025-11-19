@@ -20,40 +20,39 @@ class Header extends StatelessWidget {
 
     if (!context.watch<IsInChannel>().value) {
       return TextButton(
-        onPressed: Actions.handler(
-          context,
-          ShareVideoIntent(payload.record),
-        ),
+        onPressed: Actions.handler(context, ShareVideoIntent(payload.record)),
         child: const Text('分享到频道'),
       );
     }
 
     return [
       [
-        Text(payload.record.title, maxLines: 1, overflow: TextOverflow.ellipsis)
-            .textStyle(Theme.of(context).textTheme.titleMedium!)
-            .padding(left: 12.0, vertical: 4.0),
-        Consumer<List<User>>(
-          builder: (context, users, child) => [
-            Tooltip(
-              message: '点击同步播放进度',
-              child: TextButton(
-                onPressed: () {
-                  Actions.invoke(context, RefreshWatchersIntent());
-                  Actions.invoke(context, AskPositionIntent());
-                },
-                child: const Text('当前观众:')
-                    .textColor(Theme.of(context).colorScheme.onSurface),
-              ),
+            Text(
+          payload.record.title,
+          maxLines: 1,
+          overflow: .ellipsis,
+                )
+                .textStyle(Theme.of(context).textTheme.titleMedium!)
+                .padding(left: 12.0, vertical: 4.0),
+            Consumer<List<User>>(
+              builder: (context, users, child) => [
+                Tooltip(
+                  message: '点击同步播放进度',
+                  child: TextButton(
+                    onPressed: () {
+                      Actions.invoke(context, RefreshWatchersIntent());
+                      Actions.invoke(context, AskPositionIntent());
+                    },
+                    child: const Text(
+                      '当前观众:',
+                    ).textColor(Theme.of(context).colorScheme.onSurface),
+                  ),
+                ),
+                ...users.map((user) => _WatcherLabel(user)),
+              ].toRow(),
             ),
-            ...users.map((user) => _WatcherLabel(user)),
-          ].toRow(),
-        ),
-      ]
-          .toColumn(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-          )
+          ]
+          .toColumn(crossAxisAlignment: .start, mainAxisSize: .min)
           .padding(horizontal: 8.0)
           .flexible(),
       const CallButton().padding(right: 16.0),
@@ -70,8 +69,8 @@ class _WatcherLabel extends StatelessWidget {
     final isTalking = context.select<List<TalkerId>, bool>(
       (value) => value.any((e) => e.value == user.id),
     );
-    return Text(isTalking ? '🎤${user.name}' : user.name)
-        .textColor(user.getColor(brightness: 0.95))
-        .padding(right: 10.0);
+    return Text(
+      isTalking ? '🎤${user.name}' : user.name,
+    ).textColor(user.getColor(brightness: 0.95)).padding(right: 10.0);
   }
 }

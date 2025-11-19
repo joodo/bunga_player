@@ -26,12 +26,12 @@ class _PanelWidgetState extends SingleChildState<PanelWidget> {
     final title = [
       CloseButton(onPressed: Actions.handler(context, ClosePanelIntent())),
       if (widget.title != null)
-        Text(widget.title!, overflow: TextOverflow.ellipsis, maxLines: 2)
+        Text(widget.title!, overflow: .ellipsis, maxLines: 2)
             .textStyle(Theme.of(context).textTheme.titleMedium!)
             .padding(left: 8.0)
             .flexible(),
       if (widget.actions != null) ...widget.actions!,
-    ].toRow(crossAxisAlignment: CrossAxisAlignment.center);
+    ].toRow(crossAxisAlignment: .center);
 
     final body = ValueListenableBuilder(
       valueListenable: _busyNotifier,
@@ -44,7 +44,7 @@ class _PanelWidgetState extends SingleChildState<PanelWidget> {
       const Divider(height: 1.0).padding(top: 12.0),
       body,
       child!.material(color: Colors.transparent).expanded(),
-    ].toColumn(crossAxisAlignment: CrossAxisAlignment.stretch);
+    ].toColumn(crossAxisAlignment: .stretch);
 
     return ListenableProvider.value(value: _busyNotifier, child: panel);
   }

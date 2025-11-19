@@ -131,7 +131,7 @@ class _AdjustIndicatorState extends State<AdjustIndicator>
     final body = Consumer<CallStatus?>(
       builder: (context, value, child) {
         final showTalk = _changedValue != ChangedValue.brightness &&
-            value == CallStatus.talking;
+          value == .talking;
         final hightlightTalk =
             showTalk && _changedValue == ChangedValue.voiceVolume;
         return [
@@ -249,7 +249,7 @@ class _AdjustIndicatorState extends State<AdjustIndicator>
         Container(color: colorScheme.primary)
             .constrained(height: value * 100.0),
       ]
-          .toStack(alignment: Alignment.bottomCenter)
+          .toStack(alignment: .bottomCenter)
           .constrained(width: 18.0)
           .clipRRect(all: 12.0)
           .flexible(),

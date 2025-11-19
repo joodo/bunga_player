@@ -50,126 +50,127 @@ class _CallButtonState extends State<CallButton> {
       overlayChildBuilder: (context) {
         final item = Consumer<CallStatus>(
           builder: (context, callStatus, child) => switch (callStatus) {
-            CallStatus.none => [const SizedBox.shrink()],
-            CallStatus.callIn => [
-                const Text('收到语音通话请求')
-                    .textStyle(Theme.of(context).textTheme.bodyLarge!)
-                    .breath()
-                    .padding(top: 16.0)
-                    .center(),
-                [
-                  _createCallOperateButton(
-                    color: Colors.green,
-                    icon: Icons.call,
-                    onPressed: Actions.handler(
-                      context,
-                      const AcceptCallingRequestIntent(),
-                    ),
-                  ),
-                  _createCallOperateButton(
-                    color: Colors.red,
-                    icon: Icons.call_end,
-                    onPressed: Actions.handler(
-                      context,
-                      const RejectCallingRequestIntent(),
-                    ),
-                  ),
-                ]
-                    .toRow(mainAxisAlignment: MainAxisAlignment.spaceBetween)
-                    .padding(vertical: 16.0, horizontal: 16.0)
-              ],
-            CallStatus.callOut => [
-                const Text('正在呼叫')
-                    .textStyle(Theme.of(context).textTheme.bodyLarge!)
-                    .breath()
-                    .padding(top: 16.0)
-                    .center(),
-                _createCallOperateButton(
-                  color: Colors.red,
-                  icon: Icons.call_end,
-                  onPressed: Actions.handler(
-                    context,
-                    const CancelCallingRequestIntent(),
-                  ),
-                ).padding(vertical: 16.0).center(),
-              ],
-            CallStatus.talking => [
-                Consumer<AgoraClient>(
-                    builder: (context, client, child) => ValueListenableBuilder(
-                        valueListenable: client.volumeNotifier,
-                        builder: (context, volume, child) => SliderItem(
-                              icon: Icons.headphones,
-                              title: '语音音量',
-                              value: volume.volume.toDouble(),
-                              label: '${volume.volume}%',
-                              max: 100.0,
-                              onChangeStart: (value) {
-                                context
-                                    .read<ShouldShowHUDNotifier>()
-                                    .lockUp('voice slider');
-                              },
-                              onChanged: (double value) {
-                                final newVolume = Volume(volume: value.toInt());
-                                Actions.invoke(
-                                  context,
-                                  UpdateVoiceVolumeIntent(newVolume),
-                                );
-                              },
-                              onChangeEnd: (value) {
-                                Actions.invoke(
-                                  context,
-                                  UpdateVoiceVolumeIntent.save(),
-                                );
-                                context
-                                    .read<ShouldShowHUDNotifier>()
-                                    .unlock('voice slider');
-                              },
-                            ).padding(horizontal: 16.0))),
-                const Divider(),
-                [
-                  Consumer<AgoraClient>(
-                    builder: (context, client, child) => ValueListenableBuilder(
-                      valueListenable: client.micMuteNotifier,
-                      builder: (context, muted, child) => IconButton.outlined(
-                        style: const ButtonStyle(
-                          backgroundColor: WidgetStateProperty.fromMap({
-                            WidgetState.selected: Colors.red,
-                            WidgetState.any: null,
-                          }),
-                        ),
-                        isSelected: muted,
-                        color: Colors.white70,
-                        onPressed: Actions.handler(context, ToggleMicIntent()),
-                        icon: Icon(muted ? Icons.mic_off : Icons.mic),
+            .none => [const SizedBox.shrink()],
+            .callIn => [
+              const Text('收到语音通话请求')
+                  .textStyle(Theme.of(context).textTheme.bodyLarge!)
+                  .breath()
+                  .padding(top: 16.0)
+                  .center(),
+              [
+                    _createCallOperateButton(
+                      color: Colors.green,
+                      icon: Icons.call,
+                      onPressed: Actions.handler(
+                        context,
+                        const AcceptCallingRequestIntent(),
                       ),
                     ),
-                  ),
-                  _createCallOperateButton(
-                    color: Colors.red,
-                    icon: Icons.call_end,
-                    onPressed: Actions.handler(
-                      context,
-                      const HangUpIntent(),
+                    _createCallOperateButton(
+                      color: Colors.red,
+                      icon: Icons.call_end,
+                      onPressed: Actions.handler(
+                        context,
+                        const RejectCallingRequestIntent(),
+                      ),
                     ),
-                  ),
-                  IconButton.outlined(
-                    onPressed: () {
+                  ]
+                  .toRow(mainAxisAlignment: .spaceBetween)
+                  .padding(vertical: 16.0, horizontal: 16.0),
+            ],
+            .callOut => [
+              const Text('正在呼叫')
+                  .textStyle(Theme.of(context).textTheme.bodyLarge!)
+                  .breath()
+                  .padding(top: 16.0)
+                  .center(),
+              _createCallOperateButton(
+                color: Colors.red,
+                icon: Icons.call_end,
+                onPressed: Actions.handler(
+                  context,
+                  const CancelCallingRequestIntent(),
+                ),
+              ).padding(vertical: 16.0).center(),
+            ],
+            .talking => [
+              Consumer<AgoraClient>(
+                builder: (context, client, child) => ValueListenableBuilder(
+                  valueListenable: client.volumeNotifier,
+                  builder: (context, volume, child) => SliderItem(
+                    icon: Icons.headphones,
+                    title: '语音音量',
+                    value: volume.volume.toDouble(),
+                    label: '${volume.volume}%',
+                    max: 100.0,
+                    onChangeStart: (value) {
+                      context.read<ShouldShowHUDNotifier>().lockUp(
+                        'voice slider',
+                      );
+                    },
+                    onChanged: (double value) {
+                      final newVolume = Volume(volume: value.toInt());
                       Actions.invoke(
                         context,
-                        ShowPanelIntent(
-                          builder: (context) => CallingSettingsPanel(),
-                        ),
+                        UpdateVoiceVolumeIntent(newVolume),
                       );
-                      _overlayVisibleNotifier.value = false;
                     },
-                    icon: Icon(Icons.settings),
-                  ),
-                ]
-                    .toRow(mainAxisAlignment: MainAxisAlignment.spaceBetween)
-                    .padding(top: 8.0, bottom: 12.0, horizontal: 12.0),
-              ],
-          }
-              .toColumn(crossAxisAlignment: CrossAxisAlignment.stretch),
+                    onChangeEnd: (value) {
+                      Actions.invoke(context, UpdateVoiceVolumeIntent.save());
+                      context.read<ShouldShowHUDNotifier>().unlock(
+                        'voice slider',
+                      );
+                    },
+                  ).padding(horizontal: 16.0),
+                ),
+              ),
+              const Divider(),
+              [
+                    Consumer<AgoraClient>(
+                      builder: (context, client, child) =>
+                          ValueListenableBuilder(
+                            valueListenable: client.micMuteNotifier,
+                            builder: (context, muted, child) =>
+                                IconButton.outlined(
+                                  style: const ButtonStyle(
+                                    backgroundColor:
+                                        WidgetStateProperty.fromMap({
+                                          WidgetState.selected: Colors.red,
+                                          WidgetState.any: null,
+                                        }),
+                                  ),
+                                  isSelected: muted,
+                                  color: Colors.white70,
+                                  onPressed: Actions.handler(
+                                    context,
+                                    ToggleMicIntent(),
+                                  ),
+                                  icon: Icon(muted ? Icons.mic_off : Icons.mic),
+                                ),
+                          ),
+                    ),
+                    _createCallOperateButton(
+                      color: Colors.red,
+                      icon: Icons.call_end,
+                      onPressed: Actions.handler(context, const HangUpIntent()),
+                    ),
+                    IconButton.outlined(
+                      onPressed: () {
+                        Actions.invoke(
+                          context,
+                          ShowPanelIntent(
+                            builder: (context) => CallingSettingsPanel(),
+                          ),
+                        );
+                        _overlayVisibleNotifier.value = false;
+                      },
+                      icon: Icon(Icons.settings),
+                    ),
+                  ]
+                  .toRow(mainAxisAlignment: .spaceBetween)
+                  .padding(top: 8.0, bottom: 12.0, horizontal: 12.0),
+            ],
+          }.toColumn(crossAxisAlignment: .stretch),
         );
 
         final renderBox =
@@ -182,11 +183,9 @@ class _CallButtonState extends State<CallButton> {
           behavior: HitTestBehavior.translucent,
           onTap: () => _overlayVisibleNotifier.value = false,
           child: [
-            item.card(elevation: 4.0).positioned(
-                  width: 220.0,
-                  right: 12.0,
-                  top: offset.dy,
-                )
+            item
+                .card(elevation: 4.0)
+                .positioned(width: 220.0, right: 12.0, top: offset.dy),
           ].toStack(),
         );
         return overlay;
@@ -195,34 +194,38 @@ class _CallButtonState extends State<CallButton> {
         key: buttonKey,
         builder: (context, callStatus, child) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            _overlayVisibleNotifier.value = callStatus != CallStatus.none;
+            _overlayVisibleNotifier.value = callStatus != .none;
           });
 
           return switch (callStatus) {
-            CallStatus.none => IconButton.filled(
-                onPressed: () {
-                  final watcherIds =
-                      context.read<List<User>>().map((e) => e.id).toList();
-                  final myId = context.read<ClientAccount>().id;
+            .none => IconButton.filled(
+              onPressed: () {
+                final watcherIds = context
+                    .read<List<User>>()
+                    .map((e) => e.id)
+                    .toList();
+                final myId = context.read<ClientAccount>().id;
 
-                  Actions.invoke(
-                    context,
-                    StartCallingRequestIntent(
-                        hopeList: watcherIds..remove(myId)),
-                  );
-                },
-                icon: Icon(Icons.phone),
-              ),
-            CallStatus.callIn ||
-            CallStatus.callOut =>
-              AnimateWidgetExtensions(IconButton(
-                style: const ButtonStyle(
-                  backgroundColor: WidgetStatePropertyAll<Color>(Colors.green),
-                ),
-                color: Colors.white70,
-                onPressed: () => _overlayVisibleNotifier.value = true,
-                icon: Icon(Icons.phone),
-              ))
+                Actions.invoke(
+                  context,
+                  StartCallingRequestIntent(hopeList: watcherIds..remove(myId)),
+                );
+              },
+              icon: Icon(Icons.phone),
+            ),
+            .callIn || .callOut =>
+              AnimateWidgetExtensions(
+                    IconButton(
+                      style: const ButtonStyle(
+                        backgroundColor: WidgetStatePropertyAll<Color>(
+                          Colors.green,
+                        ),
+                      ),
+                      color: Colors.white70,
+                      onPressed: () => _overlayVisibleNotifier.value = true,
+                      icon: Icon(Icons.phone),
+                    ),
+                  )
                   .animate(
                     onPlay: (controller) {
                       controller.repeat();
@@ -230,20 +233,21 @@ class _CallButtonState extends State<CallButton> {
                   )
                   .then(delay: 1000.ms)
                   .shake(duration: 1500.ms),
-            CallStatus.talking => Consumer<AgoraClient>(
-                builder: (context, client, child) => ValueListenableBuilder(
-                  valueListenable: client.micMuteNotifier,
-                  builder: (context, muted, child) => IconButton(
-                    style: ButtonStyle(
-                      backgroundColor: WidgetStatePropertyAll<Color>(
-                          muted ? Colors.yellow[800]! : Colors.green),
+            .talking => Consumer<AgoraClient>(
+              builder: (context, client, child) => ValueListenableBuilder(
+                valueListenable: client.micMuteNotifier,
+                builder: (context, muted, child) => IconButton(
+                  style: ButtonStyle(
+                    backgroundColor: WidgetStatePropertyAll<Color>(
+                      muted ? Colors.yellow[800]! : Colors.green,
                     ),
-                    color: Colors.white70,
-                    onPressed: () => _overlayVisibleNotifier.value = true,
-                    icon: Icon(Icons.phone),
                   ),
+                  color: Colors.white70,
+                  onPressed: () => _overlayVisibleNotifier.value = true,
+                  icon: Icon(Icons.phone),
                 ),
-              )
+              ),
+            ),
           };
         },
       ),
@@ -260,13 +264,10 @@ class _CallButtonState extends State<CallButton> {
     final VoidCallback? onPressed,
     required final Color color,
     required final IconData icon,
-  }) =>
-      IconButton(
-        style: ButtonStyle(
-          backgroundColor: WidgetStatePropertyAll<Color>(color),
-        ),
-        color: Colors.white70,
-        icon: Icon(icon),
-        onPressed: onPressed,
-      ).constrained(width: 80.0);
+  }) => IconButton(
+    style: ButtonStyle(backgroundColor: WidgetStatePropertyAll<Color>(color)),
+    color: Colors.white70,
+    icon: Icon(icon),
+    onPressed: onPressed,
+  ).constrained(width: 80.0);
 }

@@ -68,7 +68,7 @@ class _UpdateGlobalBusinessState
       'https://gitee.com/api/v5/repos/joodo2/bunga_player/releases/latest';
 
   final _updateStatusNotifier = ValueNotifier<UpdateStatus>(
-    UpdateStatus.updated,
+    .updated,
   );
   final _updateLastCheckedNotifier = UpdateLastCheckedNotifier();
   final _updateDownloadProgressNotifier =
@@ -135,8 +135,8 @@ class _UpdateGlobalBusinessState
 
   Future<bool> _checkUpdate() async {
     assert(
-      _updateStatusNotifier.value == UpdateStatus.updated ||
-          _updateStatusNotifier.value == UpdateStatus.error,
+      _updateStatusNotifier.value == .updated ||
+          _updateStatusNotifier.value == .error,
     );
 
     final response = await http.get(Uri.parse(_latestUrl));
@@ -162,7 +162,7 @@ class _UpdateGlobalBusinessState
       'Current version: $currentVersion, Latest version: $latestVersion',
     );
     if (Version.parse(latestVersion) <= Version.parse(currentVersion)) {
-      _updateStatusNotifier.value = UpdateStatus.updated;
+      _updateStatusNotifier.value = .updated;
       return false;
     }
 
@@ -170,7 +170,7 @@ class _UpdateGlobalBusinessState
     _installFilePath = '${tempDir.path}/$installerFileName';
 
     if (!await File(_installFilePath).exists()) {
-      _updateStatusNotifier.value = UpdateStatus.downloading;
+      _updateStatusNotifier.value = .downloading;
 
       await for (final progress in getIt<NetworkService>().downloadFile(
         downloadUrl,
@@ -183,7 +183,7 @@ class _UpdateGlobalBusinessState
       }
     }
     _updateDownloadProgressNotifier.value = null;
-    _updateStatusNotifier.value = UpdateStatus.readyToInstall;
+    _updateStatusNotifier.value = .readyToInstall;
     return true;
   }
 

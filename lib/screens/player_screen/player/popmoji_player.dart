@@ -149,7 +149,7 @@ class _PopmojiOverlayState extends State<_PopmojiOverlay> {
               ),
             )
             .toList()
-            .toRow(mainAxisSize: MainAxisSize.min)
+            .toRow(mainAxisSize: .min)
             .center();
       },
     );
@@ -264,29 +264,25 @@ class _EmojiAnimationState extends State<_EmojiAnimation>
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _animationController,
-      builder: (context, child) =>
-          [
-            SizedOverflowBox(
-              size: Size(_sizeAnime.value, 30),
-              alignment: Alignment.topLeft,
-              child: Text('${widget.info.sender.name}:')
-                  .textStyle(Theme.of(context).textTheme.bodyLarge!)
-                  .padding(all: 8.0)
-                  .backgroundColor(
-                    widget.info.sender.getColor(brightness: 0.3).withAlpha(200),
-                  )
-                  .borderRadius(all: 4.0)
-                  .constrained(maxWidth: _EmojiAnimation.maxSize)
-                  .opacity(_textOpacityAnime.value),
-            ),
-            child!
-                .constrained(width: _emojiSizeAnime.value)
-                .center()
-                .constrained(height: _sizeAnime.value, width: _sizeAnime.value),
-          ].toColumn(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-          ),
+      builder: (context, child) => [
+        SizedOverflowBox(
+          size: Size(_sizeAnime.value, 30),
+          alignment: Alignment.topLeft,
+          child: Text('${widget.info.sender.name}:')
+              .textStyle(Theme.of(context).textTheme.bodyLarge!)
+              .padding(all: 8.0)
+              .backgroundColor(
+                widget.info.sender.getColor(brightness: 0.3).withAlpha(200),
+              )
+              .borderRadius(all: 4.0)
+              .constrained(maxWidth: _EmojiAnimation.maxSize)
+              .opacity(_textOpacityAnime.value),
+        ),
+        child!
+            .constrained(width: _emojiSizeAnime.value)
+            .center()
+            .constrained(height: _sizeAnime.value, width: _sizeAnime.value),
+      ].toColumn(mainAxisSize: .min, crossAxisAlignment: .start),
       child: Lottie.asset(
         EmojiData.lottiePath(widget.info.code),
         repeat: false,

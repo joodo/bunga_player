@@ -76,7 +76,7 @@ class _PlaylistPanelState extends State<PlaylistPanel> {
                     title: Text(
                       epInfo.name,
                       maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+                      overflow: .ellipsis,
                     ),
                     subtitle: current ? const Text('当前播放') : null,
                     trailing: epInfo.thumb != null

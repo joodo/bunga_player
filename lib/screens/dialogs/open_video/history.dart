@@ -40,7 +40,7 @@ class _HistoryTabState extends State<HistoryTab> {
           key: Key(entry.videoRecord.id),
           direction: DismissDirection.endToStart,
           background: Container(
-            alignment: Alignment.centerRight,
+            alignment: .centerRight,
             padding: const EdgeInsets.symmetric(horizontal: 20),
             color: Colors.red,
             child: const Icon(Icons.delete, color: Colors.white),

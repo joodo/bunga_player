@@ -101,8 +101,9 @@ class _TouchInteractiveRegionState extends State<TouchInteractiveRegion> {
   double _farthestX = 0;
 
   // Lock button
-  final _lockButtonVisibleNotifier =
-      AutoResetNotifier(const Duration(seconds: 5))..mark();
+  final _lockButtonVisibleNotifier = AutoResetNotifier(
+    const Duration(seconds: 5),
+  )..mark();
 
   @override
   void initState() {
@@ -128,10 +129,7 @@ class _TouchInteractiveRegionState extends State<TouchInteractiveRegion> {
       },
       onDoubleTap: lockedNotifier.value
           ? null
-          : Actions.handler(
-              context,
-              ToggleIntent(forgetSavedPosition: true),
-            ),
+          : Actions.handler(context, ToggleIntent(forgetSavedPosition: true)),
       onHorizontalDragStart: lockedNotifier.value
           ? null
           : (details) {
@@ -147,18 +145,14 @@ class _TouchInteractiveRegionState extends State<TouchInteractiveRegion> {
           ? null
           : (details) {
               final xOffset = details.localPosition.dx - _dragStartPoint.dx;
-              final positionOffset = Duration(
-                seconds: xOffset.toInt() ~/ 5,
-              );
+              final positionOffset = Duration(seconds: xOffset.toInt() ~/ 5);
               play.seek(_dargStartVideoPosition + positionOffset);
             },
       onHorizontalDragEnd: lockedNotifier.value
           ? null
           : (details) {
               final xOffset = details.localPosition.dx - _dragStartPoint.dx;
-              final positionOffset = Duration(
-                seconds: xOffset.toInt() ~/ 5,
-              );
+              final positionOffset = Duration(seconds: xOffset.toInt() ~/ 5);
 
               if (_isPlayingBeforeDrag) play.play();
               Actions.invoke(
@@ -178,14 +172,15 @@ class _TouchInteractiveRegionState extends State<TouchInteractiveRegion> {
 
               if (_isAdjustingBrightness) {
                 // Adjust brightness
-                _dragStartDeviceValue =
-                    context.read<ScreenBrightnessNotifier>().value;
+                _dragStartDeviceValue = context
+                    .read<ScreenBrightnessNotifier>()
+                    .value;
               } else {
                 // Adjust volume
                 _farthestX = _dragStartPoint.dx;
                 _volumeAdjustType = _VolumeAdjustType.media;
-                _dragStartDeviceValue =
-                    play.volumeNotifier.value.volume.toDouble();
+                _dragStartDeviceValue = play.volumeNotifier.value.volume
+                    .toDouble();
               }
             },
       onVerticalDragUpdate: lockedNotifier.value
@@ -195,10 +190,12 @@ class _TouchInteractiveRegionState extends State<TouchInteractiveRegion> {
 
               if (_isAdjustingBrightness) {
                 // Adjust brightness
-                final target =
-                    (_dragStartDeviceValue + delta / 200).clamp(0, 1.0);
-                context.read<ScreenBrightnessNotifier>().value =
-                    target.toDouble();
+                final target = (_dragStartDeviceValue + delta / 200).clamp(
+                  0,
+                  1.0,
+                );
+                context.read<ScreenBrightnessNotifier>().value = target
+                    .toDouble();
               } else {
                 if (_volumeAdjustType == _VolumeAdjustType.voice) {
                   // Adjust voice
@@ -211,8 +208,8 @@ class _TouchInteractiveRegionState extends State<TouchInteractiveRegion> {
                   if (!_canAdjustVoice() ||
                       _farthestX - details.localPosition.dx > 20.0) {
                     _volumeAdjustType = _VolumeAdjustType.media;
-                    _dragStartDeviceValue =
-                        play.volumeNotifier.value.volume.toDouble();
+                    _dragStartDeviceValue = play.volumeNotifier.value.volume
+                        .toDouble();
                     _farthestX = details.localPosition.dx;
                   } else {
                     _farthestX = max(_farthestX, details.localPosition.dx);
@@ -228,8 +225,8 @@ class _TouchInteractiveRegionState extends State<TouchInteractiveRegion> {
                   if (!_canAdjustVoice()) return;
                   if (details.localPosition.dx - _farthestX > 20.0) {
                     _volumeAdjustType = _VolumeAdjustType.voice;
-                    _dragStartDeviceValue =
-                        voiceNotifier.value.volume.toDouble();
+                    _dragStartDeviceValue = voiceNotifier.value.volume
+                        .toDouble();
                     _dragStartPoint = details.localPosition;
                   } else {
                     _farthestX = min(_farthestX, details.localPosition.dx);
@@ -263,7 +260,7 @@ class _TouchInteractiveRegionState extends State<TouchInteractiveRegion> {
             isSelected: lockedNotifier.value,
             icon: Icon(lockedNotifier.value ? Icons.lock : Icons.lock_open),
           ),
-        ).padding(right: 18.0).alignment(Alignment.centerRight),
+        ).padding(right: 18.0).alignment(.centerRight),
       ),
     );
   }
@@ -290,6 +287,6 @@ class _TouchInteractiveRegionState extends State<TouchInteractiveRegion> {
 
   bool _canAdjustVoice() {
     final status = context.read<CallStatus?>();
-    return status == CallStatus.talking;
+    return status == .talking;
   }
 }

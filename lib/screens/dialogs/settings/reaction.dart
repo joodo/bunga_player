@@ -34,27 +34,27 @@ class _ReactionSettingsState extends State<ReactionSettings> {
       InputBuilder(
         builder: (context, textEditingController, focusNode, child) =>
             TextField(
-          decoration: const InputDecoration(
-            labelText: '昵称',
-            border: OutlineInputBorder(),
-          ),
-          controller: textEditingController,
-          focusNode: focusNode,
-        ),
+              decoration: const InputDecoration(
+                labelText: '昵称',
+                border: OutlineInputBorder(),
+              ),
+              controller: textEditingController,
+              focusNode: focusNode,
+            ),
         initValue: _nicknameNotifier.value,
         onFocusLose: (controller) => _nicknameNotifier.value = controller.text,
       ).padding(all: 16.0).sectionContainer(),
       [
-        const Text('弹幕颜色'),
-        _ColorSlider(
-          value: _hue,
-          onChanged: (value) => setState(() {
-            _hue = value;
-          }),
-        ),
-        DanmakuText(text: '测试弹幕样式', hue: _hue),
-      ]
-          .toColumn(crossAxisAlignment: CrossAxisAlignment.start)
+            const Text('弹幕颜色'),
+            _ColorSlider(
+              value: _hue,
+              onChanged: (value) => setState(() {
+                _hue = value;
+              }),
+            ),
+            DanmakuText(text: '测试弹幕样式', hue: _hue),
+          ]
+          .toColumn(crossAxisAlignment: .start)
           .padding(all: 16.0)
           .sectionContainer(),
       const Text('行为').sectionTitle(),
@@ -65,7 +65,7 @@ class _ReactionSettingsState extends State<ReactionSettings> {
           onChanged: (value) => autoJoinNotifier.value = value,
         ),
       ).sectionContainer(),
-    ].toColumn(crossAxisAlignment: CrossAxisAlignment.start);
+    ].toColumn(crossAxisAlignment: .start);
   }
 
   @override
@@ -100,26 +100,23 @@ class _ColorSlider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SliderTheme(
-      data: SliderThemeData(
-        trackShape: SliderDenseTrackShape(),
-        trackHeight: 16,
-        activeTrackColor: Colors.transparent,
-        inactiveTrackColor: Colors.transparent,
-        showValueIndicator: ShowValueIndicator.never,
-        thumbShape: _ColorSliderThumbShape(),
-      ),
-      child: Slider(
-        min: 0,
-        max: 360,
-        value: value.toDouble(),
-        onChanged: (value) => onChanged(value.toInt()),
-      ),
-    )
-        .decorated(
-          border: Border.all(
-            width: 2,
-            color: Theme.of(context).dividerColor,
+          data: SliderThemeData(
+            trackShape: SliderDenseTrackShape(),
+            trackHeight: 16,
+            activeTrackColor: Colors.transparent,
+            inactiveTrackColor: Colors.transparent,
+            showValueIndicator: ShowValueIndicator.never,
+            thumbShape: _ColorSliderThumbShape(),
           ),
+          child: Slider(
+            min: 0,
+            max: 360,
+            value: value.toDouble(),
+            onChanged: (value) => onChanged(value.toInt()),
+          ),
+        )
+        .decorated(
+          border: Border.all(width: 2, color: Theme.of(context).dividerColor),
           borderRadius: BorderRadius.circular(15),
           gradient: LinearGradient(colors: _colors),
         )

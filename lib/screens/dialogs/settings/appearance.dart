@@ -27,6 +27,6 @@ class AppearanceSettings extends StatelessWidget with SettingsTab {
           onChanged: (value) => alwaysOnTopNotifier.value = value,
         ),
       ).sectionContainer(),
-    ].toColumn(crossAxisAlignment: CrossAxisAlignment.start);
+    ].toColumn(crossAxisAlignment: .start);
   }
 }

@@ -30,8 +30,8 @@ class _SplitViewState extends SingleChildState<SplitView> {
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
     if (child == null) return const SizedBox.shrink();
-    if (widget.direction != AxisDirection.left &&
-        widget.direction != AxisDirection.right) {
+    if (widget.direction != .left &&
+      widget.direction != .right) {
       throw UnimplementedError('Only left and right directions are supported');
     }
 
@@ -54,7 +54,7 @@ class _SplitViewState extends SingleChildState<SplitView> {
         final delta = details.globalPosition.dx - _startDragPosition.dx;
         setState(() {
           final newSize = _startDragSize +
-              delta * (widget.direction == AxisDirection.right ? 1 : -1);
+              delta * (widget.direction == .right ? 1 : -1);
           _currentSize = newSize.clamp(widget.minSize, widget.maxSize);
         });
       },
@@ -65,9 +65,9 @@ class _SplitViewState extends SingleChildState<SplitView> {
       child: gestureDetector,
     );
     return [
-      if (widget.direction == AxisDirection.left) handle,
+      if (widget.direction == .left) handle,
       child.flexible(),
-      if (widget.direction == AxisDirection.right) handle,
+      if (widget.direction == .right) handle,
     ].toRow().constrained(width: _currentSize + _handleSize);
   }
 }

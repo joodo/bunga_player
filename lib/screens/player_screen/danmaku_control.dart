@@ -110,7 +110,7 @@ class _DanmakuControlState extends State<DanmakuControl> {
         return [
           danmakuField.flexible(),
           popmojis.padding(horizontal: 8.0),
-        ].toRow(mainAxisSize: MainAxisSize.max);
+        ].toRow(mainAxisSize: .max);
       },
     );
   }

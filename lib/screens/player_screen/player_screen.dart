@@ -29,15 +29,15 @@ class PlayerScreen extends StatelessWidget {
               minSize: 260.0,
               size: 300.0,
               maxSize: 450.0,
-              direction: AxisDirection.left,
+              direction: .left,
             ) ??
             const SizedBox.shrink(key: ValueKey('none'));
         return [
           [
             playerWidget.flexible(),
-            _animate(danmakuWidget, Axis.vertical),
+            _animate(danmakuWidget, .vertical),
           ].toColumn().flexible(),
-          _animate(panelWidget, Axis.horizontal),
+          _animate(panelWidget, .horizontal),
         ]
             .toRow()
             .animate(const Duration(milliseconds: 350), Curves.easeOutCubic);

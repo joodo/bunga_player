@@ -110,6 +110,6 @@ class NetworkSettings extends StatelessWidget with SettingsTab {
           }
         },
       ),
-    ].toColumn(crossAxisAlignment: CrossAxisAlignment.start);
+    ].toColumn(crossAxisAlignment: .start);
   }
 }

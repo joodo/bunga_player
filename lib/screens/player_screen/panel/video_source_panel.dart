@@ -77,7 +77,7 @@ class _VideoSourcePanelState extends State<VideoSourcePanel> {
             Text('当前使用代理：$proxy')
                 .textStyle(Theme.of(context).textTheme.bodySmall!)
                 .padding(horizontal: 8.0, vertical: 20.0),
-        ].toColumn(crossAxisAlignment: CrossAxisAlignment.start),
+        ].toColumn(crossAxisAlignment: .start),
       ),
     );
   }

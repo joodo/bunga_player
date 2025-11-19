@@ -68,7 +68,7 @@ class _PopmojiPanelState extends State<PopmojiPanel> {
                 const Divider(),
               ]
                 .toColumn()
-                .alignment(Alignment.bottomCenter)
+                .alignment(.bottomCenter)
                 .padding(horizontal: 8.0)
             : (items[index] as List)
                 .map(

@@ -218,6 +218,6 @@ class _VariablesViewState extends State<_VariablesView> {
         'Preferences',
       ).textStyle(Theme.of(context).textTheme.titleMedium!).padding(top: 16.0),
       prefs.padding(top: 8.0),
-    ].toColumn(crossAxisAlignment: CrossAxisAlignment.start).scrollable();
+    ].toColumn(crossAxisAlignment: .start).scrollable();
   }
 }

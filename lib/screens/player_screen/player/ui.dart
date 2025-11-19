@@ -18,8 +18,8 @@ class PlayerUI extends StatelessWidget {
     final ui = [
       const Header()
           .backgroundGradient(LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+            begin: .topCenter,
+            end: .bottomCenter,
             colors: [
               Colors.black,
               Colors.transparent,

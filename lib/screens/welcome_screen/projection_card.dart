@@ -38,30 +38,31 @@ class _ProjectionCardState extends State<ProjectionCard> {
         : const SizedBox(
             width: 300,
             height: 200,
-            child: Center(
-              child: Icon(Icons.smart_display, size: 180),
-            ),
+            child: Center(child: Icon(Icons.smart_display, size: 180)),
           );
 
     final textTheme = Theme.of(context).textTheme;
     final content = InkWell(
       onTap: widget.onTap,
-      child: [
-        videoImage,
-        Text(
-          widget.data.videoRecord.title,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-        ).textStyle(textTheme.bodyLarge!).padding(horizontal: 16.0, top: 8.0),
-        Text('${widget.data.sharer.name} 正在分享')
-            .textStyle(textTheme.bodySmall!)
-            .padding(horizontal: 16.0, top: 4.0, bottom: 16.0),
-      ]
-          .toColumn(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-          )
-          .constrained(width: 300),
+      child:
+          [
+                videoImage,
+                Text(
+                      widget.data.videoRecord.title,
+                      maxLines: 2,
+                        overflow: .ellipsis,
+                    )
+                    .textStyle(textTheme.bodyLarge!)
+                    .padding(horizontal: 16.0, top: 8.0),
+                Text('${widget.data.sharer.name} 正在分享')
+                    .textStyle(textTheme.bodySmall!)
+                    .padding(horizontal: 16.0, top: 4.0, bottom: 16.0),
+              ]
+              .toColumn(
+                mainAxisSize: .min,
+                crossAxisAlignment: .start,
+              )
+              .constrained(width: 300),
     );
 
     final card = Builder(

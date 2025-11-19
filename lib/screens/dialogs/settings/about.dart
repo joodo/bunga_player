@@ -29,8 +29,7 @@ class AboutSetting extends StatelessWidget with SettingsTab {
           .padding(vertical: 8.0),
       Text('版本: ${getIt<PackageInfo>().version}'),
       Selector<UpdateStatus, bool>(
-        selector: (context, status) =>
-            status == UpdateStatus.updated || status == UpdateStatus.error,
+        selector: (context, status) => status == .updated || status == .error,
         builder: (context, enabled, child) => [
           TextButton(
             onPressed: enabled ? () => _forceCheckUpdate(context) : null,
@@ -42,7 +41,7 @@ class AboutSetting extends StatelessWidget with SettingsTab {
                 : null,
             child: const Text('更新日志'),
           ),
-        ].toRow(mainAxisAlignment: MainAxisAlignment.center),
+        ].toRow(mainAxisAlignment: .center),
       ),
       const SizedBox(height: 16.0),
       [
@@ -58,11 +57,11 @@ class AboutSetting extends StatelessWidget with SettingsTab {
           child: const Text('控制台'),
         ),
       ].toRow(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: .center,
         separator: const SizedBox(width: 12.0),
       ),
     ].toColumn(
-      crossAxisAlignment: CrossAxisAlignment.center,
+      crossAxisAlignment: .center,
       separator: const SizedBox(height: 8.0),
     );
   }

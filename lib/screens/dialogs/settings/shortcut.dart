@@ -30,9 +30,7 @@ class _ShortcutSettingsState extends State<ShortcutSettings> {
       '播放 / 暂停': ShortcutKey.togglePlay,
       '截图': ShortcutKey.screenshot,
     },
-    '互动': {
-      '弹幕聊天': ShortcutKey.danmaku,
-    },
+    '互动': {'弹幕聊天': ShortcutKey.danmaku},
     '语音': {
       '增加语音音量': ShortcutKey.voiceVolumeUp,
       '减少语音音量': ShortcutKey.voiceVolumeDown,
@@ -40,10 +38,11 @@ class _ShortcutSettingsState extends State<ShortcutSettings> {
     },
   };
 
-  late final ShortcutMappingNotifier _shortcutMapNotifier =
-      context.read<ShortcutMappingNotifier>();
-  late Map<ShortcutKey, SingleActivator?> _shortcutMap =
-      Map.from(_shortcutMapNotifier.value);
+  late final ShortcutMappingNotifier _shortcutMapNotifier = context
+      .read<ShortcutMappingNotifier>();
+  late Map<ShortcutKey, SingleActivator?> _shortcutMap = Map.from(
+    _shortcutMapNotifier.value,
+  );
 
   @override
   void dispose() {
@@ -57,30 +56,35 @@ class _ShortcutSettingsState extends State<ShortcutSettings> {
   Widget build(BuildContext context) {
     return [
       ..._categories.entries
-          .map((category) => [
-                Text(category.key).sectionTitle(),
-                category.value.entries
-                    .map(
-                      (shortcut) => _ShortcutListTile(
-                        title: shortcut.key,
-                        conflict: _shortcutMap.values
-                                .where((element) =>
+          .map(
+            (category) => [
+              Text(category.key).sectionTitle(),
+              category.value.entries
+                  .map(
+                    (shortcut) => _ShortcutListTile(
+                      title: shortcut.key,
+                      conflict:
+                          _shortcutMap.values
+                              .where(
+                                (element) =>
                                     element?.serialize() ==
-                                    _shortcutMap[shortcut.value]?.serialize())
-                                .length >
-                            1,
-                        value: _shortcutMap[shortcut.value],
-                        onChanged: (newShortcut) {
-                          setState(() {
-                            _shortcutMap[shortcut.value] = newShortcut;
-                          });
-                        },
-                      ),
-                    )
-                    .toList()
-                    .toColumn(separator: const Divider(height: 0))
-                    .sectionContainer(),
-              ])
+                                    _shortcutMap[shortcut.value]?.serialize(),
+                              )
+                              .length >
+                          1,
+                      value: _shortcutMap[shortcut.value],
+                      onChanged: (newShortcut) {
+                        setState(() {
+                          _shortcutMap[shortcut.value] = newShortcut;
+                        });
+                      },
+                    ),
+                  )
+                  .toList()
+                  .toColumn(separator: const Divider(height: 0))
+                  .sectionContainer(),
+            ],
+          )
           .expand((list) => list),
       OutlinedButton(
         onPressed: () => setState(() {
@@ -88,7 +92,7 @@ class _ShortcutSettingsState extends State<ShortcutSettings> {
         }),
         child: const Text('恢复默认键位'),
       ).padding(top: 24.0).center(),
-    ].toColumn(crossAxisAlignment: CrossAxisAlignment.start);
+    ].toColumn(crossAxisAlignment: .start);
   }
 }
 
@@ -115,10 +119,7 @@ class _ShortcutListTile extends StatelessWidget {
               color: Theme.of(context).colorScheme.error,
             )
           : null,
-      trailing: _ShortcutViewer(
-        shortcut: value,
-        placeholder: const Text('无'),
-      ),
+      trailing: _ShortcutViewer(shortcut: value, placeholder: const Text('无')),
       splashColor: Colors.transparent,
       onTap: () async {
         final box = context.findRenderObject()! as RenderBox;
@@ -153,8 +154,9 @@ class _ShortcutListTile extends StatelessWidget {
                 child: const Text('取消'),
               ),
               TextButton(
-                onPressed: () => Navigator.of(context)
-                    .pop(const SingleActivator(LogicalKeyboardKey(0))),
+                onPressed: () => Navigator.of(
+                  context,
+                ).pop(const SingleActivator(LogicalKeyboardKey(0))),
                 child: const Text('清空'),
               ),
               const SizedBox(width: 8),
@@ -162,7 +164,7 @@ class _ShortcutListTile extends StatelessWidget {
                 placeholder: const Text('输入新快捷键'),
                 onFinished: (value) => Navigator.of(context).pop(value),
               ),
-            ].toRow(mainAxisSize: MainAxisSize.min),
+            ].toRow(mainAxisSize: .min),
           ).constrained(width: rect.width, height: rect.height),
         );
       },
@@ -216,16 +218,16 @@ class _VirtualKeyView extends StatelessWidget {
           .textColor(theme.textTheme.bodyMedium!.color)
           .padding(horizontal: 5.0, vertical: 3.0)
           .decorated(
-        color: theme.canvasColor,
-        border: Border.all(color: theme.dividerColor, width: 1),
-        borderRadius: BorderRadius.circular(3),
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            offset: const Offset(0.0, 1.0),
+            color: theme.canvasColor,
+            border: Border.all(color: theme.dividerColor, width: 1),
+            borderRadius: BorderRadius.circular(3),
+            boxShadow: <BoxShadow>[
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.3),
+                offset: const Offset(0.0, 1.0),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 }
@@ -244,12 +246,12 @@ class _ShortcutRecorderState extends State<_ShortcutRecorder> {
   LogicalKeyboardKey? _trigger;
   int _meta = 0, _control = 0, _alt = 0, _shift = 0;
   SingleActivator get _shortcut => SingleActivator(
-        _trigger ?? const LogicalKeyboardKey(0),
-        meta: _meta > 0,
-        control: _control > 0,
-        alt: _alt > 0,
-        shift: _shift > 0,
-      );
+    _trigger ?? const LogicalKeyboardKey(0),
+    meta: _meta > 0,
+    control: _control > 0,
+    alt: _alt > 0,
+    shift: _shift > 0,
+  );
 
   bool _freeze = false;
 

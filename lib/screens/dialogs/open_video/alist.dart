@@ -48,13 +48,17 @@ class _AListTabState extends State<AListTab> {
 
   // Recent
   final _recentScrollController = ScrollController();
-  final _recentPaths =
-      getIt<Preferences>().getOrCreate<List<String>>(_AListPrefKey.recent, []);
+  final _recentPaths = getIt<Preferences>().getOrCreate<List<String>>(
+    _AListPrefKey.recent,
+    [],
+  );
 
   @override
   void initState() {
-    final lastPath =
-        getIt<Preferences>().getOrCreate<String>(_AListPrefKey.last, '/');
+    final lastPath = getIt<Preferences>().getOrCreate<String>(
+      _AListPrefKey.last,
+      '/',
+    );
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -76,8 +80,9 @@ class _AListTabState extends State<AListTab> {
   @override
   Widget build(BuildContext context) {
     final themeData = Theme.of(context);
-    final itemCount =
-        _searchMode ? _searchResults.length : _currentFiles.length;
+    final itemCount = _searchMode
+        ? _searchResults.length
+        : _currentFiles.length;
 
     final pathSplits = _currentPath.split('/')..removeLast();
     final pathSection = [
@@ -96,87 +101,92 @@ class _AListTabState extends State<AListTab> {
           .toList()
           .toRow(separator: const Center(child: Icon(Icons.chevron_right)))
           .scrollable(
-            scrollDirection: Axis.horizontal,
+            scrollDirection: .horizontal,
             controller: _dirScrollController,
             padding: const EdgeInsets.only(left: 16.0, right: 24.0),
           )
           .scrollOptimizer(_dirScrollController)
           .fadeOutShader()
           .expanded(),
-      StyledWidget(IconButton.outlined(
-        onPressed: () {
-          setState(() {
-            _searchMode = true;
-          });
-          _searchFieldFocusNode.requestFocus();
-        },
-        icon: const Icon(Icons.search),
-      )).padding(right: 12.0),
+      StyledWidget(
+        IconButton.outlined(
+          onPressed: () {
+            setState(() {
+              _searchMode = true;
+            });
+            _searchFieldFocusNode.requestFocus();
+          },
+          icon: const Icon(Icons.search),
+        ),
+      ).padding(right: 12.0),
     ].toRow();
     final recentSection = _recentPaths.isEmpty
         ? const SizedBox.shrink()
         : _recentPaths
-            .map(
-              (path) => ContextMenuRegion(
-                items: [
-                  PopupMenuItem(
-                    onTap: () => setState(() {
-                      _recentPaths.remove(path);
-                      getIt<Preferences>()
-                          .set(_AListPrefKey.recent, _recentPaths);
-                    }),
-                    child: Text('删除'),
-                  )
-                ],
-                child: InputChip(
-                  key: ValueKey(path),
-                  label: Text(path),
-                  onPressed: () => _cd(path),
+              .map(
+                (path) => ContextMenuRegion(
+                  items: [
+                    PopupMenuItem(
+                      onTap: () => setState(() {
+                        _recentPaths.remove(path);
+                        getIt<Preferences>().set(
+                          _AListPrefKey.recent,
+                          _recentPaths,
+                        );
+                      }),
+                      child: Text('删除'),
+                    ),
+                  ],
+                  child: InputChip(
+                    key: ValueKey(path),
+                    label: Text(path),
+                    onPressed: () => _cd(path),
+                  ),
                 ),
-              ),
-            )
-            .toList()
-            .toRow(separator: const SizedBox(width: 8))
-            .scrollable(
-              scrollDirection: Axis.horizontal,
-              controller: _recentScrollController,
-              padding: EdgeInsets.symmetric(horizontal: 16.0),
-            )
-            .scrollOptimizer(_recentScrollController)
-            .padding(vertical: 8.0);
+              )
+              .toList()
+              .toRow(separator: const SizedBox(width: 8))
+              .scrollable(
+                scrollDirection: .horizontal,
+                controller: _recentScrollController,
+                padding: EdgeInsets.symmetric(horizontal: 16.0),
+              )
+              .scrollOptimizer(_recentScrollController)
+              .padding(vertical: 8.0);
     final dirTitleBar = [
       pathSection,
       recentSection,
-    ]
-        .toColumn(crossAxisAlignment: CrossAxisAlignment.stretch)
-        .padding(top: 16.0);
+    ].toColumn(crossAxisAlignment: .stretch).padding(top: 16.0);
 
     final searchTitleBar = TextField(
       focusNode: _searchFieldFocusNode,
       decoration: InputDecoration(
         hintText: '搜索文件和文件夹',
         border: const OutlineInputBorder(),
-        suffixIcon: StyledWidget(IconButton(
-          icon: const Icon(Icons.clear),
-          onPressed: () {
-            setState(() {
-              _searchMode = false;
-            });
-          },
-        )).padding(right: 8.0),
+        suffixIcon: StyledWidget(
+          IconButton(
+            icon: const Icon(Icons.clear),
+            onPressed: () {
+              setState(() {
+                _searchMode = false;
+              });
+            },
+          ),
+        ).padding(right: 8.0),
       ),
       onSubmitted: _search,
     ).padding(horizontal: 12.0, bottom: 4.0, top: 12.0);
 
-    final dialogTitle =
-        (_searchMode ? searchTitleBar : dirTitleBar).animatedSize(
-      alignment: Alignment.topCenter,
-      duration: const Duration(milliseconds: 350),
-      curve: Curves.easeOutCubic,
-    );
+    final dialogTitle = (_searchMode ? searchTitleBar : dirTitleBar)
+        .animatedSize(
+          alignment: .topCenter,
+          duration: const Duration(milliseconds: 350),
+          curve: Curves.easeOutCubic,
+        );
 
-    final emptyIndicator =
-        const Text('无结果').textStyle(themeData.textTheme.labelMedium!).center();
+    final emptyIndicator = const Text(
+      '无结果',
+    ).textStyle(themeData.textTheme.labelMedium!).center();
     final listView = ListView.builder(
       padding: const EdgeInsets.symmetric(vertical: 16.0),
       itemCount: itemCount,
@@ -190,21 +200,20 @@ class _AListTabState extends State<AListTab> {
 
           final onTap = switch (result.type) {
             AListFileType.folder => () {
-                _searchMode = false;
-                _cd('${result.parent}/${result.name}/');
-              },
+              _searchMode = false;
+              _cd('${result.parent}/${result.name}/');
+            },
             AListFileType.video => () {
-                final url = Uri(
-                  scheme: 'alist',
-                  path: '${result.parent}/${result.name}',
-                );
-                Actions.invoke(context, SelectUrlIntent(url));
-              },
+              final url = Uri(
+                scheme: 'alist',
+                path: '${result.parent}/${result.name}',
+              );
+              Actions.invoke(context, SelectUrlIntent(url));
+            },
             AListFileType.audio ||
             AListFileType.text ||
             AListFileType.image ||
-            AListFileType.unknown =>
-              null,
+            AListFileType.unknown => null,
           };
           return _SearchEntry(
             result: result,
@@ -222,22 +231,17 @@ class _AListTabState extends State<AListTab> {
           final onTap = switch (info.type) {
             AListFileType.folder => () => _cd('${info.name}/'),
             AListFileType.video => () {
-                _updatePref();
-                final url = Uri(scheme: 'alist', path: path);
-                Actions.invoke(context, SelectUrlIntent(url));
-              },
+              _updatePref();
+              final url = Uri(scheme: 'alist', path: path);
+              Actions.invoke(context, SelectUrlIntent(url));
+            },
             AListFileType.audio ||
             AListFileType.text ||
             AListFileType.image ||
-            AListFileType.unknown =>
-              null,
+            AListFileType.unknown => null,
           };
 
-          return _DirEntry(
-            info: info,
-            watchPercent: percent,
-            onTap: onTap,
-          );
+          return _DirEntry(info: info, watchPercent: percent, onTap: onTap);
         }
       },
     );
@@ -254,10 +258,7 @@ class _AListTabState extends State<AListTab> {
       ),
     );
 
-    return [
-      dialogTitle,
-      dialogContent.padding(top: 8.0).flexible(),
-    ].toColumn();
+    return [dialogTitle, dialogContent.padding(top: 8.0).flexible()].toColumn();
   }
 
   late String _lastSuccessPath = _currentPath;
@@ -268,8 +269,9 @@ class _AListTabState extends State<AListTab> {
 
     try {
       _currentFiles = await createNewWork(
-          Actions.invoke(context, ListIntent(newPath))
-              as Future<List<AListFileDetail>>);
+        Actions.invoke(context, ListIntent(newPath))
+            as Future<List<AListFileDetail>>,
+      );
       _currentFiles.sort();
       _lastSuccessPath = newPath;
     } catch (e) {
@@ -311,8 +313,9 @@ class _AListTabState extends State<AListTab> {
   void _search(String keywords) async {
     try {
       _searchResults = await createNewWork(
-          Actions.invoke(context, SearchIntent(keywords))
-              as Future<List<AListSearchResult>>);
+        Actions.invoke(context, SearchIntent(keywords))
+            as Future<List<AListSearchResult>>,
+      );
       _searchResults.sort();
     } catch (e) {
       if (![AbortException, CancelException].contains(e.runtimeType)) rethrow;
@@ -335,13 +338,15 @@ class _AListTabState extends State<AListTab> {
       _work = completer;
     });
 
-    things.then((value) {
-      if (!completer.isCompleted) completer.complete(value);
-    }).onError((error, stackTrace) {
-      if (!completer.isCompleted) {
-        completer.completeError(error ?? 'Unknown error');
-      }
-    });
+    things
+        .then((value) {
+          if (!completer.isCompleted) completer.complete(value);
+        })
+        .onError((error, stackTrace) {
+          if (!completer.isCompleted) {
+            completer.completeError(error ?? 'Unknown error');
+          }
+        });
 
     return completer.future;
   }
@@ -371,28 +376,29 @@ class _DirEntry extends StatelessWidget {
   final double? watchPercent;
   final VoidCallback? onTap;
 
-  const _DirEntry({
-    required this.info,
-    this.watchPercent,
-    this.onTap,
-  });
+  const _DirEntry({required this.info, this.watchPercent, this.onTap});
 
   @override
   Widget build(BuildContext context) {
     final tile = ListTile(
-      leading: (info.thumb.isEmpty
-              ? Icon(_tileLeading[info.type]).iconSize(32.0).center()
-              : Image.network(
-                  info.thumb,
-                  fit: BoxFit.cover,
-                  height: double.maxFinite,
-                ))
-          .constrained(width: 60)
-          .clipRRect(all: 16.0),
-      title: (watchPercent == null
-              ? Text(info.name)
-              : TitleWithProgress(title: info.name, progress: watchPercent!))
-          .padding(bottom: 4.0),
+      leading:
+          (info.thumb.isEmpty
+                  ? Icon(_tileLeading[info.type]).iconSize(32.0).center()
+                  : Image.network(
+                      info.thumb,
+                      fit: BoxFit.cover,
+                      height: double.maxFinite,
+                    ))
+              .constrained(width: 60)
+              .clipRRect(all: 16.0),
+      title:
+          (watchPercent == null
+                  ? Text(info.name)
+                  : TitleWithProgress(
+                      title: info.name,
+                      progress: watchPercent!,
+                    ))
+              .padding(bottom: 4.0),
       subtitle: info.type == AListFileType.folder
           ? null
           : Text(info.size.formatBytes),
@@ -448,13 +454,13 @@ class _SearchEntry extends StatelessWidget {
 
 extension _ShaderMaskStyle on Widget {
   Widget fadeOutShader() => ShaderMask(
-        shaderCallback: (Rect rect) => const LinearGradient(
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-          colors: [Colors.transparent, Colors.purple],
-          stops: [0.98, 1.0],
-        ).createShader(rect),
-        blendMode: BlendMode.dstOut,
-        child: this,
-      );
+    shaderCallback: (Rect rect) => const LinearGradient(
+      begin: .centerLeft,
+      end: .centerRight,
+      colors: [Colors.transparent, Colors.purple],
+      stops: [0.98, 1.0],
+    ).createShader(rect),
+    blendMode: BlendMode.dstOut,
+    child: this,
+  );
 }

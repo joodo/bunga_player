@@ -32,7 +32,7 @@ class ConsoleGlobalBusinessState extends SingleChildState<ConsoleWrapper> {
       minSize: 300.0,
       size: 400.0,
       maxSize: 1000.0,
-      direction: AxisDirection.right,
+      direction: .right,
     );
 
     final row = [

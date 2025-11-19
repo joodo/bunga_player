@@ -184,12 +184,12 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
 
   void _dealWithTalkStatus(String senderId, TalkStatus status) {
     switch (status) {
-      case TalkStatus.start:
+      case .start:
         if (_talkerIdsNotifier.value.add(senderId)) {
           _talkerIdsNotifier.value = {..._talkerIdsNotifier.value};
           context.read<BungaAudioPlayer>().playSfx('user_speak');
         }
-      case TalkStatus.end:
+      case .end:
         if (_talkerIdsNotifier.value.remove(senderId)) {
           _talkerIdsNotifier.value = {..._talkerIdsNotifier.value};
 

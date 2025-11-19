@@ -37,22 +37,22 @@ class AgoraClient extends VoiceCallClient {
     noiseSuppressionLevelNotifier.addListener(() async {
       final level = noiseSuppressionLevelNotifier.value;
       switch (level) {
-        case NoiseSuppressionLevel.none:
+        case .none:
           await _engine.setAINSMode(
             enabled: false,
             mode: AudioAinsMode.ainsModeAggressive,
           );
-        case NoiseSuppressionLevel.low:
+        case .low:
           await _engine.setAINSMode(
             enabled: true,
             mode: AudioAinsMode.ainsModeUltralowlatency,
           );
-        case NoiseSuppressionLevel.middle:
+        case .middle:
           await _engine.setAINSMode(
             enabled: true,
             mode: AudioAinsMode.ainsModeBalanced,
           );
-        case NoiseSuppressionLevel.high:
+        case .high:
           await _engine.setAINSMode(
             enabled: true,
             mode: AudioAinsMode.ainsModeAggressive,

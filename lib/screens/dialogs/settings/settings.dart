@@ -81,14 +81,14 @@ class _SettingsDialogState extends State<SettingsDialog> {
                   maxWidth: 480,
                   minHeight: MediaQuery.of(context).size.height - 16.0,
                 )
-                .alignment(Alignment.topCenter)
+                .alignment(.topCenter)
                 .scrollable(padding: EdgeInsets.only(bottom: 16.0)),
           ),
         ),
         StyledWidget(IconButton(
           onPressed: () => Navigator.pop(context),
           icon: const Icon(Icons.close),
-        )).padding(top: 8.0, right: 16.0).alignment(Alignment.topRight),
+        )).padding(top: 8.0, right: 16.0).alignment(.topRight),
       ].toStack().flexible(),
     ].toRow();
   }

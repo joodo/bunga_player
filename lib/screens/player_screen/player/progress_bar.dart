@@ -146,7 +146,7 @@ class _VideoProgressBarState extends State<VideoProgressBar> {
                   child: [
                     if (isBusy) const LinearProgressIndicator(minHeight: 4),
                     child!,
-                  ].toStack(alignment: Alignment.center),
+                  ].toStack(alignment: .center),
                 );
               },
             );

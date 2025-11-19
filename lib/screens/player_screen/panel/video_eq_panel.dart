@@ -8,11 +8,7 @@ import 'package:styled_widget/styled_widget.dart';
 
 import 'panel.dart';
 
-typedef TuneItem = ({
-  IconData icon,
-  String name,
-  ValueNotifier<int> notifier,
-});
+typedef TuneItem = ({IconData icon, String name, ValueNotifier<int> notifier});
 
 class VideoEqPanel extends StatelessWidget implements Panel {
   const VideoEqPanel({super.key});
@@ -52,57 +48,57 @@ class VideoEqPanel extends StatelessWidget implements Panel {
   Widget build(BuildContext context) {
     return PanelWidget(
       title: '画面均衡',
-      child: [
-        Consumer<PlayEqPresetNotifier>(
-          builder: (context, notifier, child) {
-            return DropdownMenu<BCSGHPreset?>(
-              enableSearch: false,
-              expandedInsets: const EdgeInsets.all(0),
-              initialSelection: notifier.value,
-              dropdownMenuEntries: [
-                ...PlayEqPresetNotifier.presets
-                    .map((preset) => DropdownMenuEntry(
-                          label: preset.title,
-                          value: preset,
-                        )),
-                const DropdownMenuEntry(
-                  label: '自定义',
-                  value: null,
+      child:
+          [
+                Consumer<PlayEqPresetNotifier>(
+                  builder: (context, notifier, child) {
+                    return DropdownMenu<BCSGHPreset?>(
+                      enableSearch: false,
+                      expandedInsets: const EdgeInsets.all(0),
+                      initialSelection: notifier.value,
+                      dropdownMenuEntries: [
+                        ...PlayEqPresetNotifier.presets.map(
+                          (preset) => DropdownMenuEntry(
+                            label: preset.title,
+                            value: preset,
+                          ),
+                        ),
+                        const DropdownMenuEntry(label: '自定义', value: null),
+                      ],
+                      onSelected: (preset) {
+                        notifier.value = preset;
+                        if (preset == null) return;
+                        final player = getIt<PlayService>();
+                        player.brightnessNotifier.value = preset.value[0];
+                        player.contrastNotifier.value = preset.value[1];
+                        player.saturationNotifier.value = preset.value[2];
+                        player.gammaNotifier.value = preset.value[3];
+                        player.hueNotifier.value = preset.value[4];
+                      },
+                    ).padding(top: 16.0, bottom: 12.0);
+                  },
                 ),
-              ],
-              onSelected: (preset) {
-                notifier.value = preset;
-                if (preset == null) return;
-                final player = getIt<PlayService>();
-                player.brightnessNotifier.value = preset.value[0];
-                player.contrastNotifier.value = preset.value[1];
-                player.saturationNotifier.value = preset.value[2];
-                player.gammaNotifier.value = preset.value[3];
-                player.hueNotifier.value = preset.value[4];
-              },
-            ).padding(top: 16.0, bottom: 12.0);
-          },
-        ),
-        ...tuneItems.map(
-          (item) => ValueListenableBuilder(
-              valueListenable: item.notifier,
-              builder: (context, value, child) => SliderItemWithTextInput(
-                    icon: item.icon,
-                    title: item.name,
-                    min: -1.0,
-                    max: 1.0,
-                    value: value / 100.0,
-                    onChanged: (value) {
-                      context.read<PlayEqPresetNotifier>().value = null;
-                      final percent = value * 100;
-                      item.notifier.value = percent.toInt();
-                    },
-                  ).padding(vertical: 2.0)),
-        ),
-      ]
-          .toColumn(crossAxisAlignment: CrossAxisAlignment.start)
-          .padding(horizontal: 16.0)
-          .scrollable(padding: EdgeInsets.only(bottom: 16.0)),
+                ...tuneItems.map(
+                  (item) => ValueListenableBuilder(
+                    valueListenable: item.notifier,
+                    builder: (context, value, child) => SliderItemWithTextInput(
+                      icon: item.icon,
+                      title: item.name,
+                      min: -1.0,
+                      max: 1.0,
+                      value: value / 100.0,
+                      onChanged: (value) {
+                        context.read<PlayEqPresetNotifier>().value = null;
+                        final percent = value * 100;
+                        item.notifier.value = percent.toInt();
+                      },
+                    ).padding(vertical: 2.0),
+                  ),
+                ),
+              ]
+              .toColumn(crossAxisAlignment: .start)
+              .padding(horizontal: 16.0)
+              .scrollable(padding: EdgeInsets.only(bottom: 16.0)),
     );
   }
 }

@@ -20,53 +20,55 @@ class _DirectLinkTabState extends State<DirectLinkTab> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return InputBuilder(
-      builder: (context, textEditingController, focusNode, child) => [
-        TextField(
-          autofocus: true,
-          decoration: InputDecoration(
-            border: const OutlineInputBorder(),
-            labelText: '视频链接',
-            hintText: '支持 B 站、m3u8 等链接',
-            errorText: inValidInput ? '不是有效 url' : null,
-          ),
-          controller: textEditingController,
-          focusNode: focusNode,
-        ),
-        [
-          ValueListenableBuilder(
-            valueListenable: textEditingController,
-            builder: (context, value, child) {
-              return FilledButton(
-                onPressed: value.text.isNotEmpty
-                    ? () {
-                        final urls = value.text.extractUrls();
-                        if (urls.isEmpty) {
-                          setState(() {
-                            inValidInput = true;
-                          });
-                        } else {
-                          Actions.invoke(
-                            context,
-                            SelectUrlIntent(Uri.parse(urls.first)),
-                          );
-                        }
-                      }
-                    : null,
-                child: const Text('打开')
-                    .fontSize(theme.textTheme.titleMedium?.fontSize),
-              );
-            },
-          ),
-          child!.padding(left: 16.0),
-        ].toRow(),
-      ]
-          .toColumn(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            separator: const SizedBox(height: 12.0),
-          )
-          .constrained(maxWidth: 500)
-          .padding(bottom: 56.0),
+      builder: (context, textEditingController, focusNode, child) =>
+          [
+                TextField(
+                  autofocus: true,
+                  decoration: InputDecoration(
+                    border: const OutlineInputBorder(),
+                    labelText: '视频链接',
+                    hintText: '支持 B 站、m3u8 等链接',
+                    errorText: inValidInput ? '不是有效 url' : null,
+                  ),
+                  controller: textEditingController,
+                  focusNode: focusNode,
+                ),
+                [
+                  ValueListenableBuilder(
+                    valueListenable: textEditingController,
+                    builder: (context, value, child) {
+                      return FilledButton(
+                        onPressed: value.text.isNotEmpty
+                            ? () {
+                                final urls = value.text.extractUrls();
+                                if (urls.isEmpty) {
+                                  setState(() {
+                                    inValidInput = true;
+                                  });
+                                } else {
+                                  Actions.invoke(
+                                    context,
+                                    SelectUrlIntent(Uri.parse(urls.first)),
+                                  );
+                                }
+                              }
+                            : null,
+                        child: const Text(
+                          '打开',
+                        ).fontSize(theme.textTheme.titleMedium?.fontSize),
+                      );
+                    },
+                  ),
+                  child!.padding(left: 16.0),
+                ].toRow(),
+              ]
+              .toColumn(
+                crossAxisAlignment: .start,
+                mainAxisAlignment: .center,
+                separator: const SizedBox(height: 12.0),
+              )
+              .constrained(maxWidth: 500)
+              .padding(bottom: 56.0),
       onFocusGot: (controller) {
         controller.selection = TextSelection(
           baseOffset: 0,

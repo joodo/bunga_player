@@ -148,37 +148,37 @@ class MediaKitPlayService implements PlayService {
     }
 
     // Avoid open after stop, play status keep Stop
-    playStatusNotifier.value = PlayStatus.pause;
+    playStatusNotifier.value = .pause;
   }
 
   // Play status
   @override
   late final playStatusNotifier = _StreamValueNotifier<PlayStatus>(
     stream: _player.stream.playing
-        .map((playing) => playing ? PlayStatus.play : PlayStatus.pause)
+      .map<PlayStatus>((playing) => playing ? .play : .pause)
         .distinct(),
     setter: (playStatus) {
       switch (playStatus) {
-        case PlayStatus.play:
+        case .play:
           _player.play();
-        case PlayStatus.pause:
+        case .pause:
           _player.pause();
-        case PlayStatus.stop:
+        case .stop:
           _player.stop();
       }
     },
-    initValue: PlayStatus.stop,
+    initValue: .stop,
   );
 
   @override
-  void play() => playStatusNotifier.value = PlayStatus.play;
+  void play() => playStatusNotifier.value = .play;
   @override
-  void pause() => playStatusNotifier.value = PlayStatus.pause;
+  void pause() => playStatusNotifier.value = .pause;
   @override
   void toggle() =>
-      playStatusNotifier.value == PlayStatus.play ? pause() : play();
+      playStatusNotifier.value == .play ? pause() : play();
   @override
-  void stop() => playStatusNotifier.value = PlayStatus.stop;
+  void stop() => playStatusNotifier.value = .stop;
 
   // Screenshot
   @override
