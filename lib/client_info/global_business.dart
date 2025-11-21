@@ -11,14 +11,6 @@ import 'package:bunga_player/utils/business/generate_password.dart';
 
 import 'models/client_account.dart';
 
-class ClientId extends ValueNotifier<String> {
-  ClientId()
-      : super(getIt<Preferences>().getOrCreate(
-          'client_id',
-          const Uuid().v4(),
-        ));
-}
-
 class ClientNicknameNotifier extends ValueNotifier<String> {
   ClientNicknameNotifier(super.defaultName) {
     bindPreference<String>(
@@ -29,8 +21,8 @@ class ClientNicknameNotifier extends ValueNotifier<String> {
   }
 }
 
-class ClientColorHue extends ValueNotifier<int> {
-  ClientColorHue(super._value) {
+class ClientColorHueNotifier extends ValueNotifier<int> {
+  ClientColorHueNotifier(super._value) {
     bindPreference<int>(
       key: 'color_hue',
       load: (pref) => pref,
@@ -61,11 +53,11 @@ class ClientInfoGlobalBusiness extends SingleChildStatelessWidget {
             ),
           )..watchInConsole('Client Account'),
         ),
-        ChangeNotifierProxyProvider<ClientAccount, ClientColorHue?>(
+        ChangeNotifierProxyProvider<ClientAccount, ClientColorHueNotifier?>(
           create: (context) => null,
           update: (context, cliendAccount, previous) {
             if (previous == null) {
-              return ClientColorHue(cliendAccount.id.hashCode % 360);
+              return ClientColorHueNotifier(cliendAccount.id.hashCode % 360);
             } else {
               return previous;
             }

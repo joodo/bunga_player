@@ -343,7 +343,7 @@ class _VoiceCallBusinessState extends SingleChildState<VoiceCallBusiness> {
   void _soundCallRing() {
     final player = context.read<BungaAudioPlayer>();
     if (_callStatusNotifier.value == .callIn ||
-      _callStatusNotifier.value == .callOut) {
+        _callStatusNotifier.value == .callOut) {
       player.startRing();
     } else {
       player.stopRing();
@@ -455,19 +455,19 @@ class VoiceCallGlobalBusiness extends SingleChildStatelessWidget {
 
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
-    return ProxyFutureProvider<AgoraClient?, BungaServerInfo?>(
-      proxy: (clientInfo) async {
-        if (clientInfo == null) return null;
+    return ProxyFutureProvider<BungaServerInfo?, AgoraClient?>(
+      create: (info) async {
+        if (info == null) return null;
+        final client = await AgoraClient.create(info);
 
         // Load init volume
-        final client = await AgoraClient.create(clientInfo);
         client?.volumeNotifier.value = Volume(
           volume: getIt<Preferences>().get(_voiceVolumeKey) ?? Volume.max,
         );
 
         return client;
       },
-      initialData: null,
+      // Dispose agora
       child: child,
     );
   }

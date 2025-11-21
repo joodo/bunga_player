@@ -1,12 +1,14 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:styled_widget/styled_widget.dart';
+
+import 'package:bunga_player/bunga_server/global_business.dart';
 import 'package:bunga_player/client_info/global_business.dart';
 import 'package:bunga_player/screens/dialogs/settings/widgets.dart';
 import 'package:bunga_player/screens/player_screen/player/danmaku_player.dart';
 import 'package:bunga_player/screens/widgets/input_builder.dart';
 import 'package:bunga_player/screens/widgets/slider_dense_track_shape.dart';
 import 'package:bunga_player/ui/global_business.dart';
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:styled_widget/styled_widget.dart';
 
 class ReactionSettings extends StatefulWidget with SettingsTab {
   @override
@@ -24,7 +26,7 @@ class ReactionSettings extends StatefulWidget with SettingsTab {
 
 class _ReactionSettingsState extends State<ReactionSettings> {
   late final _nicknameNotifier = context.read<ClientNicknameNotifier>();
-  late final _hueProvider = context.read<ClientColorHue>();
+  late final _hueProvider = context.read<ClientColorHueNotifier>();
   late int _hue = _hueProvider.value;
 
   @override
@@ -42,7 +44,10 @@ class _ReactionSettingsState extends State<ReactionSettings> {
               focusNode: focusNode,
             ),
         initValue: _nicknameNotifier.value,
-        onFocusLose: (controller) => _nicknameNotifier.value = controller.text,
+        onFocusLose: (controller) {
+          _nicknameNotifier.value = controller.text;
+          _updateUserInfo();
+        },
       ).padding(all: 16.0).sectionContainer(),
       [
             const Text('弹幕颜色'),
@@ -51,6 +56,10 @@ class _ReactionSettingsState extends State<ReactionSettings> {
               onChanged: (value) => setState(() {
                 _hue = value;
               }),
+              onChangeEnd: (value) {
+                _hueProvider.value = _hue;
+                _updateUserInfo();
+              },
             ),
             DanmakuText(text: '测试弹幕样式', hue: _hue),
           ]
@@ -68,16 +77,14 @@ class _ReactionSettingsState extends State<ReactionSettings> {
     ].toColumn(crossAxisAlignment: .start);
   }
 
-  @override
-  void dispose() {
-    Future.microtask(() => _hueProvider.value = _hue);
-    super.dispose();
+  Future<void> _updateUserInfo() {
+    return Actions.invoke(context, AlohaIntent()) as Future;
   }
 }
 
 class _ColorSlider extends StatelessWidget {
   final int value;
-  final Function(int value) onChanged;
+  final ValueChanged<int>? onChanged, onChangeEnd;
 
   static final _colors = [
     const Color.fromARGB(255, 255, 0, 0),
@@ -95,7 +102,7 @@ class _ColorSlider extends StatelessWidget {
     const Color.fromARGB(255, 255, 0, 0),
   ];
 
-  const _ColorSlider({required this.value, required this.onChanged});
+  const _ColorSlider({required this.value, this.onChanged, this.onChangeEnd});
 
   @override
   Widget build(BuildContext context) {
@@ -112,7 +119,8 @@ class _ColorSlider extends StatelessWidget {
             min: 0,
             max: 360,
             value: value.toDouble(),
-            onChanged: (value) => onChanged(value.toInt()),
+            onChanged: (value) => onChanged?.call(value.toInt()),
+            onChangeEnd: (value) => onChangeEnd?.call(value.toInt()),
           ),
         )
         .decorated(

@@ -25,30 +25,94 @@ class ValueListenableProxyProvider<T, R> extends SingleChildStatelessWidget {
   }
 }
 
-// TODO: swap T, R
-class ProxyFutureProvider<T, R> extends SingleChildStatelessWidget {
-  final Future<T>? Function(R value) proxy;
-  final T initialData;
-  final Widget Function(BuildContext context, Widget? child)? builder;
+class ProxyFutureProvider<TInput, TOutput> extends SingleChildStatelessWidget {
+  final TOutput? Function(TInput? input)? initial;
+  final Future<TOutput?> Function(TInput? input) create;
+  final void Function(TOutput? previous)? dispose;
 
   const ProxyFutureProvider({
     super.key,
+    this.initial,
+    required this.create,
+    this.dispose,
     super.child,
-    required this.proxy,
-    required this.initialData,
-    this.builder,
   });
 
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
-    return Consumer<R>(
-      builder: (context, value, child) => FutureProvider<T>.value(
-        value: proxy(value),
-        initialData: initialData,
-        builder: builder,
-        child: child,
-      ),
+    return MultiProvider(
+      providers: [
+        ProxyProvider<TInput?, _FutureHolder<TInput, TOutput>>(
+          create: (_) => _FutureHolder<TInput, TOutput>(
+            initial: initial,
+            create: create,
+            dispose: dispose,
+          ),
+          update: (_, input, holder) {
+            holder!.setInput(input);
+            return holder;
+          },
+        ),
+        ProxyProvider<_FutureHolder<TInput, TOutput>, TOutput?>(
+          update: (_, holder, _) => holder.output,
+        ),
+      ],
       child: child,
     );
+  }
+}
+
+class _FutureHolder<TInput, TOutput> extends ChangeNotifier {
+  final TOutput? Function(TInput? input)? _initial;
+  final Future<TOutput?> Function(TInput? input) _create;
+  final void Function(TOutput? value)? _dispose;
+
+  TOutput? _current;
+  TInput? _lastInput;
+
+  TOutput? get output => _current;
+
+  _FutureHolder({
+    required TOutput? Function(TInput? input)? initial,
+    required Future<TOutput?> Function(TInput? input) create,
+    required void Function(TOutput?)? dispose,
+  }) : _initial = initial,
+       _create = create,
+       _dispose = dispose;
+
+  void setInput(TInput? input) {
+    if (input == _lastInput) return;
+    _lastInput = input;
+
+    // dispose old
+    if (_current != null) {
+      _dispose?.call(_current);
+      _current = null;
+      notifyListeners();
+    }
+
+    // initial fallback
+    if (_initial != null) {
+      _current = _initial(input);
+      notifyListeners();
+    }
+
+    // async build new
+    _create(input).then((value) {
+      // only accept if input not changed again
+      if (_lastInput == input) {
+        _current = value;
+        notifyListeners();
+      } else {
+        // input changed meanwhile ⇒ dispose unused result
+        _dispose?.call(value);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _dispose?.call(_current);
+    super.dispose();
   }
 }

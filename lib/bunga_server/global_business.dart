@@ -1,6 +1,8 @@
 import 'dart:convert';
 
 import 'package:bunga_player/bunga_server/models/bunga_server_info.dart';
+import 'package:bunga_player/chat/models/message_data.dart';
+import 'package:bunga_player/client_info/global_business.dart';
 import 'package:bunga_player/client_info/models/client_account.dart';
 import 'package:bunga_player/console/service.dart';
 import 'package:bunga_player/play/models/play_payload.dart';
@@ -72,9 +74,12 @@ class ConnectToHostAction extends ContextAction<ConnectToHostIntent> {
 
 Future<JsonMap> _retryIfTokenExpired({
   required BungaServerInfo serverInfo,
-  required Future<http.Response> Function() doRequest,
+  required Future<http.Response> Function(Map<String, String> headers)
+  doRequest,
 }) async {
-  final response = await doRequest();
+  final response = await doRequest({
+    'Authorization': 'Bearer ${serverInfo.token.access}',
+  });
 
   final json = jsonDecode(response.body) as JsonMap;
   if (response.isSuccess) {
@@ -85,6 +90,42 @@ Future<JsonMap> _retryIfTokenExpired({
     return _retryIfTokenExpired(serverInfo: serverInfo, doRequest: doRequest);
   } else {
     throw Exception('Bunga request failed: ${response.body}');
+  }
+}
+
+class AlohaIntent extends Intent {
+  const AlohaIntent();
+}
+
+class AlohaAction extends ContextAction<AlohaIntent> {
+  @override
+  Future<StartProjectionMessageData?> invoke(
+    AlohaIntent intent, [
+    BuildContext? context,
+  ]) async {
+    assert(context != null);
+    final read = context!.read;
+
+    final serverInfo = read<BungaServerInfo>();
+    final url = serverInfo.origin.replace(
+      pathSegments: ['api', 'channels', serverInfo.channel.id, 'aloha', ''],
+    );
+
+    final json = await _retryIfTokenExpired(
+      serverInfo: serverInfo,
+      doRequest: (headers) => http.post(
+        url,
+        headers: headers,
+        body: {
+          'name': read<ClientNicknameNotifier>().value,
+          'color_hue': read<ClientColorHueNotifier>().value.toString(),
+        },
+      ),
+    );
+    final projectionJson = json['current_projection'];
+    return projectionJson != null
+        ? StartProjectionMessageData.fromJson(projectionJson)
+        : null;
   }
 }
 
@@ -116,11 +157,13 @@ class UploadSubtitleAction extends ContextAction<UploadSubtitleIntent> {
       ],
     );
 
-    Future<http.Response> reqFunc() => _doRequest(
-      uploadUri: uploadUri,
-      filePath: filePath,
-      token: serverInfo.token.access,
-    );
+    Future<http.Response> reqFunc(Map<String, String> headers) async {
+      final request = http.MultipartRequest('POST', uploadUri);
+      request.files.add(await http.MultipartFile.fromPath('file', filePath));
+      request.headers.addAll(headers);
+      final streamedResponse = await request.send();
+      return http.Response.fromStream(streamedResponse);
+    }
 
     try {
       final json = await _retryIfTokenExpired(
@@ -131,18 +174,6 @@ class UploadSubtitleAction extends ContextAction<UploadSubtitleIntent> {
     } catch (e) {
       throw Exception('Subtitle upload failed: $e');
     }
-  }
-
-  Future<http.Response> _doRequest({
-    required Uri uploadUri,
-    required String filePath,
-    required String token,
-  }) async {
-    final request = http.MultipartRequest('POST', uploadUri);
-    request.files.add(await http.MultipartFile.fromPath('file', filePath));
-    request.headers['Authorization'] = 'Bearer $token';
-    final streamedResponse = await request.send();
-    return http.Response.fromStream(streamedResponse);
   }
 }
 
@@ -170,15 +201,10 @@ class FetchChannelStatusAction extends ContextAction<FetchChannelStatusIntent> {
       ],
     );
 
-    Future<http.Response> reqFunc() => http.get(
-      url,
-      headers: {'Authorization': 'Bearer ${serverInfo.token.access}'},
-    );
-
     try {
       final json = await _retryIfTokenExpired(
         serverInfo: serverInfo,
-        doRequest: reqFunc,
+        doRequest: (headers) => http.get(url, headers: headers),
       );
       return json;
     } catch (e) {
@@ -197,7 +223,7 @@ class BungaServerGlobalBusiness extends SingleChildStatefulWidget {
 
 class _BungaServerGlobalBusinessState
     extends SingleChildState<BungaServerGlobalBusiness> {
-  final _infoNotifier = ValueNotifier<BungaServerInfo?>(null)
+  final _serverInfoNotifier = ValueNotifier<BungaServerInfo?>(null)
     ..watchInConsole('Bunga Client Info');
   final _fetchingNotifier = ValueNotifier<FetchingBungaClient>(
     FetchingBungaClient(false),
@@ -211,7 +237,7 @@ class _BungaServerGlobalBusinessState
         );
   late final _connectToHostAction = ConnectToHostAction(
     fetchingNotifier: _fetchingNotifier,
-    infoNotifier: _infoNotifier,
+    infoNotifier: _serverInfoNotifier,
     hostNotifier: _hostAddressNotifier,
   );
 
@@ -224,7 +250,7 @@ class _BungaServerGlobalBusinessState
 
   @override
   void dispose() {
-    _infoNotifier.dispose();
+    _serverInfoNotifier.dispose();
     _fetchingNotifier.dispose();
     _hostAddressNotifier.dispose();
     super.dispose();
@@ -232,20 +258,25 @@ class _BungaServerGlobalBusinessState
 
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
+    assert(child != null);
+
+    final actions = Actions(
+      actions: <Type, Action<Intent>>{
+        ConnectToHostIntent: _connectToHostAction,
+        AlohaIntent: AlohaAction(),
+        UploadSubtitleIntent: UploadSubtitleAction(),
+        FetchChannelStatusIntent: FetchChannelStatusAction(),
+      },
+      child: child!,
+    );
+
     return MultiProvider(
       providers: [
-        ValueListenableProvider.value(value: _infoNotifier),
+        ValueListenableProvider.value(value: _serverInfoNotifier),
         ValueListenableProvider.value(value: _fetchingNotifier),
         ValueListenableProvider.value(value: _hostAddressNotifier),
       ],
-      child: Actions(
-        actions: <Type, Action<Intent>>{
-          ConnectToHostIntent: _connectToHostAction,
-          UploadSubtitleIntent: UploadSubtitleAction(),
-          FetchChannelStatusIntent: FetchChannelStatusAction(),
-        },
-        child: child!,
-      ),
+      child: actions,
     );
   }
 

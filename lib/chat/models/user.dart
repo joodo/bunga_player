@@ -22,11 +22,7 @@ class User {
   final String name;
   late final int colorHue;
 
-  User({
-    required this.id,
-    required this.name,
-    int? colorHue,
-  }) {
+  User({required this.id, required this.name, int? colorHue}) {
     this.colorHue = colorHue ?? (id.hashCode % 360);
   }
 
@@ -35,7 +31,7 @@ class User {
 
   factory User.fromContext(BuildContext context) {
     final nickname = context.read<ClientNicknameNotifier>().value;
-    final hue = context.read<ClientColorHue?>()?.value;
+    final hue = context.read<ClientColorHueNotifier?>()?.value;
     final id = context.read<ClientAccount>().id;
     return User(id: id, name: nickname, colorHue: hue);
   }

@@ -16,9 +16,9 @@ class BungaChatClient extends ChatClient {
   BungaChatClient._(BungaServerInfo clientInfo) : _clientInfo = clientInfo;
 
   static Future<BungaChatClient> create({
-    required BungaServerInfo clientInfo,
+    required BungaServerInfo serverInfo,
   }) async {
-    final client = BungaChatClient._(clientInfo);
+    final client = BungaChatClient._(serverInfo);
     await client._connect();
     return client;
   }
@@ -81,12 +81,17 @@ class BungaChatClient extends ChatClient {
       onDone: () async {
         final closeCode = _channel!.closeCode;
         switch (closeCode) {
-          case 4002: // Token expired
-            await _clientInfo.refreshToken();
-            return _connect();
+          case null: // Close by client
+            break;
+
           case 1005 || 1006 || 1015: // Network unstable
             logger.w('Websocket: connection break. Code $closeCode');
             return _reconnect();
+
+          case 4002: // Token expired
+            await _clientInfo.refreshToken();
+            return _connect();
+
           default:
             logger.e(
               'Websocket: connection break, fatal reasion. Code $closeCode',
@@ -104,5 +109,12 @@ class BungaChatClient extends ChatClient {
       _channel = null;
       return _reconnect();
     }
+  }
+
+  @override
+  void dispose() {
+    _channel?.sink.close(1000);
+    _streamController.close();
+    super.dispose();
   }
 }
