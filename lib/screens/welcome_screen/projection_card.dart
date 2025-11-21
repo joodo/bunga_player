@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:bunga_player/chat/models/message_data.dart';
+import 'package:bunga_player/chat/models/user.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/utils/extensions/http_response.dart';
 import 'package:flutter/material.dart';
@@ -9,9 +10,15 @@ import 'package:styled_widget/styled_widget.dart';
 
 class ProjectionCard extends StatefulWidget {
   final StartProjectionMessageData data;
+  final User sharer;
   final VoidCallback? onTap;
 
-  const ProjectionCard({super.key, required this.data, this.onTap});
+  const ProjectionCard({
+    super.key,
+    required this.data,
+    required this.sharer,
+    this.onTap,
+  });
 
   @override
   State<ProjectionCard> createState() => _ProjectionCardState();
@@ -50,18 +57,15 @@ class _ProjectionCardState extends State<ProjectionCard> {
                 Text(
                       widget.data.videoRecord.title,
                       maxLines: 2,
-                        overflow: .ellipsis,
+                      overflow: .ellipsis,
                     )
                     .textStyle(textTheme.bodyLarge!)
                     .padding(horizontal: 16.0, top: 8.0),
-                Text('${widget.data.sharer.name} 正在分享')
+                Text('${widget.sharer.name} 正在分享')
                     .textStyle(textTheme.bodySmall!)
                     .padding(horizontal: 16.0, top: 4.0, bottom: 16.0),
               ]
-              .toColumn(
-                mainAxisSize: .min,
-                crossAxisAlignment: .start,
-              )
+              .toColumn(mainAxisSize: .min, crossAxisAlignment: .start)
               .constrained(width: 300),
     );
 

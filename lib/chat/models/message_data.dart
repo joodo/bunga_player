@@ -19,10 +19,9 @@ class StartProjectionMessageData extends MessageData {
   @JsonKey(includeFromJson: false, includeToJson: true)
   final code = messageCode;
 
-  final User sharer;
   final VideoRecord videoRecord;
 
-  StartProjectionMessageData({required this.sharer, required this.videoRecord});
+  StartProjectionMessageData({required this.videoRecord});
 
   factory StartProjectionMessageData.fromJson(Map<String, dynamic> json) =>
       _$StartProjectionMessageDataFromJson(json);

@@ -107,17 +107,17 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
     _streamSubscription = messageStream.listen((message) {
       switch (message.data['code']) {
         case AlohaMessageData.messageCode:
-          if (message.senderId == _myId) break;
+          if (message.sender == _myId) break;
           _dealWithAloha(AlohaMessageData.fromJson(message.data));
         case HereIsMessageData.messageCode:
-          if (message.senderId == _myId) break;
+          if (message.sender == _myId) break;
           _dealWithHereIs(HereIsMessageData.fromJson(message.data));
         case ByeMessageData.messageCode:
-          if (message.senderId == _myId) break;
+          if (message.sender == _myId) break;
           _dealWithBye(ByeMessageData.fromJson(message.data));
         case TalkStatusMessageData.messageCode:
           _dealWithTalkStatus(
-            message.senderId,
+            message.sender.id,
             TalkStatusMessageData.fromJson(message.data).status,
           );
       }

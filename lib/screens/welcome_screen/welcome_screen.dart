@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:animations/animations.dart';
+import 'package:bunga_player/chat/models/user.dart';
 import 'package:bunga_player/ui/audio_player.dart';
 import 'package:bunga_player/voice_call/client/client.agora.dart';
 import 'package:flutter/material.dart';
@@ -44,16 +45,17 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     switch (message.data['code']) {
       case StartProjectionMessageData.messageCode:
         final data = StartProjectionMessageData.fromJson(message.data);
-        _dealWithProjection(data);
+        _dealWithProjection(message.sender, data);
       case WhatsOnMessageData.messageCode:
         _dealWithWhatsOn();
       case NowPlayingMessageData.messageCode:
         final data = NowPlayingMessageData.fromJson(message.data);
-        _dealWithNotPlaying(data);
+        _dealWithNotPlaying(message.sender, data);
     }
   });
 
   StartProjectionMessageData? _currentProjection;
+  User? _currentSharer;
 
   @override
   void initState() {
@@ -80,6 +82,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     if (_currentProjection != null) {
       return ProjectionCard(
         key: ValueKey(_currentProjection!.videoRecord.id),
+        sharer: _currentSharer!,
         data: _currentProjection!,
         onTap: _joinChannel,
       );
@@ -93,12 +96,13 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     );
   }
 
-  void _dealWithProjection(StartProjectionMessageData data) {
+  void _dealWithProjection(User sharer, StartProjectionMessageData data) {
     final autoJoin = context.read<AutoJoinChannelNotifier>().value;
     final isCurrent = ModalRoute.of(context)?.isCurrent ?? false;
     final isFirstShare = _currentProjection == null;
 
     _currentProjection = data;
+    _currentSharer = sharer;
     setState(() {});
 
     if (isCurrent) {
@@ -113,18 +117,16 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
     final messageData = NowPlayingMessageData(
       videoRecord: _currentProjection!.videoRecord,
-      sharer: _currentProjection!.sharer,
+      sharer: _currentSharer!,
     );
     Actions.invoke(context, SendMessageIntent(messageData));
   }
 
-  void _dealWithNotPlaying(NowPlayingMessageData data) {
+  void _dealWithNotPlaying(User sharer, NowPlayingMessageData data) {
     if (_currentProjection != null) return;
     _dealWithProjection(
-      StartProjectionMessageData(
-        sharer: data.sharer,
-        videoRecord: data.videoRecord,
-      ),
+      sharer,
+      StartProjectionMessageData(videoRecord: data.videoRecord),
     );
   }
 

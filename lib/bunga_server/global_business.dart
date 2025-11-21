@@ -1,11 +1,11 @@
 import 'dart:convert';
 
 import 'package:bunga_player/bunga_server/models/bunga_server_info.dart';
-import 'package:bunga_player/chat/models/message_data.dart';
-import 'package:bunga_player/client_info/global_business.dart';
+import 'package:bunga_player/chat/models/user.dart';
 import 'package:bunga_player/client_info/models/client_account.dart';
 import 'package:bunga_player/console/service.dart';
 import 'package:bunga_player/play/models/play_payload.dart';
+import 'package:bunga_player/play/models/video_record.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/utils/business/run_after_build.dart';
 import 'package:bunga_player/utils/extensions/http_response.dart';
@@ -97,9 +97,11 @@ class AlohaIntent extends Intent {
   const AlohaIntent();
 }
 
+typedef AlohaResponse = ({User user, VideoRecord videoRecord});
+
 class AlohaAction extends ContextAction<AlohaIntent> {
   @override
-  Future<StartProjectionMessageData?> invoke(
+  Future<AlohaResponse?> invoke(
     AlohaIntent intent, [
     BuildContext? context,
   ]) async {
@@ -116,15 +118,15 @@ class AlohaAction extends ContextAction<AlohaIntent> {
       doRequest: (headers) => http.post(
         url,
         headers: headers,
-        body: {
-          'name': read<ClientNicknameNotifier>().value,
-          'color_hue': read<ClientColorHueNotifier>().value.toString(),
-        },
+        body: User.fromContext(context).toJson(),
       ),
     );
     final projectionJson = json['current_projection'];
     return projectionJson != null
-        ? StartProjectionMessageData.fromJson(projectionJson)
+        ? (
+            user: User.fromJson(projectionJson['sharer']),
+            videoRecord: VideoRecord.fromJson(projectionJson['video_record']),
+          )
         : null;
   }
 }

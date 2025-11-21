@@ -62,12 +62,9 @@ class ShareVideoAction extends ContextAction<ShareVideoIntent> {
     // I shared the video, I should answer others
     shouldAnswerWhereSetter();
 
-    final messageData = StartProjectionMessageData(
-      sharer: User.fromContext(context!),
-      videoRecord: intent.record,
-    );
+    final messageData = StartProjectionMessageData(videoRecord: intent.record);
     final act =
-        Actions.invoke(context, SendMessageIntent(messageData)) as Future;
+        Actions.invoke(context!, SendMessageIntent(messageData)) as Future;
 
     return act;
   }
@@ -113,13 +110,14 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
 
     final myId = context.read<ClientAccount>().id;
     final messageStream = context.read<Stream<Message>>().where(
-      (message) => message.senderId != myId,
+      (message) => message.sender != myId,
     );
 
     _streamSubscription = messageStream.listen((message) {
       switch (message.data['code']) {
         case StartProjectionMessageData.messageCode:
           _dealWithProjection(
+            message.sender,
             StartProjectionMessageData.fromJson(message.data),
           );
         case WhereMessageData.messageCode:
@@ -198,8 +196,8 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
     Actions.invoke(context, SendMessageIntent(messageData));
   }
 
-  void _dealWithProjection(StartProjectionMessageData data) async {
-    getIt<Toast>().show('${data.sharer.name} 分享了视频');
+  void _dealWithProjection(User sender, StartProjectionMessageData data) async {
+    getIt<Toast>().show('${sender.name} 分享了视频');
 
     VideoRecord? newRecord = data.videoRecord;
 

@@ -32,7 +32,7 @@ class BungaChatClient extends ChatClient {
   @override
   Stream<Message> get messageStream => _rawStream.map((rawData) {
     final json = jsonDecode(rawData);
-    return Message(data: json, senderId: json['sender']);
+    return Message(data: json, sender: json['sender']);
   });
 
   @override

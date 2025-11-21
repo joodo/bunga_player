@@ -66,14 +66,18 @@ class _ChannelActionsState extends SingleChildState<ChatGlobalBusiness> {
 
         // send aloha request
         final job =
-            Actions.invoke(context, AlohaIntent())
-                as Future<StartProjectionMessageData?>;
+            Actions.invoke(context, AlohaIntent()) as Future<AlohaResponse?>;
         job.then((data) {
           if (data == null) return;
 
           // mock projection message
           _messageStreamController.add(
-            Message(data: data.toJson(), senderId: data.sharer.id),
+            Message(
+              data: StartProjectionMessageData(
+                videoRecord: data.videoRecord,
+              ).toJson(),
+              sender: data.user,
+            ),
           );
         });
 

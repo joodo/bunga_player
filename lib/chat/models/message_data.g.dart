@@ -9,7 +9,6 @@ part of 'message_data.dart';
 StartProjectionMessageData _$StartProjectionMessageDataFromJson(
   Map<String, dynamic> json,
 ) => StartProjectionMessageData(
-  sharer: User.fromJson(json['sharer'] as Map<String, dynamic>),
   videoRecord: VideoRecord.fromJson(
     json['video_record'] as Map<String, dynamic>,
   ),
@@ -19,7 +18,6 @@ Map<String, dynamic> _$StartProjectionMessageDataToJson(
   StartProjectionMessageData instance,
 ) => <String, dynamic>{
   'code': instance.code,
-  'sharer': instance.sharer.toJson(),
   'video_record': instance.videoRecord.toJson(),
 };
 

@@ -281,11 +281,11 @@ class _VoiceCallBusinessState extends SingleChildState<VoiceCallBusiness> {
         .where(
           (message) =>
               message.data['code'] == CallMessageData.messageCode &&
-              message.senderId != myId,
+              message.sender != myId,
         )
         .map(
           (message) => (
-            senderId: message.senderId,
+            senderId: message.sender.id,
             action: CallMessageData.fromJson(message.data).action,
           ),
         )
