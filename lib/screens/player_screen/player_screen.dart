@@ -49,18 +49,7 @@ class PlayerScreen extends StatelessWidget {
       child: const Player(),
     );
 
-    final popScope = PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) {
-        assert(!didPop);
-        if (didPop) return;
-
-        Navigator.pop(context, context.read<IsInChannel>());
-      },
-      child: body,
-    );
-
-    return popScope.playScreenBusiness();
+    return body.playScreenBusiness();
   }
 
   Widget _animate(Widget widget, Axis axis) => widget.animatedSwitcher(

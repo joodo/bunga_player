@@ -65,6 +65,17 @@ class _WidgetBusinessState extends SingleChildState<_WidgetBusiness> {
 
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
+    final popScope = PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        assert(!didPop);
+        if (didPop) return;
+
+        Navigator.pop(context, context.read<IsInChannel>());
+      },
+      child: child!,
+    );
+
     final shortcutsWrap = Consumer<ShortcutMappingNotifier>(
       builder: (context, mappingNotifier, child) {
         final activitor = mappingNotifier.value[ShortcutKey.danmaku];
@@ -76,7 +87,7 @@ class _WidgetBusinessState extends SingleChildState<_WidgetBusiness> {
           child: child!,
         );
       },
-      child: child,
+      child: popScope,
     );
 
     final actionWrap = shortcutsWrap.actions(
@@ -89,6 +100,8 @@ class _WidgetBusinessState extends SingleChildState<_WidgetBusiness> {
       },
     );
 
+    final focusWrap = Focus(autofocus: true, child: actionWrap);
+
     return MultiProvider(
       providers: [
         ValueListenableProvider.value(value: _panelNotifier),
@@ -97,7 +110,7 @@ class _WidgetBusinessState extends SingleChildState<_WidgetBusiness> {
           proxy: (value) => DanmakuVisible(value),
         ),
       ],
-      child: actionWrap,
+      child: focusWrap,
     );
   }
 
@@ -169,9 +182,7 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
 
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
-    final focusWrap = Focus(autofocus: true, child: child!);
-
-    final widget = _WidgetBusiness(key: _childKey, child: focusWrap);
+    final widget = _WidgetBusiness(key: _childKey, child: child!);
 
     final channelWrap = ValueListenableBuilder(
       valueListenable: _isJoiningChannelNotifier,
