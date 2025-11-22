@@ -22,10 +22,13 @@ class PlayerScreen extends StatelessWidget {
       builder: (context, panel, danmakuVisible, child) {
         final playerWidget = child!.card(margin: EdgeInsets.all(0));
         final danmakuWidget = danmakuVisible.value
-            ? const DanmakuControl()
-                .constrained(key: Key('danmaku'), height: danmakuHeight)
+            ? const DanmakuControl().constrained(
+                key: Key('danmaku'),
+                height: danmakuHeight,
+              )
             : const SizedBox.shrink(key: Key('none'));
-        final panelWidget = panel?.splitView(
+        final panelWidget =
+            panel?.splitView(
               minSize: 260.0,
               size: 300.0,
               maxSize: 450.0,
@@ -38,25 +41,37 @@ class PlayerScreen extends StatelessWidget {
             _animate(danmakuWidget, .vertical),
           ].toColumn().flexible(),
           _animate(panelWidget, .horizontal),
-        ]
-            .toRow()
-            .animate(const Duration(milliseconds: 350), Curves.easeOutCubic);
+        ].toRow().animate(
+          const Duration(milliseconds: 350),
+          Curves.easeOutCubic,
+        );
       },
       child: const Player(),
     );
 
-    return body.playScreenBusiness();
+    final popScope = PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        assert(!didPop);
+        if (didPop) return;
+
+        Navigator.pop(context, context.read<IsInChannel>());
+      },
+      child: body,
+    );
+
+    return popScope.playScreenBusiness();
   }
 
   Widget _animate(Widget widget, Axis axis) => widget.animatedSwitcher(
-        duration: const Duration(milliseconds: 350),
-        switchInCurve: Curves.easeOutCubic,
-        switchOutCurve: Curves.easeInCubic,
-        transitionBuilder: (child, animation) => SizeTransition(
-          sizeFactor: animation,
-          axis: axis,
-          axisAlignment: -1.0,
-          child: child,
-        ),
-      );
+    duration: const Duration(milliseconds: 350),
+    switchInCurve: Curves.easeOutCubic,
+    switchOutCurve: Curves.easeInCubic,
+    transitionBuilder: (child, animation) => SizeTransition(
+      sizeFactor: animation,
+      axis: axis,
+      axisAlignment: -1.0,
+      child: child,
+    ),
+  );
 }

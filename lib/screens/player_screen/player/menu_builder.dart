@@ -20,7 +20,8 @@ class MenuBuilder extends SingleChildStatelessWidget {
     BuildContext context,
     List<Widget> menuChildren,
     Widget? child,
-  ) builder;
+  )
+  builder;
 
   const MenuBuilder({super.key, super.child, required this.builder});
 
@@ -36,9 +37,7 @@ class MenuBuilder extends SingleChildStatelessWidget {
               leadingIcon: const Icon(Icons.refresh),
               onPressed: Actions.handler(
                 context,
-                OpenVideoIntent.record(
-                  payload!.record,
-                ),
+                OpenVideoIntent.record(payload!.record),
               ),
               child: const Text('重新载入    '),
             ),
@@ -48,9 +47,7 @@ class MenuBuilder extends SingleChildStatelessWidget {
               leadingIcon: const Icon(Icons.rss_feed),
               onPressed: Actions.handler(
                 context,
-                ShowPanelIntent(
-                  builder: (context) => const VideoSourcePanel(),
-                ),
+                ShowPanelIntent(builder: (context) => const VideoSourcePanel()),
               ),
               child: Text('片源 (${payload.sources.videos.length})'),
             ),
@@ -66,9 +63,7 @@ class MenuBuilder extends SingleChildStatelessWidget {
                 leadingIcon: const Icon(Icons.image),
                 onPressed: Actions.handler(
                   context,
-                  ShowPanelIntent(
-                    builder: (context) => const VideoEqPanel(),
-                  ),
+                  ShowPanelIntent(builder: (context) => const VideoEqPanel()),
                 ),
                 child: const Text('画面   '),
               ),
@@ -88,9 +83,7 @@ class MenuBuilder extends SingleChildStatelessWidget {
                 leadingIcon: const Icon(Icons.subtitles),
                 onPressed: Actions.handler(
                   context,
-                  ShowPanelIntent(
-                    builder: (context) => const SubtitlePanel(),
-                  ),
+                  ShowPanelIntent(builder: (context) => const SubtitlePanel()),
                 ),
                 child: const Text('字幕'),
               ),
@@ -101,17 +94,14 @@ class MenuBuilder extends SingleChildStatelessWidget {
           // Change Video Button
           MenuItemButton(
             leadingIcon: const Icon(Icons.movie_filter),
-            onPressed: _changeVideo(
-              context,
-              context.read<IsInChannel>().value,
-            ),
+            onPressed: _changeVideo(context, context.read<IsInChannel>().value),
             child: const Text('换片'),
           ),
 
           // Leave Button
           MenuItemButton(
             leadingIcon: const Icon(Icons.logout),
-            onPressed: Navigator.of(context).pop,
+            onPressed: Navigator.of(context).maybePop,
             child: const Text('退出放映'),
           ),
         ];
@@ -133,17 +123,13 @@ class MenuBuilder extends SingleChildStatelessWidget {
       );
       if (result == null) return;
       if (context.mounted) {
-        final act = Actions.invoke(
-          context,
-          OpenVideoIntent.url(result.url),
-        ) as Future<PlayPayload>;
+        final act =
+            Actions.invoke(context, OpenVideoIntent.url(result.url))
+                as Future<PlayPayload>;
 
         final payload = await act;
         if (context.mounted && !result.onlyForMe) {
-          Actions.invoke(
-            context,
-            ShareVideoIntent(payload.record),
-          );
+          Actions.invoke(context, ShareVideoIntent(payload.record));
         }
       }
     };

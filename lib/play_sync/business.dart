@@ -219,7 +219,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
         // Same dir file not exist too, or just not playing local video
         final selectedPath = await LocalVideoDialog.exec();
         if (selectedPath == null) {
-          if (mounted) Navigator.of(context).pop();
+          if (mounted) Navigator.of(context).maybePop();
           return;
         }
 
@@ -235,7 +235,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
           );
           if (!mounted) return;
           if (confirmOpen != true) {
-            Navigator.of(context).pop();
+            Navigator.of(context).maybePop();
             return;
           }
         }

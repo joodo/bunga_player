@@ -11,6 +11,7 @@ import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
 import 'package:bunga_player/ui/shortcuts.dart';
 import 'package:bunga_player/utils/business/provider.dart';
+import 'package:bunga_player/utils/business/run_after_build.dart';
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:bunga_player/voice_call/business.dart';
 import 'package:flutter/material.dart';
@@ -55,7 +56,8 @@ class _WidgetBusinessState extends SingleChildState<_WidgetBusiness> {
     // UI
     _showDanmakuControlNotifier.addListener(
       () => getIt<Toast>().setOffset(
-          _showDanmakuControlNotifier.value ? PlayerScreen.danmakuHeight : 0),
+        _showDanmakuControlNotifier.value ? PlayerScreen.danmakuHeight : 0,
+      ),
     );
 
     WakelockPlus.enable();
@@ -82,7 +84,8 @@ class _WidgetBusinessState extends SingleChildState<_WidgetBusiness> {
         ShowPanelIntent: ShowPanelAction(widgetNotifier: _panelNotifier),
         ClosePanelIntent: ClosePanelAction(widgetNotifier: _panelNotifier),
         ToggleDanmakuControlIntent: ToggleDanmakuControlAction(
-            showDanmakuControlNotifier: _showDanmakuControlNotifier),
+          showDanmakuControlNotifier: _showDanmakuControlNotifier,
+        ),
       },
     );
 
@@ -139,28 +142,23 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
     });
 
     // Play video from route argument
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
+    runAfterBuild(() async {
       final argument = ModalRoute.of(context)?.settings.arguments;
       if (argument is OpenVideoDialogResult) {
         // Join in by open video from dialog
-        final act = Actions.invoke(
-          _childContext,
-          OpenVideoIntent.url(argument.url),
-        ) as Future;
+        final act =
+            Actions.invoke(_childContext, OpenVideoIntent.url(argument.url))
+                as Future;
         final payload = await act;
 
         if (mounted && !argument.onlyForMe) {
-          Actions.invoke(
-            _childContext,
-            ShareVideoIntent(payload.record),
-          );
+          Actions.invoke(_childContext, ShareVideoIntent(payload.record));
         }
       } else if (argument is VideoRecord) {
         // Join in by "Channel Card" in Welcome screen
-        final act = Actions.invoke(
-          _childContext,
-          OpenVideoIntent.record(argument),
-        ) as Future;
+        final act =
+            Actions.invoke(_childContext, OpenVideoIntent.record(argument))
+                as Future;
         await act;
 
         if (!mounted) return;
@@ -179,11 +177,11 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
       valueListenable: _isJoiningChannelNotifier,
       builder: (context, isJoining, child) => isJoining
           ? widget
-              .danmakuBusiness()
-              .playSyncBusiness()
-              .channelBusiness()
-              .voiceCallBusiness()
-              .playBusiness()
+                .danmakuBusiness()
+                .playSyncBusiness()
+                .channelBusiness()
+                .voiceCallBusiness()
+                .playBusiness()
           : Actions(
               actions: {
                 ShareVideoIntent: CallbackAction<ShareVideoIntent>(
@@ -192,7 +190,7 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
                     _isJoiningChannelNotifier.value = true;
                     return null;
                   },
-                )
+                ),
               },
               child: widget,
             ).playBusiness(),

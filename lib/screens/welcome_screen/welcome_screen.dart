@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:animations/animations.dart';
 import 'package:bunga_player/chat/models/user.dart';
+import 'package:bunga_player/screens/player_screen/business.dart';
 import 'package:bunga_player/ui/audio_player.dart';
 import 'package:bunga_player/voice_call/client/client.agora.dart';
 import 'package:flutter/material.dart';
@@ -17,7 +18,6 @@ import 'package:bunga_player/bunga_server/models/bunga_server_info.dart';
 import 'package:bunga_player/chat/global_business.dart';
 import 'package:bunga_player/chat/models/message.dart';
 import 'package:bunga_player/client_info/models/client_account.dart';
-import 'package:bunga_player/play/models/video_record.dart';
 import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/screens/player_screen/player_screen.dart';
 import 'package:bunga_player/services/services.dart';
@@ -164,29 +164,28 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   }
 
   void _pushRoute(dynamic argument) {
-    Navigator.push(
+    Navigator.push<IsInChannel>(
       context,
       MaterialPageRoute(
         builder: (context) => const PlayerScreen(),
         settings: RouteSettings(arguments: argument),
       ),
-    ).then((value) {
-      if (!mounted) return;
+    ).then(_backFromPlay);
+  }
 
-      // Stop playing
-      context.read<WindowTitleNotifier>().reset();
-      getIt<PlayService>().stop();
+  Future<void> _backFromPlay(IsInChannel? isInChannel) async {
+    // Stop playing
+    context.read<WindowTitleNotifier>().reset();
+    getIt<PlayService>().stop();
 
-      // Send bye message
-      if (argument is OpenVideoDialogResult && !argument.onlyForMe ||
-          argument is VideoRecord) {
-        final myId = context.read<ClientAccount>().id;
-        final byeData = ByeMessageData(userId: myId);
-        Actions.invoke(context, SendMessageIntent(byeData));
-      }
+    // Send bye message
+    if (isInChannel?.value == true) {
+      final myId = context.read<ClientAccount>().id;
+      final byeData = ByeMessageData(userId: myId);
+      Actions.invoke(context, SendMessageIntent(byeData));
+    }
 
-      // Stop talking
-      context.read<AgoraClient?>()?.leaveChannel();
-    });
+    // Stop talking
+    context.read<AgoraClient?>()?.leaveChannel();
   }
 }
