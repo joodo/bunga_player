@@ -6,7 +6,7 @@ part 'video_record.g.dart';
 @freezed
 abstract class VideoRecord with _$VideoRecord {
   const factory VideoRecord({
-    required String id,
+    @JsonKey(name: 'record_id') required String id,
     required String title,
     String? thumbUrl,
     required String source,

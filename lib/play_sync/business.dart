@@ -2,10 +2,10 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:animations/animations.dart';
-import 'package:bunga_player/bunga_server/global_business.dart';
+import 'package:bunga_player/chat/client/client.dart';
 import 'package:bunga_player/console/service.dart';
+import 'package:bunga_player/play/payload_parser.dart';
 import 'package:bunga_player/ui/shortcuts.dart';
-import 'package:bunga_player/utils/typedef.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:path/path.dart' as path_tool;
@@ -49,24 +49,23 @@ class SubtitleTrackIdOfUrl {
 
 @immutable
 class ShareVideoIntent extends Intent {
-  final VideoRecord record;
-  const ShareVideoIntent(this.record);
+  final VideoRecord? record;
+  final Uri? url;
+  const ShareVideoIntent(this.record) : url = null;
+  const ShareVideoIntent.url(this.url) : record = null;
 }
 
 class ShareVideoAction extends ContextAction<ShareVideoIntent> {
-  final VoidCallback shouldAnswerWhereSetter;
-  ShareVideoAction({required this.shouldAnswerWhereSetter});
+  ShareVideoAction();
 
   @override
-  Future<void> invoke(ShareVideoIntent intent, [BuildContext? context]) {
-    // I shared the video, I should answer others
-    shouldAnswerWhereSetter();
+  Future<void> invoke(ShareVideoIntent intent, [BuildContext? context]) async {
+    final client = context!.read<ChatClient?>();
+    final record =
+        intent.record ?? await PlayPayloadParser(context).parseUrl(intent.url!);
 
-    final messageData = StartProjectionMessageData(videoRecord: intent.record);
-    final act =
-        Actions.invoke(context!, SendMessageIntent(messageData)) as Future;
-
-    return act;
+    final data = StartProjectionMessageData(videoRecord: record);
+    client!.sendMessage(data.toJson());
   }
 }
 
@@ -96,6 +95,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
   final _remoteJustToggledNotifier = AutoResetNotifier(
     const Duration(seconds: 1),
   );
+
   // Chat
   late final StreamSubscription _streamSubscription;
   bool _shouldAnswerWhere = false;
@@ -108,11 +108,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
   void initState() {
     super.initState();
 
-    final myId = context.read<ClientAccount>().id;
-    final messageStream = context.read<Stream<Message>>().where(
-      (message) => message.sender != myId,
-    );
-
+    final messageStream = context.read<Stream<Message>>();
     _streamSubscription = messageStream.listen((message) {
       switch (message.data['code']) {
         case StartProjectionMessageData.messageCode:
@@ -129,7 +125,8 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
       }
     });
 
-    _fetchPlayStatus();
+    // TODO: useless
+    //_fetchPlayStatus();
   }
 
   @override
@@ -166,9 +163,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
             return;
           },
         ),
-        ShareVideoIntent: ShareVideoAction(
-          shouldAnswerWhereSetter: () => _shouldAnswerWhere = true,
-        ),
+        ShareVideoIntent: ShareVideoAction(),
         AskPositionIntent: AskPositionAction(),
       },
     );
@@ -197,7 +192,10 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
   }
 
   void _dealWithProjection(User sender, StartProjectionMessageData data) async {
-    getIt<Toast>().show('${sender.name} 分享了视频');
+    final myId = context.read<ClientAccount>().id;
+    if (sender.id != myId) {
+      getIt<Toast>().show('${sender.name} 分享了视频');
+    }
 
     VideoRecord? newRecord = data.videoRecord;
 
@@ -306,10 +304,9 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
     );
   }
 
-  Future<void> _fetchPlayStatus() async {
+  /*Future<void> _fetchPlayStatus() async {
     final watchers = context.read<List<User>>();
-    final job =
-        Actions.invoke(context, FetchChannelStatusIntent()) as Future<JsonMap>;
+    final job = Actions.invoke(context, ProjectIntent()) as Future<JsonMap>;
     final json = await job;
 
     final subtitleInfo = json['subtitle'];
@@ -320,7 +317,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
         sharer: watchers.firstWhere((e) => e.id == subtitleInfo['uploader']),
       );
     }
-  }
+  }*/
 }
 
 extension WrapPlaySyncBusiness on Widget {

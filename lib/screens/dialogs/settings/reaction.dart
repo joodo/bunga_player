@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
-import 'package:bunga_player/bunga_server/global_business.dart';
 import 'package:bunga_player/client_info/global_business.dart';
 import 'package:bunga_player/screens/dialogs/settings/widgets.dart';
 import 'package:bunga_player/screens/player_screen/player/danmaku_player.dart';
@@ -46,7 +45,6 @@ class _ReactionSettingsState extends State<ReactionSettings> {
         initValue: _nicknameNotifier.value,
         onFocusLose: (controller) {
           _nicknameNotifier.value = controller.text;
-          _updateUserInfo();
         },
       ).padding(all: 16.0).sectionContainer(),
       [
@@ -58,7 +56,6 @@ class _ReactionSettingsState extends State<ReactionSettings> {
               }),
               onChangeEnd: (value) {
                 _hueProvider.value = _hue;
-                _updateUserInfo();
               },
             ),
             DanmakuText(text: '测试弹幕样式', hue: _hue),
@@ -75,10 +72,6 @@ class _ReactionSettingsState extends State<ReactionSettings> {
         ),
       ).sectionContainer(),
     ].toColumn(crossAxisAlignment: .start);
-  }
-
-  Future<void> _updateUserInfo() {
-    return Actions.invoke(context, AlohaIntent()) as Future;
   }
 }
 

@@ -3,13 +3,14 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:bunga_player/bunga_server/models/bunga_server_info.dart';
-import 'package:bunga_player/chat/models/message.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import 'client.dart';
+import '../models/message.dart';
+import '../models/user.dart';
 
 class BungaChatClient extends ChatClient {
   final BungaServerInfo _clientInfo;
@@ -32,7 +33,7 @@ class BungaChatClient extends ChatClient {
   @override
   Stream<Message> get messageStream => _rawStream.map((rawData) {
     final json = jsonDecode(rawData);
-    return Message(data: json, sender: json['sender']);
+    return Message(data: json, sender: User.fromJson(json['sender']));
   });
 
   @override
@@ -56,12 +57,18 @@ class BungaChatClient extends ChatClient {
 
   // Connection
   static const _maxRetryDelayMSec = 10_000;
-  int _retryDelayMSec = 500;
-  Future<void> _reconnect() async {
-    _retryDelayMSec = min(_retryDelayMSec * 2, _maxRetryDelayMSec);
-    logger.w('Websocket: wait ${_retryDelayMSec / 1000}s and try again');
-    await Future.delayed(Duration(milliseconds: _retryDelayMSec));
-    return _connect();
+  Future<void> _reconnect() {
+    late int retryDelayMSec;
+
+    Future<void> doReconnect() async {
+      retryDelayMSec = min(retryDelayMSec * 2, _maxRetryDelayMSec);
+      logger.w('Websocket: wait ${retryDelayMSec / 1000}s and try again');
+      await Future.delayed(Duration(milliseconds: retryDelayMSec));
+      return _connect();
+    }
+
+    retryDelayMSec = 500;
+    return doReconnect();
   }
 
   Future<void> _connect() async {
@@ -75,7 +82,6 @@ class BungaChatClient extends ChatClient {
 
     _channel!.stream.listen(
       (rawData) {
-        _retryDelayMSec = 500;
         onDataReceived(rawData);
       },
       onDone: () async {
@@ -85,6 +91,7 @@ class BungaChatClient extends ChatClient {
             break;
 
           case 1005 || 1006 || 1015: // Network unstable
+          case 1011: // Server error
             logger.w('Websocket: connection break. Code $closeCode');
             return _reconnect();
 

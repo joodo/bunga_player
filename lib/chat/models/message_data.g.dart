@@ -33,7 +33,6 @@ NowPlayingMessageData _$NowPlayingMessageDataFromJson(
   videoRecord: VideoRecord.fromJson(
     json['video_record'] as Map<String, dynamic>,
   ),
-  sharer: User.fromJson(json['sharer'] as Map<String, dynamic>),
 );
 
 Map<String, dynamic> _$NowPlayingMessageDataToJson(
@@ -41,8 +40,22 @@ Map<String, dynamic> _$NowPlayingMessageDataToJson(
 ) => <String, dynamic>{
   'code': instance.code,
   'video_record': instance.videoRecord.toJson(),
-  'sharer': instance.sharer.toJson(),
 };
+
+JoinInMessageData _$JoinInMessageDataFromJson(Map<String, dynamic> json) =>
+    JoinInMessageData(
+      user: User.fromJson(json['user'] as Map<String, dynamic>),
+      myShare: json['my_share'] == null
+          ? null
+          : VideoRecord.fromJson(json['my_share'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$JoinInMessageDataToJson(JoinInMessageData instance) =>
+    <String, dynamic>{
+      'code': instance.code,
+      'user': instance.user.toJson(),
+      'my_share': instance.myShare?.toJson(),
+    };
 
 AlohaMessageData _$AlohaMessageDataFromJson(Map<String, dynamic> json) =>
     AlohaMessageData(user: User.fromJson(json['user'] as Map<String, dynamic>));

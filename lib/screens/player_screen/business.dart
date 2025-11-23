@@ -1,10 +1,14 @@
 import 'dart:async';
 
 import 'package:bunga_player/chat/business.dart';
+import 'package:bunga_player/chat/global_business.dart';
+import 'package:bunga_player/chat/models/message_data.dart';
+import 'package:bunga_player/chat/models/user.dart';
 import 'package:bunga_player/console/service.dart';
 import 'package:bunga_player/danmaku/business.dart';
 import 'package:bunga_player/play/busuness.dart';
 import 'package:bunga_player/play/models/video_record.dart';
+import 'package:bunga_player/play/payload_parser.dart';
 import 'package:bunga_player/play_sync/business.dart';
 import 'package:bunga_player/screens/dialogs/open_video/open_video.dart';
 import 'package:bunga_player/services/services.dart';
@@ -68,7 +72,6 @@ class _WidgetBusinessState extends SingleChildState<_WidgetBusiness> {
     final popScope = PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
-        assert(!didPop);
         if (didPop) return;
 
         Navigator.pop(context, context.read<IsInChannel>());
@@ -145,7 +148,7 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
 
     // Things when joining channel
     _isJoiningChannelNotifier.addListener(() {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
+      runAfterBuild(() {
         if (_initShareIntent != null) {
           Actions.invoke(_childContext, _initShareIntent!);
         } else {
@@ -154,30 +157,7 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
       });
     });
 
-    // Play video from route argument
-    runAfterBuild(() async {
-      final argument = ModalRoute.of(context)?.settings.arguments;
-      if (argument is OpenVideoDialogResult) {
-        // Join in by open video from dialog
-        final act =
-            Actions.invoke(_childContext, OpenVideoIntent.url(argument.url))
-                as Future;
-        final payload = await act;
-
-        if (mounted && !argument.onlyForMe) {
-          Actions.invoke(_childContext, ShareVideoIntent(payload.record));
-        }
-      } else if (argument is VideoRecord) {
-        // Join in by "Channel Card" in Welcome screen
-        final act =
-            Actions.invoke(_childContext, OpenVideoIntent.record(argument))
-                as Future;
-        await act;
-
-        if (!mounted) return;
-        _isJoiningChannelNotifier.value = true;
-      }
-    });
+    runAfterBuild(_dealArgument);
   }
 
   @override
@@ -218,6 +198,36 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
   void dispose() {
     _isJoiningChannelNotifier.dispose();
     super.dispose();
+  }
+
+  Future<void> _dealArgument() async {
+    // Play video from route argument
+    final argument = ModalRoute.of(context)?.settings.arguments;
+    if (argument is OpenVideoDialogResult) {
+      // Join in by open video from dialog
+      if (argument.onlyForMe) {
+        Actions.invoke(_childContext, OpenVideoIntent.url(argument.url));
+      } else {
+        final videoRecord = await PlayPayloadParser(
+          context,
+        ).parseUrl(argument.url);
+
+        if (!mounted) return;
+        final data = JoinInMessageData(
+          user: User.fromContext(context),
+          myShare: videoRecord,
+        );
+        runAfterBuild(() => Actions.invoke(context, SendMessageIntent(data)));
+        _isJoiningChannelNotifier.value = true;
+      }
+    } else if (argument is VideoRecord) {
+      // Join in by "Channel Card" in Welcome screen
+      final data = JoinInMessageData(user: User.fromContext(context));
+      runAfterBuild(() => Actions.invoke(context, SendMessageIntent(data)));
+
+      if (!mounted) return;
+      _isJoiningChannelNotifier.value = true;
+    }
   }
 }
 

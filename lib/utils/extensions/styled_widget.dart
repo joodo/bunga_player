@@ -3,17 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 extension BungaStyledWidget on Widget {
-  Widget breath() => animate(
-        onPlay: (controller) => controller.repeat(),
-      )
-          .fade(duration: 1000.ms, begin: 0.5, end: 1.0)
-          .then(delay: 300.ms)
-          .fade(duration: 1000.ms, end: 0.5);
+  Widget breath() => animate(onPlay: (controller) => controller.repeat())
+      .fade(duration: 1000.ms, begin: 0.5, end: 1.0)
+      .then(delay: 300.ms)
+      .fade(duration: 1000.ms, end: 0.5);
 
-  Widget theme({required ThemeData data}) => Theme(
-        data: data,
-        child: this,
-      );
+  Widget theme({required ThemeData data}) => Theme(data: data, child: this);
 
   Widget colorScheme({
     ColorScheme? scheme,
@@ -25,14 +20,15 @@ extension BungaStyledWidget on Widget {
       'Either scheme or seedColor&brightness must be provided',
     );
     return theme(
-        data: ThemeData(
-      colorScheme: seedColor != null
-          ? ColorScheme.fromSeed(
-              seedColor: seedColor,
-              brightness: brightness!,
-            )
-          : scheme,
-    ));
+      data: ThemeData(
+        colorScheme: seedColor != null
+            ? ColorScheme.fromSeed(
+                seedColor: seedColor,
+                brightness: brightness!,
+              )
+            : scheme,
+      ),
+    );
   }
 
   Widget animatedSwitcher({
@@ -45,17 +41,16 @@ extension BungaStyledWidget on Widget {
         AnimatedSwitcher.defaultTransitionBuilder,
     AnimatedSwitcherLayoutBuilder layoutBuilder =
         AnimatedSwitcher.defaultLayoutBuilder,
-  }) =>
-      AnimatedSwitcher(
-        key: key,
-        duration: duration,
-        reverseDuration: reverseDuration,
-        switchInCurve: switchInCurve,
-        switchOutCurve: switchOutCurve,
-        transitionBuilder: transitionBuilder,
-        layoutBuilder: layoutBuilder,
-        child: this,
-      );
+  }) => AnimatedSwitcher(
+    key: key,
+    duration: duration,
+    reverseDuration: reverseDuration,
+    switchInCurve: switchInCurve,
+    switchOutCurve: switchOutCurve,
+    transitionBuilder: transitionBuilder,
+    layoutBuilder: layoutBuilder,
+    child: this,
+  );
 
   Widget animatedSize({
     Key? key,
@@ -65,28 +60,22 @@ extension BungaStyledWidget on Widget {
     Duration? reverseDuration,
     Clip clipBehavior = Clip.hardEdge,
     VoidCallback? onEnd,
-  }) =>
-      AnimatedSize(
-        key: key,
-        alignment: alignment,
-        curve: curve,
-        duration: duration,
-        reverseDuration: reverseDuration,
-        clipBehavior: clipBehavior,
-        onEnd: onEnd,
-        child: this,
-      );
+  }) => AnimatedSize(
+    key: key,
+    alignment: alignment,
+    curve: curve,
+    duration: duration,
+    reverseDuration: reverseDuration,
+    clipBehavior: clipBehavior,
+    onEnd: onEnd,
+    child: this,
+  );
 
   Actions actions({
     Key? key,
     ActionDispatcher? dispatcher,
     required Map<Type, Action<Intent>> actions,
-  }) =>
-      Actions(
-        dispatcher: dispatcher,
-        actions: actions,
-        child: this,
-      );
+  }) => Actions(dispatcher: dispatcher, actions: actions, child: this);
 
   Material material({
     Key? key,
@@ -101,37 +90,37 @@ extension BungaStyledWidget on Widget {
     bool borderOnForeground = true,
     Clip clipBehavior = Clip.none,
     Duration animationDuration = kThemeChangeDuration,
-  }) =>
-      Material(
-        key: key,
-        type: type,
-        elevation: elevation,
-        color: color,
-        shadowColor: shadowColor,
-        surfaceTintColor: surfaceTintColor,
-        textStyle: textStyle,
-        borderRadius: borderRadius,
-        shape: shape,
-        borderOnForeground: borderOnForeground,
-        clipBehavior: clipBehavior,
-        animationDuration: animationDuration,
-        child: this,
-      );
+  }) => Material(
+    key: key,
+    type: type,
+    elevation: elevation,
+    color: color,
+    shadowColor: shadowColor,
+    surfaceTintColor: surfaceTintColor,
+    textStyle: textStyle,
+    borderRadius: borderRadius,
+    shape: shape,
+    borderOnForeground: borderOnForeground,
+    clipBehavior: clipBehavior,
+    animationDuration: animationDuration,
+    child: this,
+  );
 
   Widget fadeThroughTransitionSwitcher({required Duration duration}) =>
       PageTransitionSwitcher(
         duration: duration,
-        transitionBuilder: (
-          Widget child,
-          Animation<double> animation,
-          Animation<double> secondaryAnimation,
-        ) {
-          return FadeThroughTransition(
-            animation: animation,
-            secondaryAnimation: secondaryAnimation,
-            child: child,
-          );
-        },
+        transitionBuilder:
+            (
+              Widget child,
+              Animation<double> animation,
+              Animation<double> secondaryAnimation,
+            ) {
+              return FadeThroughTransition(
+                animation: animation,
+                secondaryAnimation: secondaryAnimation,
+                child: child,
+              );
+            },
         child: this,
       );
 
@@ -147,9 +136,7 @@ extension BungaStyledWidget on Widget {
       child: this,
     );
   }
-}
 
-extension ControlSliderTheme on Widget {
   Widget controlSliderTheme(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return SliderTheme(

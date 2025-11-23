@@ -54,14 +54,32 @@ class NowPlayingMessageData extends MessageData {
   final code = messageCode;
 
   final VideoRecord videoRecord;
-  final User sharer;
 
-  NowPlayingMessageData({required this.videoRecord, required this.sharer});
+  NowPlayingMessageData({required this.videoRecord});
 
   factory NowPlayingMessageData.fromJson(Map<String, dynamic> json) =>
       _$NowPlayingMessageDataFromJson(json);
   @override
   Map<String, dynamic> toJson() => _$NowPlayingMessageDataToJson(this);
+}
+
+/// Send when join watching
+@JsonSerializable()
+class JoinInMessageData extends MessageData {
+  static const messageCode = 'join-in';
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: true)
+  final code = messageCode;
+
+  final User user;
+  final VideoRecord? myShare;
+
+  JoinInMessageData({required this.user, this.myShare});
+
+  factory JoinInMessageData.fromJson(Map<String, dynamic> json) =>
+      _$JoinInMessageDataFromJson(json);
+  @override
+  Map<String, dynamic> toJson() => _$JoinInMessageDataToJson(this);
 }
 
 /// Send when join watching

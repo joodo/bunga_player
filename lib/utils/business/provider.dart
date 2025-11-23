@@ -42,7 +42,7 @@ class ProxyFutureProvider<TInput, TOutput> extends SingleChildStatelessWidget {
   Widget buildWithChild(BuildContext context, Widget? child) {
     return MultiProvider(
       providers: [
-        ProxyProvider<TInput?, _FutureHolder<TInput, TOutput>>(
+        ChangeNotifierProxyProvider<TInput?, _FutureHolder<TInput, TOutput>>(
           create: (_) => _FutureHolder<TInput, TOutput>(
             initial: initial,
             create: create,
@@ -99,12 +99,10 @@ class _FutureHolder<TInput, TOutput> extends ChangeNotifier {
 
     // async build new
     _create(input).then((value) {
-      // only accept if input not changed again
       if (_lastInput == input) {
         _current = value;
         notifyListeners();
       } else {
-        // input changed meanwhile ⇒ dispose unused result
         _dispose?.call(value);
       }
     });

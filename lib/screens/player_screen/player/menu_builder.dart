@@ -121,16 +121,12 @@ class MenuBuilder extends SingleChildStatelessWidget {
           ).safeArea(),
         ),
       );
-      if (result == null) return;
-      if (context.mounted) {
-        final act =
-            Actions.invoke(context, OpenVideoIntent.url(result.url))
-                as Future<PlayPayload>;
+      if (result == null || !context.mounted) return;
 
-        final payload = await act;
-        if (context.mounted && !result.onlyForMe) {
-          Actions.invoke(context, ShareVideoIntent(payload.record));
-        }
+      if (result.onlyForMe) {
+        Actions.invoke(context, OpenVideoIntent.url(result.url));
+      } else {
+        Actions.invoke(context, ShareVideoIntent.url(result.url));
       }
     };
   }

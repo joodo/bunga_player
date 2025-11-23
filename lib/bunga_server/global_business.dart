@@ -79,13 +79,15 @@ Future<JsonMap> _retryIfTokenExpired({
 }) async {
   final response = await doRequest({
     'Authorization': 'Bearer ${serverInfo.token.access}',
+    'Content-Type': 'application/json',
   });
 
-  final json = jsonDecode(response.body) as JsonMap;
   if (response.isSuccess) {
-    return json;
+    final body = response.body;
+    if (body.isEmpty) return {};
+    return jsonDecode(body);
   }
-  if (json['code'] == 'token_expired') {
+  if (jsonDecode(response.body)['code'] == 'token_expired') {
     await serverInfo.refreshToken();
     return _retryIfTokenExpired(serverInfo: serverInfo, doRequest: doRequest);
   } else {
@@ -93,6 +95,7 @@ Future<JsonMap> _retryIfTokenExpired({
   }
 }
 
+// TODO: useless
 class AlohaIntent extends Intent {
   const AlohaIntent();
 }
@@ -118,7 +121,7 @@ class AlohaAction extends ContextAction<AlohaIntent> {
       doRequest: (headers) => http.post(
         url,
         headers: headers,
-        body: User.fromContext(context).toJson(),
+        body: jsonEncode(User.fromContext(context).toJson()),
       ),
     );
     final projectionJson = json['current_projection'];
@@ -179,38 +182,33 @@ class UploadSubtitleAction extends ContextAction<UploadSubtitleIntent> {
   }
 }
 
-class FetchChannelStatusIntent extends Intent {
-  const FetchChannelStatusIntent();
+// TODO: useless
+class ProjectIntent extends Intent {
+  final VideoRecord videoRecord;
+  const ProjectIntent(this.videoRecord);
 }
 
-class FetchChannelStatusAction extends ContextAction<FetchChannelStatusIntent> {
+class ProjectAction extends ContextAction<ProjectIntent> {
   @override
-  Future<JsonMap> invoke(
-    FetchChannelStatusIntent intent, [
-    BuildContext? context,
-  ]) async {
+  Future<void> invoke(ProjectIntent intent, [BuildContext? context]) async {
     assert(context != null);
     final read = context!.read;
     final serverInfo = read<BungaServerInfo>();
-    final recordId = read<PlayPayload>().record.id;
     final url = serverInfo.origin.replace(
-      pathSegments: [
-        'api',
-        'channels',
-        serverInfo.channel.id,
-        'records',
-        recordId,
-      ],
+      pathSegments: ['api', 'channels', serverInfo.channel.id, 'project', ''],
     );
 
     try {
-      final json = await _retryIfTokenExpired(
+      await _retryIfTokenExpired(
         serverInfo: serverInfo,
-        doRequest: (headers) => http.get(url, headers: headers),
+        doRequest: (headers) => http.post(
+          url,
+          headers: headers,
+          body: jsonEncode(intent.videoRecord.toJson()),
+        ),
       );
-      return json;
     } catch (e) {
-      throw Exception('Channel info: fetch failed: $e');
+      throw Exception('Projection failed: $e');
     }
   }
 }
@@ -226,7 +224,7 @@ class BungaServerGlobalBusiness extends SingleChildStatefulWidget {
 class _BungaServerGlobalBusinessState
     extends SingleChildState<BungaServerGlobalBusiness> {
   final _serverInfoNotifier = ValueNotifier<BungaServerInfo?>(null)
-    ..watchInConsole('Bunga Client Info');
+    ..watchInConsole('Bunga Server Info');
   final _fetchingNotifier = ValueNotifier<FetchingBungaClient>(
     FetchingBungaClient(false),
   );
@@ -267,7 +265,7 @@ class _BungaServerGlobalBusinessState
         ConnectToHostIntent: _connectToHostAction,
         AlohaIntent: AlohaAction(),
         UploadSubtitleIntent: UploadSubtitleAction(),
-        FetchChannelStatusIntent: FetchChannelStatusAction(),
+        ProjectIntent: ProjectAction(),
       },
       child: child!,
     );

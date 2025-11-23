@@ -46,11 +46,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       case StartProjectionMessageData.messageCode:
         final data = StartProjectionMessageData.fromJson(message.data);
         _dealWithProjection(message.sender, data);
-      case WhatsOnMessageData.messageCode:
-        _dealWithWhatsOn();
       case NowPlayingMessageData.messageCode:
         final data = NowPlayingMessageData.fromJson(message.data);
-        _dealWithNotPlaying(message.sender, data);
+        _dealWithNowPlaying(message.sender, data);
     }
   });
 
@@ -98,32 +96,22 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
   void _dealWithProjection(User sharer, StartProjectionMessageData data) {
     final autoJoin = context.read<AutoJoinChannelNotifier>().value;
-    final isCurrent = ModalRoute.of(context)?.isCurrent ?? false;
+    final isCurrentRoute = ModalRoute.of(context)?.isCurrent ?? false;
     final isFirstShare = _currentProjection == null;
 
     _currentProjection = data;
     _currentSharer = sharer;
     setState(() {});
 
-    if (isCurrent) {
+    if (isCurrentRoute) {
       context.read<BungaAudioPlayer>().playSfx('start_play');
     }
 
-    if (autoJoin && isCurrent && isFirstShare) _joinChannel();
+    if (autoJoin && isCurrentRoute && isFirstShare) _joinChannel();
   }
 
-  void _dealWithWhatsOn() {
-    if (_currentProjection == null) return;
-
-    final messageData = NowPlayingMessageData(
-      videoRecord: _currentProjection!.videoRecord,
-      sharer: _currentSharer!,
-    );
-    Actions.invoke(context, SendMessageIntent(messageData));
-  }
-
-  void _dealWithNotPlaying(User sharer, NowPlayingMessageData data) {
-    if (_currentProjection != null) return;
+  void _dealWithNowPlaying(User sharer, NowPlayingMessageData data) {
+    if (_currentProjection != null) return; // TODO: why?
     _dealWithProjection(
       sharer,
       StartProjectionMessageData(videoRecord: data.videoRecord),

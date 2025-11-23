@@ -7,7 +7,7 @@ part of 'video_record.dart';
 // **************************************************************************
 
 _VideoRecord _$VideoRecordFromJson(Map<String, dynamic> json) => _VideoRecord(
-  id: json['id'] as String,
+  id: json['record_id'] as String,
   title: json['title'] as String,
   thumbUrl: json['thumb_url'] as String?,
   source: json['source'] as String,
@@ -16,7 +16,7 @@ _VideoRecord _$VideoRecordFromJson(Map<String, dynamic> json) => _VideoRecord(
 
 Map<String, dynamic> _$VideoRecordToJson(_VideoRecord instance) =>
     <String, dynamic>{
-      'id': instance.id,
+      'record_id': instance.id,
       'title': instance.title,
       'thumb_url': instance.thumbUrl,
       'source': instance.source,

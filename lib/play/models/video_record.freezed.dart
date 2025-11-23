@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$VideoRecord {
 
- String get id; String get title; String? get thumbUrl; String get source; String get path;
+@JsonKey(name: 'record_id') String get id; String get title; String? get thumbUrl; String get source; String get path;
 /// Create a copy of VideoRecord
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $VideoRecordCopyWith<$Res>  {
   factory $VideoRecordCopyWith(VideoRecord value, $Res Function(VideoRecord) _then) = _$VideoRecordCopyWithImpl;
 @useResult
 $Res call({
- String id, String title, String? thumbUrl, String source, String path
+@JsonKey(name: 'record_id') String id, String title, String? thumbUrl, String source, String path
 });
 
 
@@ -157,7 +157,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String title,  String? thumbUrl,  String source,  String path)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'record_id')  String id,  String title,  String? thumbUrl,  String source,  String path)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _VideoRecord() when $default != null:
 return $default(_that.id,_that.title,_that.thumbUrl,_that.source,_that.path);case _:
@@ -178,7 +178,7 @@ return $default(_that.id,_that.title,_that.thumbUrl,_that.source,_that.path);cas
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String title,  String? thumbUrl,  String source,  String path)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'record_id')  String id,  String title,  String? thumbUrl,  String source,  String path)  $default,) {final _that = this;
 switch (_that) {
 case _VideoRecord():
 return $default(_that.id,_that.title,_that.thumbUrl,_that.source,_that.path);case _:
@@ -198,7 +198,7 @@ return $default(_that.id,_that.title,_that.thumbUrl,_that.source,_that.path);cas
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String title,  String? thumbUrl,  String source,  String path)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'record_id')  String id,  String title,  String? thumbUrl,  String source,  String path)?  $default,) {final _that = this;
 switch (_that) {
 case _VideoRecord() when $default != null:
 return $default(_that.id,_that.title,_that.thumbUrl,_that.source,_that.path);case _:
@@ -213,10 +213,10 @@ return $default(_that.id,_that.title,_that.thumbUrl,_that.source,_that.path);cas
 @JsonSerializable()
 
 class _VideoRecord implements VideoRecord {
-  const _VideoRecord({required this.id, required this.title, this.thumbUrl, required this.source, required this.path});
+  const _VideoRecord({@JsonKey(name: 'record_id') required this.id, required this.title, this.thumbUrl, required this.source, required this.path});
   factory _VideoRecord.fromJson(Map<String, dynamic> json) => _$VideoRecordFromJson(json);
 
-@override final  String id;
+@override@JsonKey(name: 'record_id') final  String id;
 @override final  String title;
 @override final  String? thumbUrl;
 @override final  String source;
@@ -255,7 +255,7 @@ abstract mixin class _$VideoRecordCopyWith<$Res> implements $VideoRecordCopyWith
   factory _$VideoRecordCopyWith(_VideoRecord value, $Res Function(_VideoRecord) _then) = __$VideoRecordCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String title, String? thumbUrl, String source, String path
+@JsonKey(name: 'record_id') String id, String title, String? thumbUrl, String source, String path
 });
 
 

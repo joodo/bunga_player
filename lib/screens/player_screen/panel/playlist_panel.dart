@@ -73,11 +73,7 @@ class _PlaylistPanelState extends State<PlaylistPanel> {
                   selector: (context, dirInfo) => dirInfo.current == index,
                   builder: (context, current, child) => ListTile(
                     selected: current,
-                    title: Text(
-                      epInfo.name,
-                      maxLines: 2,
-                      overflow: .ellipsis,
-                    ),
+                    title: Text(epInfo.name, maxLines: 2, overflow: .ellipsis),
                     subtitle: current ? const Text('当前播放') : null,
                     trailing: epInfo.thumb != null
                         ? Image.network(epInfo.thumb!).clipRRect(all: 8.0)
@@ -85,27 +81,24 @@ class _PlaylistPanelState extends State<PlaylistPanel> {
                     onTap: current
                         ? null
                         : () async {
-                            final act = Actions.invoke(
-                              context,
-                              OpenVideoIntent.url(epInfo.url),
-                            ) as Future<PlayPayload>;
-
-                            final payload = await act;
-                            if (context.mounted &&
-                                context.read<IsInChannel>().value) {
+                            if (context.read<IsInChannel>().value) {
                               Actions.invoke(
                                 context,
-                                ShareVideoIntent(payload.record),
+                                ShareVideoIntent.url(epInfo.url),
+                              );
+                            } else {
+                              Actions.invoke(
+                                context,
+                                OpenVideoIntent.url(epInfo.url),
                               );
                             }
                           },
-                  ).animatedSize(
-                    duration: const Duration(milliseconds: 200),
-                  ),
+                  ).animatedSize(duration: const Duration(milliseconds: 200)),
                 );
               },
               separatorBuilder: (context, index) => const Divider(indent: 16.0),
-              itemCount: dirInfo.info.length),
+              itemCount: dirInfo.info.length,
+            ),
     );
   }
 

@@ -281,7 +281,7 @@ class _VoiceCallBusinessState extends SingleChildState<VoiceCallBusiness> {
         .where(
           (message) =>
               message.data['code'] == CallMessageData.messageCode &&
-              message.sender != myId,
+              message.sender.id != myId,
         )
         .map(
           (message) => (

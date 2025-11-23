@@ -57,13 +57,25 @@ class PlayPayloadParser {
     if (record != null) {
       if (url != null) logger.w('"record" provided, url will not work.');
     } else if (url != null) {
-      final record = await _parseUrl(url);
+      final record = await parseUrl(url);
       return parse(record: record);
     } else {
       throw ArgumentError.notNull('url or record');
     }
     final parser = _createParser(context, record.source);
     return parser.parseVideoRecord(record);
+  }
+
+  Future<VideoRecord> parseUrl(Uri url) {
+    if (!context.mounted) throw StateError('Context unmounted.');
+    final parser = switch (url.scheme) {
+      'file' => _LocalFileParser().parseUrl,
+      'alist' => _AListParser(context).parseUrl,
+      'http' || 'https' => _HttpParser(context).parseUrl,
+      'history' => _parseHistoryUrl,
+      String() => throw TypeError(),
+    };
+    return parser(url);
   }
 
   Future<DirInfo?> dirInfo(VideoRecord record, {bool refresh = false}) {
@@ -80,18 +92,6 @@ class PlayPayloadParser {
         _BiliBangumiParser.recordSource => _BiliBangumiParser(context),
         String() => throw TypeError(),
       };
-
-  Future<VideoRecord> _parseUrl(Uri url) {
-    if (!context.mounted) throw StateError('Context unmounted.');
-    final parser = switch (url.scheme) {
-      'file' => _LocalFileParser().parseUrl,
-      'alist' => _AListParser(context).parseUrl,
-      'http' || 'https' => _HttpParser(context).parseUrl,
-      'history' => _parseHistoryUrl,
-      String() => throw TypeError(),
-    };
-    return parser(url);
-  }
 
   Future<VideoRecord> _parseHistoryUrl(Uri url) {
     assert(url.scheme == 'history');

@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:bunga_player/bunga_server/global_business.dart';
 import 'package:bunga_player/bunga_server/models/bunga_server_info.dart';
 import 'package:bunga_player/chat/client/client.bunga.dart';
 import 'package:bunga_player/utils/business/provider.dart';
+import 'package:bunga_player/utils/extensions/listen_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
@@ -53,51 +53,25 @@ class _ChannelActionsState extends SingleChildState<ChatGlobalBusiness> {
   Widget buildWithChild(BuildContext context, Widget? child) {
     assert(child != null);
 
+    final listener = child!.listenProvider<ChatClient?>((client) {
+      if (client != null) {
+        // bind stream
+        client.messageStream.listen(_messageStreamController.add);
+
+        // ask what's on
+        final data = WhatsOnMessageData();
+        client.sendMessage(data.toJson());
+      }
+    });
+
     final actions = Actions(
       actions: {SendMessageIntent: SendMessageAction()},
-      child: child!,
-    );
-
-    final selector = Selector<ChatClient?, Stream<Message>?>(
-      selector: (context, client) => client?.messageStream,
-      builder: (context, stream, child) {
-        // bind stream
-        stream?.listen(_messageStreamController.add);
-
-        // send aloha request
-        final job =
-            Actions.invoke(context, AlohaIntent()) as Future<AlohaResponse?>;
-        job.then((data) {
-          if (data == null) return;
-
-          // mock projection message
-          _messageStreamController.add(
-            Message(
-              data: StartProjectionMessageData(
-                videoRecord: data.videoRecord,
-              ).toJson(),
-              sender: data.user,
-            ),
-          );
-        });
-
-        return child!;
-      },
-      child: actions,
+      child: listener,
     );
 
     return MultiProvider(
       providers: [
         Provider.value(value: _messageStreamController.stream),
-        ProxyProvider<BungaServerInfo?, Future<ChatClient?>>(
-          update: (context, serverInfo, previous) {
-            previous?.then((client) => client?.dispose());
-
-            if (serverInfo == null) return Future.value(null);
-
-            return BungaChatClient.create(serverInfo: serverInfo);
-          },
-        ),
         ProxyFutureProvider<BungaServerInfo?, ChatClient?>(
           create: (info) => info != null
               ? BungaChatClient.create(serverInfo: info)
@@ -105,7 +79,7 @@ class _ChannelActionsState extends SingleChildState<ChatGlobalBusiness> {
           dispose: (client) => client?.dispose(),
         ),
       ],
-      child: selector,
+      child: actions,
     );
   }
 }
