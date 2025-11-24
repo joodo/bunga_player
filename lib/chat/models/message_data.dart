@@ -141,9 +141,7 @@ class AlohaMessageData extends MessageData {
   @JsonKey(includeFromJson: false, includeToJson: true)
   final code = messageCode;
 
-  final User user;
-
-  AlohaMessageData({required this.user});
+  AlohaMessageData();
 
   factory AlohaMessageData.fromJson(Map<String, dynamic> json) =>
       _$AlohaMessageDataFromJson(json);

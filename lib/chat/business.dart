@@ -13,7 +13,6 @@ import 'package:bunga_player/services/exit_callbacks.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
 import 'package:bunga_player/utils/business/provider.dart';
-import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:bunga_player/voice_call/business.dart';
 
 import 'models/message.dart';
@@ -32,13 +31,20 @@ class Watchers extends Iterable<User> {
 
 class WatchersNotifier extends ChangeNotifier
     implements ValueListenable<Watchers> {
-  WatchersNotifier();
+  final User myself;
+  WatchersNotifier({required this.myself}) {
+    upsert(myself);
+  }
 
   final Map<String, User> _data = {};
 
-  void init(User myself) {
+  void set(Iterable<User> users) {
     _data.clear();
-    upsert(myself);
+    _data[myself.id] = myself;
+    for (var u in users) {
+      _data[u.id] = u;
+    }
+    notifyListeners();
   }
 
   void upsert(User user) {
@@ -65,27 +71,6 @@ class TalkerId {
   const TalkerId(this.value);
 }
 
-// Actions
-
-@immutable
-class RefreshWatchersIntent extends Intent {
-  const RefreshWatchersIntent();
-}
-
-class RefreshWatchersAction extends ContextAction<RefreshWatchersIntent> {
-  final WatchersNotifier watchersNotifier;
-
-  RefreshWatchersAction({required this.watchersNotifier});
-
-  @override
-  void invoke(RefreshWatchersIntent intent, [BuildContext? context]) {
-    final messageData = AlohaMessageData(user: User.fromContext(context!));
-    Actions.invoke(context, SendMessageIntent(messageData));
-
-    watchersNotifier.init(User.fromContext(context));
-  }
-}
-
 class ChannelBusiness extends SingleChildStatefulWidget {
   const ChannelBusiness({super.key, super.child});
 
@@ -99,10 +84,9 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
   late final _myId = context.read<ClientAccount>().id;
 
   // Watchers
-  final _watchersNotifier = WatchersNotifier()..watchInConsole('Watchers');
-  late final _refreshWatchersAction = RefreshWatchersAction(
-    watchersNotifier: _watchersNotifier,
-  );
+  late final _watchersNotifier = WatchersNotifier(
+    myself: User.fromContext(context),
+  )..watchInConsole('Watchers');
 
   // Talk
   final _talkerIdsNotifier = ValueNotifier<Set<String>>({})
@@ -124,7 +108,7 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
     _streamSubscription = messageStream.listen((message) {
       switch (message.data['code']) {
         case AlohaMessageData.messageCode:
-          _dealWithAloha(AlohaMessageData.fromJson(message.data));
+          _dealWithAloha(message.sender);
         case HereAreMessageData.messageCode:
           final watchers = HereAreMessageData.fromJson(message.data).watchers;
           _dealWithHereAre(watchers);
@@ -138,10 +122,6 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
           );
       }
     });
-
-    // Get watchers
-    if (!mounted) return;
-    _refreshWatchersAction.invoke(const RefreshWatchersIntent(), context);
 
     // Register leave message sender
     getIt<ExitCallbacks>().add(_sendLeaveMessage);
@@ -157,9 +137,7 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
           proxy: (value) => value.map((e) => TalkerId(e)).toList(),
         ),
       ],
-      child: child?.actions(
-        actions: {RefreshWatchersIntent: _refreshWatchersAction},
-      ),
+      child: child,
     );
   }
 
@@ -172,16 +150,14 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
     super.dispose();
   }
 
-  void _dealWithAloha(AlohaMessageData data) {
-    _addWatcher(data.user);
+  void _dealWithAloha(User sender) {
+    _addWatcher(sender);
   }
 
   void _dealWithHereAre(List<WatcherInfo> watchers) {
-    for (final info in watchers) {
-      _addWatcher(info.user);
-    }
+    _watchersNotifier.set(watchers.map((info) => info.user));
 
-    /*
+    /* TODO:??
     if (data.isTalking && _talkerIdsNotifier.value.add(data.user.id)) {
       _talkerIdsNotifier.value = {..._talkerIdsNotifier.value};
     }*/

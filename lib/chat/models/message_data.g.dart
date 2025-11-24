@@ -99,10 +99,10 @@ Map<String, dynamic> _$SyncStatusMessageDataToJson(
 };
 
 AlohaMessageData _$AlohaMessageDataFromJson(Map<String, dynamic> json) =>
-    AlohaMessageData(user: User.fromJson(json['user'] as Map<String, dynamic>));
+    AlohaMessageData();
 
 Map<String, dynamic> _$AlohaMessageDataToJson(AlohaMessageData instance) =>
-    <String, dynamic>{'code': instance.code, 'user': instance.user.toJson()};
+    <String, dynamic>{'code': instance.code};
 
 HereIsMessageData _$HereIsMessageDataFromJson(Map<String, dynamic> json) =>
     HereIsMessageData(
