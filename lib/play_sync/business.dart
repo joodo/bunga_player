@@ -17,7 +17,6 @@ import 'package:bunga_player/chat/models/message_data.dart';
 import 'package:bunga_player/chat/models/user.dart';
 import 'package:bunga_player/client_info/models/client_account.dart';
 import 'package:bunga_player/play/busuness.dart';
-import 'package:bunga_player/play/models/history.dart';
 import 'package:bunga_player/play/models/play_payload.dart';
 import 'package:bunga_player/play/models/video_record.dart';
 import 'package:bunga_player/play/service/service.dart';
@@ -110,7 +109,6 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
 
   // Chat
   late final StreamSubscription _streamSubscription;
-  bool _shouldAnswerWhere = false;
 
   // Player status
   final _playerBufferingNotifier = getIt<PlayService>().bufferingNotifier;
@@ -141,10 +139,9 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
         case SyncStatusMessageData.messageCode:
           final status = SyncStatusMessageData.fromJson(message.data).status;
           _dealWithSyncStatus(message.sender, status);
-        case WhereMessageData.messageCode:
-          _dealWithWhere(WhereMessageData.fromJson(message.data));
         case PlayAtMessageData.messageCode:
-          _dealWithPlayAt(PlayAtMessageData.fromJson(message.data));
+          final data = PlayAtMessageData.fromJson(message.data);
+          _dealWithPlayAt(message.sender, data.isPlay, data.position, myId);
         case ShareSubMessageData.messageCode:
           _dealWithSubSharing(ShareSubMessageData.fromJson(message.data));
       }
@@ -179,8 +176,14 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
         ToggleIntent: CallbackAction<ToggleIntent>(
           onInvoke: (intent) {
             if (_remoteJustToggledNotifier.value) return;
-            Actions.invoke(context, intent);
-            _sendPlayStatus();
+            // TODO: if detached
+            // Actions.invoke(context, intent);
+            final playService = getIt<PlayService>();
+            final messageData = PlayAtMessageData(
+              position: playService.positionNotifier.value,
+              isPlay: !playService.playStatusNotifier.value.isPlaying,
+            );
+            Actions.invoke(context, SendMessageIntent(messageData));
             return;
           },
         ),
@@ -214,9 +217,8 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
   void _sendPlayStatus() {
     final playService = getIt<PlayService>();
     final messageData = PlayAtMessageData(
-      sender: User.fromContext(context),
       position: playService.positionNotifier.value,
-      isPlaying: playService.playStatusNotifier.value.isPlaying,
+      isPlay: playService.playStatusNotifier.value.isPlaying,
     );
     Actions.invoke(context, SendMessageIntent(messageData));
   }
@@ -288,53 +290,47 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
     _watchersSyncStatusNotifier.setSyncStatus(sender.id, status);
   }
 
-  void _dealWithWhere(WhereMessageData data) {
-    if (!_shouldAnswerWhere) return;
-
-    final history = context.read<History>().value;
-    final record = context.read<PlayPayload?>()?.record;
-
-    final isPlaying = getIt<PlayService>().playStatusNotifier.value.isPlaying;
-    // No history, not even played, should not answer
-    if (!isPlaying && !history.containsKey(record?.id)) return;
-
-    _sendPlayStatus();
-  }
-
-  void _dealWithPlayAt(PlayAtMessageData data) {
-    // Follow play status
-    String? toastType;
-
-    // If apply status is because asking where, then don't show snack bar
-    if (!_shouldAnswerWhere) {
-      toastType = 'none';
-      _shouldAnswerWhere = true;
-    }
+  void _dealWithPlayAt(
+    User sender,
+    bool isPlay,
+    Duration position,
+    String myId,
+  ) {
+    // TODO: if detached return
 
     final playService = getIt<PlayService>();
-    if (data.isPlaying != playService.playStatusNotifier.value.isPlaying) {
-      toastType ??= 'toggle';
-      Actions.invoke(context, ToggleIntent());
-      _remoteJustToggledNotifier.mark();
-    }
-
-    final remotePosition = data.position;
     final localPosition = playService.positionNotifier.value;
-    if (data.isPlaying && !localPosition.near(remotePosition) ||
-        localPosition != remotePosition) {
-      toastType ??= 'seek';
-      playService.seek(remotePosition);
+    final shouldSeek = isPlay
+        ? !localPosition.near(position)
+        : localPosition != position;
+
+    final localPlay = playService.playStatusNotifier.value.isPlaying;
+    final shouldToggle = isPlay != localPlay;
+
+    // Show toast
+    if (sender.id != 'server' && sender.id != myId) {
+      String toastType = 'none';
+      if (shouldToggle) toastType = 'toggle';
+      if (shouldSeek) toastType = 'seek';
+
+      final toast = getIt<Toast>();
+      final name = sender.name;
+      switch (toastType) {
+        case 'toggle':
+          toast.show('$name ${isPlay ? '播放' : '暂停'}了视频');
+        case 'seek':
+          toast.show('$name 调整了进度');
+      }
     }
 
-    toastType ??= 'none';
-
-    final toast = getIt<Toast>();
-    final name = data.sender.name;
-    switch (toastType) {
-      case 'toggle':
-        toast.show('$name ${data.isPlaying ? '播放' : '暂停'}了视频');
-      case 'seek':
-        toast.show('$name 调整了进度');
+    // Sync play status
+    if (shouldSeek) playService.seek(position);
+    if (shouldToggle) {
+      if (!isPlay || sender.id == 'server') {
+        // Play message only follow server,
+        // message from watcher only use for toast
+        Actions.invoke(context, ToggleIntent());
+      }
     }
   }
 

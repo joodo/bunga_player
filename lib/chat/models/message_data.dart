@@ -202,7 +202,8 @@ class WhereMessageData extends MessageData {
   Map<String, dynamic> toJson() => _$WhereMessageDataToJson(this);
 }
 
-/// Send when answering playing position
+/// Send when change play status
+/// Receive when some change status
 @JsonSerializable()
 class PlayAtMessageData extends MessageData {
   static const messageCode = 'play-at';
@@ -210,15 +211,10 @@ class PlayAtMessageData extends MessageData {
   @JsonKey(includeFromJson: false, includeToJson: true)
   final code = messageCode;
 
-  final User sender;
   final Duration position;
-  final bool isPlaying;
+  final bool isPlay;
 
-  PlayAtMessageData({
-    required this.sender,
-    required this.position,
-    required this.isPlaying,
-  });
+  PlayAtMessageData({required this.position, required this.isPlay});
 
   factory PlayAtMessageData.fromJson(Map<String, dynamic> json) =>
       _$PlayAtMessageDataFromJson(json);

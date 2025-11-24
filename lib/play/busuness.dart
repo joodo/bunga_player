@@ -26,10 +26,7 @@ import 'service/service.dart';
 
 // Data types
 
-typedef BCSGHPreset = ({
-  String title,
-  List<int> value,
-});
+typedef BCSGHPreset = ({String title, List<int> value});
 
 class PlayEqPresetNotifier extends ValueNotifier<BCSGHPreset?> {
   static final presets = <BCSGHPreset>[
@@ -71,30 +68,27 @@ class UpdateVolumeIntent extends Intent {
   final Volume? volume;
   final int? offset;
   final bool save;
-  const UpdateVolumeIntent(this.volume)
-      : offset = null,
-        save = false;
-  const UpdateVolumeIntent.increase(this.offset)
-      : volume = null,
-        save = true;
-  const UpdateVolumeIntent.save()
-      : volume = null,
-        offset = null,
-        save = true;
+  const UpdateVolumeIntent(this.volume) : offset = null, save = false;
+  const UpdateVolumeIntent.increase(this.offset) : volume = null, save = true;
+  const UpdateVolumeIntent.save() : volume = null, offset = null, save = true;
 }
 
 class UpdateVolumeAction extends ContextAction<UpdateVolumeIntent> {
   @override
-  Future<void> invoke(UpdateVolumeIntent intent,
-      [BuildContext? context]) async {
+  Future<void> invoke(
+    UpdateVolumeIntent intent, [
+    BuildContext? context,
+  ]) async {
     if (intent.volume != null) {
       getIt<PlayService>().volumeNotifier.value = intent.volume!;
     }
     if (intent.offset != null) {
       final currentVolume = getIt<PlayService>().volumeNotifier.value;
       final newVolume = Volume(
-        volume: (currentVolume.volume + intent.offset!)
-            .clamp(Volume.min, Volume.max),
+        volume: (currentVolume.volume + intent.offset!).clamp(
+          Volume.min,
+          Volume.max,
+        ),
       );
       getIt<PlayService>().volumeNotifier.value = newVolume;
     }
@@ -113,15 +107,13 @@ class OpenVideoIntent extends Intent {
   final VideoRecord? record;
   final PlayPayload? payload;
 
-  const OpenVideoIntent.url(Uri this.url)
-      : payload = null,
-        record = null;
+  const OpenVideoIntent.url(Uri this.url) : payload = null, record = null;
   const OpenVideoIntent.record(VideoRecord this.record)
-      : url = null,
-        payload = null;
+    : url = null,
+      payload = null;
   const OpenVideoIntent.payload(PlayPayload this.payload)
-      : url = null,
-        record = null;
+    : url = null,
+      record = null;
 }
 
 class OpenVideoAction extends ContextAction<OpenVideoIntent> {
@@ -138,8 +130,10 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
   });
 
   @override
-  Future<PlayPayload> invoke(OpenVideoIntent intent,
-      [BuildContext? context]) async {
+  Future<PlayPayload> invoke(
+    OpenVideoIntent intent, [
+    BuildContext? context,
+  ]) async {
     assert(context != null);
 
     final parser = PlayPayloadParser(context!);
@@ -149,11 +143,9 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
     try {
       busyCountNotifier.value = busyCountNotifier.value.increase;
 
-      payload = intent.payload ??
-          await parser.parse(
-            url: intent.url,
-            record: intent.record,
-          );
+      payload =
+          intent.payload ??
+          await parser.parse(url: intent.url, record: intent.record);
 
       if (!context.mounted) throw StateError('Context unmounted.');
 
@@ -277,9 +269,9 @@ class RefreshDirAction extends ContextAction<RefreshDirIntent> {
   @override
   Future<void> invoke(RefreshDirIntent intent, [BuildContext? context]) {
     final currentRecord = context!.read<PlayPayload>().record;
-    return PlayPayloadParser(context)
-        .dirInfo(currentRecord, refresh: true)
-        .then((value) {
+    return PlayPayloadParser(
+      context,
+    ).dirInfo(currentRecord, refresh: true).then((value) {
       dirInfoNotifier.value = value;
     });
   }
@@ -307,6 +299,7 @@ class ToggleAction extends ContextAction<ToggleIntent> {
 
   @override
   void invoke(ToggleIntent intent, [BuildContext? context]) {
+    // TODO: change to add listener
     final service = getIt<PlayService>();
     service.toggle();
 
@@ -420,24 +413,27 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
       ShortcutKey.screenshot: ScreenshotIntent(),
     });
 
-    final actions = shortcuts.actions(actions: {
-      UpdateVolumeIntent: UpdateVolumeAction(),
-      OpenVideoIntent: OpenVideoAction(
-        busyCountNotifier: _busyCountNotifer,
-        dirInfoNotifier: _dirInfoNotifier,
-        payloadNotifer: _playPayloadNotifier,
-        savedPositionNotifier: _savedPositionNotifier,
-      ),
-      ToggleIntent: ToggleAction(
-        saveWatchProgressTimer: _saveWatchProgressTimer,
-        savedPositionNotifier: _savedPositionNotifier,
-      ),
-      SeekIntent: SeekAction(),
-      SetSubtitleTrackIntent: SetSubtitleTrackAction(),
-      ScreenshotIntent:
-          ScreenshotAction(playPayloadNotifier: _playPayloadNotifier),
-      RefreshDirIntent: RefreshDirAction(dirInfoNotifier: _dirInfoNotifier),
-    });
+    final actions = shortcuts.actions(
+      actions: {
+        UpdateVolumeIntent: UpdateVolumeAction(),
+        OpenVideoIntent: OpenVideoAction(
+          busyCountNotifier: _busyCountNotifer,
+          dirInfoNotifier: _dirInfoNotifier,
+          payloadNotifer: _playPayloadNotifier,
+          savedPositionNotifier: _savedPositionNotifier,
+        ),
+        ToggleIntent: ToggleAction(
+          saveWatchProgressTimer: _saveWatchProgressTimer,
+          savedPositionNotifier: _savedPositionNotifier,
+        ),
+        SeekIntent: SeekAction(),
+        SetSubtitleTrackIntent: SetSubtitleTrackAction(),
+        ScreenshotIntent: ScreenshotAction(
+          playPayloadNotifier: _playPayloadNotifier,
+        ),
+        RefreshDirIntent: RefreshDirAction(dirInfoNotifier: _dirInfoNotifier),
+      },
+    );
 
     return MultiProvider(
       providers: [
