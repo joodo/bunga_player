@@ -36,17 +36,19 @@ class BungaChatClient extends ChatClient {
     return Message(data: json, sender: User.fromJson(json['sender']));
   });
 
+  final _messageRawBuffer = <String>[];
   @override
   Future<Message?> sendMessage(Map<String, dynamic> data) async {
     final rawData = jsonEncode(data);
-    logger.i('Chat: send message: $rawData');
 
     if (_channel == null) {
-      logger.e('Chat: websocket not ready, send message failed.');
+      _messageRawBuffer.add(rawData);
+      logger.w('Chat: websocket not ready, send message later.');
       return null;
     }
 
     _channel!.sink.add(rawData);
+    logger.i('Chat: send message: $rawData');
     return messageStream.first;
   }
 
@@ -111,6 +113,13 @@ class BungaChatClient extends ChatClient {
 
     try {
       await _channel!.ready;
+      logger.i('Websocket: connect success');
+
+      for (final rawData in _messageRawBuffer) {
+        _channel!.sink.add(rawData);
+        logger.i('Chat: send delayed message: $rawData');
+      }
+      _messageRawBuffer.clear();
     } on WebSocketChannelException catch (e) {
       logger.w('Websocket: $e');
       _channel = null;

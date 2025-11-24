@@ -1,4 +1,4 @@
-import 'package:bunga_player/chat/models/user.dart';
+import 'package:bunga_player/chat/business.dart';
 import 'package:bunga_player/client_info/models/client_account.dart';
 import 'package:bunga_player/ui/global_business.dart';
 import 'package:bunga_player/utils/models/volume.dart';
@@ -201,7 +201,7 @@ class _CallButtonState extends State<CallButton> {
             .none => IconButton.filled(
               onPressed: () {
                 final watcherIds = context
-                    .read<List<User>>()
+                    .read<Watchers>()
                     .map((e) => e.id)
                     .toList();
                 final myId = context.read<ClientAccount>().id;

@@ -33,7 +33,6 @@ import 'package:bunga_player/utils/extensions/styled_widget.dart';
 
 // Data types
 
-@immutable
 class RemoteJustToggled {
   final bool value;
   const RemoteJustToggled(this.value);
@@ -43,6 +42,19 @@ typedef ChannelSubtitle = ({String title, String url, User sharer});
 
 class SubtitleTrackIdOfUrl {
   final value = <String, String>{};
+}
+
+class WatcherSyncStatusNotifier extends ChangeNotifier {
+  final Map<String, SyncStatus> _syncStatus = {};
+  void setSyncStatus(String userId, SyncStatus status) {
+    _syncStatus[userId] = status;
+    notifyListeners();
+  }
+
+  Iterable<String> get bufferingUserIds => _syncStatus.entries
+      .where((entry) => entry.value == .buffering)
+      .map((entry) => entry.key);
+  SyncStatus syncStatusOf(String userId) => _syncStatus[userId] ?? .buffering;
 }
 
 // Actions
@@ -100,6 +112,10 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
   late final StreamSubscription _streamSubscription;
   bool _shouldAnswerWhere = false;
 
+  // Player status
+  final _playerBufferingNotifier = getIt<PlayService>().bufferingNotifier;
+  final _watchersSyncStatusNotifier = WatcherSyncStatusNotifier();
+
   // Subtitle sharing
   final _channelSubtitleNotifier = ValueNotifier<ChannelSubtitle?>(null)
     ..watchInConsole('Channel Subtitle');
@@ -108,6 +124,8 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
   void initState() {
     super.initState();
 
+    final myId = context.read<ClientAccount>().id;
+
     final messageStream = context.read<Stream<Message>>();
     _streamSubscription = messageStream.listen((message) {
       switch (message.data['code']) {
@@ -115,7 +133,14 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
           _dealWithProjection(
             message.sender,
             StartProjectionMessageData.fromJson(message.data),
+            myId,
           );
+        case HereAreMessageData.messageCode:
+          final watchers = HereAreMessageData.fromJson(message.data).watchers;
+          _dealWithHereAre(watchers);
+        case SyncStatusMessageData.messageCode:
+          final status = SyncStatusMessageData.fromJson(message.data).status;
+          _dealWithSyncStatus(message.sender, status);
         case WhereMessageData.messageCode:
           _dealWithWhere(WhereMessageData.fromJson(message.data));
         case PlayAtMessageData.messageCode:
@@ -125,12 +150,16 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
       }
     });
 
+    _playerBufferingNotifier.addListener(_sendBufferingStatus);
+
     // TODO: useless
     //_fetchPlayStatus();
   }
 
   @override
   void dispose() {
+    _playerBufferingNotifier.removeListener(_sendBufferingStatus);
+
     _remoteJustToggledNotifier.dispose();
     _channelSubtitleNotifier.dispose();
     _streamSubscription.cancel();
@@ -171,6 +200,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
     return MultiProvider(
       providers: [
         ValueListenableProvider.value(value: _channelSubtitleNotifier),
+        ListenableProvider.value(value: _watchersSyncStatusNotifier),
         Provider(create: (context) => SubtitleTrackIdOfUrl()),
         ValueListenableProxyProvider(
           valueListenable: _remoteJustToggledNotifier,
@@ -191,8 +221,11 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
     Actions.invoke(context, SendMessageIntent(messageData));
   }
 
-  void _dealWithProjection(User sender, StartProjectionMessageData data) async {
-    final myId = context.read<ClientAccount>().id;
+  void _dealWithProjection(
+    User sender,
+    StartProjectionMessageData data,
+    String myId,
+  ) async {
     if (sender.id != myId) {
       getIt<Toast>().show('${sender.name} 分享了视频');
     }
@@ -243,6 +276,16 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
     }
 
     Actions.invoke(context, OpenVideoIntent.record(newRecord));
+  }
+
+  void _dealWithHereAre(List<WatcherInfo> watchers) {
+    for (final info in watchers) {
+      _watchersSyncStatusNotifier.setSyncStatus(info.user.id, info.syncStatus);
+    }
+  }
+
+  void _dealWithSyncStatus(User sender, SyncStatus status) {
+    _watchersSyncStatusNotifier.setSyncStatus(sender.id, status);
   }
 
   void _dealWithWhere(WhereMessageData data) {
@@ -302,6 +345,12 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
       url: data.url,
       sharer: data.sharer,
     );
+  }
+
+  void _sendBufferingStatus() {
+    final buffering = _playerBufferingNotifier.value;
+    final data = SyncStatusMessageData(buffering ? .buffering : .ready);
+    Actions.invoke(context, SendMessageIntent(data));
   }
 
   /*Future<void> _fetchPlayStatus() async {

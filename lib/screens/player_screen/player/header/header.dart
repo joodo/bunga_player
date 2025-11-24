@@ -27,14 +27,10 @@ class Header extends StatelessWidget {
 
     return [
       [
-            Text(
-          payload.record.title,
-          maxLines: 1,
-          overflow: .ellipsis,
-                )
+            Text(payload.record.title, maxLines: 1, overflow: .ellipsis)
                 .textStyle(Theme.of(context).textTheme.titleMedium!)
                 .padding(left: 12.0, vertical: 4.0),
-            Consumer<List<User>>(
+            Consumer<Watchers>(
               builder: (context, users, child) => [
                 Tooltip(
                   message: '点击同步播放进度',
@@ -66,11 +62,31 @@ class _WatcherLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    /*
     final isTalking = context.select<List<TalkerId>, bool>(
       (value) => value.any((e) => e.value == user.id),
     );
     return Text(
       isTalking ? '🎤${user.name}' : user.name,
     ).textColor(user.getColor(brightness: 0.95)).padding(right: 10.0);
+    */
+    final syncNotifier = context.read<WatcherSyncStatusNotifier>();
+    return [
+      Text(user.name).textColor(user.getColor(brightness: 0.95)),
+      ListenableBuilder(
+        listenable: syncNotifier,
+        builder: (context, child) {
+          final status = syncNotifier.syncStatusOf(user.id);
+          switch (status) {
+            case .buffering:
+              return const Text('⏳');
+            case .detached:
+              return const Text('⏸️');
+            case _:
+              return const SizedBox.shrink();
+          }
+        },
+      ),
+    ].toRow().padding(right: 10.0);
   }
 }

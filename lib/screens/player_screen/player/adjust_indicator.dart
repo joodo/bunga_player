@@ -12,6 +12,7 @@ import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
+/// Indicator shows when adjusting volume, brightness etc.
 class AdjustIndicator extends StatefulWidget {
   const AdjustIndicator({super.key});
 

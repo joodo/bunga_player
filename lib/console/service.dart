@@ -1,10 +1,11 @@
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class ConsoleService {
   final logTextController = TextEditingController();
-  final watchingValueNotifiers = <String, ValueNotifier>{};
+  final watchingValueListenables = <String, ValueListenable>{};
 
   ConsoleService() {
     logger.stream.listen((logs) {
@@ -13,7 +14,7 @@ class ConsoleService {
   }
 }
 
-extension Watch on ValueNotifier {
+extension Watch on ValueListenable {
   void watchInConsole(String name) =>
-      getIt<ConsoleService>().watchingValueNotifiers[name] = this;
+      getIt<ConsoleService>().watchingValueListenables[name] = this;
 }

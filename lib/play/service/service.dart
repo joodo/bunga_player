@@ -32,6 +32,8 @@ abstract class PlayService {
   void toggle();
   void stop();
 
+  ValueListenable<bool> get bufferingNotifier;
+
   Future<Uint8List?> screenshot();
 
   ValueNotifier<Iterable<AudioTrack>> get audioTracksNotifier;

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bunga_player/ui/audio_player.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
@@ -21,25 +22,41 @@ import 'models/user.dart';
 
 // Data types
 
-class WatchersNotifier extends ValueNotifier<List<User>> {
-  WatchersNotifier() : super([]);
+class Watchers extends Iterable<User> {
+  final Iterable<User> iterable;
+  const Watchers(this.iterable);
 
-  void addUser(User user) {
-    if (containsId(user.id)) return;
+  @override
+  Iterator<User> get iterator => iterable.iterator;
+}
 
-    value = [...value, user];
+class WatchersNotifier extends ChangeNotifier
+    implements ValueListenable<Watchers> {
+  WatchersNotifier();
+
+  final Map<String, User> _data = {};
+
+  void init(User myself) {
+    _data.clear();
+    upsert(myself);
   }
 
-  void removeUser(String id) {
-    final index = value.indexWhere((e) => e.id == id);
-    if (index < 0) return;
+  void upsert(User user) {
+    _data[user.id] = user;
+    notifyListeners();
+  }
 
-    value = [...value..removeAt(index)];
+  void removeId(String id) {
+    _data.remove(id);
+    notifyListeners();
   }
 
   bool containsId(String id) {
-    return value.any((element) => element.id == id);
+    return _data.containsKey(id);
   }
+
+  @override
+  Watchers get value => Watchers(_data.values);
 }
 
 @immutable
@@ -65,7 +82,7 @@ class RefreshWatchersAction extends ContextAction<RefreshWatchersIntent> {
     final messageData = AlohaMessageData(user: User.fromContext(context!));
     Actions.invoke(context, SendMessageIntent(messageData));
 
-    watchersNotifier.value = [User.fromContext(context)];
+    watchersNotifier.init(User.fromContext(context));
   }
 }
 
@@ -107,11 +124,10 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
     _streamSubscription = messageStream.listen((message) {
       switch (message.data['code']) {
         case AlohaMessageData.messageCode:
-          if (message.sender.id == _myId) break;
           _dealWithAloha(AlohaMessageData.fromJson(message.data));
-        case HereIsMessageData.messageCode:
-          if (message.sender.id == _myId) break;
-          _dealWithHereIs(HereIsMessageData.fromJson(message.data));
+        case HereAreMessageData.messageCode:
+          final watchers = HereAreMessageData.fromJson(message.data).watchers;
+          _dealWithHereAre(watchers);
         case ByeMessageData.messageCode:
           if (message.sender.id == _myId) break;
           _dealWithBye(ByeMessageData.fromJson(message.data));
@@ -157,26 +173,22 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
   }
 
   void _dealWithAloha(AlohaMessageData data) {
-    _addUser(data.user);
-
-    final me = User.fromContext(context);
-    final messageData = HereIsMessageData(
-      user: me,
-      isTalking: _talkerIdsNotifier.value.contains(me.id),
-    );
-    Actions.invoke(context, SendMessageIntent(messageData));
+    _addWatcher(data.user);
   }
 
-  void _dealWithHereIs(HereIsMessageData data) {
-    _addUser(data.user);
+  void _dealWithHereAre(List<WatcherInfo> watchers) {
+    for (final info in watchers) {
+      _addWatcher(info.user);
+    }
 
+    /*
     if (data.isTalking && _talkerIdsNotifier.value.add(data.user.id)) {
       _talkerIdsNotifier.value = {..._talkerIdsNotifier.value};
-    }
+    }*/
   }
 
   void _dealWithBye(ByeMessageData data) {
-    _removeUser(data.userId);
+    _removeWatcher(data.userId);
     if (_talkerIdsNotifier.value.contains(data.userId)) {
       _dealWithTalkStatus(data.userId, TalkStatus.end);
     }
@@ -202,13 +214,13 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
     }
   }
 
-  void _addUser(User user) {
-    _watchersNotifier.addUser(user);
+  void _addWatcher(User user) {
+    _watchersNotifier.upsert(user);
     context.read<BungaAudioPlayer>().playSfx('user_join');
   }
 
-  void _removeUser(String id) {
-    _watchersNotifier.removeUser(id);
+  void _removeWatcher(String id) {
+    _watchersNotifier.removeId(id);
     context.read<BungaAudioPlayer>().playSfx('user_leave');
   }
 }

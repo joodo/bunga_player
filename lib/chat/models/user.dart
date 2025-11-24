@@ -6,16 +6,6 @@ import 'package:provider/provider.dart';
 
 part 'user.g.dart';
 
-extension UserId on List<User> {
-  bool containsId(String id) {
-    return any((user) => user.id == id);
-  }
-
-  void removeId(String id) {
-    removeWhere((user) => user.id == id);
-  }
-}
-
 @JsonSerializable()
 class User {
   final String id;

@@ -55,7 +55,7 @@ class _ConsoleState extends State<Console> {
       FilledButton(
         onPressed: () async {
           final accountNotifier =
-              getIt<ConsoleService>().watchingValueNotifiers['Client Account']
+              getIt<ConsoleService>().watchingValueListenables['Client Account']
                   as ValueNotifier<ClientAccount>;
 
           final currentID = accountNotifier.value.id;
@@ -152,19 +152,22 @@ class _VariablesViewState extends State<_VariablesView> {
         0: IntrinsicColumnWidth(),
         1: FlexColumnWidth(),
       },
-      children: getIt<ConsoleService>().watchingValueNotifiers.entries.map((
+      children: getIt<ConsoleService>().watchingValueListenables.entries.map((
         entry,
       ) {
-        // Check disposed or not
-        // ignore: invalid_use_of_protected_member
-        final content = !entry.value.hasListeners
-            ? const SelectableText('(disposed)')
-            : ValueListenableBuilder(
-                valueListenable: entry.value,
-                builder: (context, value, child) =>
-                    SelectableText(value.toString()),
-              );
-
+        // Check disposed or not, a little bit dirty
+        late final Widget content;
+        try {
+          entry.value.addListener(() {});
+          entry.value.removeListener(() {});
+          content = ValueListenableBuilder(
+            valueListenable: entry.value,
+            builder: (context, value, child) =>
+                SelectableText(value.toString()),
+          );
+        } catch (_) {
+          content = SelectableText('(disposed)');
+        }
         return TableRow(
           children: [
             SelectableText(entry.key).padding(vertical: 8.0, horizontal: 16.0),

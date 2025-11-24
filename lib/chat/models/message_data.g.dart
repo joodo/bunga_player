@@ -6,21 +6,6 @@ part of 'message_data.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-StartProjectionMessageData _$StartProjectionMessageDataFromJson(
-  Map<String, dynamic> json,
-) => StartProjectionMessageData(
-  videoRecord: VideoRecord.fromJson(
-    json['video_record'] as Map<String, dynamic>,
-  ),
-);
-
-Map<String, dynamic> _$StartProjectionMessageDataToJson(
-  StartProjectionMessageData instance,
-) => <String, dynamic>{
-  'code': instance.code,
-  'video_record': instance.videoRecord.toJson(),
-};
-
 WhatsOnMessageData _$WhatsOnMessageDataFromJson(Map<String, dynamic> json) =>
     WhatsOnMessageData();
 
@@ -56,6 +41,62 @@ Map<String, dynamic> _$JoinInMessageDataToJson(JoinInMessageData instance) =>
       'user': instance.user.toJson(),
       'my_share': instance.myShare?.toJson(),
     };
+
+WatcherInfo _$WatcherInfoFromJson(Map<String, dynamic> json) => WatcherInfo(
+  user: User.fromJson(json['user'] as Map<String, dynamic>),
+  syncStatus: $enumDecode(_$SyncStatusEnumMap, json['sync_status']),
+);
+
+Map<String, dynamic> _$WatcherInfoToJson(WatcherInfo instance) =>
+    <String, dynamic>{
+      'user': instance.user.toJson(),
+      'sync_status': _$SyncStatusEnumMap[instance.syncStatus]!,
+    };
+
+const _$SyncStatusEnumMap = {
+  SyncStatus.buffering: 'buffering',
+  SyncStatus.ready: 'ready',
+  SyncStatus.detached: 'detached',
+};
+
+HereAreMessageData _$HereAreMessageDataFromJson(Map<String, dynamic> json) =>
+    HereAreMessageData(
+      watchers: (json['watchers'] as List<dynamic>)
+          .map((e) => WatcherInfo.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+
+Map<String, dynamic> _$HereAreMessageDataToJson(HereAreMessageData instance) =>
+    <String, dynamic>{
+      'code': instance.code,
+      'watchers': instance.watchers.map((e) => e.toJson()).toList(),
+    };
+
+StartProjectionMessageData _$StartProjectionMessageDataFromJson(
+  Map<String, dynamic> json,
+) => StartProjectionMessageData(
+  videoRecord: VideoRecord.fromJson(
+    json['video_record'] as Map<String, dynamic>,
+  ),
+);
+
+Map<String, dynamic> _$StartProjectionMessageDataToJson(
+  StartProjectionMessageData instance,
+) => <String, dynamic>{
+  'code': instance.code,
+  'video_record': instance.videoRecord.toJson(),
+};
+
+SyncStatusMessageData _$SyncStatusMessageDataFromJson(
+  Map<String, dynamic> json,
+) => SyncStatusMessageData($enumDecode(_$SyncStatusEnumMap, json['status']));
+
+Map<String, dynamic> _$SyncStatusMessageDataToJson(
+  SyncStatusMessageData instance,
+) => <String, dynamic>{
+  'code': instance.code,
+  'status': _$SyncStatusEnumMap[instance.status]!,
+};
 
 AlohaMessageData _$AlohaMessageDataFromJson(Map<String, dynamic> json) =>
     AlohaMessageData(user: User.fromJson(json['user'] as Map<String, dynamic>));

@@ -11,24 +11,6 @@ abstract class MessageData {
   Map<String, dynamic> toJson();
 }
 
-/// Send when sharing video
-@JsonSerializable()
-class StartProjectionMessageData extends MessageData {
-  static const messageCode = 'start-projection';
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: true)
-  final code = messageCode;
-
-  final VideoRecord videoRecord;
-
-  StartProjectionMessageData({required this.videoRecord});
-
-  factory StartProjectionMessageData.fromJson(Map<String, dynamic> json) =>
-      _$StartProjectionMessageDataFromJson(json);
-  @override
-  Map<String, dynamic> toJson() => _$StartProjectionMessageDataToJson(this);
-}
-
 /// Send when asking what's playing
 @JsonSerializable()
 class WhatsOnMessageData extends MessageData {
@@ -45,7 +27,7 @@ class WhatsOnMessageData extends MessageData {
   Map<String, dynamic> toJson() => _$WhatsOnMessageDataToJson(this);
 }
 
-/// Send when answering what's playing
+/// Receive when answering what's playing
 @JsonSerializable()
 class NowPlayingMessageData extends MessageData {
   static const messageCode = 'now-playing';
@@ -80,6 +62,75 @@ class JoinInMessageData extends MessageData {
       _$JoinInMessageDataFromJson(json);
   @override
   Map<String, dynamic> toJson() => _$JoinInMessageDataToJson(this);
+}
+
+/// Receive when answering aloha
+@JsonSerializable()
+class WatcherInfo {
+  final User user;
+  final SyncStatus syncStatus;
+
+  WatcherInfo({required this.user, required this.syncStatus});
+
+  factory WatcherInfo.fromJson(Map<String, dynamic> json) =>
+      _$WatcherInfoFromJson(json);
+  Map<String, dynamic> toJson() => _$WatcherInfoToJson(this);
+}
+
+/// Receive when join in room
+@JsonSerializable()
+class HereAreMessageData extends MessageData {
+  static const messageCode = 'here-are';
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: true)
+  final code = messageCode;
+
+  final List<WatcherInfo> watchers;
+
+  HereAreMessageData({required this.watchers});
+
+  factory HereAreMessageData.fromJson(Map<String, dynamic> json) =>
+      _$HereAreMessageDataFromJson(json);
+  @override
+  Map<String, dynamic> toJson() => _$HereAreMessageDataToJson(this);
+}
+
+/// Send/receive when sharing video
+@JsonSerializable()
+class StartProjectionMessageData extends MessageData {
+  static const messageCode = 'start-projection';
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: true)
+  final code = messageCode;
+
+  final VideoRecord videoRecord;
+
+  StartProjectionMessageData({required this.videoRecord});
+
+  factory StartProjectionMessageData.fromJson(Map<String, dynamic> json) =>
+      _$StartProjectionMessageDataFromJson(json);
+  @override
+  Map<String, dynamic> toJson() => _$StartProjectionMessageDataToJson(this);
+}
+
+/// Send/receive when sync status changed
+enum SyncStatus { buffering, ready, detached }
+
+@JsonSerializable()
+class SyncStatusMessageData extends MessageData {
+  static const messageCode = 'sync-status';
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: true)
+  final code = messageCode;
+
+  final SyncStatus status;
+
+  SyncStatusMessageData(this.status);
+
+  factory SyncStatusMessageData.fromJson(Map<String, dynamic> json) =>
+      _$SyncStatusMessageDataFromJson(json);
+  @override
+  Map<String, dynamic> toJson() => _$SyncStatusMessageDataToJson(this);
 }
 
 /// Send when join watching
