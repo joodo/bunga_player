@@ -37,13 +37,3 @@ Map<String, dynamic> _$VideoSessionToJson(_VideoSession instance) =>
       'progress': instance.progress?.toJson(),
       'subtitle_path': instance.subtitlePath,
     };
-
-_History _$HistoryFromJson(Map<String, dynamic> json) => _History(
-  value: (json['value'] as Map<String, dynamic>).map(
-    (k, e) => MapEntry(k, VideoSession.fromJson(e as Map<String, dynamic>)),
-  ),
-);
-
-Map<String, dynamic> _$HistoryToJson(_History instance) => <String, dynamic>{
-  'value': instance.value.map((k, e) => MapEntry(k, e.toJson())),
-};

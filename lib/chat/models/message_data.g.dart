@@ -6,6 +6,14 @@ part of 'message_data.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
+WhoAreYouMessageData _$WhoAreYouMessageDataFromJson(
+  Map<String, dynamic> json,
+) => WhoAreYouMessageData();
+
+Map<String, dynamic> _$WhoAreYouMessageDataToJson(
+  WhoAreYouMessageData instance,
+) => <String, dynamic>{'code': instance.code};
+
 WhatsOnMessageData _$WhatsOnMessageDataFromJson(Map<String, dynamic> json) =>
     WhatsOnMessageData();
 

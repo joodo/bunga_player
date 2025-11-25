@@ -9,14 +9,10 @@ class VideoSources {
   final List<String>? audios;
   final Map<String, String>? requestHeaders;
 
-  const VideoSources({
-    required this.videos,
-    this.audios,
-    this.requestHeaders,
-  });
+  const VideoSources({required this.videos, this.audios, this.requestHeaders});
   VideoSources.single(String url, {this.requestHeaders})
-      : videos = [url],
-        audios = null;
+    : videos = [url],
+      audios = null;
 
   @override
   String toString() {

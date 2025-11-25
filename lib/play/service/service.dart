@@ -18,7 +18,7 @@ abstract class PlayService {
 
   ValueNotifier<Volume> get volumeNotifier;
 
-  Future<void> open(PlayPayload payload);
+  Future<void> open(PlayPayload payload, [Duration? start]);
 
   ValueListenable<Duration> get durationNotifier;
   ValueListenable<Duration> get bufferNotifier;

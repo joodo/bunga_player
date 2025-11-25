@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:bunga_player/bunga_server/global_business.dart';
 import 'package:bunga_player/bunga_server/models/bunga_server_info.dart';
-import 'package:bunga_player/play/models/history.dart';
+import 'package:bunga_player/play/history.dart';
 import 'package:bunga_player/utils/extensions/file.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -62,8 +62,9 @@ class PlayPayloadParser {
     } else {
       throw ArgumentError.notNull('url or record');
     }
+
     final parser = _createParser(context, record.source);
-    return parser.parseVideoRecord(record);
+    return await parser.parseVideoRecord(record);
   }
 
   Future<VideoRecord> parseUrl(Uri url) {
@@ -97,7 +98,7 @@ class PlayPayloadParser {
     assert(url.scheme == 'history');
 
     final recordId = url.pathSegments.first;
-    final history = context.read<History>().value;
+    final history = context.read<History>();
     return Future.value(history[recordId]!.videoRecord);
   }
 }

@@ -1,4 +1,4 @@
-import 'package:bunga_player/play/models/history.dart';
+import 'package:bunga_player/play/history.dart';
 import 'package:bunga_player/play/payload_parser.dart';
 import 'package:bunga_player/utils/extensions/datetime.dart';
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
@@ -20,17 +20,18 @@ class _HistoryTabState extends State<HistoryTab> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final history = context.read<History>().value;
-
-    if (history.isEmpty) {
-      return const Text('暂无历史').textStyle(theme.textTheme.labelLarge!);
-    }
+    final history = context.read<History>();
 
     final entries = history.values
         .where((element) => element.progress != null)
         .sortedBy((element) => element.updatedAt)
         .reversed
         .toList();
+
+    if (entries.isEmpty) {
+      return const Text('暂无历史').textStyle(theme.textTheme.labelLarge!);
+    }
+
     return ListView.builder(
       itemCount: entries.length,
       padding: const EdgeInsets.symmetric(vertical: 16.0),
@@ -51,30 +52,32 @@ class _HistoryTabState extends State<HistoryTab> {
             });
           },
           child: ListTile(
-            leading: (entry.videoRecord.thumbUrl?.isEmpty == false
-                    ? Image.network(
-                        entry.videoRecord.thumbUrl!,
-                        fit: BoxFit.cover,
-                        height: double.maxFinite,
-                      )
-                    : const Icon(Icons.movie_creation_outlined)
-                        .iconSize(32.0)
-                        .center())
-                .constrained(width: 60)
-                .clipRRect(all: 16.0),
+            leading:
+                (entry.videoRecord.thumbUrl?.isEmpty == false
+                        ? Image.network(
+                            entry.videoRecord.thumbUrl!,
+                            fit: BoxFit.cover,
+                            height: double.maxFinite,
+                          )
+                        : const Icon(
+                            Icons.movie_creation_outlined,
+                          ).iconSize(32.0).center())
+                    .constrained(width: 60)
+                    .clipRRect(all: 16.0),
             title: TitleWithProgress(
               title: entry.videoRecord.title,
               progress: entry.progress!.ratio,
             ).padding(bottom: 4.0),
-            subtitle:
-                Text(PlayPayloadParser.getFriendlyPath(entry.videoRecord)),
+            subtitle: Text(
+              PlayPayloadParser.getFriendlyPath(entry.videoRecord),
+            ),
             trailing: Text(entry.updatedAt.relativeString),
             onTap: Actions.handler(
-                context,
-                SelectUrlIntent(Uri(
-                  scheme: 'history',
-                  path: entry.videoRecord.id,
-                ))),
+              context,
+              SelectUrlIntent(
+                Uri(scheme: 'history', path: entry.videoRecord.id),
+              ),
+            ),
           ),
         );
       },
@@ -97,23 +100,28 @@ class TitleWithProgress extends StatelessWidget {
     final theme = Theme.of(context);
     final style = DefaultTextStyle.of(context).style;
     return RichText(
-        text: TextSpan(
-      text: title,
-      style: style,
-      children: [
-        const TextSpan(text: '  '),
-        WidgetSpan(
-          alignment: PlaceholderAlignment.middle,
-          child:
-              Text(progress < 0.95 ? '已看 ${(progress * 100).toInt()}%' : '已看完')
-                  .textStyle(theme.textTheme.labelSmall!)
-                  .padding(horizontal: 8.0, vertical: 4.0)
-                  .decorated(
-                    color: theme.colorScheme.primaryContainer,
-                    borderRadius: BorderRadius.all(Radius.circular(8.0)),
-                  ),
-        ),
-      ],
-    ));
+      text: TextSpan(
+        text: title,
+        style: style,
+        children: [
+          const TextSpan(text: '  '),
+          WidgetSpan(
+            alignment: PlaceholderAlignment.middle,
+            child:
+                Text(
+                      progress < 0.95
+                          ? '已看 ${(progress * 100).toInt()}%'
+                          : '已看完',
+                    )
+                    .textStyle(theme.textTheme.labelSmall!)
+                    .padding(horizontal: 8.0, vertical: 4.0)
+                    .decorated(
+                      color: theme.colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                    ),
+          ),
+        ],
+      ),
+    );
   }
 }

@@ -126,14 +126,14 @@ class MediaKitPlayService implements PlayService {
 
   // Video loading
   @override
-  Future<void> open(PlayPayload payload) async {
+  Future<void> open(PlayPayload payload, [Duration? start]) async {
     assert(payload.sources.videos.length > payload.videoSourceIndex);
 
     // open video
     final videoUrl = payload.sources.videos[payload.videoSourceIndex];
     final httpHeaders = payload.sources.requestHeaders;
     await _player.open(
-      media_kit.Media(videoUrl, httpHeaders: httpHeaders),
+      media_kit.Media(videoUrl, httpHeaders: httpHeaders, start: start),
       play: false,
     );
 

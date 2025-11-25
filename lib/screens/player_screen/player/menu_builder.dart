@@ -1,12 +1,14 @@
 import 'package:animations/animations.dart';
 import 'package:bunga_player/play/busuness.dart';
 import 'package:bunga_player/play/models/play_payload.dart';
+import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/play_sync/business.dart';
 import 'package:bunga_player/screens/dialogs/open_video/open_video.dart';
 import 'package:bunga_player/screens/player_screen/panel/audio_track_panel.dart';
 import 'package:bunga_player/screens/player_screen/panel/subtitle_panel.dart';
 import 'package:bunga_player/screens/player_screen/panel/video_eq_panel.dart';
 import 'package:bunga_player/screens/player_screen/panel/video_source_panel.dart';
+import 'package:bunga_player/services/services.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
@@ -37,7 +39,10 @@ class MenuBuilder extends SingleChildStatelessWidget {
               leadingIcon: const Icon(Icons.refresh),
               onPressed: Actions.handler(
                 context,
-                OpenVideoIntent.record(payload!.record),
+                OpenVideoIntent.record(
+                  payload!.record,
+                  start: getIt<PlayService>().positionNotifier.value,
+                ),
               ),
               child: const Text('重新载入    '),
             ),

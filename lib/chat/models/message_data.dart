@@ -11,6 +11,22 @@ abstract class MessageData {
   Map<String, dynamic> toJson();
 }
 
+/// Receive when reconnected to chat server
+@JsonSerializable()
+class WhoAreYouMessageData extends MessageData {
+  static const messageCode = 'who-are-you';
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: true)
+  final code = messageCode;
+
+  WhoAreYouMessageData();
+
+  factory WhoAreYouMessageData.fromJson(Map<String, dynamic> json) =>
+      _$WhoAreYouMessageDataFromJson(json);
+  @override
+  Map<String, dynamic> toJson() => _$WhoAreYouMessageDataToJson(this);
+}
+
 /// Send when asking what's playing
 @JsonSerializable()
 class WhatsOnMessageData extends MessageData {

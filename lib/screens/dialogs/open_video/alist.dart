@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:bunga_player/play/history.dart';
 import 'package:bunga_player/screens/widgets/context_menu_region.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -11,7 +12,6 @@ import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/alist/models.dart';
 import 'package:bunga_player/alist/business.dart';
 import 'package:bunga_player/alist/extensions.dart';
-import 'package:bunga_player/play/models/history.dart';
 import 'package:bunga_player/screens/widgets/scroll_optimizer.dart';
 import 'package:bunga_player/screens/dialogs/open_video/history.dart';
 import 'package:bunga_player/screens/dialogs/open_video/open_video.dart';
@@ -224,8 +224,7 @@ class _AListTabState extends State<AListTab> {
           final info = _currentFiles[index];
           final path = '$_currentPath${info.name}';
           final percent = context
-              .read<History>()
-              .value[path.asPathToAListId()]
+              .read<History>()[path.asPathToAListId()]
               ?.progress
               ?.ratio;
           final onTap = switch (info.type) {

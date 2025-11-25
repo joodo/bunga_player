@@ -10,7 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 
-import 'models/history.dart';
+import 'history.dart';
 
 class PlayGlobalBusiness extends SingleChildStatefulWidget {
   const PlayGlobalBusiness({super.key, super.child});
@@ -38,7 +38,7 @@ class NetworkCacheSizeNotifier extends ValueNotifier<int> {
 
 class _PlayGlobalBusinessState extends SingleChildState<PlayGlobalBusiness> {
   // History
-  late final History _history;
+  final _history = History();
 
   @override
   void initState() {
@@ -47,7 +47,7 @@ class _PlayGlobalBusinessState extends SingleChildState<PlayGlobalBusiness> {
     _preventAudioDucking();
 
     // History
-    _history = History.load();
+    _history.load();
     getIt<ExitCallbacks>().add(_history.save);
   }
 
@@ -66,6 +66,7 @@ class _PlayGlobalBusinessState extends SingleChildState<PlayGlobalBusiness> {
   }
 
   void _preventAudioDucking() async {
+    // TODO: useless?
     if (!Platform.isAndroid && !Platform.isIOS && !Platform.isWindows) return;
 
     final session = await AudioSession.instance;

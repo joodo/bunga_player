@@ -1,4 +1,3 @@
-import 'package:bunga_player/play/busuness.dart';
 import 'package:bunga_player/screens/player_screen/business.dart';
 import 'package:bunga_player/screens/player_screen/player/adjust_indicator.dart';
 import 'package:bunga_player/utils/business/platform.dart';
@@ -13,7 +12,6 @@ import 'package:bunga_player/services/services.dart';
 
 import 'danmaku_player.dart';
 import 'interactive_region.dart';
-import 'saved_position_hint.dart';
 import 'ui.dart';
 import 'popmoji_player.dart';
 
@@ -30,11 +28,11 @@ class Player extends StatelessWidget {
         kIsDesktop
             ? const DesktopInteractiveRegion()
             : const TouchInteractiveRegion(),
-        if (!context.watch<BusyCount>().isBusy)
+        /*if (!context.watch<BusyCount>().isBusy)
           const SavedPositionHint().positioned(
             bottom: PlayerUI.videoControlHeight + 8.0,
             right: 12.0,
-          ),
+          ),*/
         const PlayerUI(),
         const AdjustIndicator().positioned(top: 24.0, left: 24.0),
       ].toStack(fit: StackFit.expand),
@@ -42,11 +40,10 @@ class Player extends StatelessWidget {
   }
 
   Widget _mediaKitPlayer() => Video(
-        controller: (getIt<PlayService>() as MediaKitPlayService).controller,
-        // use mpv subtitle
-        subtitleViewConfiguration:
-            const SubtitleViewConfiguration(visible: false),
-        wakelock: false,
-        controls: NoVideoControls,
-      );
+    controller: (getIt<PlayService>() as MediaKitPlayService).controller,
+    // use mpv subtitle
+    subtitleViewConfiguration: const SubtitleViewConfiguration(visible: false),
+    wakelock: false,
+    controls: NoVideoControls,
+  );
 }

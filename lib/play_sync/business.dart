@@ -127,10 +127,16 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
     final messageStream = context.read<Stream<Message>>();
     _streamSubscription = messageStream.listen((message) {
       switch (message.data['code']) {
+        case WhoAreYouMessageData.messageCode:
+          _dealWithWhoAreYou();
         case StartProjectionMessageData.messageCode:
+          final data = StartProjectionMessageData.fromJson(message.data);
           _dealWithProjection(
             message.sender,
-            StartProjectionMessageData.fromJson(message.data),
+            data.videoRecord,
+            Duration(
+              microseconds: message.data['video_record']['position'].toInt(),
+            ),
             myId,
           );
         case HereAreMessageData.messageCode:
@@ -176,7 +182,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
         ToggleIntent: CallbackAction<ToggleIntent>(
           onInvoke: (intent) {
             if (_remoteJustToggledNotifier.value) return;
-            // TODO: if detached
+
             // Actions.invoke(context, intent);
             final playService = getIt<PlayService>();
             final messageData = PlayAtMessageData(
@@ -190,8 +196,18 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
         SeekIntent: CallbackAction<SeekIntent>(
           onInvoke: (intent) {
             if (_remoteJustToggledNotifier.value) return;
-            Actions.invoke(context, intent);
-            _sendPlayStatus();
+
+            //Actions.invoke(context, intent);
+            final playService = getIt<PlayService>();
+
+            final position = playService.positionNotifier.value;
+            final duration = playService.durationNotifier.value;
+
+            final messageData = PlayAtMessageData(
+              position: intent.applyOn(position, duration),
+              isPlay: playService.playStatusNotifier.value.isPlaying,
+            );
+            Actions.invoke(context, SendMessageIntent(messageData));
             return;
           },
         ),
@@ -214,25 +230,22 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
     );
   }
 
-  void _sendPlayStatus() {
-    final playService = getIt<PlayService>();
-    final messageData = PlayAtMessageData(
-      position: playService.positionNotifier.value,
-      isPlay: playService.playStatusNotifier.value.isPlaying,
-    );
-    Actions.invoke(context, SendMessageIntent(messageData));
+  void _dealWithWhoAreYou() {
+    final data = JoinInMessageData(user: User.fromContext(context));
+    Actions.invoke(context, SendMessageIntent(data));
   }
 
   void _dealWithProjection(
     User sender,
-    StartProjectionMessageData data,
+    VideoRecord videoRecord,
+    Duration start,
     String myId,
   ) async {
     if (sender.id != myId) {
       getIt<Toast>().show('${sender.name} 分享了视频');
     }
 
-    VideoRecord? newRecord = data.videoRecord;
+    VideoRecord? newRecord = videoRecord;
 
     if (newRecord.source == 'local' && !File(newRecord.path).existsSync()) {
       newRecord = null;
@@ -241,10 +254,10 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
       final currentRecord = context.read<PlayPayload?>()?.record;
       if (currentRecord?.source == 'local') {
         final currentDir = path_tool.dirname(currentRecord!.path);
-        final newBasename = path_tool.basename(data.videoRecord.path);
+        final newBasename = path_tool.basename(videoRecord.path);
         final sameDirPath = path_tool.join(currentDir, newBasename);
         if (File(sameDirPath).existsSync()) {
-          newRecord = data.videoRecord.copyWith(path: sameDirPath);
+          newRecord = videoRecord.copyWith(path: sameDirPath);
         }
       }
 
@@ -261,7 +274,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
 
         if (!mounted) return;
         // New selected file conflict, needs confirm
-        if (!data.videoRecord.id.endsWith(crc)) {
+        if (!videoRecord.id.endsWith(crc)) {
           final confirmOpen = await showModal<bool>(
             context: context,
             builder: VideoConflictDialog.builder,
@@ -273,11 +286,11 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
           }
         }
 
-        newRecord = data.videoRecord.copyWith(path: selectedPath);
+        newRecord = videoRecord.copyWith(path: selectedPath);
       }
     }
 
-    Actions.invoke(context, OpenVideoIntent.record(newRecord));
+    Actions.invoke(context, OpenVideoIntent.record(newRecord, start: start));
   }
 
   void _dealWithHereAre(List<WatcherInfo> watchers) {
@@ -324,6 +337,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
     }
 
     // Sync play status
+    // Seek and pause operation will follow sender to ensure UI responsiveness
     if (shouldSeek) playService.seek(position);
     if (shouldToggle) {
       if (!isPlay || sender.id == 'server') {

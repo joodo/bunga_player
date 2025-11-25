@@ -51,11 +51,13 @@ class _VideoSourcePanelState extends State<VideoSourcePanel> {
                 return RadioListTile(
                   key: ValueKey('Source $index'),
                   title: Text(info?.location ?? '未知'),
-                  subtitle: Text(info == null
-                      ? '正在测速……'
-                      : info.bps < 0
-                          ? '测速失败'
-                          : '${info.bps.formatBytes} / s'),
+                  subtitle: Text(
+                    info == null
+                        ? '正在测速……'
+                        : info.bps < 0
+                        ? '测速失败'
+                        : '${info.bps.formatBytes} / s',
+                  ),
                   value: index,
                 );
               })
@@ -69,6 +71,7 @@ class _VideoSourcePanelState extends State<VideoSourcePanel> {
                     context,
                     OpenVideoIntent.payload(
                       payload.copyWith(videoSourceIndex: value!),
+                      start: getIt<PlayService>().positionNotifier.value,
                     ),
                   );
                 },
@@ -83,29 +86,26 @@ class _VideoSourcePanelState extends State<VideoSourcePanel> {
   }
 
   void _refresh() {
-    setState(
-      () => _sourceInfo.clear(),
-    );
+    setState(() => _sourceInfo.clear());
 
     final network = getIt<NetworkService>();
     final sources = context.read<PlayPayload>().sources;
     final urls = sources.videos;
     final headers = sources.requestHeaders;
     for (final (index, source) in urls.indexed) {
-      network.sourceInfo(source, headers).then((result) {
-        if (mounted) {
-          setState(
-            () => _sourceInfo[index] = result,
-          );
-        }
-      }).catchError((e) {
-        if (mounted) {
-          setState(
-            () => _sourceInfo[index] = (location: '未知', bps: -1),
-          );
-        }
-        throw e;
-      });
+      network
+          .sourceInfo(source, headers)
+          .then((result) {
+            if (mounted) {
+              setState(() => _sourceInfo[index] = result);
+            }
+          })
+          .catchError((e) {
+            if (mounted) {
+              setState(() => _sourceInfo[index] = (location: '未知', bps: -1));
+            }
+            throw e;
+          });
     }
   }
 }

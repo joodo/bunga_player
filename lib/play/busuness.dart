@@ -18,6 +18,7 @@ import 'package:path/path.dart' as path_tool;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
+import 'history.dart';
 import 'models/history.dart';
 import 'models/play_payload.dart';
 import 'models/video_record.dart';
@@ -106,12 +107,15 @@ class OpenVideoIntent extends Intent {
   final Uri? url;
   final VideoRecord? record;
   final PlayPayload? payload;
+  final Duration? start;
 
-  const OpenVideoIntent.url(Uri this.url) : payload = null, record = null;
-  const OpenVideoIntent.record(VideoRecord this.record)
+  const OpenVideoIntent.url(Uri this.url, {this.start})
+    : payload = null,
+      record = null;
+  const OpenVideoIntent.record(VideoRecord this.record, {this.start})
     : url = null,
       payload = null;
-  const OpenVideoIntent.payload(PlayPayload this.payload)
+  const OpenVideoIntent.payload(PlayPayload this.payload, {this.start})
     : url = null,
       record = null;
 }
@@ -120,13 +124,11 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
   final ValueNotifier<PlayPayload?> payloadNotifer;
   final ValueNotifier<BusyCount> busyCountNotifier;
   final ValueNotifier<DirInfo?> dirInfoNotifier;
-  final SavedPositionNotifier savedPositionNotifier;
 
   OpenVideoAction({
     required this.payloadNotifer,
     required this.busyCountNotifier,
     required this.dirInfoNotifier,
-    required this.savedPositionNotifier,
   });
 
   @override
@@ -137,13 +139,12 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
     assert(context != null);
 
     final parser = PlayPayloadParser(context!);
-    late final PlayPayload payload;
 
     // Open video
     try {
       busyCountNotifier.value = busyCountNotifier.value.increase;
 
-      payload =
+      final payload =
           intent.payload ??
           await parser.parse(url: intent.url, record: intent.record);
 
@@ -153,40 +154,38 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
       context.read<WindowTitleNotifier>().value = payload.record.title;
 
       // History
-      final session = context.read<History>().value[payload.record.id];
-      savedPositionNotifier.value = session?.progress?.position;
+      final session = context.read<History>()[payload.record.id];
       final subPath = session?.subtitlePath;
 
       _loadDir(payload, parser);
       await _loadVideo(
         payload: payload,
         parser: parser,
-        position: savedPositionNotifier.value,
         subtitlePath: subPath,
+        start: intent.start ?? session?.progress?.position,
       );
 
       payloadNotifer.value = payload;
+
+      return payload;
     } catch (e) {
       getIt<Toast>().show('载入视频失败');
       rethrow;
     } finally {
       busyCountNotifier.value = busyCountNotifier.value.decrease;
     }
-
-    return payload;
   }
 
   Future<void> _loadVideo({
     required PlayPayload payload,
     required PlayPayloadParser parser,
-    Duration? position,
     String? subtitlePath,
+    Duration? start,
   }) async {
     final play = getIt<PlayService>();
-    await play.open(payload);
+    await play.open(payload, start);
 
     // load history
-    if (position != null) play.seek(position);
     if (subtitlePath != null) {
       final track = await play.loadSubtitleTrack(subtitlePath);
       play.setSubtitleTrack(track.id);
@@ -214,7 +213,7 @@ class SetSubtitleTrackAction extends ContextAction<SetSubtitleTrackIntent> {
     final record = context!.read<PlayPayload>().record;
     final externalSubPath = track.path;
     final history = context.read<History>();
-    history.update(videoRecord: record, subtitlePath: externalSubPath);
+    history.updateSubtitle(record, externalSubPath);
   }
 }
 
@@ -290,12 +289,8 @@ class ToggleIntent extends Intent {
 
 class ToggleAction extends ContextAction<ToggleIntent> {
   final RestartableTimer saveWatchProgressTimer;
-  final SavedPositionNotifier savedPositionNotifier;
 
-  ToggleAction({
-    required this.saveWatchProgressTimer,
-    required this.savedPositionNotifier,
-  });
+  ToggleAction({required this.saveWatchProgressTimer});
 
   @override
   void invoke(ToggleIntent intent, [BuildContext? context]) {
@@ -308,11 +303,6 @@ class ToggleAction extends ContextAction<ToggleIntent> {
       saveWatchProgressTimer.reset();
     } else {
       saveWatchProgressTimer.cancel();
-    }
-
-    if (intent.forgetSavedPosition) {
-      // Toggle is invoked by me, not remote, so I can forget saved position.
-      savedPositionNotifier.value = null;
     }
   }
 
@@ -327,10 +317,15 @@ class ToggleAction extends ContextAction<ToggleIntent> {
 
 @immutable
 class SeekIntent extends Intent {
-  const SeekIntent(this.duration) : isIncrease = false;
-  const SeekIntent.increase(this.duration) : isIncrease = true;
-  final Duration duration;
+  const SeekIntent(this.value) : isIncrease = false;
+  const SeekIntent.increase(this.value) : isIncrease = true;
+  final Duration value;
   final bool isIncrease;
+
+  Duration applyOn(Duration currentPosition, Duration duration) {
+    final position = isIncrease ? currentPosition + value : value;
+    return position.clamp(Duration.zero, duration);
+  }
 }
 
 class SeekAction extends ContextAction<SeekIntent> {
@@ -339,11 +334,8 @@ class SeekAction extends ContextAction<SeekIntent> {
     final service = getIt<PlayService>();
 
     final position = service.positionNotifier.value;
-    var newPos = intent.duration;
-    if (intent.isIncrease) newPos += position;
-
-    newPos = newPos.clamp(Duration.zero, service.durationNotifier.value);
-    service.seek(newPos);
+    final duration = service.durationNotifier.value;
+    service.seek(intent.applyOn(position, duration));
   }
 
   @override
@@ -384,8 +376,7 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
       _saveWatchProgressTimer.reset();
     },
   )..cancel();
-  final _savedPositionNotifier =
-      SavedPositionNotifier(); // For saved postion toast
+  // final _savedPositionNotifier = SavedPositionNotifier(); // For saved postion toast
 
   @override
   void initState() {
@@ -420,11 +411,9 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
           busyCountNotifier: _busyCountNotifer,
           dirInfoNotifier: _dirInfoNotifier,
           payloadNotifer: _playPayloadNotifier,
-          savedPositionNotifier: _savedPositionNotifier,
         ),
         ToggleIntent: ToggleAction(
           saveWatchProgressTimer: _saveWatchProgressTimer,
-          savedPositionNotifier: _savedPositionNotifier,
         ),
         SeekIntent: SeekAction(),
         SetSubtitleTrackIntent: SetSubtitleTrackAction(),
@@ -438,7 +427,6 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
     return MultiProvider(
       providers: [
         ValueListenableProvider.value(value: _playPayloadNotifier),
-        ChangeNotifierProvider.value(value: _savedPositionNotifier),
         ValueListenableProvider.value(value: _dirInfoNotifier),
         ValueListenableProvider.value(value: _busyCountNotifer),
         ChangeNotifierProvider(create: (context) => PlayEqPresetNotifier()),
@@ -456,7 +444,7 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
 
     _history.save();
     _saveWatchProgressTimer.cancel();
-    _savedPositionNotifier.dispose();
+    // _savedPositionNotifier.dispose();
 
     super.dispose();
   }
@@ -471,7 +459,7 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
       position: play.positionNotifier.value,
       duration: play.durationNotifier.value,
     );
-    _history.update(videoRecord: currentRecord, progress: progress);
+    _history.updateProgress(currentRecord, progress);
   }
 }
 
