@@ -58,7 +58,23 @@ class WatcherSyncStatusNotifier extends ChangeNotifier {
 
 // Actions
 
-@immutable
+class JoinInIntent extends Intent {
+  final VideoRecord? myShare;
+
+  const JoinInIntent({this.myShare});
+}
+
+class JoinInAction extends ContextAction<JoinInIntent> {
+  @override
+  void invoke(JoinInIntent intent, [BuildContext? context]) {
+    final data = JoinInMessageData(
+      user: User.fromContext(context!),
+      myShare: intent.myShare,
+    );
+    Actions.invoke(context, SendMessageIntent(data));
+  }
+}
+
 class ShareVideoIntent extends Intent {
   final VideoRecord? record;
   final Uri? url;
@@ -212,6 +228,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
           },
         ),
         ShareVideoIntent: ShareVideoAction(),
+        JoinInIntent: JoinInAction(),
         //AskPositionIntent: AskPositionAction(),
       },
     );

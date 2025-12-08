@@ -192,9 +192,7 @@ class ByeMessageData extends MessageData {
   @JsonKey(includeFromJson: false, includeToJson: true)
   final code = messageCode;
 
-  final String userId;
-
-  ByeMessageData({required this.userId});
+  ByeMessageData();
 
   factory ByeMessageData.fromJson(Map<String, dynamic> json) =>
       _$ByeMessageDataFromJson(json);

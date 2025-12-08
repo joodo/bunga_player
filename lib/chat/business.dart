@@ -94,7 +94,7 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
 
   // Leave message for app exit
   Future<void> _sendLeaveMessage() {
-    final byeData = ByeMessageData(userId: _myId);
+    final byeData = ByeMessageData();
     return Actions.invoke(context, SendMessageIntent(byeData)) as Future;
   }
 
@@ -114,7 +114,7 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
           _dealWithHereAre(watchers);
         case ByeMessageData.messageCode:
           if (message.sender.id == _myId) break;
-          _dealWithBye(ByeMessageData.fromJson(message.data));
+          _dealWithBye(message.sender.id);
         case TalkStatusMessageData.messageCode:
           _dealWithTalkStatus(
             message.sender.id,
@@ -163,10 +163,10 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
     }*/
   }
 
-  void _dealWithBye(ByeMessageData data) {
-    _removeWatcher(data.userId);
-    if (_talkerIdsNotifier.value.contains(data.userId)) {
-      _dealWithTalkStatus(data.userId, TalkStatus.end);
+  void _dealWithBye(String userId) {
+    _removeWatcher(userId);
+    if (_talkerIdsNotifier.value.contains(userId)) {
+      _dealWithTalkStatus(userId, TalkStatus.end);
     }
   }
 

@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
-void runAfterBuild(VoidCallback callback) {
+void runAfterBuild(VoidCallback? callback) {
   WidgetsBinding.instance.addPostFrameCallback((_) {
-    callback();
+    callback?.call();
   });
 }

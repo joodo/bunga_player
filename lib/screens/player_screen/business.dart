@@ -3,21 +3,22 @@ import 'dart:async';
 import 'package:bunga_player/chat/business.dart';
 import 'package:bunga_player/chat/global_business.dart';
 import 'package:bunga_player/chat/models/message_data.dart';
-import 'package:bunga_player/chat/models/user.dart';
-import 'package:bunga_player/console/service.dart';
 import 'package:bunga_player/danmaku/business.dart';
 import 'package:bunga_player/play/busuness.dart';
 import 'package:bunga_player/play/models/video_record.dart';
 import 'package:bunga_player/play/payload_parser.dart';
+import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/play_sync/business.dart';
 import 'package:bunga_player/screens/dialogs/open_video/open_video.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/toast.dart';
+import 'package:bunga_player/ui/global_business.dart';
 import 'package:bunga_player/ui/shortcuts.dart';
 import 'package:bunga_player/utils/business/provider.dart';
 import 'package:bunga_player/utils/business/run_after_build.dart';
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:bunga_player/voice_call/business.dart';
+import 'package:bunga_player/voice_call/client/client.agora.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
@@ -74,7 +75,8 @@ class _WidgetBusinessState extends SingleChildState<_WidgetBusiness> {
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
 
-        Navigator.pop(context, context.read<IsInChannel>());
+        _resetPlayState();
+        Navigator.pop(context);
       },
       child: child!,
     );
@@ -125,6 +127,23 @@ class _WidgetBusinessState extends SingleChildState<_WidgetBusiness> {
     _showDanmakuControlNotifier.dispose();
     super.dispose();
   }
+
+  void _resetPlayState() {
+    final read = context.read;
+
+    // Stop playing
+    read<WindowTitleNotifier>().reset();
+    getIt<PlayService>().stop();
+
+    // Send bye message
+    if (read<IsInChannel>().value) {
+      final byeData = ByeMessageData();
+      Actions.invoke(context, SendMessageIntent(byeData));
+    }
+
+    // Stop talking
+    read<AgoraClient?>()?.leaveChannel();
+  }
 }
 
 class PlayScreenBusiness extends SingleChildStatefulWidget {
@@ -135,70 +154,47 @@ class PlayScreenBusiness extends SingleChildStatefulWidget {
 }
 
 class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
-  // Intent that try to join channel
-  ShareVideoIntent? _initShareIntent;
-  final _isJoiningChannelNotifier = ValueNotifier(false)
-    ..watchInConsole('In Channel');
   final _childKey = GlobalKey();
   BuildContext get _childContext => _childKey.currentState!.context;
 
+  late final bool _isInChannel;
+
   @override
-  void initState() {
-    super.initState();
-
-    // Things when joining channel
-    _isJoiningChannelNotifier.addListener(() {
-      runAfterBuild(() {
-        if (_initShareIntent != null) {
-          Actions.invoke(_childContext, _initShareIntent!);
-        } else {
-          // TODO: useless
-          //Actions.invoke(_childContext, AskPositionIntent());
-        }
-      });
-    });
-
-    runAfterBuild(_dealArgument);
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _dealArgument();
   }
 
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
     final widget = _WidgetBusiness(key: _childKey, child: child!);
 
-    final channelWrap = ValueListenableBuilder(
-      valueListenable: _isJoiningChannelNotifier,
-      builder: (context, isJoining, child) => isJoining
-          ? widget
-                .danmakuBusiness()
-                .playSyncBusiness()
-                .channelBusiness()
-                .voiceCallBusiness()
-                .playBusiness()
-          : Actions(
-              actions: {
-                ShareVideoIntent: CallbackAction<ShareVideoIntent>(
-                  onInvoke: (intent) {
-                    _initShareIntent = intent;
-                    _isJoiningChannelNotifier.value = true;
-                    return null;
-                  },
-                ),
-              },
-              child: widget,
-            ).playBusiness(),
-    );
+    final channelWrap = _isInChannel
+        ? widget
+              .danmakuBusiness()
+              .playSyncBusiness()
+              .channelBusiness()
+              .voiceCallBusiness()
+              .playBusiness()
+        : Actions(
+            actions: {
+              JoinInIntent: CallbackAction<JoinInIntent>(
+                onInvoke: (intent) {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const PlayerScreen(),
+                      settings: RouteSettings(arguments: intent.myShare),
+                    ),
+                  );
+                  return null;
+                },
+              ),
+            },
+            child: widget,
+          ).playBusiness();
 
-    return ValueListenableProxyProvider(
-      valueListenable: _isJoiningChannelNotifier,
-      proxy: (value) => IsInChannel(value),
-      child: channelWrap,
-    );
-  }
-
-  @override
-  void dispose() {
-    _isJoiningChannelNotifier.dispose();
-    super.dispose();
+    return Provider.value(value: IsInChannel(_isInChannel), child: channelWrap);
   }
 
   Future<void> _dealArgument() async {
@@ -207,27 +203,33 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
     if (argument is OpenVideoDialogResult) {
       // Join in by open video from dialog
       if (argument.onlyForMe) {
-        Actions.invoke(_childContext, OpenVideoIntent.url(argument.url));
+        _isInChannel = false;
+
+        runAfterBuild(
+          () =>
+              Actions.invoke(_childContext, OpenVideoIntent.url(argument.url)),
+        );
       } else {
+        _isInChannel = true;
         final videoRecord = await PlayPayloadParser(
           context,
         ).parseUrl(argument.url);
 
-        if (!mounted) return;
-        final data = JoinInMessageData(
-          user: User.fromContext(context),
-          myShare: videoRecord,
+        runAfterBuild(
+          () =>
+              Actions.invoke(_childContext, JoinInIntent(myShare: videoRecord)),
         );
-        runAfterBuild(() => Actions.invoke(context, SendMessageIntent(data)));
-        _isJoiningChannelNotifier.value = true;
       }
-    } else if (argument is VideoRecord) {
+    } else if (argument == null) {
       // Join in by "Channel Card" in Welcome screen
-      final data = JoinInMessageData(user: User.fromContext(context));
-      runAfterBuild(() => Actions.invoke(context, SendMessageIntent(data)));
-
-      if (!mounted) return;
-      _isJoiningChannelNotifier.value = true;
+      _isInChannel = true;
+      runAfterBuild(() => Actions.invoke(_childContext, JoinInIntent()));
+    } else if (argument is VideoRecord) {
+      // Join in by "share video to channel" action
+      _isInChannel = true;
+      runAfterBuild(
+        () => Actions.invoke(_childContext, JoinInIntent(myShare: argument)),
+      );
     }
   }
 }

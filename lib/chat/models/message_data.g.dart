@@ -126,10 +126,10 @@ Map<String, dynamic> _$HereIsMessageDataToJson(HereIsMessageData instance) =>
     };
 
 ByeMessageData _$ByeMessageDataFromJson(Map<String, dynamic> json) =>
-    ByeMessageData(userId: json['user_id'] as String);
+    ByeMessageData();
 
 Map<String, dynamic> _$ByeMessageDataToJson(ByeMessageData instance) =>
-    <String, dynamic>{'code': instance.code, 'user_id': instance.userId};
+    <String, dynamic>{'code': instance.code};
 
 PlayAtMessageData _$PlayAtMessageDataFromJson(Map<String, dynamic> json) =>
     PlayAtMessageData(

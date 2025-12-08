@@ -22,7 +22,10 @@ class Header extends StatelessWidget {
 
     if (!context.watch<IsInChannel>().value) {
       return TextButton(
-        onPressed: Actions.handler(context, ShareVideoIntent(payload.record)),
+        onPressed: Actions.handler(
+          context,
+          JoinInIntent(myShare: payload.record),
+        ),
         child: const Text('分享到频道'),
       );
     }
