@@ -131,12 +131,6 @@ ByeMessageData _$ByeMessageDataFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$ByeMessageDataToJson(ByeMessageData instance) =>
     <String, dynamic>{'code': instance.code, 'user_id': instance.userId};
 
-WhereMessageData _$WhereMessageDataFromJson(Map<String, dynamic> json) =>
-    WhereMessageData();
-
-Map<String, dynamic> _$WhereMessageDataToJson(WhereMessageData instance) =>
-    <String, dynamic>{'code': instance.code};
-
 PlayAtMessageData _$PlayAtMessageDataFromJson(Map<String, dynamic> json) =>
     PlayAtMessageData(
       position: Duration(microseconds: (json['position'] as num).toInt()),

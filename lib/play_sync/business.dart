@@ -79,7 +79,7 @@ class ShareVideoAction extends ContextAction<ShareVideoIntent> {
     client!.sendMessage(data.toJson());
   }
 }
-
+/*
 @immutable
 class AskPositionIntent extends Intent {
   const AskPositionIntent();
@@ -92,7 +92,7 @@ class AskPositionAction extends ContextAction<AskPositionIntent> {
     Actions.invoke(context!, SendMessageIntent(messageData));
   }
 }
-
+*/
 // Wrapper
 
 class PlaySyncBusiness extends SingleChildStatefulWidget {
@@ -212,7 +212,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
           },
         ),
         ShareVideoIntent: ShareVideoAction(),
-        AskPositionIntent: AskPositionAction(),
+        //AskPositionIntent: AskPositionAction(),
       },
     );
 

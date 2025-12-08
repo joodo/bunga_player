@@ -31,7 +31,7 @@ class _OpenVideoDialogState extends State<OpenVideoDialog> {
       builder: (context, shareModeNotifier, child) =>
           [
             AnimatedTheme(
-              data: shareModeNotifier.value
+              data: widget.forceShareToChannel || shareModeNotifier.value
                   ? theme
                   : theme.copyWith(
                       colorScheme: ColorScheme.fromSeed(

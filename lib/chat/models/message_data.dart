@@ -202,22 +202,6 @@ class ByeMessageData extends MessageData {
   Map<String, dynamic> toJson() => _$ByeMessageDataToJson(this);
 }
 
-/// Send when asking playing position
-@JsonSerializable()
-class WhereMessageData extends MessageData {
-  static const messageCode = 'where';
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: true)
-  final code = messageCode;
-
-  WhereMessageData();
-
-  factory WhereMessageData.fromJson(Map<String, dynamic> json) =>
-      _$WhereMessageDataFromJson(json);
-  @override
-  Map<String, dynamic> toJson() => _$WhereMessageDataToJson(this);
-}
-
 /// Send when change play status
 /// Receive when some change status
 @JsonSerializable()
@@ -237,6 +221,24 @@ class PlayAtMessageData extends MessageData {
   @override
   Map<String, dynamic> toJson() => _$PlayAtMessageDataToJson(this);
 }
+
+/*
+/// Send when asking playing position
+@JsonSerializable()
+class WhereMessageData extends MessageData {
+  static const messageCode = 'where';
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: true)
+  final code = messageCode;
+
+  WhereMessageData();
+
+  factory WhereMessageData.fromJson(Map<String, dynamic> json) =>
+      _$WhereMessageDataFromJson(json);
+  @override
+  Map<String, dynamic> toJson() => _$WhereMessageDataToJson(this);
+}
+*/
 
 /// Send popmoji
 @JsonSerializable()

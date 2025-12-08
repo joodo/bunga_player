@@ -153,7 +153,7 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
           Actions.invoke(_childContext, _initShareIntent!);
         } else {
           // TODO: useless
-          Actions.invoke(_childContext, AskPositionIntent());
+          //Actions.invoke(_childContext, AskPositionIntent());
         }
       });
     });
