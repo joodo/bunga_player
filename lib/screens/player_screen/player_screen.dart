@@ -27,24 +27,16 @@ class PlayerScreen extends StatelessWidget {
                 height: danmakuHeight,
               )
             : const SizedBox.shrink(key: Key('none'));
-        final panelWidget =
-            panel?.splitView(
+        return [playerWidget.flexible(), _animate(danmakuWidget, .vertical)]
+            .toColumn()
+            .splitView(
               minSize: 260.0,
               size: 300.0,
               maxSize: 450.0,
-              direction: .left,
-            ) ??
-            const SizedBox.shrink(key: ValueKey('none'));
-        return [
-          [
-            playerWidget.flexible(),
-            _animate(danmakuWidget, .vertical),
-          ].toColumn().flexible(),
-          _animate(panelWidget, .horizontal),
-        ].toRow().animate(
-          const Duration(milliseconds: 350),
-          Curves.easeOutCubic,
-        );
+              direction: .right,
+              split: panel,
+            )
+            .animate(const Duration(milliseconds: 350), Curves.easeOutCubic);
       },
       child: const Player(),
     );

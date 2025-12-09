@@ -16,27 +16,22 @@ import 'package:styled_widget/styled_widget.dart';
 
 import 'wrapper.dart';
 
-class Console extends StatefulWidget {
+class Console extends StatelessWidget {
   final TextEditingController logTextController;
   const Console({super.key, required this.logTextController});
 
-  @override
-  State<Console> createState() => _ConsoleState();
-}
-
-class _ConsoleState extends State<Console> {
   @override
   Widget build(BuildContext context) {
     final logView = [
       [
         SelectableText(logger.path).flexible(),
         FilledButton(
-          onPressed: widget.logTextController.clear,
+          onPressed: logTextController.clear,
           child: const Text('Clear'),
         ),
       ].toRow().padding(bottom: 8.0),
       TextField(
-        controller: widget.logTextController,
+        controller: logTextController,
         decoration: const InputDecoration(border: OutlineInputBorder()),
         style: Theme.of(context).textTheme.labelMedium,
         expands: true,
@@ -98,6 +93,7 @@ class _ConsoleState extends State<Console> {
       ),
     ].toColumn(separator: const SizedBox(height: 8));
 
+    final positionNotifier = context.read<ConsolePositionNotifier>();
     final consoleView = DefaultTabController(
       length: 3,
       child: [
@@ -111,10 +107,26 @@ class _ConsoleState extends State<Console> {
               Tab(text: 'Actions'),
             ],
           ).flexible(),
+          ValueListenableBuilder(
+            valueListenable: positionNotifier,
+            builder: (context, position, child) {
+              return SegmentedButton<AxisDirection>(
+                segments: [
+                  ButtonSegment(value: .left, icon: Icon(Icons.border_left)),
+                  ButtonSegment(value: .down, icon: Icon(Icons.border_bottom)),
+                  ButtonSegment(value: .right, icon: Icon(Icons.border_right)),
+                ],
+                selected: {position},
+                onSelectionChanged: (value) =>
+                    positionNotifier.value = value.first,
+                showSelectedIcon: false,
+              );
+            },
+          ),
           CloseButton(
             onPressed: Actions.handler(context, ToggleConsoleIntent()),
           ),
-        ].toRow(),
+        ].toRow(separator: const SizedBox(width: 8)),
         TabBarView(
           children: [
             Padding(padding: const EdgeInsets.all(8), child: logView),

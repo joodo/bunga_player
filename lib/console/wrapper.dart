@@ -3,22 +3,35 @@ import 'package:bunga_player/services/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:nested/nested.dart';
-import 'package:styled_widget/styled_widget.dart';
+import 'package:provider/provider.dart';
 
 import 'service.dart';
 import 'widget.dart';
 
 class ToggleConsoleIntent extends Intent {}
 
+class ConsolePositionNotifier extends ValueNotifier<AxisDirection> {
+  ConsolePositionNotifier() : super(.left);
+}
+
 class ConsoleWrapper extends SingleChildStatefulWidget {
   const ConsoleWrapper({super.key, super.child});
 
   @override
-  State<ConsoleWrapper> createState() => ConsoleGlobalBusinessState();
+  State<ConsoleWrapper> createState() => ConsoleWrapperState();
 }
 
-class ConsoleGlobalBusinessState extends SingleChildState<ConsoleWrapper> {
+class ConsoleWrapperState extends SingleChildState<ConsoleWrapper> {
   bool _showConsole = false;
+
+  final _consolePositionNotifier = ConsolePositionNotifier();
+
+  @override
+  void dispose() {
+    _consolePositionNotifier.dispose();
+    super.dispose();
+  }
+
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
     final focus = Focus(
@@ -28,17 +41,18 @@ class ConsoleGlobalBusinessState extends SingleChildState<ConsoleWrapper> {
 
     final console = Console(
       logTextController: getIt<ConsoleService>().logTextController,
-    ).splitView(
-      minSize: 300.0,
-      size: 400.0,
-      maxSize: 1000.0,
-      direction: .right,
     );
 
-    final row = [
-      if (_showConsole) console,
-      focus.expanded(),
-    ].toRow();
+    final split = ValueListenableBuilder(
+      valueListenable: _consolePositionNotifier,
+      builder: (context, direction, child) => focus.splitView(
+        minSize: 300.0,
+        size: 400.0,
+        maxSize: 1000.0,
+        direction: direction,
+        split: _showConsole ? console : null,
+      ),
+    );
 
     final actions = Actions(
       actions: {
@@ -51,7 +65,7 @@ class ConsoleGlobalBusinessState extends SingleChildState<ConsoleWrapper> {
           },
         ),
       },
-      child: row,
+      child: split,
     );
 
     final shortcuts = Shortcuts(
@@ -61,6 +75,11 @@ class ConsoleGlobalBusinessState extends SingleChildState<ConsoleWrapper> {
       child: actions,
     );
 
-    return shortcuts;
+    final provider = Provider.value(
+      value: _consolePositionNotifier,
+      child: shortcuts,
+    );
+
+    return provider;
   }
 }
