@@ -46,16 +46,6 @@ class PlayEqPresetNotifier extends ValueNotifier<BCSGHPreset?> {
   PlayEqPresetNotifier() : super(presets.first);
 }
 
-@immutable
-class BusyCount {
-  final int _count;
-  const BusyCount(this._count);
-
-  bool get isBusy => _count > 0;
-  BusyCount get increase => BusyCount(_count + 1);
-  BusyCount get decrease => BusyCount(_count - 1);
-}
-
 class SavedPositionNotifier extends ValueNotifier<Duration?> {
   SavedPositionNotifier() : super(null);
 }
@@ -122,12 +112,10 @@ class OpenVideoIntent extends Intent {
 
 class OpenVideoAction extends ContextAction<OpenVideoIntent> {
   final ValueNotifier<PlayPayload?> payloadNotifer;
-  final ValueNotifier<BusyCount> busyCountNotifier;
   final ValueNotifier<DirInfo?> dirInfoNotifier;
 
   OpenVideoAction({
     required this.payloadNotifer,
-    required this.busyCountNotifier,
     required this.dirInfoNotifier,
   });
 
@@ -139,10 +127,10 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
     assert(context != null);
 
     final parser = PlayPayloadParser(context!);
+    final busyNotifier = context.read<BusyStateNotifier>();
 
-    // Open video
     try {
-      busyCountNotifier.value = busyCountNotifier.value.increase;
+      busyNotifier.add('open video');
 
       final payload =
           intent.payload ??
@@ -172,7 +160,7 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
       getIt<Toast>().show('载入视频失败');
       rethrow;
     } finally {
-      busyCountNotifier.value = busyCountNotifier.value.decrease;
+      busyNotifier.remove('open video');
     }
   }
 
@@ -310,7 +298,7 @@ class ToggleAction extends ContextAction<ToggleIntent> {
   bool isEnabled(ToggleIntent intent, [BuildContext? context]) {
     if (context == null) return false;
 
-    final isBusy = context.read<BusyCount>().isBusy;
+    final isBusy = context.read<BusyStateNotifier>().isBusy;
     return !isBusy;
   }
 }
@@ -353,13 +341,13 @@ class PlayBusiness extends SingleChildStatefulWidget {
 
 class _PlayBusinessState extends SingleChildState<PlayBusiness> {
   // Progress indicator
-  final _busyCountNotifer = ValueNotifier(const BusyCount(0));
   late final _isVideoBufferingNotifier =
       getIt<PlayService>().isBufferingNotifier;
-  void _updateBusyCount() {
-    _busyCountNotifer.value = _isVideoBufferingNotifier.value
-        ? _busyCountNotifer.value.increase
-        : _busyCountNotifer.value.decrease;
+  void _updateBusyState() {
+    final notifier = context.read<BusyStateNotifier>();
+    _isVideoBufferingNotifier.value
+        ? notifier.add('video buffering')
+        : notifier.remove('video buffering');
   }
 
   // Play payload
@@ -382,7 +370,7 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
   void initState() {
     super.initState();
 
-    _isVideoBufferingNotifier.addListener(_updateBusyCount);
+    _isVideoBufferingNotifier.addListener(_updateBusyState);
 
     // History
     _history = context.read<History>();
@@ -408,7 +396,6 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
       actions: {
         UpdateVolumeIntent: UpdateVolumeAction(),
         OpenVideoIntent: OpenVideoAction(
-          busyCountNotifier: _busyCountNotifer,
           dirInfoNotifier: _dirInfoNotifier,
           payloadNotifer: _playPayloadNotifier,
         ),
@@ -428,7 +415,6 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
       providers: [
         ValueListenableProvider.value(value: _playPayloadNotifier),
         ValueListenableProvider.value(value: _dirInfoNotifier),
-        ValueListenableProvider.value(value: _busyCountNotifer),
         ChangeNotifierProvider(create: (context) => PlayEqPresetNotifier()),
       ],
       child: actions,
@@ -438,9 +424,8 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
   @override
   void dispose() {
     _playPayloadNotifier.dispose();
-    _busyCountNotifer.dispose();
 
-    _isVideoBufferingNotifier.removeListener(_updateBusyCount);
+    _isVideoBufferingNotifier.removeListener(_updateBusyState);
 
     _history.save();
     _saveWatchProgressTimer.cancel();

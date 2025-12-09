@@ -145,6 +145,7 @@ class _VariablesView extends StatefulWidget {
 class _VariablesViewState extends State<_VariablesView> {
   @override
   Widget build(BuildContext context) {
+    final service = getIt<ConsoleService>();
     // Variables
     final variables = Table(
       border: TableBorder.all(color: Theme.of(context).colorScheme.onSurface),
@@ -152,29 +153,56 @@ class _VariablesViewState extends State<_VariablesView> {
         0: IntrinsicColumnWidth(),
         1: FlexColumnWidth(),
       },
-      children: getIt<ConsoleService>().watchingValueListenables.entries.map((
-        entry,
-      ) {
-        // Check disposed or not, a little bit dirty
-        late final Widget content;
-        try {
-          entry.value.addListener(() {});
-          entry.value.removeListener(() {});
-          content = ValueListenableBuilder(
-            valueListenable: entry.value,
-            builder: (context, value, child) =>
-                SelectableText(value.toString()),
+      children: [
+        ...service.watchingListenables.entries.map((entry) {
+          late final Widget content;
+          try {
+            // Check disposed or not, a little bit dirty
+            entry.value.addListener(() {});
+            entry.value.removeListener(() {});
+
+            content = ListenableBuilder(
+              listenable: entry.value,
+              builder: (context, child) =>
+                  SelectableText(entry.value.toString()),
+            );
+          } catch (_) {
+            content = SelectableText('(disposed)');
+          }
+          return TableRow(
+            children: [
+              SelectableText(
+                entry.key,
+              ).padding(vertical: 8.0, horizontal: 16.0),
+              content.padding(vertical: 8.0, horizontal: 16.0),
+            ],
           );
-        } catch (_) {
-          content = SelectableText('(disposed)');
-        }
-        return TableRow(
-          children: [
-            SelectableText(entry.key).padding(vertical: 8.0, horizontal: 16.0),
-            content.padding(vertical: 8.0, horizontal: 16.0),
-          ],
-        );
-      }).toList(),
+        }),
+        ...service.watchingValueListenables.entries.map((entry) {
+          late final Widget content;
+          try {
+            // Check disposed or not, a little bit dirty
+            entry.value.addListener(() {});
+            entry.value.removeListener(() {});
+
+            content = ValueListenableBuilder(
+              valueListenable: entry.value,
+              builder: (context, value, child) =>
+                  SelectableText(value.toString()),
+            );
+          } catch (_) {
+            content = SelectableText('(disposed)');
+          }
+          return TableRow(
+            children: [
+              SelectableText(
+                entry.key,
+              ).padding(vertical: 8.0, horizontal: 16.0),
+              content.padding(vertical: 8.0, horizontal: 16.0),
+            ],
+          );
+        }),
+      ],
     );
 
     // Preferences

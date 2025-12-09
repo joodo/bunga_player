@@ -5,6 +5,7 @@ import 'package:animations/animations.dart';
 import 'package:bunga_player/chat/client/client.dart';
 import 'package:bunga_player/console/service.dart';
 import 'package:bunga_player/play/payload_parser.dart';
+import 'package:bunga_player/ui/global_business.dart';
 import 'package:bunga_player/ui/shortcuts.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
@@ -53,7 +54,11 @@ class WatcherSyncStatusNotifier extends ChangeNotifier {
   Iterable<String> get bufferingUserIds => _syncStatus.entries
       .where((entry) => entry.value == .buffering)
       .map((entry) => entry.key);
+  bool get isAnyBuffering => bufferingUserIds.isNotEmpty;
   SyncStatus syncStatusOf(String userId) => _syncStatus[userId] ?? .buffering;
+
+  @override
+  String toString() => _syncStatus.toString();
 }
 
 // Actions
@@ -106,6 +111,7 @@ class PlaySyncBusiness extends SingleChildStatefulWidget {
 }
 
 class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
+  // Anti-spam for remote toggle
   final _remoteJustToggledNotifier = AutoResetNotifier(
     const Duration(seconds: 1),
   );
@@ -115,7 +121,15 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
 
   // Player status
   final _playerBufferingNotifier = getIt<PlayService>().bufferingNotifier;
-  final _watchersSyncStatusNotifier = WatcherSyncStatusNotifier();
+  final _watchersSyncStatusNotifier = WatcherSyncStatusNotifier()
+    ..watchInConsole('Watchers Sync Status');
+
+  void _updateBusyState() {
+    final notifier = context.read<BusyStateNotifier>();
+    _watchersSyncStatusNotifier.isAnyBuffering
+        ? notifier.add('watchers buffering')
+        : notifier.remove('watchers buffering');
+  }
 
   // Subtitle sharing
   final _channelSubtitleNotifier = ValueNotifier<ChannelSubtitle?>(null)
@@ -157,6 +171,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
     });
 
     _playerBufferingNotifier.addListener(_sendBufferingStatus);
+    _watchersSyncStatusNotifier.addListener(_updateBusyState);
 
     // TODO: useless
     //_fetchPlayStatus();
@@ -165,6 +180,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
   @override
   void dispose() {
     _playerBufferingNotifier.removeListener(_sendBufferingStatus);
+    _watchersSyncStatusNotifier.removeListener(_updateBusyState);
 
     _remoteJustToggledNotifier.dispose();
     _channelSubtitleNotifier.dispose();

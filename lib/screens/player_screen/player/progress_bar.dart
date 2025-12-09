@@ -72,7 +72,8 @@ class _VideoProgressBarState extends State<VideoProgressBar> {
               .toDouble(),
           max: duration.inMilliseconds.toDouble(),
           focusNode: FocusNode(
-              canRequestFocus: false), // avoid control by left / right key
+            canRequestFocus: false,
+          ), // avoid control by left / right key
           label: position.hhmmss,
           onChangeStart: (value) {
             _positionNotifier.removeListener(_followPlayerPosition);
@@ -119,14 +120,12 @@ class _VideoProgressBarState extends State<VideoProgressBar> {
         );
 
         return TweenAnimationBuilder(
-          tween: Tween<double>(
-            end: _isHovered || _isDragging ? 1.0 : 0.0,
-          ),
+          tween: Tween<double>(end: _isHovered || _isDragging ? 1.0 : 0.0),
           duration: const Duration(milliseconds: 100),
           curve: Curves.easeInCubic,
           builder: (context, value, child) {
-            return Selector<BusyCount, bool>(
-              selector: (context, count) => count.isBusy,
+            return Selector<BusyStateNotifier, bool>(
+              selector: (context, state) => state.isBusy,
               builder: (context, isBusy, _) {
                 final trackColor = isBusy ? Colors.transparent : null;
                 return SliderTheme(

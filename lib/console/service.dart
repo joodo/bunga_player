@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 class ConsoleService {
   final logTextController = TextEditingController();
+  final watchingListenables = <String, Listenable>{};
   final watchingValueListenables = <String, ValueListenable>{};
 
   ConsoleService() {
@@ -14,7 +15,12 @@ class ConsoleService {
   }
 }
 
-extension Watch on ValueListenable {
+extension Watch on Listenable {
+  void watchInConsole(String name) =>
+      getIt<ConsoleService>().watchingListenables[name] = this;
+}
+
+extension WatchValues on ValueListenable {
   void watchInConsole(String name) =>
       getIt<ConsoleService>().watchingValueListenables[name] = this;
 }

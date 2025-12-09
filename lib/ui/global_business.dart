@@ -1,3 +1,4 @@
+import 'package:bunga_player/console/service.dart';
 import 'package:bunga_player/services/exit_callbacks.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
@@ -99,6 +100,26 @@ class ScreenBrightnessNotifier extends ValueNotifier<double> {
   }
 }
 
+class BusyStateNotifier extends ChangeNotifier {
+  final _reasons = <String>[];
+  bool get isBusy => _reasons.isNotEmpty;
+
+  void add(String reason) {
+    if (_reasons.contains(reason)) return;
+    _reasons.add(reason);
+    notifyListeners();
+  }
+
+  void remove(String reason) {
+    if (_reasons.remove(reason)) notifyListeners();
+  }
+
+  @override
+  String toString() {
+    return _reasons.toString();
+  }
+}
+
 class UIGlobalBusiness extends SingleChildStatefulWidget {
   const UIGlobalBusiness({super.key, super.child});
 
@@ -145,6 +166,10 @@ class _UIGlobalBusinessState extends SingleChildState<UIGlobalBusiness> {
         ChangeNotifierProvider(create: (context) => AutoJoinChannelNotifier()),
         ChangeNotifierProvider(create: (context) => DialogShareModeNotifier()),
         ChangeNotifierProvider(create: (context) => ShortcutMappingNotifier()),
+        ChangeNotifierProvider(
+          create: (context) =>
+              BusyStateNotifier()..watchInConsole('Busy State'),
+        ),
         Provider.value(value: BungaAudioPlayer()),
       ],
       child: child,

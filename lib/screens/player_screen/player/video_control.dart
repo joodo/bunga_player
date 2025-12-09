@@ -28,79 +28,77 @@ class VideoControl extends StatelessWidget {
     final showHud = context.read<ShouldShowHUDNotifier>();
 
     return LayoutBuilder(
-        builder: (context, constraints) => [
-              // Play button
-              const _PlayButton().padding(left: 8.0),
+      builder: (context, constraints) => [
+        // Play button
+        const _PlayButton().padding(left: 8.0),
 
-              if (constraints.maxWidth > 420) const ControlDivider(),
+        if (constraints.maxWidth > 420) const ControlDivider(),
 
-              // Volume section
-              if (constraints.maxWidth > 630) const _SliderSection(),
-              if (constraints.maxWidth > 630) const ControlDivider(),
+        // Volume section
+        if (constraints.maxWidth > 630) const _SliderSection(),
+        if (constraints.maxWidth > 630) const ControlDivider(),
 
-              const Spacer(),
+        const Spacer(),
 
-              // Duration button
-              if (constraints.maxWidth > 420) const _DurationButton(),
-              if (constraints.maxWidth > 420) const Spacer(),
-              if (constraints.maxWidth > 420) const ControlDivider(),
+        // Duration button
+        if (constraints.maxWidth > 420) const _DurationButton(),
+        if (constraints.maxWidth > 420) const Spacer(),
+        if (constraints.maxWidth > 420) const ControlDivider(),
 
-              // Danmaku Button
-              Consumer2<DanmakuVisible, IsInChannel>(
-                builder: (context, visible, inChannel, child) => IconButton(
-                  icon: const Icon(Icons.mood),
-                  isSelected: visible.value,
-                  onPressed: inChannel.value
-                      ? Actions.handler(
-                          context,
-                          ToggleDanmakuControlIntent(),
-                        )
-                      : null,
-                ),
+        // Danmaku Button
+        Consumer2<DanmakuVisible, IsInChannel>(
+          builder: (context, visible, inChannel, child) => IconButton(
+            icon: const Icon(Icons.mood),
+            isSelected: visible.value,
+            onPressed: inChannel.value
+                ? Actions.handler(context, ToggleDanmakuControlIntent())
+                : null,
+          ),
+        ),
+
+        // Dir button
+        StyledWidget(
+          IconButton(
+            icon: const Icon(Icons.queue_music),
+            onPressed: () {
+              Actions.invoke(
+                context,
+                ShowPanelIntent(builder: (context) => const PlaylistPanel()),
+              );
+            },
+          ),
+        ).padding(right: 8.0),
+
+        // More button
+        if (!kIsDesktop)
+          MenuBuilder(
+            builder: (context, menuChildren, child) => MenuAnchor(
+              builder: (context, controller, child) => IconButton(
+                onPressed: controller.isOpen
+                    ? controller.close
+                    : controller.open,
+                icon: const Icon(Icons.more_horiz),
               ),
+              onOpen: () => showHud.lockUp('popup menu'),
+              onClose: () => showHud.unlock('popup menu'),
+              consumeOutsideTap: true,
+              alignmentOffset: Offset(-48.0, 16.0),
+              menuChildren: menuChildren,
+            ),
+          ).padding(right: 8.0),
 
-              // Dir button
-              StyledWidget(IconButton(
-                icon: const Icon(Icons.queue_music),
-                onPressed: () {
-                  Actions.invoke(
-                    context,
-                    ShowPanelIntent(
-                      builder: (context) => const PlaylistPanel(),
-                    ),
-                  );
-                },
-              )).padding(right: 8.0),
-
-              // More button
-              if (!kIsDesktop)
-                MenuBuilder(
-                  builder: (context, menuChildren, child) => MenuAnchor(
-                    builder: (context, controller, child) => IconButton(
-                      onPressed: controller.isOpen
-                          ? controller.close
-                          : controller.open,
-                      icon: const Icon(Icons.more_horiz),
-                    ),
-                    onOpen: () => showHud.lockUp('popup menu'),
-                    onClose: () => showHud.unlock('popup menu'),
-                    consumeOutsideTap: true,
-                    alignmentOffset: Offset(-48.0, 16.0),
-                    menuChildren: menuChildren,
-                  ),
-                ).padding(right: 8.0),
-
-              // Full screen button
-              if (kIsDesktop)
-                Consumer<IsFullScreenNotifier>(
-                  builder: (context, isFullScreen, child) => IconButton(
-                    icon: isFullScreen.value
-                        ? const Icon(Icons.fullscreen_exit)
-                        : const Icon(Icons.fullscreen),
-                    onPressed: () => isFullScreen.value = !isFullScreen.value,
-                  ),
-                ).padding(right: 8.0),
-            ].toRow());
+        // Full screen button
+        if (kIsDesktop)
+          Consumer<IsFullScreenNotifier>(
+            builder: (context, isFullScreen, child) => IconButton(
+              icon: isFullScreen.value
+                  ? const Icon(Icons.fullscreen_exit)
+                  : const Icon(Icons.fullscreen),
+              onPressed: () => isFullScreen.value = !isFullScreen.value,
+            ),
+          ).padding(right: 8.0),
+      ].toRow(),
+    );
   }
 }
 
@@ -117,8 +115,10 @@ class _PlayButtonState extends State<_PlayButton>
     vsync: this,
     duration: const Duration(milliseconds: 150),
   );
-  late final animation =
-      Tween<double>(begin: 0.0, end: 1.0).animate(controller);
+  late final animation = Tween<double>(
+    begin: 0.0,
+    end: 1.0,
+  ).animate(controller);
 
   @override
   void initState() {
@@ -137,8 +137,8 @@ class _PlayButtonState extends State<_PlayButton>
       valueListenable: getIt<PlayService>().playStatusNotifier,
       builder: (context, status, child) {
         status.isPlaying ? controller.forward() : controller.reverse();
-        return Selector<BusyCount, bool>(
-          selector: (context, count) => count.isBusy,
+        return Selector<BusyStateNotifier, bool>(
+          selector: (context, notifier) => notifier.isBusy,
           builder: (context, isBusy, child) => IconButton.filledTonal(
             icon: AnimatedIcon(
               icon: AnimatedIcons.play_pause,
@@ -148,9 +148,9 @@ class _PlayButtonState extends State<_PlayButton>
             onPressed: isBusy
                 ? null
                 : () => Actions.maybeInvoke(
-                      context,
-                      const ToggleIntent(forgetSavedPosition: true),
-                    ),
+                    context,
+                    const ToggleIntent(forgetSavedPosition: true),
+                  ),
           ),
         );
       },
@@ -189,10 +189,7 @@ class _SliderSection extends StatelessWidget {
             UpdateVolumeIntent(Volume(volume: value.toInt())),
           ),
           onChangeEnd: (value) {
-            Actions.invoke(
-              context,
-              UpdateVolumeIntent.save(),
-            );
+            Actions.invoke(context, UpdateVolumeIntent.save());
             context.read<ShouldShowHUDNotifier>().unlock('volume slider');
           },
           focusNode: FocusNode(canRequestFocus: false),
@@ -238,9 +235,9 @@ class _DurationButtonState extends State<_DurationButton> {
             : '${position.hhmmss} / ${duration.hhmmss}';
         return TextButton(
           onPressed: _showRemainNotifier.toggle,
-          child: Text(displayString).textStyle(
-            Theme.of(context).textTheme.labelMedium!,
-          ),
+          child: Text(
+            displayString,
+          ).textStyle(Theme.of(context).textTheme.labelMedium!),
         );
       },
     );
