@@ -1,6 +1,3 @@
-import 'dart:io';
-
-import 'package:animations/animations.dart';
 import 'package:bunga_player/chat/models/user.dart';
 import 'package:bunga_player/ui/audio_player.dart';
 import 'package:flutter/material.dart';
@@ -9,14 +6,11 @@ import 'package:styled_widget/styled_widget.dart';
 
 import 'package:bunga_player/chat/models/message_data.dart';
 import 'package:bunga_player/screens/dialogs/open_video/open_video.dart';
-import 'package:bunga_player/screens/dialogs/open_video/direct_link.dart';
-import 'package:bunga_player/screens/dialogs/video_conflict.dart';
 import 'package:bunga_player/bunga_server/global_business.dart';
 import 'package:bunga_player/bunga_server/models/bunga_server_info.dart';
 import 'package:bunga_player/chat/models/message.dart';
 import 'package:bunga_player/screens/player_screen/player_screen.dart';
 import 'package:bunga_player/ui/global_business.dart';
-import 'package:bunga_player/utils/extensions/file.dart';
 
 import 'arrow.dart';
 import 'open_video_button.dart';
@@ -105,7 +99,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   }
 
   void _dealWithNowPlaying(User sharer, NowPlayingMessageData data) {
-    if (_currentProjection != null) return; // TODO: why?
+    //if (_currentProjection != null) return; // TODO: why?
     _dealWithProjection(
       sharer,
       StartProjectionMessageData(videoRecord: data.videoRecord),
@@ -119,32 +113,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
   void _joinChannel() async {
     if (_currentProjection == null) return;
-    final data = _currentProjection!;
-
-    final record = data.videoRecord;
-    if (record.source != 'local' || File(record.path).existsSync()) {
-      _pushRoute(null);
-    } else {
-      // Remote local video not exist
-      final path = await LocalVideoDialog.exec();
-      if (path == null) return;
-
-      final file = File(path);
-      final crc = await file.crcString();
-
-      if (!mounted) return;
-      if (!record.id.endsWith(crc)) {
-        final confirmOpen = await showModal<bool>(
-          context: context,
-          builder: (context) => const VideoConflictDialog(),
-        );
-        if (!mounted || confirmOpen != true) return;
-      }
-
-      // TODO: deal local file
-      //_pushRoute(data.videoRecord.copyWith(path: path));
-      _pushRoute(null);
-    }
+    _pushRoute(null);
   }
 
   void _pushRoute(dynamic argument) {

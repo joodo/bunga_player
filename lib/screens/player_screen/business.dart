@@ -175,26 +175,34 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
               .playSyncBusiness()
               .channelBusiness()
               .voiceCallBusiness()
-              .playBusiness()
-        : Actions(
-            actions: {
-              JoinInIntent: CallbackAction<JoinInIntent>(
-                onInvoke: (intent) {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const PlayerScreen(),
-                      settings: RouteSettings(arguments: intent.myShare),
-                    ),
-                  );
-                  return null;
-                },
-              ),
-            },
-            child: widget,
-          ).playBusiness();
+        : _wrapJoinInAction(widget);
+    final businessWrap = channelWrap.playBusiness();
+    final provider = Provider.value(
+      value: IsInChannel(_isInChannel),
+      child: businessWrap,
+    );
 
-    return Provider.value(value: IsInChannel(_isInChannel), child: channelWrap);
+    return provider;
+  }
+
+  Widget _wrapJoinInAction(Widget child) {
+    return Actions(
+      actions: {
+        JoinInIntent: CallbackAction<JoinInIntent>(
+          onInvoke: (intent) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const PlayerScreen(),
+                settings: RouteSettings(arguments: intent.myShare),
+              ),
+            );
+            return null;
+          },
+        ),
+      },
+      child: child,
+    );
   }
 
   Future<void> _dealArgument() async {
