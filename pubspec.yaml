@@ -12,7 +12,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # video play
+  # Video play
   media_kit: ^1.2.2
   media_kit_video: ^2.0.0
   media_kit_libs_video: ^1.0.7
@@ -60,7 +60,7 @@ dependencies:
   shared_preferences: ^2.5.3
   async: ^2.13.0
   collection: ^1.19.1
-  uuid: ^4.5.2
+  nanoid_plus: ^1.8.0
   json_annotation: ^4.9.0
   freezed_annotation: ^3.1.0
   get_it: ^9.0.5

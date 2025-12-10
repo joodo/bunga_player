@@ -1,12 +1,12 @@
-import 'package:bunga_player/console/service.dart';
-import 'package:bunga_player/utils/business/generate_username.dart';
-import 'package:flutter/material.dart';
+import 'package:nanoid_plus/nanoid_plus.dart';
 import 'package:nested/nested.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:uuid/uuid.dart';
 
+import 'package:bunga_player/console/service.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
+import 'package:bunga_player/utils/business/generate_username.dart';
 import 'package:bunga_player/utils/business/generate_password.dart';
 
 import 'models/client_account.dart';
@@ -38,20 +38,17 @@ class ClientInfoGlobalBusiness extends SingleChildStatelessWidget {
   Widget buildWithChild(BuildContext context, Widget? child) {
     final clientId = getIt<Preferences>().getOrCreate(
       'client_id',
-      const Uuid().v4(),
+      Nanoid().urlSafe(length: 8),
+    );
+    final password = getIt<Preferences>().getOrCreate(
+      'client_pwd',
+      generatePassword(),
     );
     return MultiProvider(
       providers: [
         ValueListenableProvider.value(
-          value: ValueNotifier(
-            ClientAccount(
-              id: clientId,
-              password: getIt<Preferences>().getOrCreate(
-                'client_pwd',
-                generatePassword(),
-              ),
-            ),
-          )..watchInConsole('Client Account'),
+          value: ValueNotifier(ClientAccount(id: clientId, password: password))
+            ..watchInConsole('Client Account'),
         ),
         ChangeNotifierProxyProvider<ClientAccount, ClientColorHueNotifier?>(
           create: (context) => null,
