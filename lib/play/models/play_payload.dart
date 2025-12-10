@@ -1,33 +1,43 @@
+import 'dart:convert';
+
 import 'video_record.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'play_payload.freezed.dart';
+part 'play_payload.g.dart';
 
-@immutable
-class VideoSources {
-  final List<String> videos;
-  final List<String>? audios;
-  final Map<String, String>? requestHeaders;
+@freezed
+abstract class VideoSources with _$VideoSources {
+  const VideoSources._();
 
-  const VideoSources({required this.videos, this.audios, this.requestHeaders});
-  VideoSources.single(String url, {this.requestHeaders})
-    : videos = [url],
-      audios = null;
+  const factory VideoSources({
+    required List<String> videos,
+    List<String>? audios,
+    Map<String, String>? requestHeaders,
+  }) = _VideoSources;
 
-  @override
-  String toString() {
-    return {
-      'videos': videos.toString(),
-      'audios': audios.toString(),
-    }.toString();
-  }
+  factory VideoSources.single(
+    String url, {
+    Map<String, String>? requestHeaders,
+  }) => VideoSources(videos: [url], requestHeaders: requestHeaders);
+
+  factory VideoSources.fromJson(Map<String, dynamic> json) =>
+      _$VideoSourcesFromJson(json);
 }
 
 @freezed
 abstract class PlayPayload with _$PlayPayload {
-  factory PlayPayload({
+  const PlayPayload._();
+
+  const factory PlayPayload({
     required VideoRecord record,
     required VideoSources sources,
     @Default(0) int videoSourceIndex,
   }) = _PlayPayload;
+
+  factory PlayPayload.fromJson(Map<String, dynamic> json) =>
+      _$PlayPayloadFromJson(json);
+
+  @override
+  String toString() => jsonEncode(toJson());
 }

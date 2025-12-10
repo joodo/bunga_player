@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:animations/animations.dart';
@@ -58,7 +59,8 @@ class WatcherSyncStatusNotifier extends ChangeNotifier {
   SyncStatus syncStatusOf(String userId) => _syncStatus[userId] ?? .buffering;
 
   @override
-  String toString() => _syncStatus.toString();
+  String toString() =>
+      jsonEncode(_syncStatus.map((key, value) => MapEntry(key, value.name)));
 }
 
 // Actions

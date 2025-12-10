@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:bunga_player/ui/audio_player.dart';
 import 'package:flutter/foundation.dart';
@@ -27,6 +28,9 @@ class Watchers extends Iterable<User> {
 
   @override
   Iterator<User> get iterator => iterable.iterator;
+
+  @override
+  String toString() => jsonEncode(map((e) => e.toJson()).toList());
 }
 
 class WatchersNotifier extends ChangeNotifier

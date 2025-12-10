@@ -1,5 +1,7 @@
 import 'package:bunga_player/screens/widgets/split_view.dart';
 import 'package:bunga_player/services/services.dart';
+import 'package:bunga_player/services/preferences.dart';
+import 'package:bunga_player/utils/enum.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:nested/nested.dart';
@@ -11,7 +13,13 @@ import 'widget.dart';
 class ToggleConsoleIntent extends Intent {}
 
 class ConsolePositionNotifier extends ValueNotifier<AxisDirection> {
-  ConsolePositionNotifier() : super(.left);
+  ConsolePositionNotifier() : super(.left) {
+    bindPreference<String>(
+      key: 'console_position',
+      load: (pref) => enumFromString(AxisDirection.values, pref) ?? .left,
+      update: (value) => value.name,
+    );
+  }
 }
 
 class ConsoleWrapper extends SingleChildStatefulWidget {
