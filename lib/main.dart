@@ -41,7 +41,7 @@ void main() async {
       runApp(WrappedWidget());
     },
     (error, stackTrace) {
-      logger.e(error, stackTrace: stackTrace);
+      //logger.e(error, stackTrace: stackTrace);
       throw error;
     },
   );

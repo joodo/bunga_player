@@ -5,7 +5,7 @@ import 'dart:math';
 import 'package:bunga_player/bunga_server/models/bunga_server_info.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/services/toast.dart';
+import 'package:bunga_player/ui/toast.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import 'client.dart';

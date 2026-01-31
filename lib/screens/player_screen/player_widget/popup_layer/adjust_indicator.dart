@@ -51,25 +51,44 @@ class _AdjustIndicatorState extends State<AdjustIndicator>
   }
 
   @override
+  void dispose() {
+    _visibleNotifier.dispose();
+
+    _brightnessNotifier.removeListener(_onChangeBrightness);
+    _volumeNotifier.removeListener(_onChangeVolume);
+    _voiceNotifier?.removeListener(_onChangeVoiceVolume);
+    _micMuteNotifier?.removeListener(_onChangeMicMute);
+    _screenLockedNotifier.removeListener(_onChangeLockScreen);
+
+    _lockAnimationController.dispose();
+
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
     if (_changedValue == ChangedValue.micMute) {
-      return PopupWidget(
-        visibleNotifier: _visibleNotifier,
-        child:
-            [
-                  Icon(
-                    _micMuteNotifier!.value ? Icons.mic_off : Icons.mic,
-                    size: 60.0,
-                  ),
-                  Text(
-                    _micMuteNotifier!.value ? '麦克已关闭' : '麦克已打开',
-                  ).textColor(Colors.white).padding(top: 12.0),
-                ]
-                .toColumn()
-                .padding(horizontal: 12.0, vertical: 16.0)
-                .card(color: colorScheme.tertiary.withAlpha(170)),
+      return ValueListenableBuilder(
+        valueListenable: _visibleNotifier,
+        builder: (context, visible, child) => PopupWidget(
+          showing: visible,
+          alignment: Alignment.topLeft,
+          child:
+              [
+                    Icon(
+                      _micMuteNotifier!.value ? Icons.mic_off : Icons.mic,
+                      size: 60.0,
+                    ),
+                    Text(
+                      _micMuteNotifier!.value ? '麦克已关闭' : '麦克已打开',
+                    ).textColor(Colors.white).padding(top: 12.0),
+                  ]
+                  .toColumn()
+                  .padding(horizontal: 12.0, vertical: 16.0)
+                  .card(color: colorScheme.tertiary.withAlpha(170)),
+        ),
       );
     }
 
@@ -77,23 +96,27 @@ class _AdjustIndicatorState extends State<AdjustIndicator>
       _screenLockedNotifier.value
           ? _lockAnimationController.reverse()
           : _lockAnimationController.forward();
-      return PopupWidget(
-        visibleNotifier: _visibleNotifier,
-        child:
-            [
-                  Lottie.asset(
-                        'assets/images/lock.json',
-                        controller: _lockAnimationController,
-                      )
-                      .overflow(maxHeight: 80.0, minWidth: 80.0)
-                      .constrained(width: 60.0, height: 60.0),
-                  Text(
-                    _screenLockedNotifier.value ? '已锁屏' : '已解锁',
-                  ).textColor(Colors.white).padding(top: 12.0),
-                ]
-                .toColumn()
-                .padding(horizontal: 12.0, vertical: 16.0)
-                .card(color: colorScheme.tertiary.withAlpha(150)),
+      return ValueListenableBuilder(
+        valueListenable: _visibleNotifier,
+        builder: (context, visible, child) => PopupWidget(
+          showing: visible,
+          alignment: Alignment.topLeft,
+          child:
+              [
+                    Lottie.asset(
+                          'assets/images/lock.json',
+                          controller: _lockAnimationController,
+                        )
+                        .overflow(maxHeight: 80.0, minWidth: 80.0)
+                        .constrained(width: 60.0, height: 60.0),
+                    Text(
+                      _screenLockedNotifier.value ? '已锁屏' : '已解锁',
+                    ).textColor(Colors.white).padding(top: 12.0),
+                  ]
+                  .toColumn()
+                  .padding(horizontal: 12.0, vertical: 16.0)
+                  .card(color: colorScheme.tertiary.withAlpha(150)),
+        ),
       );
     }
 
@@ -189,22 +212,14 @@ class _AdjustIndicatorState extends State<AdjustIndicator>
       child: body,
     );
 
-    return PopupWidget(visibleNotifier: _visibleNotifier, child: consumer);
-  }
-
-  @override
-  void dispose() {
-    _visibleNotifier.dispose();
-
-    _brightnessNotifier.removeListener(_onChangeBrightness);
-    _volumeNotifier.removeListener(_onChangeVolume);
-    _voiceNotifier?.removeListener(_onChangeVoiceVolume);
-    _micMuteNotifier?.removeListener(_onChangeMicMute);
-    _screenLockedNotifier.removeListener(_onChangeLockScreen);
-
-    _lockAnimationController.dispose();
-
-    super.dispose();
+    return ValueListenableBuilder(
+      valueListenable: _visibleNotifier,
+      builder: (context, visible, child) => PopupWidget(
+        showing: visible,
+        alignment: Alignment.topLeft,
+        child: consumer,
+      ),
+    );
   }
 
   void _onChangeBrightness() {

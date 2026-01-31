@@ -1,13 +1,14 @@
-import 'package:bunga_player/console/service.dart';
-import 'package:bunga_player/network/service.dart';
 import 'package:get_it/get_it.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+
 import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/play/service/service.media_kit.dart';
+import 'package:bunga_player/ui/toast.dart';
+import 'package:bunga_player/console/service.dart';
+import 'package:bunga_player/network/service.dart';
 
 import 'preferences.dart';
 import 'exit_callbacks.dart';
-import 'toast.dart';
 import 'permissions.dart';
 
 final getIt = GetIt.instance;

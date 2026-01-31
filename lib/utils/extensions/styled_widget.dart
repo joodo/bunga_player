@@ -153,4 +153,7 @@ extension BungaStyledWidget on Widget {
       child: this,
     );
   }
+
+  Widget ignorePointer({required bool ignoring}) =>
+      IgnorePointer(ignoring: ignoring, child: this);
 }

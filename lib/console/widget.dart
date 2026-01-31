@@ -9,7 +9,7 @@ import 'package:bunga_player/restart/global_business.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/services/toast.dart';
+import 'package:bunga_player/ui/toast.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';

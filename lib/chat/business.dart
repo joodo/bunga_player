@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:bunga_player/ui/audio_player.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
@@ -12,8 +11,9 @@ import 'package:bunga_player/client_info/models/client_account.dart';
 import 'package:bunga_player/console/service.dart';
 import 'package:bunga_player/services/exit_callbacks.dart';
 import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/services/toast.dart';
 import 'package:bunga_player/utils/business/provider.dart';
+import 'package:bunga_player/ui/audio_player.dart';
+import 'package:bunga_player/ui/global_business.dart';
 import 'package:bunga_player/voice_call/business.dart';
 
 import 'models/message.dart';
@@ -187,7 +187,7 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
 
           if (_talkerIdsNotifier.value.length == 1 &&
               _talkerIdsNotifier.value.first == _myId) {
-            getIt<Toast>().show('通话已结束');
+            context.read<PlaySyncMessageManager>().show('通话已结束');
             Actions.invoke(context, const HangUpIntent());
           }
         }

@@ -47,10 +47,6 @@ class ConsoleWrapperState extends SingleChildState<ConsoleWrapper> {
       child: child ?? const SizedBox.shrink(),
     );
 
-    final console = Console(
-      logTextController: getIt<ConsoleService>().logTextController,
-    );
-
     final split = ValueListenableBuilder(
       valueListenable: _consolePositionNotifier,
       builder: (context, direction, child) => focus.splitView(
@@ -58,7 +54,11 @@ class ConsoleWrapperState extends SingleChildState<ConsoleWrapper> {
         size: 400.0,
         maxSize: 1000.0,
         direction: direction,
-        split: _showConsole ? console : null,
+        split: _showConsole
+            ? Console(
+                logTextController: getIt<ConsoleService>().logTextController,
+              )
+            : null,
       ),
     );
 

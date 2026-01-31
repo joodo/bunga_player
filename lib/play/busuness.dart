@@ -4,7 +4,7 @@ import 'package:async/async.dart';
 import 'package:bunga_player/console/service.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/services/toast.dart';
+import 'package:bunga_player/ui/toast.dart';
 import 'package:bunga_player/ui/audio_player.dart';
 import 'package:bunga_player/ui/global_business.dart';
 import 'package:bunga_player/ui/shortcuts.dart';
@@ -235,8 +235,8 @@ class ScreenshotAction extends ContextAction<ScreenshotIntent> {
     final file = File('${pictureDir.path}/$fileName');
     await file.writeAsBytes(data!);
 
-    getIt<Toast>().show('已截图 $fileName');
     if (context != null && context.mounted) {
+      context.read<PlaySyncMessageManager>().show('已截图 $fileName');
       context.read<BungaAudioPlayer>().playSfx('screenshot');
     }
     return file;

@@ -10,14 +10,14 @@ import 'package:styled_widget/styled_widget.dart';
 
 typedef Danmaku = ({String message, User sender});
 
-class DanmakuPlayer extends StatefulWidget {
-  const DanmakuPlayer({super.key});
+class DanmakuLayer extends StatefulWidget {
+  const DanmakuLayer({super.key});
 
   @override
-  State<DanmakuPlayer> createState() => _DanmakuPlayerState();
+  State<DanmakuLayer> createState() => _DanmakuLayerState();
 }
 
-class _DanmakuPlayerState extends State<DanmakuPlayer>
+class _DanmakuLayerState extends State<DanmakuLayer>
     with SingleTickerProviderStateMixin {
   final _danmakus = <Danmaku>[];
   late final StreamSubscription _subscription;

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bunga_player/console/service.dart';
 import 'package:bunga_player/services/exit_callbacks.dart';
 import 'package:bunga_player/services/preferences.dart';
@@ -120,6 +122,16 @@ class BusyStateNotifier extends ChangeNotifier {
   }
 }
 
+class PlaySyncMessageManager {
+  PlaySyncMessageManager();
+
+  final _streamController = StreamController<String>.broadcast();
+  Stream<String> get messageStream => _streamController.stream;
+  void show(String message) {
+    _streamController.add(message);
+  }
+}
+
 class UIGlobalBusiness extends SingleChildStatefulWidget {
   const UIGlobalBusiness({super.key, super.child});
 
@@ -171,6 +183,7 @@ class _UIGlobalBusinessState extends SingleChildState<UIGlobalBusiness> {
               BusyStateNotifier()..watchInConsole('Busy State'),
         ),
         Provider.value(value: BungaAudioPlayer()),
+        Provider.value(value: PlaySyncMessageManager()),
       ],
       child: child,
     );

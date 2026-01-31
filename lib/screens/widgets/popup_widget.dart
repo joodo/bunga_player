@@ -1,11 +1,21 @@
 import 'package:animations/animations.dart';
-import 'package:flutter/foundation.dart';
+import 'package:bunga_player/utils/business/run_after_build.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
+import 'package:styled_widget/styled_widget.dart';
 
 class PopupWidget extends SingleChildStatefulWidget {
-  final ValueListenable<bool> visibleNotifier;
-  const PopupWidget({super.key, super.child, required this.visibleNotifier});
+  final bool showing;
+  final Alignment alignment;
+  final EdgeInsets padding;
+
+  const PopupWidget({
+    super.key,
+    super.child,
+    this.showing = false,
+    this.alignment = Alignment.center,
+    this.padding = const EdgeInsets.all(16.0),
+  });
 
   @override
   State<PopupWidget> createState() => _PopupWidgetState();
@@ -13,49 +23,52 @@ class PopupWidget extends SingleChildStatefulWidget {
 
 class _PopupWidgetState extends SingleChildState<PopupWidget>
     with SingleTickerProviderStateMixin {
-  late final _controller = AnimationController(
+  late final _animationController = AnimationController(
     value: 0.0,
     duration: const Duration(milliseconds: 150),
     reverseDuration: const Duration(milliseconds: 75),
     vsync: this,
-  )..addStatusListener((AnimationStatus status) {
-      setState(() {});
-    });
+  );
 
-  @override
-  void initState() {
-    super.initState();
-    widget.visibleNotifier.addListener(_updateAnimationControl);
-  }
+  final OverlayPortalController _portalController = OverlayPortalController();
 
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
-    return Visibility(
-      visible: _controller.status != AnimationStatus.dismissed,
-      child: AnimatedBuilder(
-        animation: _controller,
-        builder: (BuildContext context, Widget? child) => FadeScaleTransition(
-          animation: _controller,
+    return OverlayPortal(
+      controller: _portalController,
+      overlayChildBuilder: (context) => Padding(
+        padding: widget.padding,
+        child: AnimatedBuilder(
+          animation: _animationController,
+          builder: (BuildContext context, Widget? child) => FadeScaleTransition(
+            animation: _animationController,
+            child: child,
+          ),
           child: child,
-        ),
-        child: child,
+        ).alignment(widget.alignment),
       ),
     );
   }
 
   @override
   void dispose() {
-    widget.visibleNotifier.removeListener(_updateAnimationControl);
-    _controller.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
-  void _updateAnimationControl() {
-    if (widget.visibleNotifier.value) {
-      _controller.reset();
-      _controller.forward();
+  @override
+  void didUpdateWidget(covariant PopupWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.showing == widget.showing) return;
+
+    if (widget.showing) {
+      runAfterBuild(() {
+        _portalController.show();
+        _animationController.forward();
+      });
     } else {
-      _controller.reverse();
+      _animationController.reverse().then((_) => _portalController.hide());
     }
   }
 }

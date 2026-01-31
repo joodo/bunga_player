@@ -25,7 +25,6 @@ import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/screens/dialogs/open_video/direct_link.dart';
 import 'package:bunga_player/screens/dialogs/video_conflict.dart';
 import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/services/toast.dart';
 import 'package:bunga_player/utils/business/provider.dart';
 import 'package:bunga_player/utils/business/value_listenable.dart';
 import 'package:bunga_player/utils/extensions/duration.dart';
@@ -264,7 +263,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
     String myId,
   ) async {
     if (sender.id != myId) {
-      getIt<Toast>().show('${sender.name} 分享了视频');
+      context.read<PlaySyncMessageManager>().show('${sender.name} 分享了视频');
     }
 
     VideoRecord? newRecord = videoRecord;
@@ -348,13 +347,13 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
       if (shouldToggle) toastType = 'toggle';
       if (shouldSeek) toastType = 'seek';
 
-      final toast = getIt<Toast>();
+      final manager = context.read<PlaySyncMessageManager>();
       final name = sender.name;
       switch (toastType) {
         case 'toggle':
-          toast.show('$name ${isPlay ? '播放' : '暂停'}了视频');
+          manager.show('$name ${isPlay ? '播放' : '暂停'}了视频');
         case 'seek':
-          toast.show('$name 调整了进度');
+          manager.show('$name 调整了进度');
       }
     }
 
@@ -371,7 +370,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
   }
 
   void _dealWithSubSharing(ShareSubMessageData data) {
-    getIt<Toast>().show('${data.sharer.name} 分享了字幕');
+    context.read<PlaySyncMessageManager>().show('${data.sharer.name} 分享了字幕');
     _channelSubtitleNotifier.value = (
       title: data.title,
       url: data.url,

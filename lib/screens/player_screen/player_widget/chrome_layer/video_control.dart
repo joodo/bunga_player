@@ -15,9 +15,9 @@ import 'package:bunga_player/utils/extensions/duration.dart';
 import 'package:bunga_player/utils/business/value_listenable.dart';
 import 'package:bunga_player/ui/global_business.dart';
 
-import '../actions.dart';
-import '../business.dart';
-import '../panel/playlist_panel.dart';
+import '../../actions.dart';
+import '../../business.dart';
+import '../../panel/playlist_panel.dart';
 import 'menu_builder.dart';
 
 class VideoControl extends StatelessWidget {

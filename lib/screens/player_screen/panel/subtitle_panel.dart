@@ -9,7 +9,7 @@ import 'package:bunga_player/play_sync/business.dart';
 import 'package:bunga_player/screens/player_screen/business.dart';
 import 'package:bunga_player/screens/widgets/slider_item.dart';
 import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/services/toast.dart';
+import 'package:bunga_player/ui/toast.dart';
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';

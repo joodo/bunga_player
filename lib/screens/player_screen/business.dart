@@ -11,7 +11,6 @@ import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/play_sync/business.dart';
 import 'package:bunga_player/screens/dialogs/open_video/open_video.dart';
 import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/services/toast.dart';
 import 'package:bunga_player/ui/global_business.dart';
 import 'package:bunga_player/ui/shortcuts.dart';
 import 'package:bunga_player/utils/business/provider.dart';
@@ -57,13 +56,6 @@ class _WidgetBusinessState extends SingleChildState<_WidgetBusiness> {
   @override
   void initState() {
     super.initState();
-
-    // UI
-    _showDanmakuControlNotifier.addListener(
-      () => getIt<Toast>().setOffset(
-        _showDanmakuControlNotifier.value ? PlayerScreen.danmakuHeight : 0,
-      ),
-    );
 
     WakelockPlus.enable();
   }

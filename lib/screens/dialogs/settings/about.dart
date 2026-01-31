@@ -1,7 +1,7 @@
 import 'package:bunga_player/console/wrapper.dart';
 import 'package:bunga_player/screens/dialogs/settings/widgets.dart';
 import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/services/toast.dart';
+import 'package:bunga_player/ui/toast.dart';
 import 'package:bunga_player/update/global_business.dart';
 import 'package:bunga_player/update/wrapper.dart';
 import 'package:flutter/material.dart';

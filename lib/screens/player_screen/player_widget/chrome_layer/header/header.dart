@@ -10,7 +10,7 @@ import 'package:bunga_player/chat/models/user.dart';
 import 'package:bunga_player/play/models/play_payload.dart';
 
 import 'call_button.dart';
-import '../../business.dart';
+import '../../../business.dart';
 
 class Header extends StatelessWidget {
   const Header({super.key});

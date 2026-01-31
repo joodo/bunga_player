@@ -9,6 +9,7 @@ import 'package:bunga_player/chat/models/message.dart';
 import 'package:bunga_player/services/permissions.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/ui/audio_player.dart';
+import 'package:bunga_player/ui/global_business.dart';
 import 'package:bunga_player/ui/shortcuts.dart';
 import 'package:bunga_player/utils/business/provider.dart';
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
@@ -16,7 +17,6 @@ import 'package:bunga_player/utils/models/volume.dart';
 import 'client/client.agora.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/services/toast.dart';
 import 'package:flutter/widgets.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
@@ -258,7 +258,7 @@ class _VoiceCallBusinessState extends SingleChildState<VoiceCallBusiness> {
   late final _requestTimeOutTimer = RestartableTimer(
     const Duration(seconds: 20),
     () {
-      getIt<Toast>().show('无人接听');
+      context.read<PlaySyncMessageManager>().show('无人接听');
       final messageData = CallMessageData(action: CallAction.cancel);
       Actions.invoke(context, SendMessageIntent(messageData));
 
@@ -408,7 +408,7 @@ class _VoiceCallBusinessState extends SingleChildState<VoiceCallBusiness> {
     logger.i('$userId rejected call asking or leaved, hope list: $_hopeList');
 
     if (_hopeList.isEmpty) {
-      getIt<Toast>().show('呼叫已被拒绝');
+      context.read<PlaySyncMessageManager>().show('呼叫已被拒绝');
       _cancelAction.invoke(CancelCallingRequestIntent(), context);
     }
   }

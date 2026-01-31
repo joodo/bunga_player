@@ -5,7 +5,7 @@ import 'dart:ui';
 import 'package:bunga_player/network/service.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/permissions.dart';
-import 'package:bunga_player/services/toast.dart';
+import 'package:bunga_player/ui/toast.dart';
 import 'package:bunga_player/utils/business/platform.dart';
 import 'package:bunga_player/utils/models/network_progress.dart';
 import 'package:flutter/material.dart';
@@ -67,9 +67,7 @@ class _UpdateGlobalBusinessState
   static const _latestUrl =
       'https://gitee.com/api/v5/repos/joodo2/bunga_player/releases/latest';
 
-  final _updateStatusNotifier = ValueNotifier<UpdateStatus>(
-    .updated,
-  );
+  final _updateStatusNotifier = ValueNotifier<UpdateStatus>(.updated);
   final _updateLastCheckedNotifier = UpdateLastCheckedNotifier();
   final _updateDownloadProgressNotifier =
       ValueNotifier<UpdateDownloadProgress?>(null);

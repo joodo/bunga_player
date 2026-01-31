@@ -16,7 +16,7 @@ import 'package:bunga_player/alist/extensions.dart';
 import 'package:bunga_player/alist/models.dart';
 import 'package:bunga_player/bilibili/extensions.dart';
 import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/services/toast.dart';
+import 'package:bunga_player/ui/toast.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/utils/extensions/string.dart';
 import 'package:bunga_player/utils/models/file_extensions.dart';

@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
 import 'panel/panel.dart';
-import 'player/player.dart';
+import 'player_widget/player_widget.dart';
 import 'danmaku_control.dart';
 import 'business.dart';
 
@@ -38,7 +38,7 @@ class PlayerScreen extends StatelessWidget {
             )
             .animate(const Duration(milliseconds: 350), Curves.easeOutCubic);
       },
-      child: const Player(),
+      child: const PlayerWidget(),
     );
 
     return body.playScreenBusiness();

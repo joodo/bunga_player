@@ -4,6 +4,7 @@ import 'package:bunga_player/play/busuness.dart';
 import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/ui/global_business.dart';
+import 'package:bunga_player/utils/business/platform.dart';
 import 'package:bunga_player/utils/business/value_listenable.dart';
 import 'package:bunga_player/utils/models/volume.dart';
 import 'package:bunga_player/voice_call/business.dart';
@@ -13,11 +14,24 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
-import 'menu_builder.dart';
-import 'ui.dart';
+import 'chrome_layer/menu_builder.dart';
+import 'chrome_layer/chrome_layer.dart';
 
-class DesktopInteractiveRegion extends StatelessWidget {
-  const DesktopInteractiveRegion({super.key});
+class InteractiveLayer extends StatelessWidget {
+  const InteractiveLayer({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    if (kIsDesktop) {
+      return const DesktopInteractiveLayer();
+    } else {
+      return const TouchInteractiveLayer();
+    }
+  }
+}
+
+class DesktopInteractiveLayer extends StatelessWidget {
+  const DesktopInteractiveLayer({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +81,7 @@ class DesktopInteractiveRegion extends StatelessWidget {
     if (y < 72.0) return true;
 
     // In control or progress section
-    if (y > widgetHeight - PlayerUI.videoControlHeight - 12.0 &&
+    if (y > widgetHeight - ChromeLayer.videoControlHeight - 12.0 &&
         y < widgetHeight) {
       return true;
     }
@@ -78,14 +92,14 @@ class DesktopInteractiveRegion extends StatelessWidget {
 
 enum _VolumeAdjustType { media, voice }
 
-class TouchInteractiveRegion extends StatefulWidget {
-  const TouchInteractiveRegion({super.key});
+class TouchInteractiveLayer extends StatefulWidget {
+  const TouchInteractiveLayer({super.key});
 
   @override
-  State<TouchInteractiveRegion> createState() => _TouchInteractiveRegionState();
+  State<TouchInteractiveLayer> createState() => _TouchInteractiveLayerState();
 }
 
-class _TouchInteractiveRegionState extends State<TouchInteractiveRegion> {
+class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
   late final _showHUDNotifier = context.read<ShouldShowHUDNotifier>();
 
   Offset _dragStartPoint = Offset.zero;
