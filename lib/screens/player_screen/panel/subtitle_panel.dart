@@ -1,7 +1,6 @@
 import 'package:bunga_player/bunga_server/global_business.dart';
 import 'package:bunga_player/chat/client/client.dart';
 import 'package:bunga_player/chat/models/message_data.dart';
-import 'package:bunga_player/chat/models/user.dart';
 import 'package:bunga_player/play/busuness.dart';
 import 'package:bunga_player/play/models/track.dart';
 import 'package:bunga_player/play/service/service.dart';
@@ -192,7 +191,6 @@ class _SubtitlePanelState extends State<SubtitlePanel> {
   void _shareSubtitle(String trackId) async {
     final chatClient = context.read<ChatClient>();
     final path = getIt<PlayService>().subtitleTrackNotifier.value.path!;
-    final me = User.fromContext(context);
 
     try {
       final job =
@@ -202,7 +200,6 @@ class _SubtitlePanelState extends State<SubtitlePanel> {
       final title = path_tool.basenameWithoutExtension(path);
       final messageData = ShareSubMessageData(
         url: url.toString(),
-        sharer: me,
         title: title,
       );
       await chatClient.sendMessage(messageData.toJson());

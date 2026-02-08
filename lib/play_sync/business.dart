@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:animations/animations.dart';
@@ -44,38 +43,47 @@ class SubtitleTrackIdOfUrl {
   final value = <String, String>{};
 }
 
-class WatcherSyncStatusNotifier extends ChangeNotifier {
-  final Map<String, SyncStatus> _syncStatus = {};
-  void setSyncStatus(String userId, SyncStatus status) {
-    _syncStatus[userId] = status;
+class WatcherBufferingStatusNotifier extends ChangeNotifier {
+  final Set<String> _bufferingIds = {};
+  void setBuffering(String userId, bool isBuffering) {
+    if (isBuffering && _bufferingIds.add(userId) ||
+        !isBuffering && _bufferingIds.remove(userId)) {
+      notifyListeners();
+    }
+  }
+
+  Iterable<String> get bufferingUserIds => _bufferingIds;
+  set bufferingUserIds(Iterable<String> values) {
+    _bufferingIds.clear();
+    _bufferingIds.addAll(values);
     notifyListeners();
   }
 
-  Iterable<String> get bufferingUserIds => _syncStatus.entries
-      .where((entry) => entry.value == .buffering)
-      .map((entry) => entry.key);
-  bool get isAnyBuffering => bufferingUserIds.isNotEmpty;
-  SyncStatus syncStatusOf(String userId) => _syncStatus[userId] ?? .buffering;
+  bool get isAnyBuffering => _bufferingIds.isNotEmpty;
+
+  bool isBuffering(String userId) => _bufferingIds.contains(userId);
 
   @override
-  String toString() =>
-      jsonEncode(_syncStatus.map((key, value) => MapEntry(key, value.name)));
+  String toString() => bufferingUserIds.toString();
 }
 
 // Actions
 
 class JoinInIntent extends Intent {
-  final VideoRecord? myShare;
+  final VideoRecord? myRecord;
 
-  const JoinInIntent({this.myShare});
+  const JoinInIntent({this.myRecord});
 }
 
 class JoinInAction extends ContextAction<JoinInIntent> {
   @override
   void invoke(JoinInIntent intent, [BuildContext? context]) {
+    final projection = intent.myRecord == null
+        ? null
+        : StartProjectionMessageData(videoRecord: intent.myRecord!);
     final data = JoinInMessageData(
       user: User.fromContext(context!),
-      myShare: intent.myShare,
+      myShare: projection,
     );
     Actions.invoke(context, SendMessageIntent(data));
   }
@@ -122,14 +130,15 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
 
   // Player status
   final _playerBufferingNotifier = getIt<PlayService>().bufferingNotifier;
-  final _watchersSyncStatusNotifier = WatcherSyncStatusNotifier()
+  final _watchersBufferStatusNotifier = WatcherBufferingStatusNotifier()
     ..watchInConsole('Watchers Sync Status');
 
+  late final _busyNotifier = context.read<BusyStateNotifier>();
+
   void _updateBusyState() {
-    final notifier = context.read<BusyStateNotifier>();
-    _watchersSyncStatusNotifier.isAnyBuffering
-        ? notifier.add('watchers buffering')
-        : notifier.remove('watchers buffering');
+    _watchersBufferStatusNotifier.isAnyBuffering
+        ? _busyNotifier.add('watchers buffering')
+        : _busyNotifier.remove('watchers buffering');
   }
 
   // Subtitle sharing
@@ -140,39 +149,60 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
   void initState() {
     super.initState();
 
-    final myId = context.read<ClientAccount>().id;
+    final read = context.read;
 
-    final messageStream = context.read<Stream<Message>>();
+    final myId = read<ClientAccount>().id;
+
+    final messageStream = read<Stream<Message>>();
     _streamSubscription = messageStream.listen((message) {
       switch (message.data['code']) {
         case WhoAreYouMessageData.messageCode:
           _dealWithWhoAreYou();
         case StartProjectionMessageData.messageCode:
           final data = StartProjectionMessageData.fromJson(message.data);
-          _dealWithProjection(
+          _handleProjection(
             message.sender,
             data.videoRecord,
-            Duration(
-              microseconds: message.data['video_record']['position'].toInt(),
-            ),
+            data.position,
             myId,
           );
         case HereAreMessageData.messageCode:
-          final watchers = HereAreMessageData.fromJson(message.data).watchers;
-          _dealWithHereAre(watchers);
-        case SyncStatusMessageData.messageCode:
-          final status = SyncStatusMessageData.fromJson(message.data).status;
-          _dealWithSyncStatus(message.sender, status);
+          final data = HereAreMessageData.fromJson(message.data);
+          _dealWithHereAre(data.buffering);
+        case BufferStateChangedMessageData.messageCode:
+          final isBuffering = BufferStateChangedMessageData.fromJson(
+            message.data,
+          ).isBuffering;
+          _dealWithSyncStatus(message.sender, isBuffering);
         case PlayAtMessageData.messageCode:
           final data = PlayAtMessageData.fromJson(message.data);
-          _dealWithPlayAt(message.sender, data.isPlay, data.position, myId);
+          _handlePlayAt(message.sender, data.isPlay, data.position);
+        case SetPlaybackMessageData.messageCode:
+          if (message.sender.id == myId) break;
+          final isPlay = SetPlaybackMessageData.fromJson(message.data).isPlay;
+
+          final manager = read<PlaySyncMessageManager>();
+          final name = message.sender.name;
+          manager.show('$name ${isPlay ? '播放' : '暂停'}了视频');
+        case SeekMessageData.messageCode:
+          if (message.sender.id == myId) break;
+
+          final manager = read<PlaySyncMessageManager>();
+          final name = message.sender.name;
+          manager.show('$name 调整了进度');
         case ShareSubMessageData.messageCode:
-          _dealWithSubSharing(ShareSubMessageData.fromJson(message.data));
+          _dealWithSubSharing(
+            sharer: message.sender,
+            data: ShareSubMessageData.fromJson(message.data),
+          );
       }
     });
 
     _playerBufferingNotifier.addListener(_sendBufferingStatus);
-    _watchersSyncStatusNotifier.addListener(_updateBusyState);
+    _watchersBufferStatusNotifier.addListener(_updateBusyState);
+
+    final playService = getIt<PlayService>();
+    playService.positionNotifier.addListener(_silentCatchUp);
 
     // TODO: useless
     //_fetchPlayStatus();
@@ -181,7 +211,10 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
   @override
   void dispose() {
     _playerBufferingNotifier.removeListener(_sendBufferingStatus);
-    _watchersSyncStatusNotifier.removeListener(_updateBusyState);
+    _watchersBufferStatusNotifier.removeListener(_updateBusyState);
+
+    final playService = getIt<PlayService>();
+    playService.positionNotifier.removeListener(_silentCatchUp);
 
     _remoteJustToggledNotifier.dispose();
     _channelSubtitleNotifier.dispose();
@@ -203,10 +236,8 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
           onInvoke: (intent) {
             if (_remoteJustToggledNotifier.value) return;
 
-            // Actions.invoke(context, intent);
             final playService = getIt<PlayService>();
-            final messageData = PlayAtMessageData(
-              position: playService.positionNotifier.value,
+            final messageData = SetPlaybackMessageData(
               isPlay: !playService.playStatusNotifier.value.isPlaying,
             );
             Actions.invoke(context, SendMessageIntent(messageData));
@@ -217,15 +248,13 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
           onInvoke: (intent) {
             if (_remoteJustToggledNotifier.value) return;
 
-            //Actions.invoke(context, intent);
             final playService = getIt<PlayService>();
 
             final position = playService.positionNotifier.value;
             final duration = playService.durationNotifier.value;
 
-            final messageData = PlayAtMessageData(
+            final messageData = SeekMessageData(
               position: intent.applyOn(position, duration),
-              isPlay: playService.playStatusNotifier.value.isPlaying,
             );
             Actions.invoke(context, SendMessageIntent(messageData));
             return;
@@ -240,7 +269,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
     return MultiProvider(
       providers: [
         ValueListenableProvider.value(value: _channelSubtitleNotifier),
-        ListenableProvider.value(value: _watchersSyncStatusNotifier),
+        ListenableProvider.value(value: _watchersBufferStatusNotifier),
         Provider(create: (context) => SubtitleTrackIdOfUrl()),
         ValueListenableProxyProvider(
           valueListenable: _remoteJustToggledNotifier,
@@ -252,17 +281,20 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
   }
 
   void _dealWithWhoAreYou() {
+    // TODO: useless?
     final data = JoinInMessageData(user: User.fromContext(context));
     Actions.invoke(context, SendMessageIntent(data));
   }
 
-  void _dealWithProjection(
+  void _handleProjection(
     User sender,
     VideoRecord videoRecord,
     Duration start,
     String myId,
   ) async {
-    if (sender.id != myId) {
+    final currentRecord = context.read<PlayPayload?>()?.record;
+
+    if (sender.id != myId && currentRecord != null) {
       context.read<PlaySyncMessageManager>().show('${sender.name} 分享了视频');
     }
 
@@ -272,7 +304,6 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
       newRecord = null;
 
       // If current playing is local, try to find file in same dir
-      final currentRecord = context.read<PlayPayload?>()?.record;
       if (currentRecord?.source == 'local') {
         final currentDir = path_tool.dirname(currentRecord!.path);
         final newBasename = path_tool.basename(videoRecord.path);
@@ -314,74 +345,79 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
     Actions.invoke(context, OpenVideoIntent.record(newRecord, start: start));
   }
 
-  void _dealWithHereAre(List<WatcherInfo> watchers) {
-    for (final info in watchers) {
-      _watchersSyncStatusNotifier.setSyncStatus(info.user.id, info.syncStatus);
-    }
+  void _dealWithHereAre(List<String> buffering) {
+    _watchersBufferStatusNotifier.bufferingUserIds = buffering;
   }
 
-  void _dealWithSyncStatus(User sender, SyncStatus status) {
-    _watchersSyncStatusNotifier.setSyncStatus(sender.id, status);
+  void _dealWithSyncStatus(User sender, bool status) {
+    _watchersBufferStatusNotifier.setBuffering(sender.id, status);
   }
 
-  void _dealWithPlayAt(
-    User sender,
-    bool isPlay,
-    Duration position,
-    String myId,
-  ) {
-    // TODO: if detached return
-
+  void _handlePlayAt(User sender, bool isPlay, Duration position) {
     final playService = getIt<PlayService>();
+
+    // Seek
     final localPosition = playService.positionNotifier.value;
     final shouldSeek = isPlay
-        ? !localPosition.near(position)
+        ? !localPosition.near(position, tolerance: const Duration(seconds: 2))
         : localPosition != position;
-
-    final localPlay = playService.playStatusNotifier.value.isPlaying;
-    final shouldToggle = isPlay != localPlay;
-
-    // Show toast
-    if (sender.id != 'server' && sender.id != myId) {
-      String toastType = 'none';
-      if (shouldToggle) toastType = 'toggle';
-      if (shouldSeek) toastType = 'seek';
-
-      final manager = context.read<PlaySyncMessageManager>();
-      final name = sender.name;
-      switch (toastType) {
-        case 'toggle':
-          manager.show('$name ${isPlay ? '播放' : '暂停'}了视频');
-        case 'seek':
-          manager.show('$name 调整了进度');
+    if (shouldSeek) {
+      playService.seek(position);
+      _catchUpTarget = null;
+    } else {
+      if (!localPosition.near(position)) {
+        // Not "near" enough, change playback rate instead of seeking to avoid jarring
+        _catchUpTarget = _CatchUpTarget(position);
       }
     }
 
-    // Sync play status
-    // Seek and pause operation will follow sender to ensure UI responsiveness
-    if (shouldSeek) playService.seek(position);
+    // Toggle play/pause
+    final localPlay = playService.playStatusNotifier.value.isPlaying;
+    final shouldToggle = isPlay != localPlay;
     if (shouldToggle) {
-      if (!isPlay || sender.id == 'server') {
-        // Play message only follow server,
-        // message from watcher only use for toast
-        Actions.invoke(context, ToggleIntent());
-      }
+      Actions.invoke(context, ToggleIntent());
     }
   }
 
-  void _dealWithSubSharing(ShareSubMessageData data) {
-    context.read<PlaySyncMessageManager>().show('${data.sharer.name} 分享了字幕');
+  void _dealWithSubSharing({
+    required User sharer,
+    required ShareSubMessageData data,
+  }) {
+    context.read<PlaySyncMessageManager>().show('${sharer.name} 分享了字幕');
     _channelSubtitleNotifier.value = (
       title: data.title,
       url: data.url,
-      sharer: data.sharer,
+      sharer: sharer,
     );
   }
 
   void _sendBufferingStatus() {
     final buffering = _playerBufferingNotifier.value;
-    final data = SyncStatusMessageData(buffering ? .buffering : .ready);
+    final data = BufferStateChangedMessageData(buffering);
     Actions.invoke(context, SendMessageIntent(data));
+  }
+
+  // Silent Catch-Up
+  _CatchUpTarget? _catchUpTarget;
+  void _silentCatchUp() {
+    final playService = getIt<PlayService>();
+
+    if (_catchUpTarget == null) {
+      playService.playbackRateNotifier.value = 1.0;
+      return;
+    }
+
+    final position = playService.positionNotifier.value;
+    final comparison = _catchUpTarget!.compareTo(position);
+    switch (comparison) {
+      case < 0:
+        playService.playbackRateNotifier.value = 0.95;
+      case 0:
+        _catchUpTarget = null;
+        print('finish');
+      case > 0:
+        playService.playbackRateNotifier.value = 1.05;
+    }
   }
 
   /*Future<void> _fetchPlayStatus() async {
@@ -398,6 +434,24 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
       );
     }
   }*/
+}
+
+class _CatchUpTarget {
+  final _createdAt = DateTime.now();
+  final Duration _target;
+
+  _CatchUpTarget(this._target);
+
+  int compareTo(Duration other) {
+    final now = DateTime.now();
+    final elapsed = now.difference(_createdAt);
+    final currentTarget = _target + elapsed;
+
+    print((currentTarget - other).inMilliseconds);
+
+    if (currentTarget.near(other)) return 0;
+    return currentTarget.compareTo(other);
+  }
 }
 
 extension WrapPlaySyncBusiness on Widget {

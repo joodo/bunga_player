@@ -3,8 +3,10 @@ extension FormatString on Duration {
 }
 
 extension Near on Duration {
-  bool near(Duration other, {int tolerance = 400}) =>
-      (this - other).inMilliseconds.abs() <= tolerance;
+  bool near(
+    Duration other, {
+    Duration tolerance = const Duration(milliseconds: 400),
+  }) => (this - other).abs() <= tolerance;
 }
 
 extension MoreSpan on Duration {

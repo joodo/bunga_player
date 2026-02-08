@@ -9,6 +9,8 @@ import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 import 'package:vector_graphics/vector_graphics.dart';
 
+// TODO: move file
+
 class PopmojiButton extends StatelessWidget {
   final String emoji;
   final VoidCallback? onPressed;
@@ -50,13 +52,10 @@ class PopmojiButton extends StatelessWidget {
       ),
       richMessage: WidgetSpan(
         child: [
-          Lottie.asset(
-            EmojiData.lottiePath(emoji),
-            repeat: true,
-            height: 64,
-          ),
-          Text(context.read<EmojiData>().tags[emoji]?.first ?? '')
-              .padding(top: 4.0),
+          Lottie.asset(EmojiData.lottiePath(emoji), repeat: true, height: 64),
+          Text(
+            context.read<EmojiData>().tags[emoji]?.first ?? '',
+          ).padding(top: 4.0),
         ].toColumn().padding(all: 8.0),
       ),
       child: button,
@@ -65,14 +64,18 @@ class PopmojiButton extends StatelessWidget {
 
   void _showThrowEmojiAnimation(BuildContext context) {
     final RenderBox button = context.findRenderObject()! as RenderBox;
-    final RenderBox overlay = Navigator.of(
-      context,
-      rootNavigator: true,
-    ).overlay!.context.findRenderObject()! as RenderBox;
+    final RenderBox overlay =
+        Navigator.of(
+              context,
+              rootNavigator: true,
+            ).overlay!.context.findRenderObject()!
+            as RenderBox;
     final position = Rect.fromPoints(
       button.localToGlobal(Offset.zero, ancestor: overlay),
-      button.localToGlobal(button.size.bottomRight(Offset.zero),
-          ancestor: overlay),
+      button.localToGlobal(
+        button.size.bottomRight(Offset.zero),
+        ancestor: overlay,
+      ),
     );
 
     late final OverlayEntry overlayEntry;
@@ -87,9 +90,7 @@ class PopmojiButton extends StatelessWidget {
             0,
           ),
           overlay: overlayEntry,
-          child: SvgPicture(
-            AssetBytesLoader(EmojiData.svgPath(emoji)),
-          ),
+          child: SvgPicture(AssetBytesLoader(EmojiData.svgPath(emoji))),
         );
       },
     );
@@ -120,27 +121,19 @@ class _ThrowAnimationState extends SingleChildState<_ThrowAnimation>
       widget.endRect.left,
       widget.endRect.top,
     );
-  late var _position = Offset(
-    widget.startRect.left,
-    widget.startRect.top,
-  );
+  late var _position = Offset(widget.startRect.left, widget.startRect.top);
   late final _controller = AnimationController(
-      vsync: this, duration: const Duration(milliseconds: 1000));
-  late final _positionTween = Tween(begin: 0.0, end: 1.0)
-      .chain(CurveTween(curve: Curves.easeOutCubic))
-      .animate(_controller);
-  late final _sizeTween = TweenSequence<double>(
-    [
-      TweenSequenceItem(
-        weight: 1.0,
-        tween: Tween(begin: 0, end: -1),
-      ),
-      TweenSequenceItem(
-        weight: 1.6,
-        tween: Tween(begin: -1, end: 1),
-      ),
-    ],
+    vsync: this,
+    duration: const Duration(milliseconds: 1000),
+  );
+  late final _positionTween = Tween(
+    begin: 0.0,
+    end: 1.0,
   ).chain(CurveTween(curve: Curves.easeOutCubic)).animate(_controller);
+  late final _sizeTween = TweenSequence<double>([
+    TweenSequenceItem(weight: 1.0, tween: Tween(begin: 0, end: -1)),
+    TweenSequenceItem(weight: 1.6, tween: Tween(begin: -1, end: 1)),
+  ]).chain(CurveTween(curve: Curves.easeOutCubic)).animate(_controller);
 
   @override
   void initState() {

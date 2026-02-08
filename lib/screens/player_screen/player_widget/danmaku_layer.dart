@@ -32,7 +32,7 @@ class _DanmakuLayerState extends State<DanmakuLayer>
         )
         .map((message) {
           final data = DanmakuMessageData.fromJson(message.data);
-          return (sender: data.sender, message: data.message);
+          return (sender: message.sender, message: data.message);
         })
         .listen(_addDanmaku);
     _ticker.start();

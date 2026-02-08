@@ -11,6 +11,8 @@ abstract class MessageData {
   Map<String, dynamic> toJson();
 }
 
+// TODO:split
+
 /// Receive when reconnected to chat server
 @JsonSerializable()
 class WhoAreYouMessageData extends MessageData {
@@ -51,9 +53,10 @@ class NowPlayingMessageData extends MessageData {
   @JsonKey(includeFromJson: false, includeToJson: true)
   final code = messageCode;
 
-  final VideoRecord videoRecord;
+  final VideoRecord record;
+  final User sharer;
 
-  NowPlayingMessageData({required this.videoRecord});
+  NowPlayingMessageData({required this.record, required this.sharer});
 
   factory NowPlayingMessageData.fromJson(Map<String, dynamic> json) =>
       _$NowPlayingMessageDataFromJson(json);
@@ -70,7 +73,7 @@ class JoinInMessageData extends MessageData {
   final code = messageCode;
 
   final User user;
-  final VideoRecord? myShare;
+  final StartProjectionMessageData? myShare;
 
   JoinInMessageData({required this.user, this.myShare});
 
@@ -78,19 +81,6 @@ class JoinInMessageData extends MessageData {
       _$JoinInMessageDataFromJson(json);
   @override
   Map<String, dynamic> toJson() => _$JoinInMessageDataToJson(this);
-}
-
-/// Receive when answering aloha
-@JsonSerializable()
-class WatcherInfo {
-  final User user;
-  final SyncStatus syncStatus;
-
-  WatcherInfo({required this.user, required this.syncStatus});
-
-  factory WatcherInfo.fromJson(Map<String, dynamic> json) =>
-      _$WatcherInfoFromJson(json);
-  Map<String, dynamic> toJson() => _$WatcherInfoToJson(this);
 }
 
 /// Receive when join in room
@@ -101,9 +91,10 @@ class HereAreMessageData extends MessageData {
   @JsonKey(includeFromJson: false, includeToJson: true)
   final code = messageCode;
 
-  final List<WatcherInfo> watchers;
+  final List<User> watchers;
+  final List<String> buffering;
 
-  HereAreMessageData({required this.watchers});
+  HereAreMessageData({required this.watchers, required this.buffering});
 
   factory HereAreMessageData.fromJson(Map<String, dynamic> json) =>
       _$HereAreMessageDataFromJson(json);
@@ -120,8 +111,12 @@ class StartProjectionMessageData extends MessageData {
   final code = messageCode;
 
   final VideoRecord videoRecord;
+  final Duration position;
 
-  StartProjectionMessageData({required this.videoRecord});
+  StartProjectionMessageData({
+    required this.videoRecord,
+    this.position = Duration.zero,
+  });
 
   factory StartProjectionMessageData.fromJson(Map<String, dynamic> json) =>
       _$StartProjectionMessageDataFromJson(json);
@@ -129,24 +124,22 @@ class StartProjectionMessageData extends MessageData {
   Map<String, dynamic> toJson() => _$StartProjectionMessageDataToJson(this);
 }
 
-/// Send/receive when sync status changed
-enum SyncStatus { buffering, ready, detached }
-
+/// Send/receive when buffer status changed
 @JsonSerializable()
-class SyncStatusMessageData extends MessageData {
-  static const messageCode = 'sync-status';
+class BufferStateChangedMessageData extends MessageData {
+  static const messageCode = 'buffer-state-changed';
   @override
   @JsonKey(includeFromJson: false, includeToJson: true)
   final code = messageCode;
 
-  final SyncStatus status;
+  final bool isBuffering;
 
-  SyncStatusMessageData(this.status);
+  BufferStateChangedMessageData(this.isBuffering);
 
-  factory SyncStatusMessageData.fromJson(Map<String, dynamic> json) =>
-      _$SyncStatusMessageDataFromJson(json);
+  factory BufferStateChangedMessageData.fromJson(Map<String, dynamic> json) =>
+      _$BufferStateChangedMessageDataFromJson(json);
   @override
-  Map<String, dynamic> toJson() => _$SyncStatusMessageDataToJson(this);
+  Map<String, dynamic> toJson() => _$BufferStateChangedMessageDataToJson(this);
 }
 
 /// Send when join watching
@@ -200,8 +193,43 @@ class ByeMessageData extends MessageData {
   Map<String, dynamic> toJson() => _$ByeMessageDataToJson(this);
 }
 
-/// Send when change play status
-/// Receive when some change status
+/// Send when toggle playback
+@JsonSerializable()
+class SetPlaybackMessageData extends MessageData {
+  static const messageCode = 'set-playback';
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: true)
+  final code = messageCode;
+
+  final bool isPlay;
+
+  SetPlaybackMessageData({required this.isPlay});
+
+  factory SetPlaybackMessageData.fromJson(Map<String, dynamic> json) =>
+      _$SetPlaybackMessageDataFromJson(json);
+  @override
+  Map<String, dynamic> toJson() => _$SetPlaybackMessageDataToJson(this);
+}
+
+/// Send when seek video
+@JsonSerializable()
+class SeekMessageData extends MessageData {
+  static const messageCode = 'seek';
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: true)
+  final code = messageCode;
+
+  final Duration position;
+
+  SeekMessageData({required this.position});
+
+  factory SeekMessageData.fromJson(Map<String, dynamic> json) =>
+      _$SeekMessageDataFromJson(json);
+  @override
+  Map<String, dynamic> toJson() => _$SeekMessageDataToJson(this);
+}
+
+/// Receive when someone change play status
 @JsonSerializable()
 class PlayAtMessageData extends MessageData {
   static const messageCode = 'play-at';
@@ -246,10 +274,9 @@ class PopmojiMessageData extends MessageData {
   @JsonKey(includeFromJson: false, includeToJson: true)
   final code = messageCode;
 
-  final User sender;
   final String popmojiCode;
 
-  PopmojiMessageData({required this.sender, required this.popmojiCode});
+  PopmojiMessageData({required this.popmojiCode});
 
   factory PopmojiMessageData.fromJson(Map<String, dynamic> json) =>
       _$PopmojiMessageDataFromJson(json);
@@ -265,55 +292,14 @@ class DanmakuMessageData extends MessageData {
   @JsonKey(includeFromJson: false, includeToJson: true)
   final code = messageCode;
 
-  final User sender;
   final String message;
 
-  DanmakuMessageData({required this.sender, required this.message});
+  DanmakuMessageData({required this.message});
 
   factory DanmakuMessageData.fromJson(Map<String, dynamic> json) =>
       _$DanmakuMessageDataFromJson(json);
   @override
   Map<String, dynamic> toJson() => _$DanmakuMessageDataToJson(this);
-}
-
-/// Send when negotiating calling
-enum CallAction { ask, yes, no, cancel }
-
-@JsonSerializable()
-class CallMessageData extends MessageData {
-  static const messageCode = 'call';
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: true)
-  final code = messageCode;
-
-  final CallAction action;
-
-  CallMessageData({required this.action});
-
-  factory CallMessageData.fromJson(Map<String, dynamic> json) =>
-      _$CallMessageDataFromJson(json);
-  @override
-  Map<String, dynamic> toJson() => _$CallMessageDataToJson(this);
-}
-
-/// Send when join / leave talking
-enum TalkStatus { start, end }
-
-@JsonSerializable()
-class TalkStatusMessageData extends MessageData {
-  static const messageCode = 'talk-status';
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: true)
-  final code = messageCode;
-
-  final TalkStatus status;
-
-  TalkStatusMessageData({required this.status});
-
-  factory TalkStatusMessageData.fromJson(Map<String, dynamic> json) =>
-      _$TalkStatusMessageDataFromJson(json);
-  @override
-  Map<String, dynamic> toJson() => _$TalkStatusMessageDataToJson(this);
 }
 
 /// Send when sharing subtitle
@@ -325,14 +311,9 @@ class ShareSubMessageData extends MessageData {
   final code = messageCode;
 
   final String url;
-  final User sharer;
   final String title;
 
-  ShareSubMessageData({
-    required this.url,
-    required this.sharer,
-    required this.title,
-  });
+  ShareSubMessageData({required this.url, required this.title});
 
   factory ShareSubMessageData.fromJson(Map<String, dynamic> json) =>
       _$ShareSubMessageDataFromJson(json);

@@ -8,7 +8,6 @@ import 'package:vector_graphics/vector_graphics.dart';
 
 import 'package:bunga_player/chat/global_business.dart';
 import 'package:bunga_player/chat/models/message_data.dart';
-import 'package:bunga_player/chat/models/user.dart';
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:bunga_player/services/preferences.dart';
 
@@ -38,11 +37,8 @@ class SendPopmojiIntent extends Intent {
 class SendPopmojiAction extends ContextAction<SendPopmojiIntent> {
   @override
   void invoke(SendPopmojiIntent intent, [BuildContext? context]) {
-    final messageData = PopmojiMessageData(
-      popmojiCode: intent.code,
-      sender: User.fromContext(context!),
-    );
-    Actions.invoke(context, SendMessageIntent(messageData));
+    final messageData = PopmojiMessageData(popmojiCode: intent.code);
+    Actions.invoke(context!, SendMessageIntent(messageData));
   }
 }
 
@@ -55,11 +51,8 @@ class SendDanmakuIntent extends Intent {
 class SendDanmakuAction extends ContextAction<SendDanmakuIntent> {
   @override
   void invoke(SendDanmakuIntent intent, [BuildContext? context]) {
-    final messageData = DanmakuMessageData(
-      message: intent.message,
-      sender: User.fromContext(context!),
-    );
-    Actions.invoke(context, SendMessageIntent(messageData));
+    final messageData = DanmakuMessageData(message: intent.message);
+    Actions.invoke(context!, SendMessageIntent(messageData));
   }
 }
 

@@ -1,16 +1,17 @@
-import 'package:bunga_player/chat/business.dart';
-import 'package:bunga_player/play_sync/business.dart';
-import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
+import 'package:bunga_player/chat/business.dart';
+import 'package:bunga_player/play_sync/business.dart';
+import 'package:bunga_player/utils/extensions/styled_widget.dart';
+import 'package:bunga_player/voice_call/business.dart';
+import 'package:bunga_player/screens/player_screen/business.dart';
 import 'package:bunga_player/chat/models/user.dart';
 import 'package:bunga_player/play/models/play_payload.dart';
 
 import 'call_button.dart';
-import '../../../business.dart';
 
 class Header extends StatelessWidget {
   const Header({super.key});
@@ -24,13 +25,13 @@ class Header extends StatelessWidget {
       return TextButton(
         onPressed: Actions.handler(
           context,
-          JoinInIntent(myShare: payload.record),
+          JoinInIntent(myRecord: payload.record),
         ),
         child: const Text('分享到频道'),
       );
     }
 
-    final syncNotifier = context.read<WatcherSyncStatusNotifier>();
+    final syncNotifier = context.read<WatcherBufferingStatusNotifier>();
 
     return [
       [
@@ -76,30 +77,19 @@ class _WatcherLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    /*
-    final isTalking = context.select<List<TalkerId>, bool>(
-      (value) => value.any((e) => e.value == user.id),
-    );
-    return Text(
-      isTalking ? '🎤${user.name}' : user.name,
-    ).textColor(user.getColor(brightness: 0.95)).padding(right: 10.0);
-    */
-    final syncNotifier = context.read<WatcherSyncStatusNotifier>();
+    final bufferingNotifier = context.read<WatcherBufferingStatusNotifier>();
     return [
+      Selector<List<TalkerId>, bool>(
+        selector: (context, value) => value.any((e) => e.value == user.id),
+        builder: (context, isTalking, child) =>
+            isTalking ? Text('🎤') : const SizedBox.shrink(),
+      ),
       Text(user.name).textColor(user.getColor(brightness: 0.95)),
       ListenableBuilder(
-        listenable: syncNotifier,
-        builder: (context, child) {
-          final status = syncNotifier.syncStatusOf(user.id);
-          switch (status) {
-            case .buffering:
-              return const Text('⏳');
-            case .detached:
-              return const Text('⏸️');
-            case _:
-              return const SizedBox.shrink();
-          }
-        },
+        listenable: bufferingNotifier,
+        builder: (context, child) => bufferingNotifier.isBuffering(user.id)
+            ? const Text('⏳')
+            : const SizedBox.shrink(),
       ),
     ].toRow().padding(right: 10.0);
   }

@@ -23,16 +23,16 @@ Map<String, dynamic> _$WhatsOnMessageDataToJson(WhatsOnMessageData instance) =>
 NowPlayingMessageData _$NowPlayingMessageDataFromJson(
   Map<String, dynamic> json,
 ) => NowPlayingMessageData(
-  videoRecord: VideoRecord.fromJson(
-    json['video_record'] as Map<String, dynamic>,
-  ),
+  record: VideoRecord.fromJson(json['record'] as Map<String, dynamic>),
+  sharer: User.fromJson(json['sharer'] as Map<String, dynamic>),
 );
 
 Map<String, dynamic> _$NowPlayingMessageDataToJson(
   NowPlayingMessageData instance,
 ) => <String, dynamic>{
   'code': instance.code,
-  'video_record': instance.videoRecord.toJson(),
+  'record': instance.record.toJson(),
+  'sharer': instance.sharer.toJson(),
 };
 
 JoinInMessageData _$JoinInMessageDataFromJson(Map<String, dynamic> json) =>
@@ -40,7 +40,9 @@ JoinInMessageData _$JoinInMessageDataFromJson(Map<String, dynamic> json) =>
       user: User.fromJson(json['user'] as Map<String, dynamic>),
       myShare: json['my_share'] == null
           ? null
-          : VideoRecord.fromJson(json['my_share'] as Map<String, dynamic>),
+          : StartProjectionMessageData.fromJson(
+              json['my_share'] as Map<String, dynamic>,
+            ),
     );
 
 Map<String, dynamic> _$JoinInMessageDataToJson(JoinInMessageData instance) =>
@@ -50,27 +52,13 @@ Map<String, dynamic> _$JoinInMessageDataToJson(JoinInMessageData instance) =>
       'my_share': instance.myShare?.toJson(),
     };
 
-WatcherInfo _$WatcherInfoFromJson(Map<String, dynamic> json) => WatcherInfo(
-  user: User.fromJson(json['user'] as Map<String, dynamic>),
-  syncStatus: $enumDecode(_$SyncStatusEnumMap, json['sync_status']),
-);
-
-Map<String, dynamic> _$WatcherInfoToJson(WatcherInfo instance) =>
-    <String, dynamic>{
-      'user': instance.user.toJson(),
-      'sync_status': _$SyncStatusEnumMap[instance.syncStatus]!,
-    };
-
-const _$SyncStatusEnumMap = {
-  SyncStatus.buffering: 'buffering',
-  SyncStatus.ready: 'ready',
-  SyncStatus.detached: 'detached',
-};
-
 HereAreMessageData _$HereAreMessageDataFromJson(Map<String, dynamic> json) =>
     HereAreMessageData(
       watchers: (json['watchers'] as List<dynamic>)
-          .map((e) => WatcherInfo.fromJson(e as Map<String, dynamic>))
+          .map((e) => User.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      buffering: (json['buffering'] as List<dynamic>)
+          .map((e) => e as String)
           .toList(),
     );
 
@@ -78,6 +66,7 @@ Map<String, dynamic> _$HereAreMessageDataToJson(HereAreMessageData instance) =>
     <String, dynamic>{
       'code': instance.code,
       'watchers': instance.watchers.map((e) => e.toJson()).toList(),
+      'buffering': instance.buffering,
     };
 
 StartProjectionMessageData _$StartProjectionMessageDataFromJson(
@@ -86,6 +75,9 @@ StartProjectionMessageData _$StartProjectionMessageDataFromJson(
   videoRecord: VideoRecord.fromJson(
     json['video_record'] as Map<String, dynamic>,
   ),
+  position: json['position'] == null
+      ? Duration.zero
+      : Duration(microseconds: (json['position'] as num).toInt()),
 );
 
 Map<String, dynamic> _$StartProjectionMessageDataToJson(
@@ -93,17 +85,18 @@ Map<String, dynamic> _$StartProjectionMessageDataToJson(
 ) => <String, dynamic>{
   'code': instance.code,
   'video_record': instance.videoRecord.toJson(),
+  'position': instance.position.inMicroseconds,
 };
 
-SyncStatusMessageData _$SyncStatusMessageDataFromJson(
+BufferStateChangedMessageData _$BufferStateChangedMessageDataFromJson(
   Map<String, dynamic> json,
-) => SyncStatusMessageData($enumDecode(_$SyncStatusEnumMap, json['status']));
+) => BufferStateChangedMessageData(json['is_buffering'] as bool);
 
-Map<String, dynamic> _$SyncStatusMessageDataToJson(
-  SyncStatusMessageData instance,
+Map<String, dynamic> _$BufferStateChangedMessageDataToJson(
+  BufferStateChangedMessageData instance,
 ) => <String, dynamic>{
   'code': instance.code,
-  'status': _$SyncStatusEnumMap[instance.status]!,
+  'is_buffering': instance.isBuffering,
 };
 
 AlohaMessageData _$AlohaMessageDataFromJson(Map<String, dynamic> json) =>
@@ -131,6 +124,25 @@ ByeMessageData _$ByeMessageDataFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$ByeMessageDataToJson(ByeMessageData instance) =>
     <String, dynamic>{'code': instance.code};
 
+SetPlaybackMessageData _$SetPlaybackMessageDataFromJson(
+  Map<String, dynamic> json,
+) => SetPlaybackMessageData(isPlay: json['is_play'] as bool);
+
+Map<String, dynamic> _$SetPlaybackMessageDataToJson(
+  SetPlaybackMessageData instance,
+) => <String, dynamic>{'code': instance.code, 'is_play': instance.isPlay};
+
+SeekMessageData _$SeekMessageDataFromJson(Map<String, dynamic> json) =>
+    SeekMessageData(
+      position: Duration(microseconds: (json['position'] as num).toInt()),
+    );
+
+Map<String, dynamic> _$SeekMessageDataToJson(SeekMessageData instance) =>
+    <String, dynamic>{
+      'code': instance.code,
+      'position': instance.position.inMicroseconds,
+    };
+
 PlayAtMessageData _$PlayAtMessageDataFromJson(Map<String, dynamic> json) =>
     PlayAtMessageData(
       position: Duration(microseconds: (json['position'] as num).toInt()),
@@ -145,66 +157,23 @@ Map<String, dynamic> _$PlayAtMessageDataToJson(PlayAtMessageData instance) =>
     };
 
 PopmojiMessageData _$PopmojiMessageDataFromJson(Map<String, dynamic> json) =>
-    PopmojiMessageData(
-      sender: User.fromJson(json['sender'] as Map<String, dynamic>),
-      popmojiCode: json['popmoji_code'] as String,
-    );
+    PopmojiMessageData(popmojiCode: json['popmoji_code'] as String);
 
 Map<String, dynamic> _$PopmojiMessageDataToJson(PopmojiMessageData instance) =>
     <String, dynamic>{
       'code': instance.code,
-      'sender': instance.sender.toJson(),
       'popmoji_code': instance.popmojiCode,
     };
 
 DanmakuMessageData _$DanmakuMessageDataFromJson(Map<String, dynamic> json) =>
-    DanmakuMessageData(
-      sender: User.fromJson(json['sender'] as Map<String, dynamic>),
-      message: json['message'] as String,
-    );
+    DanmakuMessageData(message: json['message'] as String);
 
 Map<String, dynamic> _$DanmakuMessageDataToJson(DanmakuMessageData instance) =>
-    <String, dynamic>{
-      'code': instance.code,
-      'sender': instance.sender.toJson(),
-      'message': instance.message,
-    };
-
-CallMessageData _$CallMessageDataFromJson(Map<String, dynamic> json) =>
-    CallMessageData(action: $enumDecode(_$CallActionEnumMap, json['action']));
-
-Map<String, dynamic> _$CallMessageDataToJson(CallMessageData instance) =>
-    <String, dynamic>{
-      'code': instance.code,
-      'action': _$CallActionEnumMap[instance.action]!,
-    };
-
-const _$CallActionEnumMap = {
-  CallAction.ask: 'ask',
-  CallAction.yes: 'yes',
-  CallAction.no: 'no',
-  CallAction.cancel: 'cancel',
-};
-
-TalkStatusMessageData _$TalkStatusMessageDataFromJson(
-  Map<String, dynamic> json,
-) => TalkStatusMessageData(
-  status: $enumDecode(_$TalkStatusEnumMap, json['status']),
-);
-
-Map<String, dynamic> _$TalkStatusMessageDataToJson(
-  TalkStatusMessageData instance,
-) => <String, dynamic>{
-  'code': instance.code,
-  'status': _$TalkStatusEnumMap[instance.status]!,
-};
-
-const _$TalkStatusEnumMap = {TalkStatus.start: 'start', TalkStatus.end: 'end'};
+    <String, dynamic>{'code': instance.code, 'message': instance.message};
 
 ShareSubMessageData _$ShareSubMessageDataFromJson(Map<String, dynamic> json) =>
     ShareSubMessageData(
       url: json['url'] as String,
-      sharer: User.fromJson(json['sharer'] as Map<String, dynamic>),
       title: json['title'] as String,
     );
 
@@ -213,6 +182,5 @@ Map<String, dynamic> _$ShareSubMessageDataToJson(
 ) => <String, dynamic>{
   'code': instance.code,
   'url': instance.url,
-  'sharer': instance.sharer.toJson(),
   'title': instance.title,
 };

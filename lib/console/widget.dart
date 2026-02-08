@@ -280,6 +280,10 @@ class _ActionView extends StatelessWidget {
     );
     accountNotifier.value = newAccount;
 
+    // Don't know why, but if not delay here, the old id will be used
+    await Future.delayed(const Duration(milliseconds: 100));
+    if (!context.mounted) return;
+
     final host = context.read<BungaHostAddress>().value;
     final act = Actions.invoke(context, ConnectToHostIntent(host)) as Future;
     await act;

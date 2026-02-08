@@ -11,10 +11,7 @@ import 'package:bunga_player/client_info/models/client_account.dart';
 import 'package:bunga_player/console/service.dart';
 import 'package:bunga_player/services/exit_callbacks.dart';
 import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/utils/business/provider.dart';
 import 'package:bunga_player/ui/audio_player.dart';
-import 'package:bunga_player/ui/global_business.dart';
-import 'package:bunga_player/voice_call/business.dart';
 
 import 'models/message.dart';
 import 'models/message_data.dart';
@@ -69,12 +66,6 @@ class WatchersNotifier extends ChangeNotifier
   Watchers get value => Watchers(_data.values);
 }
 
-@immutable
-class TalkerId {
-  final String value;
-  const TalkerId(this.value);
-}
-
 class ChannelBusiness extends SingleChildStatefulWidget {
   const ChannelBusiness({super.key, super.child});
 
@@ -91,10 +82,6 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
   late final _watchersNotifier = WatchersNotifier(
     myself: User.fromContext(context),
   )..watchInConsole('Watchers');
-
-  // Talk
-  final _talkerIdsNotifier = ValueNotifier<Set<String>>({})
-    ..watchInConsole('Talkers Id');
 
   // Leave message for app exit
   Future<void> _sendLeaveMessage() {
@@ -119,11 +106,6 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
         case ByeMessageData.messageCode:
           if (message.sender.id == _myId) break;
           _dealWithBye(message.sender.id);
-        case TalkStatusMessageData.messageCode:
-          _dealWithTalkStatus(
-            message.sender.id,
-            TalkStatusMessageData.fromJson(message.data).status,
-          );
       }
     });
 
@@ -134,13 +116,7 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
     return MultiProvider(
-      providers: [
-        ValueListenableProvider.value(value: _watchersNotifier),
-        ValueListenableProxyProvider(
-          valueListenable: _talkerIdsNotifier,
-          proxy: (value) => value.map((e) => TalkerId(e)).toList(),
-        ),
-      ],
+      providers: [ValueListenableProvider.value(value: _watchersNotifier)],
       child: child,
     );
   }
@@ -148,7 +124,6 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
   @override
   void dispose() {
     _watchersNotifier.dispose();
-    _talkerIdsNotifier.dispose();
     _streamSubscription.cancel();
     getIt<ExitCallbacks>().remove(_sendLeaveMessage);
     super.dispose();
@@ -158,40 +133,12 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
     _addWatcher(sender);
   }
 
-  void _dealWithHereAre(List<WatcherInfo> watchers) {
-    _watchersNotifier.set(watchers.map((info) => info.user));
-
-    /* TODO:??
-    if (data.isTalking && _talkerIdsNotifier.value.add(data.user.id)) {
-      _talkerIdsNotifier.value = {..._talkerIdsNotifier.value};
-    }*/
+  void _dealWithHereAre(List<User> watchers) {
+    _watchersNotifier.set(watchers);
   }
 
   void _dealWithBye(String userId) {
     _removeWatcher(userId);
-    if (_talkerIdsNotifier.value.contains(userId)) {
-      _dealWithTalkStatus(userId, TalkStatus.end);
-    }
-  }
-
-  void _dealWithTalkStatus(String senderId, TalkStatus status) {
-    switch (status) {
-      case .start:
-        if (_talkerIdsNotifier.value.add(senderId)) {
-          _talkerIdsNotifier.value = {..._talkerIdsNotifier.value};
-          context.read<BungaAudioPlayer>().playSfx('user_speak');
-        }
-      case .end:
-        if (_talkerIdsNotifier.value.remove(senderId)) {
-          _talkerIdsNotifier.value = {..._talkerIdsNotifier.value};
-
-          if (_talkerIdsNotifier.value.length == 1 &&
-              _talkerIdsNotifier.value.first == _myId) {
-            context.read<PlaySyncMessageManager>().show('通话已结束');
-            Actions.invoke(context, const HangUpIntent());
-          }
-        }
-    }
   }
 
   void _addWatcher(User user) {

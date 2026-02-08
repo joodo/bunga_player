@@ -33,6 +33,18 @@ class _PopupWidgetState extends SingleChildState<PopupWidget>
   final OverlayPortalController _portalController = OverlayPortalController();
 
   @override
+  void initState() {
+    super.initState();
+    _animationController;
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget buildWithChild(BuildContext context, Widget? child) {
     return OverlayPortal(
       controller: _portalController,
@@ -48,12 +60,6 @@ class _PopupWidgetState extends SingleChildState<PopupWidget>
         ).alignment(widget.alignment),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
   }
 
   @override

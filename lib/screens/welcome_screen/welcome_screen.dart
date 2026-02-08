@@ -1,4 +1,5 @@
 import 'package:bunga_player/chat/models/user.dart';
+import 'package:bunga_player/play/models/video_record.dart';
 import 'package:bunga_player/ui/audio_player.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -36,7 +37,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         _dealWithProjection(message.sender, data);
       case NowPlayingMessageData.messageCode:
         final data = NowPlayingMessageData.fromJson(message.data);
-        _dealWithNowPlaying(message.sender, data);
+        _dealWithNowPlaying(data.sharer, data.record);
     }
   });
 
@@ -98,12 +99,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     if (autoJoin && isCurrentRoute && isFirstShare) _joinChannel();
   }
 
-  void _dealWithNowPlaying(User sharer, NowPlayingMessageData data) {
+  void _dealWithNowPlaying(User sharer, VideoRecord data) {
     //if (_currentProjection != null) return; // TODO: why?
-    _dealWithProjection(
-      sharer,
-      StartProjectionMessageData(videoRecord: data.videoRecord),
-    );
+    _dealWithProjection(sharer, StartProjectionMessageData(videoRecord: data));
   }
 
   void _videoSelected(OpenVideoDialogResult? result) async {

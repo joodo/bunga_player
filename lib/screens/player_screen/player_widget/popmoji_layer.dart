@@ -63,12 +63,9 @@ class _FireworkOverlayState extends State<_FireworkOverlay>
         .where(
           (message) =>
               message.data['code'] == PopmojiMessageData.messageCode &&
-              message.data['code'] == '🎆',
+              message.data['popmoji_code'] == '🎆',
         )
-        .map((message) {
-          final data = PopmojiMessageData.fromJson(message.data);
-          return data.sender;
-        })
+        .map((message) => message.sender)
         .listen(_startFireworks);
   }
 
@@ -116,11 +113,11 @@ class _PopmojiOverlayState extends State<_PopmojiOverlay> {
         .where(
           (message) =>
               message.data['code'] == PopmojiMessageData.messageCode &&
-              message.data['code'] != '🎆',
+              message.data['popmoji_code'] != '🎆',
         )
         .map((message) {
           final data = PopmojiMessageData.fromJson(message.data);
-          return (data.sender, data.code);
+          return (message.sender, data.popmojiCode);
         })
         .listen(_showPopmoji);
   }

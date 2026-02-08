@@ -1,9 +1,13 @@
 import 'dart:async';
 
 import 'package:async/async.dart';
+import 'package:bunga_player/chat/models/message_data.dart';
+import 'package:flutter/widgets.dart';
+import 'package:nested/nested.dart';
+import 'package:provider/provider.dart';
+
 import 'package:bunga_player/bunga_server/models/bunga_server_info.dart';
 import 'package:bunga_player/chat/global_business.dart';
-import 'package:bunga_player/chat/models/message_data.dart';
 import 'package:bunga_player/client_info/models/client_account.dart';
 import 'package:bunga_player/chat/models/message.dart';
 import 'package:bunga_player/services/permissions.dart';
@@ -14,12 +18,11 @@ import 'package:bunga_player/ui/shortcuts.dart';
 import 'package:bunga_player/utils/business/provider.dart';
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:bunga_player/utils/models/volume.dart';
-import 'client/client.agora.dart';
-import 'package:bunga_player/services/logger.dart';
+import 'package:bunga_player/console/service.dart';
 import 'package:bunga_player/services/services.dart';
-import 'package:flutter/widgets.dart';
-import 'package:nested/nested.dart';
-import 'package:provider/provider.dart';
+
+import 'models/message_data.dart';
+import 'client/client.agora.dart';
 
 // Data
 
@@ -104,12 +107,10 @@ class StartCallingRequestIntent extends Intent {
 
 class StartCallingRequestAction
     extends ContextAction<StartCallingRequestIntent> {
-  final Set<String> hopeList;
   final ValueNotifier<CallStatus> callStatusNotifier;
   final RestartableTimer timeOutTimer;
 
   StartCallingRequestAction({
-    required this.hopeList,
     required this.callStatusNotifier,
     required this.timeOutTimer,
   });
@@ -117,14 +118,11 @@ class StartCallingRequestAction
   @override
   void invoke(StartCallingRequestIntent intent, [BuildContext? context]) async {
     callStatusNotifier.value = .callOut;
-    hopeList.addAll(intent.hopeList);
 
-    final messageData = CallMessageData(action: .ask);
+    final messageData = CallMessageData(action: .call);
     Actions.invoke(context!, SendMessageIntent(messageData));
 
     timeOutTimer.reset();
-
-    logger.i('start call asking, hope list: $hopeList');
   }
 }
 
@@ -135,12 +133,10 @@ class CancelCallingRequestIntent extends Intent {
 
 class CancelCallingRequestAction
     extends ContextAction<CancelCallingRequestIntent> {
-  final Set<String> hopeList;
   final RestartableTimer requestTimeOutTimer;
   final ValueNotifier<CallStatus> callStatusNotifier;
 
   CancelCallingRequestAction({
-    required this.hopeList,
     required this.requestTimeOutTimer,
     required this.callStatusNotifier,
   });
@@ -153,8 +149,8 @@ class CancelCallingRequestAction
     final messageData = CallMessageData(action: .cancel);
     Actions.invoke(context!, SendMessageIntent(messageData));
 
-    hopeList.clear();
     requestTimeOutTimer.cancel();
+
     callStatusNotifier.value = .none;
   }
 }
@@ -166,20 +162,14 @@ class RejectCallingRequestIntent extends Intent {
 
 class RejectCallingRequestAction
     extends ContextAction<RejectCallingRequestIntent> {
-  final Set<String> hoperList;
   final ValueNotifier<CallStatus> callStatusNotifier;
 
-  RejectCallingRequestAction({
-    required this.hoperList,
-    required this.callStatusNotifier,
-  });
+  RejectCallingRequestAction({required this.callStatusNotifier});
 
   @override
   void invoke(RejectCallingRequestIntent intent, [BuildContext? context]) {
-    final messageData = CallMessageData(action: .no);
+    final messageData = CallMessageData(action: .reject);
     Actions.invoke(context!, SendMessageIntent(messageData));
-
-    hoperList.clear();
 
     callStatusNotifier.value = .none;
   }
@@ -190,24 +180,26 @@ class AcceptCallingRequestIntent extends Intent {
   const AcceptCallingRequestIntent();
 }
 
+@immutable
+class TalkerId {
+  final String value;
+  const TalkerId(this.value);
+}
+
 class AcceptCallingRequestAction
     extends ContextAction<AcceptCallingRequestIntent> {
   final ValueNotifier<CallStatus> callStatusNotifier;
-  final Set<String> hoperList;
   final VoidCallback startTalking;
 
   AcceptCallingRequestAction({
     required this.callStatusNotifier,
-    required this.hoperList,
     required this.startTalking,
   });
 
   @override
   void invoke(AcceptCallingRequestIntent intent, [BuildContext? context]) {
-    final messageData = CallMessageData(action: .yes);
+    final messageData = CallMessageData(action: .accept);
     Actions.invoke(context!, SendMessageIntent(messageData));
-
-    hoperList.clear();
 
     callStatusNotifier.value = .talking;
 
@@ -245,15 +237,10 @@ class VoiceCallBusiness extends SingleChildStatefulWidget {
 }
 
 class _VoiceCallBusinessState extends SingleChildState<VoiceCallBusiness> {
-  final _hopeList = <String>{}; // Who may answer me
-  final _hoperList = <String>{}; // Who is asking me
-  final _callStatusNotifier = ValueNotifier<CallStatus>(.none);
+  final _talkerIdsNotifier = ValueNotifier<Set<String>>({})
+    ..watchInConsole('Talkers Id');
 
-  late final _cancelAction = CancelCallingRequestAction(
-    hopeList: _hopeList,
-    callStatusNotifier: _callStatusNotifier,
-    requestTimeOutTimer: _requestTimeOutTimer,
-  );
+  final _callStatusNotifier = ValueNotifier<CallStatus>(.none);
 
   late final _requestTimeOutTimer = RestartableTimer(
     const Duration(seconds: 20),
@@ -261,8 +248,6 @@ class _VoiceCallBusinessState extends SingleChildState<VoiceCallBusiness> {
       context.read<PlaySyncMessageManager>().show('无人接听');
       final messageData = CallMessageData(action: CallAction.cancel);
       Actions.invoke(context, SendMessageIntent(messageData));
-
-      _hopeList.clear();
       _callStatusNotifier.value = .none;
     },
   )..cancel();
@@ -276,20 +261,31 @@ class _VoiceCallBusinessState extends SingleChildState<VoiceCallBusiness> {
     _callStatusNotifier.addListener(_soundCallRing);
 
     final myId = context.read<ClientAccount>().id;
-    _messageSubscription = context
-        .read<Stream<Message>>()
-        .where(
-          (message) =>
-              message.data['code'] == CallMessageData.messageCode &&
-              message.sender.id != myId,
-        )
-        .map(
-          (message) => (
+    _messageSubscription = context.read<Stream<Message>>().listen((message) {
+      switch (message.data['code']) {
+        case CallMessageData.messageCode:
+          if (message.sender.id == myId) break;
+          _handleCallAction(
             senderId: message.sender.id,
             action: CallMessageData.fromJson(message.data).action,
-          ),
-        )
-        .listen(_dealResponse);
+          );
+        case TalkStatusMessageData.messageCode:
+          _handleTalkStatus(
+            message.sender.id,
+            TalkStatusMessageData.fromJson(message.data).status,
+          );
+        case ByeMessageData.messageCode:
+          _handleTalkStatus(message.sender.id, TalkStatus.end);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _callStatusNotifier.dispose();
+    _talkerIdsNotifier.dispose();
+    _messageSubscription.cancel();
+    super.dispose();
   }
 
   @override
@@ -304,17 +300,17 @@ class _VoiceCallBusinessState extends SingleChildState<VoiceCallBusiness> {
       actions: {
         StartCallingRequestIntent: StartCallingRequestAction(
           callStatusNotifier: _callStatusNotifier,
-          hopeList: _hopeList,
           timeOutTimer: _requestTimeOutTimer,
         ),
-        CancelCallingRequestIntent: _cancelAction,
+        CancelCallingRequestIntent: CancelCallingRequestAction(
+          callStatusNotifier: _callStatusNotifier,
+          requestTimeOutTimer: _requestTimeOutTimer,
+        ),
         RejectCallingRequestIntent: RejectCallingRequestAction(
-          hoperList: _hoperList,
           callStatusNotifier: _callStatusNotifier,
         ),
         AcceptCallingRequestIntent: AcceptCallingRequestAction(
           callStatusNotifier: _callStatusNotifier,
-          hoperList: _hoperList,
           startTalking: _startTalking,
         ),
         HangUpIntent: HangUpAction(
@@ -327,16 +323,15 @@ class _VoiceCallBusinessState extends SingleChildState<VoiceCallBusiness> {
     );
 
     return MultiProvider(
-      providers: [ValueListenableProvider.value(value: _callStatusNotifier)],
+      providers: [
+        ValueListenableProvider.value(value: _callStatusNotifier),
+        ValueListenableProxyProvider(
+          valueListenable: _talkerIdsNotifier,
+          proxy: (value) => value.map((e) => TalkerId(e)).toList(),
+        ),
+      ],
       child: actionWrap,
     );
-  }
-
-  @override
-  void dispose() {
-    _callStatusNotifier.dispose();
-    _messageSubscription.cancel();
-    super.dispose();
   }
 
   // Call ring
@@ -350,76 +345,60 @@ class _VoiceCallBusinessState extends SingleChildState<VoiceCallBusiness> {
     }
   }
 
-  void _dealResponse(({String senderId, CallAction action}) data) {
-    switch (data.action) {
-      // someone ask for call
-      case .ask:
-        switch (_callStatusNotifier.value) {
-          // Has call in
-          case .none:
-            _callStatusNotifier.value = .callIn;
-            _hoperList.add(data.senderId);
-
-          // Already has call in
-          case .callIn:
-            _hoperList.add(data.senderId);
-
-          // Some one also want call when I'm calling out, so answer him
-          case .callOut:
-            _acceptAsk();
-            _myRequestHasBeenAccepted();
-
-          // Some one want to join when we are calling, answer him
-          case .talking:
-            _acceptAsk();
+  void _handleCallAction({
+    required String senderId,
+    required CallAction action,
+  }) {
+    switch (action) {
+      case .call:
+        if (_callStatusNotifier.value == .none) {
+          _callStatusNotifier.value = .callIn;
         }
 
       case .cancel:
-        // caller canceled asking
         if (_callStatusNotifier.value == .callIn) {
-          _hoperList.remove(data.senderId);
-          if (_hoperList.isEmpty) {
-            _callStatusNotifier.value = .none;
+          _callStatusNotifier.value = .none;
+        }
+
+      case .accept:
+        if (_callStatusNotifier.value == .callOut) {
+          _requestTimeOutTimer.cancel();
+          _callStatusNotifier.value = .talking;
+          _startTalking();
+        }
+
+      case .reject:
+        if (_callStatusNotifier.value == .callOut) {
+          _requestTimeOutTimer.cancel();
+          context.read<PlaySyncMessageManager>().show('呼叫已被拒绝');
+          _callStatusNotifier.value = .none;
+        }
+    }
+  }
+
+  void _handleTalkStatus(String senderId, TalkStatus status) {
+    switch (status) {
+      case .start:
+        if (_talkerIdsNotifier.value.add(senderId)) {
+          _talkerIdsNotifier.value = {..._talkerIdsNotifier.value};
+          context.read<BungaAudioPlayer>().playSfx('user_speak');
+        }
+      case .end:
+        if (_talkerIdsNotifier.value.remove(senderId)) {
+          _talkerIdsNotifier.value = {..._talkerIdsNotifier.value};
+
+          if (_talkerIdsNotifier.value.length == 1) {
+            // Only me is talking
+            context.read<PlaySyncMessageManager>().show('通话已结束');
+
+            final action = HangUpAction(
+              callStatusNotifier: _callStatusNotifier,
+              stopTalking: _stopTalking,
+            );
+            action.invoke(const HangUpIntent(), context);
           }
         }
-
-      case .yes:
-        // my request has been accepted!
-        if (_callStatusNotifier.value == .callOut) {
-          _myRequestHasBeenAccepted();
-        }
-
-      case .no:
-        // someone rejected me
-        if (_callStatusNotifier.value == .callOut) {
-          _myRequestIsRejectedBy(data.senderId);
-        }
     }
-  }
-
-  void _acceptAsk() {
-    final messageData = CallMessageData(action: CallAction.yes);
-    Actions.invoke(context, SendMessageIntent(messageData));
-  }
-
-  void _myRequestIsRejectedBy(String userId) {
-    _hopeList.remove(userId);
-
-    logger.i('$userId rejected call asking or leaved, hope list: $_hopeList');
-
-    if (_hopeList.isEmpty) {
-      context.read<PlaySyncMessageManager>().show('呼叫已被拒绝');
-      _cancelAction.invoke(CancelCallingRequestIntent(), context);
-    }
-  }
-
-  void _myRequestHasBeenAccepted() {
-    _hopeList.clear();
-    _requestTimeOutTimer.cancel();
-
-    _callStatusNotifier.value = .talking;
-
-    _startTalking();
   }
 
   Future<void> _startTalking() async {

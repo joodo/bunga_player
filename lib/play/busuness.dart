@@ -343,11 +343,13 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
   // Progress indicator
   late final _isVideoBufferingNotifier =
       getIt<PlayService>().isBufferingNotifier;
+
+  late final _busyNotifier = context.read<BusyStateNotifier>();
+
   void _updateBusyState() {
-    final notifier = context.read<BusyStateNotifier>();
     _isVideoBufferingNotifier.value
-        ? notifier.add('video buffering')
-        : notifier.remove('video buffering');
+        ? _busyNotifier.add('video buffering')
+        : _busyNotifier.remove('video buffering');
   }
 
   // Play payload
@@ -364,7 +366,6 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
       _saveWatchProgressTimer.reset();
     },
   )..cancel();
-  // final _savedPositionNotifier = SavedPositionNotifier(); // For saved postion toast
 
   @override
   void initState() {
@@ -429,7 +430,6 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
 
     _history.save();
     _saveWatchProgressTimer.cancel();
-    // _savedPositionNotifier.dispose();
 
     super.dispose();
   }

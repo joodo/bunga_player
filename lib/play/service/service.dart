@@ -24,6 +24,7 @@ abstract class PlayService {
   ValueListenable<Duration> get bufferNotifier;
   ValueListenable<bool> get isBufferingNotifier;
   ValueNotifier<Duration> get positionNotifier;
+  ValueNotifier<double> get playbackRateNotifier;
   void seek(Duration position);
 
   ValueNotifier<PlayStatus> get playStatusNotifier;

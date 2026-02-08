@@ -124,6 +124,14 @@ class MediaKitPlayService implements PlayService {
     _player.seek(position);
   }
 
+  // Playback rate
+  @override
+  late final playbackRateNotifier = _StreamValueNotifier<double>(
+    stream: _player.stream.rate,
+    setter: _player.setRate,
+    initValue: 1.0,
+  );
+
   // Video loading
   @override
   Future<void> open(PlayPayload payload, [Duration? start]) async {
@@ -486,6 +494,7 @@ Stream<bool> _bufferingStream(
   const bufferSizeMilliSec = 3000;
 
   Duration? position, buffer;
+  bool oldValue = true;
   await for (final event in StreamGroup.merge([
     position$.map((p) => ('p', p)),
     buffer$.map((b) => ('b', b)),
@@ -497,7 +506,14 @@ Stream<bool> _bufferingStream(
 
     if (position != null && buffer != null) {
       final delta = buffer - position;
-      yield delta.inMilliseconds > bufferSizeMilliSec ? false : true;
+      if (oldValue && delta.inMilliseconds > bufferSizeMilliSec) {
+        oldValue = false;
+        yield false;
+      }
+      if (!oldValue && delta.inMilliseconds <= 100) {
+        oldValue = true;
+        yield true;
+      }
     }
   }
 }

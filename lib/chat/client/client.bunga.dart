@@ -13,8 +13,8 @@ import '../models/message.dart';
 import '../models/user.dart';
 
 class BungaChatClient extends ChatClient {
-  final BungaServerInfo _clientInfo;
-  BungaChatClient._(BungaServerInfo clientInfo) : _clientInfo = clientInfo;
+  final BungaServerInfo _serverInfo;
+  BungaChatClient._(BungaServerInfo serverInfo) : _serverInfo = serverInfo;
 
   static Future<BungaChatClient> create({
     required BungaServerInfo serverInfo,
@@ -74,11 +74,11 @@ class BungaChatClient extends ChatClient {
   }
 
   Future<void> _connect() async {
-    final origin = _clientInfo.origin;
+    final origin = _serverInfo.origin;
     final wsUrl = origin.replace(
       scheme: origin.scheme == 'http' ? 'ws' : 'wss',
-      path: 'chat/${_clientInfo.channel.id}/',
-      queryParameters: {'token': _clientInfo.token.access},
+      path: 'chat/${_serverInfo.channel.id}/',
+      queryParameters: {'token': _serverInfo.token.access},
     );
     _channel = WebSocketChannel.connect(wsUrl);
 
@@ -98,7 +98,7 @@ class BungaChatClient extends ChatClient {
             return _reconnect();
 
           case 4002: // Token expired
-            await _clientInfo.refreshToken();
+            await _serverInfo.refreshToken();
             return _connect();
 
           default:

@@ -186,7 +186,7 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
               context,
               MaterialPageRoute(
                 builder: (context) => const PlayerScreen(),
-                settings: RouteSettings(arguments: intent.myShare),
+                settings: RouteSettings(arguments: intent.myRecord),
               ),
             );
             return null;
@@ -216,8 +216,10 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
         ).parseUrl(argument.url);
 
         runAfterBuild(
-          () =>
-              Actions.invoke(_childContext, JoinInIntent(myShare: videoRecord)),
+          () => Actions.invoke(
+            _childContext,
+            JoinInIntent(myRecord: videoRecord),
+          ),
         );
       }
     } else if (argument == null) {
@@ -228,7 +230,7 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
       // Join in by "share video to channel" action
       _isInChannel = true;
       runAfterBuild(
-        () => Actions.invoke(_childContext, JoinInIntent(myShare: argument)),
+        () => Actions.invoke(_childContext, JoinInIntent(myRecord: argument)),
       );
     }
   }
