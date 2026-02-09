@@ -272,7 +272,7 @@ class _HttpParser implements _Parser {
     final contentType = response.headers['content-type'];
     if (contentType == null ||
         contentType != 'application/vnd.apple.mpegurl' &&
-            contentType.startsWith('video')) {
+            !contentType.startsWith('video')) {
       throw Exception(
         'fetch record failed: unknown content-type "$contentType"',
       );
