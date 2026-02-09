@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:bunga_player/utils/models/volume.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 
 import '../models/play_payload.dart';
 import '../models/track.dart';
@@ -25,17 +26,15 @@ abstract class PlayService {
   ValueListenable<Duration> get durationNotifier;
   ValueListenable<Duration> get bufferNotifier;
   ValueListenable<bool> get isBufferingNotifier;
-  ValueNotifier<Duration> get positionNotifier;
+  ValueListenable<Duration> get positionNotifier;
   ValueNotifier<double> get playbackRateNotifier;
   void seek(Duration position);
 
-  ValueNotifier<PlayStatus> get playStatusNotifier;
+  ValueListenable<PlayStatus> get playStatusNotifier;
   void play();
   void pause();
-  void toggle();
   void stop();
-
-  ValueListenable<bool> get bufferingNotifier;
+  void toggle() => playStatusNotifier.value.isPlaying ? pause() : play();
 
   Future<Uint8List?> screenshot();
 
@@ -61,4 +60,6 @@ abstract class PlayService {
   ValueNotifier<String?> get proxyNotifier;
 
   ValueListenable<Size?> get videoSizeNotifier;
+
+  Widget buildVideoWidget();
 }

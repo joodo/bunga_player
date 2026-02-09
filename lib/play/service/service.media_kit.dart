@@ -4,6 +4,7 @@ import 'package:async/async.dart';
 import 'package:collection/collection.dart';
 import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:media_kit/media_kit.dart' as media_kit;
 import 'package:media_kit_video/media_kit_video.dart' as media_kit;
 import 'package:media_kit_video/media_kit_video_controls/src/controls/extensions/duration.dart';
@@ -20,7 +21,7 @@ import '../models/play_payload.dart';
 import '../models/track.dart';
 import 'service.dart';
 
-class MediaKitPlayService implements PlayService {
+class MediaKitPlayService extends PlayService {
   MediaKitPlayService() {
     media_kit.MediaKit.ensureInitialized();
 
@@ -58,7 +59,6 @@ class MediaKitPlayService implements PlayService {
     subtitleTrackNotifier;
     subtitleTracksNotifier;
     playStatusNotifier;
-    bufferingNotifier;
     bufferNotifier;
     durationNotifier;
     isBufferingNotifier;
@@ -75,7 +75,7 @@ class MediaKitPlayService implements PlayService {
       logLevel: media_kit.MPVLogLevel.warn,
     ),
   );
-  late final controller = media_kit.VideoController(_player);
+  late final _controller = media_kit.VideoController(_player);
 
   // Volume
   @override
@@ -98,29 +98,24 @@ class MediaKitPlayService implements PlayService {
     _player.stream.duration,
     Duration.zero,
   );
-  @override
-  late final isBufferingNotifier = _StreamListenable(
-    _player.stream.buffering,
-    false,
-  );
 
   // Position
   Duration? _seekCache; // For seek before video loaded
   @override
-  late final positionNotifier = _StreamValueNotifier<Duration>(
-    stream: _player.stream.position,
-    setter: (position) {
-      // whether video is loading
-      if (_player.state.duration <= Duration.zero) {
-        _seekCache = position;
-      } else {
-        _clampSeek(position);
-      }
-    },
-    initValue: Duration.zero,
+  late final positionNotifier = _StreamListenable<Duration>(
+    _player.stream.position,
+    Duration.zero,
   );
   @override
-  void seek(Duration position) => positionNotifier.value = position;
+  void seek(Duration position) {
+    // whether video is loading
+    if (_player.state.duration <= Duration.zero) {
+      _seekCache = position;
+    } else {
+      _clampSeek(position);
+    }
+  }
+
   void _clampSeek(Duration position) {
     position = position.clamp(Duration.zero, _player.state.duration);
     _player.seek(position);
@@ -159,41 +154,27 @@ class MediaKitPlayService implements PlayService {
       final audio = payload.sources.audios![0];
       _mpvCommand('audio-add $audio select auto');
     }
-
-    // Avoid open after stop, play status keep Stop
-    playStatusNotifier.value = .pause;
   }
 
   // Play status
   @override
-  late final playStatusNotifier = _StreamValueNotifier<PlayStatus>(
-    stream: _player.stream.playing
+  late final playStatusNotifier = _StreamListenable<PlayStatus>(
+    _player.stream.playing
         .map<PlayStatus>((playing) => playing ? .play : .pause)
         .distinct(),
-    setter: (playStatus) {
-      switch (playStatus) {
-        case .play:
-          _player.play();
-        case .pause:
-          _player.pause();
-        case .stop:
-          _player.stop();
-      }
-    },
-    initValue: .stop,
+    .pause,
+    // TODO: status stop
   );
 
   @override
-  void play() => playStatusNotifier.value = .play;
+  void play() => _player.play();
   @override
-  void pause() => playStatusNotifier.value = .pause;
+  void pause() => _player.pause();
   @override
-  void toggle() => playStatusNotifier.value == .play ? pause() : play();
-  @override
-  void stop() => playStatusNotifier.value = .stop;
+  void stop() => _player.stop();
 
   @override
-  late final bufferingNotifier = _StreamListenable(
+  late final isBufferingNotifier = _StreamListenable(
     _bufferingStream(_player.stream.position, _player.stream.buffer),
     true,
   );
@@ -448,6 +429,17 @@ class MediaKitPlayService implements PlayService {
       calloc.free(cmd);
     }
   }
+
+  @override
+  Widget buildVideoWidget() => media_kit.Video(
+    controller: _controller,
+    // use mpv subtitle
+    subtitleViewConfiguration: const media_kit.SubtitleViewConfiguration(
+      visible: false,
+    ),
+    wakelock: false,
+    controls: media_kit.NoVideoControls,
+  );
 }
 
 class _StreamValueNotifier<T> extends ValueNotifier<T> {

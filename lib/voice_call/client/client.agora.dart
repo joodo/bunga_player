@@ -2,7 +2,10 @@ import 'dart:async';
 
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:bunga_player/bunga_server/models/bunga_server_info.dart';
+import 'package:bunga_player/play/service/service.agora.dart';
+import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/services/logger.dart';
+import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/business/platform.dart';
 import 'package:bunga_player/utils/models/volume.dart';
 import 'package:flutter/material.dart';
@@ -26,6 +29,12 @@ class AgoraClient extends VoiceCallClient {
     );
     await client._init();
 
+    // Media player
+    final playService = getIt.get<PlayService>();
+    if (playService is AgoraPlayService) {
+      playService.registerEngine(client._engine);
+    }
+
     return client;
   }
 
@@ -34,6 +43,7 @@ class AgoraClient extends VoiceCallClient {
     required this.channelId,
     required this.channelToken,
   }) {
+    // Listeners
     noiseSuppressionLevelNotifier.addListener(() async {
       final level = noiseSuppressionLevelNotifier.value;
       switch (level) {

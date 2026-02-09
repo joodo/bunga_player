@@ -30,11 +30,14 @@ class ProxyFutureProvider<TInput, TOutput> extends SingleChildStatelessWidget {
   final Future<TOutput?> Function(TInput? input) create;
   final void Function(TOutput? previous)? dispose;
 
+  final bool? lazy;
+
   const ProxyFutureProvider({
     super.key,
     this.initial,
     required this.create,
     this.dispose,
+    this.lazy,
     super.child,
   });
 
@@ -52,9 +55,11 @@ class ProxyFutureProvider<TInput, TOutput> extends SingleChildStatelessWidget {
             holder!.setInput(input);
             return holder;
           },
+          lazy: lazy,
         ),
         ProxyProvider<_FutureHolder<TInput, TOutput>, TOutput?>(
           update: (_, holder, _) => holder.output,
+          lazy: lazy,
         ),
       ],
       child: child,

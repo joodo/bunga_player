@@ -129,7 +129,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
   late final StreamSubscription _streamSubscription;
 
   // Player status
-  final _playerBufferingNotifier = getIt<PlayService>().bufferingNotifier;
+  final _playerBufferingNotifier = getIt<PlayService>().isBufferingNotifier;
   final _watchersBufferStatusNotifier = WatcherBufferingStatusNotifier()
     ..watchInConsole('Watchers Sync Status');
 
