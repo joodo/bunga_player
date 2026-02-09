@@ -26,7 +26,7 @@ void main() async {
 
       if (kIsDesktop) {
         await windowManager.ensureInitialized();
-        windowManager.setMinimumSize(const Size(800, 480));
+        windowManager.setMinimumSize(const Size(480, 480));
       } else if (Platform.isAndroid) {
         await SystemChrome.setEnabledSystemUIMode(
           SystemUiMode.manual,

@@ -30,14 +30,12 @@ class VideoControl extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) => [
         // Play button
-        const _PlayButton().padding(left: 8.0),
-
-        if (constraints.maxWidth > 420) const ControlDivider(),
+        const _PlayButton().padding(horizontal: 8.0),
 
         // Volume section
         if (constraints.maxWidth > 630) const _SliderSection(),
-        if (constraints.maxWidth > 630) const ControlDivider(),
 
+        const ControlDivider(),
         const Spacer(),
 
         // Duration button
