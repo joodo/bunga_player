@@ -446,7 +446,8 @@ class VoiceCallGlobalBusiness extends SingleChildStatelessWidget {
 
         return client;
       },
-      // Dispose agora
+      // TODO: Dispose agora
+      lazy: false,
       child: child,
     );
   }

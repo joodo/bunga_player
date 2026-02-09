@@ -32,7 +32,8 @@ class NetworkCacheSizeNotifier extends ValueNotifier<int> {
   }
 
   void _applyCacheSize() {
-    (getIt<PlayService>() as MediaKitPlayService).setCacheSize(value);
+    // TODO: only for MediaKitPlayService
+    //(getIt<PlayService>() as MediaKitPlayService).setCacheSize(value);
   }
 }
 
