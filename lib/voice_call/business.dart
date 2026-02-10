@@ -119,8 +119,7 @@ class StartCallingRequestAction
   void invoke(StartCallingRequestIntent intent, [BuildContext? context]) async {
     callStatusNotifier.value = .callOut;
 
-    final messageData = CallMessageData(action: .call);
-    Actions.invoke(context!, SendMessageIntent(messageData));
+    context?.sendMessage(CallMessageData(action: .call));
 
     timeOutTimer.reset();
   }
@@ -146,8 +145,7 @@ class CancelCallingRequestAction
     CancelCallingRequestIntent intent, [
     BuildContext? context,
   ]) async {
-    final messageData = CallMessageData(action: .cancel);
-    Actions.invoke(context!, SendMessageIntent(messageData));
+    context?.sendMessage(CallMessageData(action: .cancel));
 
     requestTimeOutTimer.cancel();
 
@@ -168,8 +166,7 @@ class RejectCallingRequestAction
 
   @override
   void invoke(RejectCallingRequestIntent intent, [BuildContext? context]) {
-    final messageData = CallMessageData(action: .reject);
-    Actions.invoke(context!, SendMessageIntent(messageData));
+    context?.sendMessage(CallMessageData(action: .reject));
 
     callStatusNotifier.value = .none;
   }
@@ -198,8 +195,7 @@ class AcceptCallingRequestAction
 
   @override
   void invoke(AcceptCallingRequestIntent intent, [BuildContext? context]) {
-    final messageData = CallMessageData(action: .accept);
-    Actions.invoke(context!, SendMessageIntent(messageData));
+    context?.sendMessage(CallMessageData(action: .accept));
 
     callStatusNotifier.value = .talking;
 
@@ -246,8 +242,7 @@ class _VoiceCallBusinessState extends SingleChildState<VoiceCallBusiness> {
     const Duration(seconds: 20),
     () {
       context.read<PlaySyncMessageManager>().show('无人接听');
-      final messageData = CallMessageData(action: CallAction.cancel);
-      Actions.invoke(context, SendMessageIntent(messageData));
+      context.sendMessage(CallMessageData(action: .cancel));
       _callStatusNotifier.value = .none;
     },
   )..cancel();
@@ -410,13 +405,11 @@ class _VoiceCallBusinessState extends SingleChildState<VoiceCallBusiness> {
     await client.joinChannel(userId: myId);
 
     if (!mounted) return;
-    final messageData = TalkStatusMessageData(status: TalkStatus.start);
-    Actions.invoke(context, SendMessageIntent(messageData));
+    context.sendMessage(TalkStatusMessageData(status: .start));
   }
 
   Future<void> _stopTalking() async {
-    final messageData = TalkStatusMessageData(status: TalkStatus.end);
-    Actions.invoke(context, SendMessageIntent(messageData));
+    context.sendMessage(TalkStatusMessageData(status: .end));
 
     final client = context.read<AgoraClient>();
     client.micMuteNotifier.value = false;

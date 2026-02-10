@@ -84,8 +84,7 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
 
   // Leave message for app exit
   Future<void> _sendLeaveMessage() {
-    final byeData = ByeMessageData();
-    return Actions.invoke(context, SendMessageIntent(byeData)) as Future;
+    return context.sendMessage(ByeMessageData());
   }
 
   @override

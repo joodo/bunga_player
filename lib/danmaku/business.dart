@@ -42,7 +42,7 @@ class SendPopmojiAction extends ContextAction<SendPopmojiIntent> {
   @override
   void invoke(SendPopmojiIntent intent, [BuildContext? context]) {
     final messageData = PopmojiMessageData(popmojiCode: intent.code);
-    Actions.invoke(context!, SendMessageIntent(messageData));
+    context!.sendMessage(messageData);
   }
 }
 
@@ -56,7 +56,7 @@ class SendDanmakuAction extends ContextAction<SendDanmakuIntent> {
   @override
   void invoke(SendDanmakuIntent intent, [BuildContext? context]) {
     final messageData = DanmakuMessageData(message: intent.message);
-    Actions.invoke(context!, SendMessageIntent(messageData));
+    context!.sendMessage(messageData);
   }
 }
 

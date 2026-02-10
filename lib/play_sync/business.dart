@@ -2,11 +2,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:animations/animations.dart';
-import 'package:bunga_player/chat/client/client.dart';
-import 'package:bunga_player/console/service.dart';
-import 'package:bunga_player/play/payload_parser.dart';
-import 'package:bunga_player/ui/global_business.dart';
-import 'package:bunga_player/ui/shortcuts.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:path/path.dart' as path_tool;
@@ -29,6 +24,11 @@ import 'package:bunga_player/utils/business/value_listenable.dart';
 import 'package:bunga_player/utils/extensions/duration.dart';
 import 'package:bunga_player/utils/extensions/file.dart';
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
+import 'package:bunga_player/chat/client/client.dart';
+import 'package:bunga_player/console/service.dart';
+import 'package:bunga_player/play/payload_parser.dart';
+import 'package:bunga_player/ui/global_business.dart';
+import 'package:bunga_player/ui/shortcuts.dart';
 
 // Data types
 
@@ -85,7 +85,7 @@ class JoinInAction extends ContextAction<JoinInIntent> {
       user: User.of(context!),
       myShare: projection,
     );
-    Actions.invoke(context, SendMessageIntent(data));
+    context.sendMessage(data);
   }
 }
 
@@ -135,6 +135,9 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
 
   late final _busyNotifier = context.read<BusyStateNotifier>();
 
+  // Seeking business
+  bool _seeking = false;
+
   void _updateBusyState() {
     _watchersBufferStatusNotifier.isAnyBuffering
         ? _busyNotifier.add('watchers buffering')
@@ -168,12 +171,12 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
           );
         case HereAreMessageData.messageCode:
           final data = HereAreMessageData.fromJson(message.data);
-          _dealWithHereAre(data.buffering);
+          _handleHereAre(data.buffering);
         case BufferStateChangedMessageData.messageCode:
           final isBuffering = BufferStateChangedMessageData.fromJson(
             message.data,
           ).isBuffering;
-          _dealWithSyncStatus(message.sender, isBuffering);
+          _handleSyncStatus(message.sender, isBuffering);
         case PlayAtMessageData.messageCode:
           final data = PlayAtMessageData.fromJson(message.data);
           _handlePlayAt(message.sender, data.isPlay, data.position);
@@ -225,9 +228,10 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
 
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
+    // Capture shortcuts before play business
     final shortcuts = child!.applyShortcuts({
-      ShortcutKey.forward5Sec: SeekIntent.increase(Duration(seconds: 5)),
-      ShortcutKey.backward5Sec: SeekIntent.increase(Duration(seconds: -5)),
+      ShortcutKey.forward5Sec: SeekForwardIntent(Duration(seconds: 5)),
+      ShortcutKey.backward5Sec: SeekForwardIntent(Duration(seconds: -5)),
       ShortcutKey.togglePlay: ToggleIntent(),
     });
 
@@ -241,29 +245,31 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
             final messageData = SetPlaybackMessageData(
               isPlay: !playService.playStatusNotifier.value.isPlaying,
             );
-            Actions.invoke(context, SendMessageIntent(messageData));
+            context.sendMessage(messageData);
             return;
           },
         ),
-        SeekIntent: CallbackAction<SeekIntent>(
+        SeekForwardIntent: CallbackAction<SeekForwardIntent>(
+          onInvoke: _sendSeekMessage,
+        ),
+        SeekStartIntent: CallbackAction<SeekStartIntent>(
           onInvoke: (intent) {
-            if (_remoteJustToggledNotifier.value) return;
-
-            final playService = getIt<PlayService>();
-
-            final position = playService.positionNotifier.value;
-            final duration = playService.durationNotifier.value;
-
-            final messageData = SeekMessageData(
-              position: intent.applyOn(position, duration),
-            );
-            Actions.invoke(context, SendMessageIntent(messageData));
+            // Don't wait me...
+            context.sendMessage(BufferStateChangedMessageData(false));
+            _seeking = true;
+            return;
+          },
+        ),
+        SeekEndIntent: CallbackAction<SeekEndIntent>(
+          onInvoke: (intent) {
+            _sendSeekMessage(intent);
+            _seeking = false;
+            _sendBufferingStatus();
             return;
           },
         ),
         ShareVideoIntent: ShareVideoAction(),
         JoinInIntent: JoinInAction(),
-        //AskPositionIntent: AskPositionAction(),
       },
     );
 
@@ -281,10 +287,17 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
     );
   }
 
+  void _sendSeekMessage(SeekIntent intent) {
+    if (_remoteJustToggledNotifier.value) return;
+
+    final messageData = SeekMessageData(position: intent.position);
+    context.sendMessage(messageData);
+  }
+
   void _dealWithWhoAreYou() {
     // TODO: useless?
-    final data = JoinInMessageData(user: User.of(context));
-    Actions.invoke(context, SendMessageIntent(data));
+    final data = JoinInMessageData(user: User.fromContext(context));
+    context.sendMessage(data);
   }
 
   void _handleProjection(
@@ -346,11 +359,11 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
     Actions.invoke(context, OpenVideoIntent.record(newRecord, start: start));
   }
 
-  void _dealWithHereAre(List<String> buffering) {
+  void _handleHereAre(List<String> buffering) {
     _watchersBufferStatusNotifier.bufferingUserIds = buffering;
   }
 
-  void _dealWithSyncStatus(User sender, bool status) {
+  void _handleSyncStatus(User sender, bool status) {
     _watchersBufferStatusNotifier.setBuffering(sender.id, status);
   }
 
@@ -359,14 +372,19 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
 
     // Seek
     final localPosition = playService.positionNotifier.value;
-    final shouldSeek = isPlay
-        ? !localPosition.near(position, tolerance: const Duration(seconds: 2))
-        : localPosition != position;
+    final shouldSeek =
+        !_seeking &&
+        (isPlay
+            ? !localPosition.near(
+                position,
+                tolerance: const Duration(seconds: 2),
+              )
+            : localPosition != position);
     if (shouldSeek) {
       await playService.seek(position);
       _catchUpTarget = null;
     } else {
-      if (!localPosition.near(position)) {
+      if (!_seeking && !localPosition.near(position)) {
         // Not "near" enough, change playback rate instead of seeking to avoid jarring
         _catchUpTarget = _CatchUpTarget(position);
       }
@@ -393,9 +411,11 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
   }
 
   void _sendBufferingStatus() {
+    if (_seeking) return;
+
     final buffering = _playerBufferingNotifier.value;
     final data = BufferStateChangedMessageData(buffering);
-    Actions.invoke(context, SendMessageIntent(data));
+    context.sendMessage(data);
   }
 
   // Silent Catch-Up
@@ -423,8 +443,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
 
   // Finish
   void _sendFinishMessage() {
-    final data = PlayFinishedMessageData();
-    Actions.invoke(context, SendMessageIntent(data));
+    context.sendMessage(PlayFinishedMessageData());
   }
 }
 
