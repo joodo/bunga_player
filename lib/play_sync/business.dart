@@ -283,7 +283,8 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
   }
 
   void _applySeekAndSendMessage(SeekIntent intent) {
-    if (_remoteJustToggledNotifier.value) return;
+    final player = getIt<PlayService>();
+    player.seek(intent.position);
 
     final messageData = SeekMessageData(position: intent.position);
     context.sendMessage(messageData);
