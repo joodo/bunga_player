@@ -72,6 +72,9 @@ class AgoraPlayService extends PlayService {
           case .playerStateOpenCompleted:
           case .playerStatePaused:
             _playStatus.value = .pause;
+          case .playerStatePlaybackAllLoopsCompleted:
+            _finishNotifier.fire();
+            _playStatus.value = .pause;
           default:
             _playStatus.value = .stop;
         }
@@ -132,7 +135,7 @@ class AgoraPlayService extends PlayService {
   @override
   ValueListenable<Duration> get bufferNotifier => _buffer;
 
-  final _isBuffering = ValueNotifier(false);
+  final _isBuffering = ValueNotifier(true);
   @override
   ValueListenable<bool> get isBufferingNotifier => _isBuffering;
 
@@ -141,20 +144,21 @@ class AgoraPlayService extends PlayService {
   @override
   ValueListenable<Duration> get positionNotifier => _position;
   @override
-  void seek(Duration position) {
-    _player.seek(position.inMilliseconds);
-  }
+  Future<void> seek(Duration position) => _player.seek(position.inMilliseconds);
 
   // Playback
   final _playStatus = ValueNotifier<PlayStatus>(.stop);
   @override
   ValueListenable<PlayStatus> get playStatusNotifier => _playStatus;
   @override
-  void pause() => _player.pause();
+  Future<void> pause() => _player.pause();
   @override
-  void play() => _player.play();
+  Future<void> play() => _player.play();
   @override
-  void stop() => _player.stop();
+  Future<void> stop() => _player.stop();
+  final _finishNotifier = _SimpleEvent();
+  @override
+  Listenable get finishNotifier => _finishNotifier;
 
   // Playback rate
   @override
@@ -235,4 +239,8 @@ class AgoraPlayService extends PlayService {
     //return const SizedBox.shrink();
     return AgoraVideoView(controller: _player);
   }
+}
+
+class _SimpleEvent extends ChangeNotifier {
+  void fire() => notifyListeners();
 }

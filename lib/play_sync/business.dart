@@ -203,9 +203,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
 
     final playService = getIt<PlayService>();
     playService.positionNotifier.addListener(_silentCatchUp);
-
-    // TODO: useless
-    //_fetchPlayStatus();
+    playService.finishNotifier.addListener(_sendFinishMessage);
   }
 
   @override
@@ -215,6 +213,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
 
     final playService = getIt<PlayService>();
     playService.positionNotifier.removeListener(_silentCatchUp);
+    playService.finishNotifier.removeListener(_sendFinishMessage);
 
     _remoteJustToggledNotifier.dispose();
     _channelSubtitleNotifier.dispose();
@@ -353,7 +352,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
     _watchersBufferStatusNotifier.setBuffering(sender.id, status);
   }
 
-  void _handlePlayAt(User sender, bool isPlay, Duration position) {
+  void _handlePlayAt(User sender, bool isPlay, Duration position) async {
     final playService = getIt<PlayService>();
 
     // Seek
@@ -362,7 +361,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
         ? !localPosition.near(position, tolerance: const Duration(seconds: 2))
         : localPosition != position;
     if (shouldSeek) {
-      playService.seek(position);
+      await playService.seek(position);
       _catchUpTarget = null;
     } else {
       if (!localPosition.near(position)) {
@@ -374,7 +373,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
     // Toggle play/pause
     final localPlay = playService.playStatusNotifier.value.isPlaying;
     final shouldToggle = isPlay != localPlay;
-    if (shouldToggle) {
+    if (shouldToggle && mounted) {
       Actions.invoke(context, ToggleIntent());
     }
   }
@@ -420,20 +419,11 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
     }
   }
 
-  /*Future<void> _fetchPlayStatus() async {
-    final watchers = context.read<List<User>>();
-    final job = Actions.invoke(context, ProjectIntent()) as Future<JsonMap>;
-    final json = await job;
-
-    final subtitleInfo = json['subtitle'];
-    if (subtitleInfo != null) {
-      _channelSubtitleNotifier.value = (
-        url: subtitleInfo['file'],
-        title: subtitleInfo['name'],
-        sharer: watchers.firstWhere((e) => e.id == subtitleInfo['uploader']),
-      );
-    }
-  }*/
+  // Finish
+  void _sendFinishMessage() {
+    final data = PlayFinishedMessageData();
+    Actions.invoke(context, SendMessageIntent(data));
+  }
 }
 
 class _CatchUpTarget {

@@ -281,10 +281,10 @@ class ToggleAction extends ContextAction<ToggleIntent> {
   ToggleAction({required this.saveWatchProgressTimer});
 
   @override
-  void invoke(ToggleIntent intent, [BuildContext? context]) {
+  Future<void> invoke(ToggleIntent intent, [BuildContext? context]) async {
     // TODO: change to add listener
     final service = getIt<PlayService>();
-    service.toggle();
+    await service.toggle();
 
     // Deal with progress saving business
     if (service.playStatusNotifier.value.isPlaying) {
@@ -296,10 +296,7 @@ class ToggleAction extends ContextAction<ToggleIntent> {
 
   @override
   bool isEnabled(ToggleIntent intent, [BuildContext? context]) {
-    if (context == null) return false;
-
-    final isBusy = context.read<BusyStateNotifier>().isBusy;
-    return !isBusy;
+    return context != null;
   }
 }
 

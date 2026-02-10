@@ -26,13 +26,15 @@ abstract class PlayService {
   ValueListenable<bool> get isBufferingNotifier;
   ValueListenable<Duration> get positionNotifier;
   ValueNotifier<double> get playbackRateNotifier;
-  void seek(Duration position);
+  Future<void> seek(Duration position);
 
   ValueListenable<PlayStatus> get playStatusNotifier;
-  void play();
-  void pause();
-  void stop();
-  void toggle() => playStatusNotifier.value.isPlaying ? pause() : play();
+  Future<void> play();
+  Future<void> pause();
+  Future<void> stop();
+  Future<void> toggle() =>
+      playStatusNotifier.value.isPlaying ? pause() : play();
+  Listenable get finishNotifier;
 
   Future<Uint8List?> screenshot();
 
