@@ -8,7 +8,6 @@ import 'package:bunga_player/ui/toast.dart';
 import 'package:bunga_player/ui/audio_player.dart';
 import 'package:bunga_player/ui/global_business.dart';
 import 'package:bunga_player/ui/shortcuts.dart';
-import 'package:bunga_player/utils/extensions/comparable.dart';
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:bunga_player/utils/models/volume.dart';
 import 'package:flutter/foundation.dart';
@@ -300,16 +299,29 @@ class ToggleAction extends ContextAction<ToggleIntent> {
   }
 }
 
-@immutable
-class SeekIntent extends Intent {
-  const SeekIntent(this.value) : isIncrease = false;
-  const SeekIntent.increase(this.value) : isIncrease = true;
-  final Duration value;
-  final bool isIncrease;
+abstract class SeekIntent extends Intent {
+  Duration get position;
+  const SeekIntent();
+}
 
-  Duration applyOn(Duration currentPosition, Duration duration) {
-    final position = isIncrease ? currentPosition + value : value;
-    return position.clamp(Duration.zero, duration);
+class SeekStartIntent extends Intent {
+  const SeekStartIntent();
+}
+
+class SeekEndIntent extends SeekIntent {
+  @override
+  final Duration position;
+  const SeekEndIntent(this.position);
+}
+
+class SeekForwardIntent extends SeekIntent {
+  final Duration delta;
+  const SeekForwardIntent(this.delta);
+  @override
+  Duration get position {
+    final player = getIt<PlayService>();
+    final current = player.positionNotifier.value;
+    return current + delta;
   }
 }
 
@@ -317,10 +329,7 @@ class SeekAction extends ContextAction<SeekIntent> {
   @override
   void invoke(SeekIntent intent, [BuildContext? context]) {
     final service = getIt<PlayService>();
-
-    final position = service.positionNotifier.value;
-    final duration = service.durationNotifier.value;
-    service.seek(intent.applyOn(position, duration));
+    service.seek(intent.position);
   }
 
   @override
@@ -384,8 +393,8 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
     final shortcuts = child!.applyShortcuts({
       ShortcutKey.volumeUp: UpdateVolumeIntent.increase(10),
       ShortcutKey.volumeDown: UpdateVolumeIntent.increase(-10),
-      ShortcutKey.forward5Sec: SeekIntent.increase(Duration(seconds: 5)),
-      ShortcutKey.backward5Sec: SeekIntent.increase(Duration(seconds: -5)),
+      ShortcutKey.forward5Sec: SeekForwardIntent(Duration(seconds: 5)),
+      ShortcutKey.backward5Sec: SeekForwardIntent(Duration(seconds: -5)),
       ShortcutKey.togglePlay: ToggleIntent(),
       ShortcutKey.screenshot: ScreenshotIntent(),
     });
@@ -400,7 +409,8 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
         ToggleIntent: ToggleAction(
           saveWatchProgressTimer: _saveWatchProgressTimer,
         ),
-        SeekIntent: SeekAction(),
+        SeekForwardIntent: SeekAction(),
+        SeekEndIntent: SeekAction(),
         SetSubtitleTrackIntent: SetSubtitleTrackAction(),
         ScreenshotIntent: ScreenshotAction(
           playPayloadNotifier: _playPayloadNotifier,

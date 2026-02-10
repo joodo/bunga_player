@@ -129,8 +129,7 @@ class _WidgetBusinessState extends SingleChildState<_WidgetBusiness> {
 
     // Send bye message
     if (read<IsInChannel>().value) {
-      final byeData = ByeMessageData();
-      Actions.invoke(context, SendMessageIntent(byeData));
+      context.sendMessage(ByeMessageData());
     }
 
     // Stop talking

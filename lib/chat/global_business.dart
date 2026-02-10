@@ -18,6 +18,11 @@ class SendMessageIntent extends Intent {
   const SendMessageIntent(this.data);
 }
 
+extension SendMessage on BuildContext {
+  Future<Message?> sendMessage(MessageData data) =>
+      Actions.invoke(this, SendMessageIntent(data)) as Future<Message?>;
+}
+
 class SendMessageAction extends ContextAction<SendMessageIntent> {
   SendMessageAction();
 

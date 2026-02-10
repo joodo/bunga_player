@@ -120,7 +120,6 @@ class _DanmakuControlState extends State<DanmakuControl> {
     final messageData = easterCode != null
         ? PopmojiMessageData(popmojiCode: easterCode)
         : DanmakuMessageData(message: message);
-
-    Actions.invoke(context, SendMessageIntent(messageData));
+    context.sendMessage(messageData);
   }
 }
