@@ -1,3 +1,4 @@
+import 'package:bunga_player/utils/extensions/duration.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/foundation.dart';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
@@ -43,8 +44,22 @@ class AgoraPlayService extends PlayService {
   MediaPlayerSourceObserver _createObserver() {
     return MediaPlayerSourceObserver(
       onPlayBufferUpdated: (playCachedBuffer) {
-        _buffer.value =
-            _position.value + Duration(milliseconds: playCachedBuffer);
+        final buffer = Duration(milliseconds: playCachedBuffer);
+        _buffer.value = _position.value + buffer;
+
+        final almostFinished = _position.value.near(
+          _duration.value,
+          tolerance: _bufferThreshold,
+        );
+        if (_isBuffering.value) {
+          if (buffer > _bufferThreshold || almostFinished) {
+            _isBuffering.value = false;
+          }
+        } else {
+          if (buffer <= const Duration(milliseconds: 100) && !almostFinished) {
+            _isBuffering.value = true;
+          }
+        }
       },
       onPositionChanged: (positionMs, timestampMs) {
         _position.value = Duration(milliseconds: positionMs);
@@ -64,10 +79,10 @@ class AgoraPlayService extends PlayService {
       onPlayerEvent: (eventCode, elapsedTime, message) {
         logger.i('Player event: $eventCode, message: $message');
         switch (eventCode) {
-          case .playerEventBufferLow:
+          /*case .playerEventBufferLow:
             _isBuffering.value = true;
           case .playerEventBufferRecover:
-            _isBuffering.value = false;
+            _isBuffering.value = false;*/
           default:
             {}
         }
@@ -112,6 +127,7 @@ class AgoraPlayService extends PlayService {
   ValueListenable<Duration> get durationNotifier => _duration;
 
   // Buffer
+  static const _bufferThreshold = Duration(seconds: 2);
   final _buffer = ValueNotifier(Duration.zero);
   @override
   ValueListenable<Duration> get bufferNotifier => _buffer;
