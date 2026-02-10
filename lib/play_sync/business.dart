@@ -19,7 +19,6 @@ import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/screens/dialogs/open_video/direct_link.dart';
 import 'package:bunga_player/screens/dialogs/video_conflict.dart';
 import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/utils/business/provider.dart';
 import 'package:bunga_player/utils/business/value_listenable.dart';
 import 'package:bunga_player/utils/extensions/duration.dart';
 import 'package:bunga_player/utils/extensions/file.dart';
@@ -187,6 +186,8 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
           final manager = read<PlaySyncMessageManager>();
           final name = message.sender.name;
           manager.show('$name ${isPlay ? '播放' : '暂停'}了视频');
+
+          _remoteJustToggledNotifier.mark();
         case SeekMessageData.messageCode:
           if (message.sender.id == myId) break;
 
@@ -248,7 +249,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
           },
         ),
         SeekForwardIntent: CallbackAction<SeekForwardIntent>(
-          onInvoke: _sendSeekMessage,
+          onInvoke: _applySeekAndSendMessage,
         ),
         SeekStartIntent: CallbackAction<SeekStartIntent>(
           onInvoke: (intent) {
@@ -260,7 +261,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
         ),
         SeekEndIntent: CallbackAction<SeekEndIntent>(
           onInvoke: (intent) {
-            _sendSeekMessage(intent);
+            _applySeekAndSendMessage(intent);
             _seeking = false;
             _sendBufferingStatus();
             return;
@@ -276,16 +277,12 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
         ValueListenableProvider.value(value: _channelSubtitleNotifier),
         ListenableProvider.value(value: _watchersBufferStatusNotifier),
         Provider(create: (context) => SubtitleTrackIdOfUrl()),
-        ValueListenableProxyProvider(
-          valueListenable: _remoteJustToggledNotifier,
-          proxy: (value) => RemoteJustToggled(value),
-        ),
       ],
       child: actions,
     );
   }
 
-  void _sendSeekMessage(SeekIntent intent) {
+  void _applySeekAndSendMessage(SeekIntent intent) {
     if (_remoteJustToggledNotifier.value) return;
 
     final messageData = SeekMessageData(position: intent.position);
