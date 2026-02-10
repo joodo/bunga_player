@@ -107,18 +107,19 @@ class MediaKitPlayService extends PlayService {
     Duration.zero,
   );
   @override
-  void seek(Duration position) {
+  Future<void> seek(Duration position) {
     // whether video is loading
     if (_player.state.duration <= Duration.zero) {
       _seekCache = position;
+      return Future.value(null);
     } else {
-      _clampSeek(position);
+      return _clampSeek(position);
     }
   }
 
-  void _clampSeek(Duration position) {
+  Future<void> _clampSeek(Duration position) {
     position = position.clamp(Duration.zero, _player.state.duration);
-    _player.seek(position);
+    return _player.seek(position);
   }
 
   // Playback rate
@@ -167,11 +168,13 @@ class MediaKitPlayService extends PlayService {
   );
 
   @override
-  void play() => _player.play();
+  Future<void> play() => _player.play();
   @override
-  void pause() => _player.pause();
+  Future<void> pause() => _player.pause();
   @override
-  void stop() => _player.stop();
+  Future<void> stop() => _player.stop();
+  @override
+  Listenable get finishNotifier => throw UnimplementedError();
 
   @override
   late final isBufferingNotifier = _StreamListenable(

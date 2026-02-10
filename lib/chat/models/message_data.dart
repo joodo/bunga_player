@@ -246,6 +246,22 @@ class SeekMessageData extends MessageData {
   Map<String, dynamic> toJson() => _$SeekMessageDataToJson(this);
 }
 
+/// Send when video finished
+@JsonSerializable()
+class PlayFinishedMessageData extends MessageData {
+  static const messageCode = 'play-finished';
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: true)
+  final code = messageCode;
+
+  PlayFinishedMessageData();
+
+  factory PlayFinishedMessageData.fromJson(Map<String, dynamic> json) =>
+      _$PlayFinishedMessageDataFromJson(json);
+  @override
+  Map<String, dynamic> toJson() => _$PlayFinishedMessageDataToJson(this);
+}
+
 /// Receive when someone change play status
 @JsonSerializable()
 class PlayAtMessageData extends MessageData {

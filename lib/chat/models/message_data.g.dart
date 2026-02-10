@@ -149,6 +149,14 @@ Map<String, dynamic> _$SeekMessageDataToJson(SeekMessageData instance) =>
       'position': instance.position.inMicroseconds,
     };
 
+PlayFinishedMessageData _$PlayFinishedMessageDataFromJson(
+  Map<String, dynamic> json,
+) => PlayFinishedMessageData();
+
+Map<String, dynamic> _$PlayFinishedMessageDataToJson(
+  PlayFinishedMessageData instance,
+) => <String, dynamic>{'code': instance.code};
+
 PlayAtMessageData _$PlayAtMessageDataFromJson(Map<String, dynamic> json) =>
     PlayAtMessageData(
       position: Duration(microseconds: (json['position'] as num).toInt()),
