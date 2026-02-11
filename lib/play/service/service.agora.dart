@@ -1,12 +1,15 @@
+import 'dart:async';
 import 'dart:io';
 
-import 'package:bunga_player/utils/extensions/duration.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/foundation.dart';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 
 import 'package:bunga_player/utils/models/volume.dart';
+import 'package:bunga_player/utils/extensions/duration.dart';
 import 'package:bunga_player/services/logger.dart';
+import 'package:styled_widget/styled_widget.dart';
 
 import 'service.dart';
 import '../models/play_payload.dart';
@@ -76,11 +79,15 @@ class AgoraPlayService extends PlayService {
               milliseconds: await _player.getDuration(),
             );
             _playStatus.value = .pause;
+            _openTask?.complete();
           case .playerStatePaused:
             _playStatus.value = .pause;
           case .playerStatePlaybackAllLoopsCompleted:
             _finishNotifier.fire();
             _playStatus.value = .pause;
+          case .playerStateFailed:
+            _playStatus.value = .stop;
+            _openTask?.completeError(reason);
           default:
             _playStatus.value = .stop;
         }
@@ -106,10 +113,14 @@ class AgoraPlayService extends PlayService {
 
   // Open
   _LocalVideoProxy? _videoProxy;
+  Completer? _openTask;
   @override
   Future<void> open(PlayPayload payload, [Duration? start]) async {
     await _player.stop();
     await _videoProxy?.stop();
+    if (_openTask?.isCompleted == false) {
+      _openTask!.complete();
+    }
 
     // Headers
     String url = payload.sources.videos[payload.videoSourceIndex];
@@ -120,8 +131,9 @@ class AgoraPlayService extends PlayService {
     }
 
     // Open
+    _openTask = Completer();
     await _player.open(url: url, startPos: start?.inMilliseconds ?? 0);
-    await Future.delayed(const Duration(seconds: 1));
+    await _openTask!.future;
   }
 
   // Duration
@@ -236,8 +248,7 @@ class AgoraPlayService extends PlayService {
 
   @override
   Widget buildVideoWidget() {
-    //return const SizedBox.shrink();
-    return AgoraVideoView(controller: _player);
+    return AgoraVideoView(controller: _player).backgroundColor(Colors.black);
   }
 }
 
