@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:bunga_player/utils/extensions/duration.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/foundation.dart';
@@ -64,12 +66,16 @@ class AgoraPlayService extends PlayService {
       onPositionChanged: (positionMs, timestampMs) {
         _position.value = Duration(milliseconds: positionMs);
       },
-      onPlayerSourceStateChanged: (state, reason) {
+      onPlayerSourceStateChanged: (state, reason) async {
         logger.i('Player state changed: $state, reason: $reason');
         switch (state) {
           case .playerStatePlaying:
             _playStatus.value = .play;
           case .playerStateOpenCompleted:
+            _duration.value = Duration(
+              milliseconds: await _player.getDuration(),
+            );
+            _playStatus.value = .pause;
           case .playerStatePaused:
             _playStatus.value = .pause;
           case .playerStatePlaybackAllLoopsCompleted:
@@ -98,30 +104,24 @@ class AgoraPlayService extends PlayService {
   @override
   ValueNotifier<Volume> get volumeNotifier => _volume;
 
+  // Open
+  _LocalVideoProxy? _videoProxy;
   @override
   Future<void> open(PlayPayload payload, [Duration? start]) async {
     await _player.stop();
+    await _videoProxy?.stop();
 
     // Headers
+    String url = payload.sources.videos[payload.videoSourceIndex];
     final headers = payload.sources.requestHeaders;
-    final headerString = headers?.entries
-        .map((e) => '${e.key}: ${e.value}')
-        .join('\r\n');
-    print('Header string: $headerString');
-    if (headerString != null) {
-      await _player.setPlayerOptionInString(
-        key: 'http-header-fields',
-        value: headerString,
-      );
+    if (headers != null) {
+      _videoProxy = _LocalVideoProxy();
+      url = await _videoProxy!.startProxy(url, headers);
     }
 
     // Open
-    final url = payload.sources.videos[payload.videoSourceIndex];
     await _player.open(url: url, startPos: start?.inMilliseconds ?? 0);
     await Future.delayed(const Duration(seconds: 1));
-
-    // Update info
-    _duration.value = Duration(milliseconds: await _player.getDuration());
   }
 
   // Duration
@@ -243,4 +243,60 @@ class AgoraPlayService extends PlayService {
 
 class _SimpleEvent extends ChangeNotifier {
   void fire() => notifyListeners();
+}
+
+class _LocalVideoProxy {
+  HttpServer? _server;
+  final HttpClient _httpClient = HttpClient();
+
+  Future<String> startProxy(
+    String remoteUrl,
+    Map<String, String> headers,
+  ) async {
+    await stop();
+    _server = await HttpServer.bind('127.0.0.1', 0);
+
+    _server!.listen((HttpRequest request) async {
+      try {
+        final clientReq = await _httpClient.getUrl(Uri.parse(remoteUrl));
+
+        headers.forEach((key, value) => clientReq.headers.set(key, value));
+        String? range = request.headers.value('range');
+        if (range != null) clientReq.headers.set('range', range);
+
+        final clientRes = await clientReq.close();
+
+        request.response.statusCode = clientRes.statusCode;
+
+        request.response.headers.set('Content-Type', 'video/mp4');
+        request.response.headers.set('Accept-Ranges', 'bytes');
+        request.response.headers.set('Server', 'Tengine');
+
+        clientRes.headers.forEach((name, values) {
+          String n = name.toLowerCase();
+          if (n == 'content-range' ||
+              n == 'content-length' ||
+              n == 'last-modified') {
+            request.response.headers.set(name, values.join(','));
+          }
+          if (n == 'etag') {
+            String etag = values.join(',');
+            request.response.headers.set(
+              'etag',
+              etag.startsWith('"') ? etag : '"$etag"',
+            );
+          }
+        });
+
+        await request.response.addStream(clientRes);
+        await request.response.close();
+      } catch (e) {
+        request.response.close();
+      }
+    });
+
+    return "http://127.0.0.1:${_server!.port}/video.mp4";
+  }
+
+  Future<void> stop() async => await _server?.close(force: true);
 }
