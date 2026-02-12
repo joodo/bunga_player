@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/foundation.dart';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
@@ -224,13 +226,17 @@ class AgoraPlayService extends PlayService {
   // Utils
 
   @override
-  // TODO: implement proxyNotifier
   ValueNotifier<String?> get proxyNotifier => throw UnimplementedError();
 
   @override
-  Future<Uint8List?> screenshot() {
-    // TODO: implement screenshot
-    throw UnimplementedError();
+  Future<Uint8List?> screenshot() async {
+    final boundary =
+        _widgetKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+    if (boundary == null) return null;
+
+    final image = await boundary.toImage();
+    final byteData = await image.toByteData(format: ImageByteFormat.png);
+    return byteData?.buffer.asUint8List();
   }
 
   // Video effects are not supported by agora
@@ -246,9 +252,13 @@ class AgoraPlayService extends PlayService {
   @override
   ValueNotifier<int> get saturationNotifier => throw UnimplementedError();
 
+  final _widgetKey = GlobalKey();
   @override
   Widget buildVideoWidget() {
-    return AgoraVideoView(controller: _player).backgroundColor(Colors.black);
+    return RepaintBoundary(
+      key: _widgetKey,
+      child: AgoraVideoView(controller: _player).backgroundColor(Colors.black),
+    );
   }
 }
 
