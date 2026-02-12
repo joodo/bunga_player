@@ -1,11 +1,15 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
+import 'package:nested/nested.dart';
+import 'package:provider/provider.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
+
 import 'package:bunga_player/chat/business.dart';
 import 'package:bunga_player/chat/global_business.dart';
 import 'package:bunga_player/chat/models/message_data.dart';
 import 'package:bunga_player/danmaku/business.dart';
 import 'package:bunga_player/play/busuness.dart';
-import 'package:bunga_player/play/models/video_record.dart';
 import 'package:bunga_player/play/payload_parser.dart';
 import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/play_sync/business.dart';
@@ -18,14 +22,9 @@ import 'package:bunga_player/utils/business/run_after_build.dart';
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:bunga_player/voice_call/business.dart';
 import 'package:bunga_player/voice_call/client/client.agora.dart';
-import 'package:flutter/material.dart';
-import 'package:nested/nested.dart';
-import 'package:provider/provider.dart';
-import 'package:wakelock_plus/wakelock_plus.dart';
 
 import 'actions.dart';
 import 'panel/panel.dart';
-import 'player_screen.dart';
 
 @immutable
 class DanmakuVisible {
@@ -40,6 +39,7 @@ class IsInChannel {
 }
 
 class _WidgetBusiness extends SingleChildStatefulWidget {
+  // ignore: unused_element_parameter
   const _WidgetBusiness({super.key, super.child});
 
   @override
@@ -138,29 +138,34 @@ class _WidgetBusinessState extends SingleChildState<_WidgetBusiness> {
 }
 
 class PlayScreenBusiness extends SingleChildStatefulWidget {
-  const PlayScreenBusiness({super.key, super.child});
+  final BuildContext Function() getChildContext;
+  const PlayScreenBusiness({
+    super.key,
+    super.child,
+    required this.getChildContext,
+  });
 
   @override
   State<PlayScreenBusiness> createState() => _PlayScreenBusinessState();
 }
 
-class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
-  final _childKey = GlobalKey();
-  BuildContext get _childContext => _childKey.currentState!.context;
+enum _Situation { none, local, localToShare, channelJoin, channelShare }
 
-  late final bool _isInChannel;
+class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
+  _Situation _situation = .none;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _dealArgument();
+    if (_situation == .none) _handleRouteArgument();
   }
 
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
-    final widget = _WidgetBusiness(key: _childKey, child: child!);
+    final widget = _WidgetBusiness(child: child!);
 
-    final channelWrap = _isInChannel
+    final isInChannel = _situation != .local;
+    final channelWrap = isInChannel
         ? widget
               .danmakuBusiness()
               .playSyncBusiness()
@@ -169,7 +174,7 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
         : _wrapJoinInAction(widget);
     final businessWrap = channelWrap.playBusiness();
     final provider = Provider.value(
-      value: IsInChannel(_isInChannel),
+      value: IsInChannel(isInChannel),
       child: businessWrap,
     );
 
@@ -180,62 +185,65 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
     return Actions(
       actions: {
         JoinInIntent: CallbackAction<JoinInIntent>(
-          onInvoke: (intent) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const PlayerScreen(),
-                settings: RouteSettings(arguments: intent.myRecord),
+          onInvoke: (intent) => setState(() {
+            _situation = .localToShare;
+            runAfterBuild(
+              () => Actions.invoke(
+                widget.getChildContext(),
+                JoinInIntent(myRecord: intent.myRecord),
               ),
             );
-            return null;
-          },
+          }),
         ),
       },
       child: child,
     );
   }
 
-  Future<void> _dealArgument() async {
+  Future<void> _handleRouteArgument() async {
     // Play video from route argument
     final argument = ModalRoute.of(context)?.settings.arguments;
     if (argument is OpenVideoDialogResult) {
       // Join in by open video from dialog
       if (argument.onlyForMe) {
-        _isInChannel = false;
+        _situation = .local;
 
         runAfterBuild(
-          () =>
-              Actions.invoke(_childContext, OpenVideoIntent.url(argument.url)),
+          () => Actions.invoke(
+            widget.getChildContext(),
+            OpenVideoIntent.url(argument.url),
+          ),
         );
       } else {
-        _isInChannel = true;
+        _situation = .channelShare;
         final videoRecord = await PlayPayloadParser(
           context,
         ).parseUrl(argument.url);
 
         runAfterBuild(
           () => Actions.invoke(
-            _childContext,
+            widget.getChildContext(),
             JoinInIntent(myRecord: videoRecord),
           ),
         );
       }
     } else if (argument == null) {
       // Join in by "Channel Card" in Welcome screen
-      _isInChannel = true;
-      runAfterBuild(() => Actions.invoke(_childContext, JoinInIntent()));
-    } else if (argument is VideoRecord) {
-      // Join in by "share video to channel" action
-      _isInChannel = true;
+      _situation = .channelJoin;
       runAfterBuild(
-        () => Actions.invoke(_childContext, JoinInIntent(myRecord: argument)),
+        () => Actions.invoke(widget.getChildContext(), JoinInIntent()),
       );
     }
   }
 }
 
 extension WrapPlayScreenBusiness on Widget {
-  Widget playScreenBusiness({Key? key}) =>
-      PlayScreenBusiness(key: key, child: this);
+  Widget playScreenBusiness({
+    Key? key,
+    required BuildContext Function() getChildContext,
+  }) => PlayScreenBusiness(
+    key: key,
+    getChildContext: getChildContext,
+    child: this,
+  );
 }

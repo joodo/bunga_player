@@ -9,6 +9,8 @@ import 'player_widget/player_widget.dart';
 import 'danmaku_control.dart';
 import 'business.dart';
 
+final _bodyKey = GlobalKey();
+
 class PlayerScreen extends StatelessWidget {
   static const panelWidth = 300.0;
   static const danmakuHeight = 64.0;
@@ -19,6 +21,7 @@ class PlayerScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final body = Consumer2<Panel?, DanmakuVisible>(
+      key: _bodyKey,
       builder: (context, panel, danmakuVisible, child) {
         final playerWidget = child!.card(margin: EdgeInsets.all(0));
         final danmakuWidget = danmakuVisible.value
@@ -41,7 +44,9 @@ class PlayerScreen extends StatelessWidget {
       child: const PlayerWidget(),
     );
 
-    return body.playScreenBusiness();
+    return body.playScreenBusiness(
+      getChildContext: () => _bodyKey.currentContext!,
+    );
   }
 
   Widget _animate(Widget widget, Axis axis) => widget.animatedSwitcher(
