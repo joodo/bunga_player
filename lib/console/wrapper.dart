@@ -1,5 +1,4 @@
 import 'package:bunga_player/screens/widgets/split_view.dart';
-import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/utils/enum.dart';
 import 'package:flutter/material.dart';
@@ -7,7 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 
-import 'service.dart';
 import 'widget.dart';
 
 class ToggleConsoleIntent extends Intent {}
@@ -54,11 +52,7 @@ class ConsoleWrapperState extends SingleChildState<ConsoleWrapper> {
         size: 400.0,
         maxSize: 1000.0,
         direction: direction,
-        split: _showConsole
-            ? Console(
-                logTextController: getIt<ConsoleService>().logTextController,
-              )
-            : null,
+        split: _showConsole ? const Console() : null,
       ),
     );
 

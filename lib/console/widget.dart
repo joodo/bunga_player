@@ -1,31 +1,31 @@
 import 'dart:convert';
 import 'dart:math';
 
-import 'package:bunga_player/bunga_server/global_business.dart';
-import 'package:bunga_player/bunga_server/models/bunga_server_info.dart';
-import 'package:bunga_player/client_info/models/client_account.dart';
-import 'package:bunga_player/console/service.dart';
-import 'package:bunga_player/restart/global_business.dart';
-import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/services/preferences.dart';
-import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/ui/toast.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
+import 'package:bunga_player/bunga_server/global_business.dart';
+import 'package:bunga_player/bunga_server/models/bunga_server_info.dart';
+import 'package:bunga_player/client_info/models/client_account.dart';
+import 'package:bunga_player/restart/global_business.dart';
+import 'package:bunga_player/services/logger.dart';
+import 'package:bunga_player/services/preferences.dart';
+import 'package:bunga_player/services/services.dart';
+import 'package:bunga_player/ui/toast.dart';
+
 import 'wrapper.dart';
+import 'service.dart';
 
 class Console extends StatelessWidget {
-  final TextEditingController logTextController;
-  const Console({super.key, required this.logTextController});
+  const Console({super.key});
 
   @override
   Widget build(BuildContext context) {
     final tabs = {
-      'Logs': _LogView(logTextController: logTextController),
+      'Logs': _LogView(),
       'Variables': _VariablesView(),
       'Actions': _ActionView(),
     };
@@ -77,23 +77,49 @@ class Console extends StatelessWidget {
   }
 }
 
-class _LogView extends StatelessWidget {
-  final TextEditingController logTextController;
+class _LogView extends StatefulWidget {
+  const _LogView();
 
-  const _LogView({required this.logTextController});
+  @override
+  State<_LogView> createState() => _LogViewState();
+}
+
+class _LogViewState extends State<_LogView> with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  final _logTextController = TextEditingController();
+  late final _subscription = logger.stream.listen((logs) {
+    _logTextController.text += '${logs.join('\n')}\n';
+  });
+
+  @override
+  void initState() {
+    super.initState();
+    _subscription;
+  }
+
+  @override
+  void dispose() async {
+    _subscription.cancel();
+    _logTextController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // for AutomaticKeepAliveClientMixin
     return [
       [
-        SelectableText(logger.path).flexible(fit: .tight),
+        SelectableText(logger.dirPath).flexible(fit: .tight),
         OutlinedButton(
-          onPressed: logTextController.clear,
+          onPressed: _logTextController.clear,
           child: const Text('Clear'),
         ),
+        FilledButton(onPressed: _uploadLog, child: const Text('Upload')),
       ].toRow(separator: const SizedBox(width: 8.0)).padding(bottom: 8.0),
       TextField(
-        controller: logTextController,
+        controller: _logTextController,
         decoration: const InputDecoration(border: OutlineInputBorder()),
         style: Theme.of(context).textTheme.labelMedium,
         expands: true,
@@ -103,6 +129,17 @@ class _LogView extends StatelessWidget {
         readOnly: true,
       ).flexible(),
     ].toColumn(crossAxisAlignment: CrossAxisAlignment.stretch);
+  }
+
+  Future<void> _uploadLog() async {
+    final act = Actions.invoke(context, UploadLogIntent()) as Future;
+    final toast = getIt<Toast>();
+    try {
+      await act;
+      toast.show('上传成功');
+    } catch (e) {
+      toast.show('上传失败: $e');
+    }
   }
 }
 

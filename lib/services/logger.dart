@@ -16,22 +16,23 @@ Future<void> initializeLogger() async {
 class BungaLogger extends Logger {
   static final streamOutput = StreamOutput();
 
-  BungaLogger(this.path)
-      : super(
-          output: MultiOutput([
-            streamOutput,
-            AdvancedFileOutput(
-              path: path,
-              maxFileSizeKB: 512,
-              maxRotatedFilesCount: 3,
-            ),
-            ConsoleOutput(),
-          ]),
-          printer: SimplePrinter(colors: false),
-          filter: ProductionFilter(),
-          level: Level.info,
-        );
+  BungaLogger(this.dirPath)
+    : super(
+        output: MultiOutput([
+          streamOutput,
+          AdvancedFileOutput(
+            path: dirPath,
+            maxFileSizeKB: 512,
+            maxRotatedFilesCount: 3,
+          ),
+          ConsoleOutput(),
+        ]),
+        printer: SimplePrinter(colors: false),
+        filter: ProductionFilter(),
+        level: Level.info,
+      );
 
-  final String path;
+  final String dirPath;
+  String get latestPath => '${dirPath}latest.log';
   final Stream<List<String>> stream = streamOutput.stream.asBroadcastStream();
 }

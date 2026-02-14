@@ -6,6 +6,7 @@ import 'package:bunga_player/client_info/models/client_account.dart';
 import 'package:bunga_player/console/service.dart';
 import 'package:bunga_player/play/models/play_payload.dart';
 import 'package:bunga_player/play/models/video_record.dart';
+import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/utils/business/run_after_build.dart';
 import 'package:bunga_player/utils/extensions/http_response.dart';
@@ -182,6 +183,38 @@ class UploadSubtitleAction extends ContextAction<UploadSubtitleIntent> {
   }
 }
 
+class UploadLogIntent extends Intent {
+  const UploadLogIntent();
+}
+
+class UploadLogAction extends ContextAction<UploadLogIntent> {
+  @override
+  Object? invoke(UploadLogIntent intent, [BuildContext? context]) async {
+    final serverInfo = context!.read<BungaServerInfo>();
+
+    Future<http.Response> reqFunc(Map<String, String> headers) async {
+      final uploadUri = serverInfo.origin.replace(
+        pathSegments: ['api', 'client-logs', ''],
+      );
+
+      final request = http.MultipartRequest('POST', uploadUri);
+      request.files.add(
+        await http.MultipartFile.fromPath('file', logger.latestPath),
+      );
+      request.fields['channel_id'] = serverInfo.channel.id;
+      request.headers.addAll(headers);
+      final streamedResponse = await request.send();
+      return http.Response.fromStream(streamedResponse);
+    }
+
+    final json = await _retryIfTokenExpired(
+      serverInfo: serverInfo,
+      doRequest: reqFunc,
+    );
+    return json;
+  }
+}
+
 // TODO: useless
 class ProjectIntent extends Intent {
   final VideoRecord videoRecord;
@@ -265,6 +298,7 @@ class _BungaServerGlobalBusinessState
         ConnectToHostIntent: _connectToHostAction,
         AlohaIntent: AlohaAction(),
         UploadSubtitleIntent: UploadSubtitleAction(),
+        UploadLogIntent: UploadLogAction(),
         ProjectIntent: ProjectAction(),
       },
       child: child!,
