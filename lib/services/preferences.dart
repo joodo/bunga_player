@@ -4,14 +4,18 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Preferences {
-  final SharedPreferences _pref;
+  final SharedPreferencesWithCache _pref;
   Preferences(this._pref);
   static Future<Preferences> create() async {
-    return Preferences(await SharedPreferences.getInstance());
+    return Preferences(
+      await SharedPreferencesWithCache.create(
+        cacheOptions: const SharedPreferencesWithCacheOptions(),
+      ),
+    );
   }
 
-  Future<bool> set(String key, dynamic value) async {
-    final Future<bool> result;
+  Future<void> set(String key, dynamic value) async {
+    final Future<void> result;
     switch (value.runtimeType) {
       case const (bool):
         result = _pref.setBool(key, value);
@@ -29,24 +33,20 @@ class Preferences {
         throw 'Unsupport value type: ${value.runtimeType}';
     }
 
-    result.then((success) {
-      if (success) {
-        logger.i('Preference: set $key=$value');
-      } else {
-        logger.w('Preference: failed to set $key=$value');
-      }
+    result.then((_) {
+      logger.i('Preference: set $key=$value');
     });
     return result;
   }
 
-  Future<bool> remove(String key) {
+  Future<void> remove(String key) {
     logger.i('Preference: remove $key');
     return _pref.remove(key);
   }
 
-  Future<void> reload() => _pref.reload();
+  Future<void> reload() => _pref.reloadCache();
 
-  Set<String> get keys => _pref.getKeys();
+  Set<String> get keys => _pref.keys;
 
   T? get<T>(String key) {
     switch (T) {
