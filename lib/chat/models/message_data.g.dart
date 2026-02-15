@@ -88,6 +88,12 @@ Map<String, dynamic> _$StartProjectionMessageDataToJson(
   'position': instance.position.inMicroseconds,
 };
 
+ResetMessageData _$ResetMessageDataFromJson(Map<String, dynamic> json) =>
+    ResetMessageData();
+
+Map<String, dynamic> _$ResetMessageDataToJson(ResetMessageData instance) =>
+    <String, dynamic>{'code': instance.code};
+
 BufferStateChangedMessageData _$BufferStateChangedMessageDataFromJson(
   Map<String, dynamic> json,
 ) => BufferStateChangedMessageData(json['is_buffering'] as bool);

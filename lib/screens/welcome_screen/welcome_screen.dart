@@ -38,6 +38,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       case NowPlayingMessageData.messageCode:
         final data = NowPlayingMessageData.fromJson(message.data);
         _dealWithNowPlaying(data.sharer, data.record);
+      case ResetMessageData.messageCode:
+        _cleanProjection();
     }
   });
 
@@ -122,5 +124,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         settings: RouteSettings(arguments: argument),
       ),
     );
+  }
+
+  void _cleanProjection() {
+    setState(() {
+      _currentProjection = null;
+    });
   }
 }

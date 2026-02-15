@@ -195,6 +195,8 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
             sharer: message.sender,
             data: ShareSubMessageData.fromJson(message.data),
           );
+        case ResetMessageData.messageCode:
+          if (mounted) Navigator.of(context).pop();
       }
     });
 

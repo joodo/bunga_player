@@ -124,6 +124,22 @@ class StartProjectionMessageData extends MessageData {
   Map<String, dynamic> toJson() => _$StartProjectionMessageDataToJson(this);
 }
 
+/// Receive when server reset cache
+@JsonSerializable()
+class ResetMessageData extends MessageData {
+  static const messageCode = 'reset';
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: true)
+  final code = messageCode;
+
+  ResetMessageData();
+
+  factory ResetMessageData.fromJson(Map<String, dynamic> json) =>
+      _$ResetMessageDataFromJson(json);
+  @override
+  Map<String, dynamic> toJson() => _$ResetMessageDataToJson(this);
+}
+
 /// Send/receive when buffer status changed
 @JsonSerializable()
 class BufferStateChangedMessageData extends MessageData {
