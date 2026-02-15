@@ -271,8 +271,8 @@ class RefreshDirAction extends ContextAction<RefreshDirIntent> {
 
 @immutable
 class ToggleIntent extends Intent {
-  final bool forgetSavedPosition;
-  const ToggleIntent({this.forgetSavedPosition = false});
+  final bool showVisualFeedback;
+  const ToggleIntent({this.showVisualFeedback = true});
 }
 
 class ToggleAction extends ContextAction<ToggleIntent> {
@@ -282,15 +282,18 @@ class ToggleAction extends ContextAction<ToggleIntent> {
 
   @override
   void invoke(ToggleIntent intent, [BuildContext? context]) {
-    // TODO: change to add listener
     final service = getIt<PlayService>();
     service.toggle();
 
-    // Deal with progress saving business
+    // Handle progress saving business
     if (service.playStatusNotifier.value.isPlaying) {
       saveWatchProgressTimer.reset();
     } else {
       saveWatchProgressTimer.cancel();
+    }
+
+    if (intent.showVisualFeedback) {
+      context?.read<PlayToggleVisualSignal?>()?.fire();
     }
   }
 

@@ -149,7 +149,7 @@ class _PlayButtonState extends State<_PlayButton>
                 ? null
                 : () => Actions.maybeInvoke(
                     context,
-                    const ToggleIntent(forgetSavedPosition: true),
+                    const ToggleIntent(showVisualFeedback: false),
                   ),
           ),
         );

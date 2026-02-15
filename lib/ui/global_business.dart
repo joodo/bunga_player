@@ -5,6 +5,7 @@ import 'package:bunga_player/services/exit_callbacks.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/business/platform.dart';
+import 'package:bunga_player/utils/business/simple_event.dart';
 import 'package:bunga_player/utils/business/value_listenable.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
@@ -132,6 +133,10 @@ class PlaySyncMessageManager {
   }
 }
 
+class PlayToggleVisualSignal extends SimpleEvent {
+  PlayToggleVisualSignal();
+}
+
 class UIGlobalBusiness extends SingleChildStatefulWidget {
   const UIGlobalBusiness({super.key, super.child});
 
@@ -184,6 +189,7 @@ class _UIGlobalBusinessState extends SingleChildState<UIGlobalBusiness> {
         ),
         Provider.value(value: BungaAudioPlayer()),
         Provider.value(value: PlaySyncMessageManager()),
+        Provider.value(value: PlayToggleVisualSignal()),
       ],
       child: child,
     );

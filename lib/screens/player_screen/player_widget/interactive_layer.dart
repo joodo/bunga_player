@@ -59,10 +59,7 @@ class DesktopInteractiveLayer extends StatelessWidget {
             child: child!.center(),
           ),
           child: GestureDetector(
-            onTap: Actions.handler(
-              context,
-              ToggleIntent(forgetSavedPosition: true),
-            ),
+            onTap: Actions.handler(context, ToggleIntent()),
             onDoubleTap: context.read<IsFullScreenNotifier>().toggle,
             onSecondaryTapDown: (details) {
               menuController.open(position: details.localPosition);
@@ -143,7 +140,7 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
       },
       onDoubleTap: lockedNotifier.value
           ? null
-          : Actions.handler(context, ToggleIntent(forgetSavedPosition: true)),
+          : Actions.handler(context, ToggleIntent()),
       onHorizontalDragStart: lockedNotifier.value
           ? null
           : (details) {
