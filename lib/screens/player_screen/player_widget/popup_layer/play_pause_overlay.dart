@@ -34,6 +34,7 @@ class _PlayPauseOverlayState extends State<PlayPauseOverlay>
   @override
   void initState() {
     super.initState();
+    _animController;
     _signal.addListener(_handleTrigger);
   }
 
