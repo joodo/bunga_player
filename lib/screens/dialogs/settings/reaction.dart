@@ -58,7 +58,7 @@ class _ReactionSettingsState extends State<ReactionSettings> {
                 _hueProvider.value = _hue;
               },
             ),
-            DanmakuText(text: '测试弹幕样式', hue: _hue),
+            _DanmakuPreview(hue: _hue),
           ]
           .toColumn(crossAxisAlignment: .start)
           .padding(all: 16.0)
@@ -73,6 +73,57 @@ class _ReactionSettingsState extends State<ReactionSettings> {
       ).sectionContainer(),
     ].toColumn(crossAxisAlignment: .start);
   }
+}
+
+class _DanmakuPreview extends StatefulWidget {
+  static const text = '测试弹幕样式';
+
+  final int hue;
+  const _DanmakuPreview({required this.hue});
+
+  @override
+  State<_DanmakuPreview> createState() => _DanmakuPreviewState();
+}
+
+class _DanmakuPreviewState extends State<_DanmakuPreview> {
+  late DanmakuTextPainter _painter;
+
+  @override
+  void initState() {
+    super.initState();
+    _painter = DanmakuTextPainter(
+      message: _DanmakuPreview.text,
+      hue: widget.hue,
+    );
+  }
+
+  @override
+  void didUpdateWidget(covariant _DanmakuPreview oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.hue != widget.hue) {
+      _painter.updateColor(widget.hue);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(painter: _DanmakuPainter(_painter), size: _painter.size);
+  }
+}
+
+class _DanmakuPainter extends CustomPainter {
+  final DanmakuTextPainter dp;
+  _DanmakuPainter(this.dp);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    dp.strokePainter.paint(canvas, Offset.zero);
+    dp.fillPainter.paint(canvas, Offset.zero);
+  }
+
+  @override
+  bool shouldRepaint(covariant _DanmakuPainter oldDelegate) => true;
 }
 
 class _ColorSlider extends StatelessWidget {

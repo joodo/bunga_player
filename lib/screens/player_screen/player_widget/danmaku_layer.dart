@@ -3,12 +3,57 @@ import 'dart:collection';
 
 import 'package:bunga_player/chat/models/message.dart';
 import 'package:bunga_player/chat/models/message_data.dart';
-import 'package:bunga_player/chat/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:styled_widget/styled_widget.dart';
 
-typedef Danmaku = ({String message, User sender});
+class DanmakuTextPainter {
+  static const textStyle = TextStyle(fontSize: 40, letterSpacing: 2);
+
+  late final TextPainter strokePainter;
+  late final TextPainter fillPainter;
+
+  late final Size size;
+
+  final String _text;
+  DanmakuTextPainter({required String message, required int hue})
+    : _text = message {
+    strokePainter = TextPainter(textDirection: TextDirection.ltr);
+    fillPainter = TextPainter(textDirection: TextDirection.ltr);
+
+    updateColor(hue);
+
+    size = fillPainter.size;
+  }
+
+  void updateColor(int hue) {
+    final borderColor = HSVColor.fromAHSV(1, (hue % 360), 0.5, 0.3).toColor();
+    final foregroundColor = HSVColor.fromAHSV(
+      1,
+      (hue % 360),
+      0.5,
+      0.95,
+    ).toColor();
+
+    strokePainter.text = TextSpan(
+      text: _text,
+      style: textStyle.copyWith(
+        foreground: Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeCap = StrokeCap.round
+          ..strokeJoin = StrokeJoin.round
+          ..strokeWidth = 4
+          ..color = borderColor,
+      ),
+    );
+    fillPainter.text = TextSpan(
+      text: _text,
+      style: textStyle.copyWith(color: foregroundColor),
+    );
+
+    strokePainter.layout();
+    fillPainter.layout();
+  }
+}
 
 class DanmakuLayer extends StatefulWidget {
   const DanmakuLayer({super.key});
@@ -19,7 +64,6 @@ class DanmakuLayer extends StatefulWidget {
 
 class _DanmakuLayerState extends State<DanmakuLayer>
     with SingleTickerProviderStateMixin {
-  final _danmakus = <Danmaku>[];
   late final StreamSubscription _subscription;
 
   @override
@@ -32,9 +76,15 @@ class _DanmakuLayerState extends State<DanmakuLayer>
         )
         .map((message) {
           final data = DanmakuMessageData.fromJson(message.data);
-          return (sender: message.sender, message: data.message);
+          return DanmakuTextPainter(
+            message: data.message,
+            hue: message.sender.colorHue,
+          );
         })
-        .listen(_addDanmaku);
+        .listen((painter) {
+          _danmakuLines.addPainter(painter);
+          if (_ticker.muted) _ticker.muted = false;
+        });
     _ticker.start();
   }
 
@@ -48,60 +98,95 @@ class _DanmakuLayerState extends State<DanmakuLayer>
 
   @override
   Widget build(BuildContext context) {
-    const topPadding = 48.0;
-    return [
-      for (final (line, danmakuPoses) in _danmakuLines.indexed)
-        for (final danmakuPos in danmakuPoses)
-          Positioned(
-            top: line * 48 + topPadding,
-            left: danmakuPos.x,
-            child: DanmakuText(
-              text: danmakuPos.danmaku.message,
-              hue: danmakuPos.danmaku.sender.colorHue,
-            ),
-          ),
-    ].toStack();
+    return RepaintBoundary(
+      child: AnimatedBuilder(
+        animation: _danmakuLines,
+        builder: (context, child) => CustomPaint(
+          painter: _DanmakuPainter(_danmakuLines),
+          size: Size.infinite,
+        ),
+      ),
+    );
   }
 
+  late final _danmakuLines = _DanmakuLines(
+    getWidgetWidth: () {
+      if (!mounted) return null;
+      final renderBox = context.findRenderObject()! as RenderBox;
+      return renderBox.size.width;
+    },
+  );
+
+  late final _ticker = createTicker(_updateDanmaku);
+  Duration _lastElapsed = Duration.zero;
+  void _updateDanmaku(Duration elapsed) {
+    final delta = elapsed - _lastElapsed;
+    _lastElapsed = elapsed;
+    if (delta <= Duration.zero || delta > const Duration(milliseconds: 500)) {
+      // Avoid visual glitches upon resuming the Ticker
+      return;
+    }
+
+    final hasActive = _danmakuLines.updatePosition(delta);
+    if (!hasActive) _ticker.muted = true;
+  }
+}
+
+class _DanmakuPainter extends CustomPainter {
+  static const topPadding = 48.0;
+  static const lineHeight = 48.0;
+  final _DanmakuLines danmakuLines;
+
+  _DanmakuPainter(this.danmakuLines);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    for (var i = 0; i < danmakuLines.length; i++) {
+      final y = i * lineHeight + topPadding;
+      for (final dp in danmakuLines[i]) {
+        dp.painter.strokePainter.paint(canvas, Offset(dp.x, y));
+        dp.painter.fillPainter.paint(canvas, Offset(dp.x, y));
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+}
+
+class _DanmakuPosition {
+  final DanmakuTextPainter painter;
+  double x;
+
+  _DanmakuPosition({required this.painter, required this.x});
+}
+
+class _DanmakuLines extends ListBase<Queue<_DanmakuPosition>>
+    with ChangeNotifier {
   static const spacing = 24.0;
-
   static const preferLines = 5;
+  static const double pixelsPerSecond = 200.0;
+
+  final double? Function() _getWidgetWidth;
+
+  _DanmakuLines({required double? Function() getWidgetWidth})
+    : _getWidgetWidth = getWidgetWidth;
+
   int _currentLine = 0;
-  final _danmakuLines = <Queue<DanmakuPosition>>[];
 
-  double _lastAvailablePositions(int line) {
-    if (_danmakuLines[line].isEmpty) return 0;
-
-    final danmakuPosition = _danmakuLines[line].last;
-    final danmakuWidth = _getStringWidth(danmakuPosition.danmaku.message);
-
-    return danmakuPosition.x + danmakuWidth + spacing;
-  }
-
-  double _getStringWidth(String text) {
-    final textPainter = TextPainter(
-      text: TextSpan(text: text, style: DanmakuText.textStyle),
-      textDirection: TextDirection.ltr,
-    )..layout(minWidth: 0, maxWidth: double.infinity);
-    return textPainter.width;
-  }
-
-  void _addDanmaku(Danmaku newDanmaku) {
-    _danmakus.add(newDanmaku);
-
-    if (!mounted) return;
-    final renderBox = context.findRenderObject()! as RenderBox;
-    final widgetWidth = renderBox.size.width;
+  void addPainter(DanmakuTextPainter painter) {
+    final widgetWidth = _getWidgetWidth();
+    if (widgetWidth == null) return;
 
     while (true) {
-      if (_danmakuLines.length == _currentLine) {
+      if (_data.length == _currentLine) {
         // Create new line
-        _danmakuLines.add(Queue());
+        _data.add(Queue());
         break;
       } else {
         final availableX = _lastAvailablePositions(_currentLine);
 
-        if (availableX > widgetWidth) {
+        if (availableX > painter.size.width) {
           // find next line
           _currentLine++;
         } else {
@@ -111,75 +196,59 @@ class _DanmakuLayerState extends State<DanmakuLayer>
       }
     }
 
-    _danmakuLines[_currentLine].addLast(
-      DanmakuPosition(danmaku: newDanmaku, x: widgetWidth),
+    _data[_currentLine].addLast(
+      _DanmakuPosition(painter: painter, x: widgetWidth),
     );
     _currentLine++;
 
     if (_currentLine >= preferLines) _currentLine = 0;
   }
 
-  late final _ticker = createTicker(_updateDanmaku);
-  static const step = 3.0;
-  void _updateDanmaku(Duration elapsed) {
-    for (final danmakuPoses in _danmakuLines) {
+  double _lastAvailablePositions(int line) {
+    if (_data[line].isEmpty) return 0;
+
+    final danmakuPosition = _data[line].last;
+    final danmakuWidth = danmakuPosition.painter.size.width;
+
+    return danmakuPosition.x + danmakuWidth + spacing;
+  }
+
+  bool updatePosition(Duration delta) {
+    bool hasActive = false;
+
+    final step =
+        pixelsPerSecond * delta.inMicroseconds / Duration.microsecondsPerSecond;
+    for (final danmakuPoses in _data) {
       for (final danmakuPos in danmakuPoses) {
         danmakuPos.x -= step;
       }
-      danmakuPoses.removeWhere(
-        (danmakuPos) =>
-            danmakuPos.x + _getStringWidth(danmakuPos.danmaku.message) < 0,
-      );
-    }
-    setState(() {});
 
-    // If all danmaku clean, reset current line
-    for (final danmakuPoses in _danmakuLines) {
-      if (danmakuPoses.isNotEmpty) return;
+      // Remove out range danmaku
+      while (danmakuPoses.isNotEmpty &&
+          danmakuPoses.first.x + danmakuPoses.first.painter.size.width < 0) {
+        danmakuPoses.removeFirst();
+      }
+
+      if (danmakuPoses.isNotEmpty) hasActive = true;
     }
-    _currentLine = 0;
+
+    if (hasActive) {
+      notifyListeners();
+    } else {
+      // If all danmaku clean, reset current line
+      _currentLine = 0;
+    }
+    return hasActive;
   }
-}
 
-class DanmakuPosition {
-  final Danmaku danmaku;
-  double x;
-
-  DanmakuPosition({required this.danmaku, required this.x});
-}
-
-class DanmakuText extends StatelessWidget {
-  static const textStyle = TextStyle(fontSize: 40, letterSpacing: 2);
-
-  final String text;
-  final int hue;
-
-  const DanmakuText({super.key, required this.text, required this.hue});
-
+  final _data = <Queue<_DanmakuPosition>>[];
   @override
-  Widget build(BuildContext context) {
-    final borderColor = HSVColor.fromAHSV(1, (hue % 360), 0.5, 0.3).toColor();
-    final foregroundColor = HSVColor.fromAHSV(
-      1,
-      (hue % 360),
-      0.5,
-      0.95,
-    ).toColor();
-
-    return [
-      // Stroked text as border.
-      Text(text).textStyle(
-        textStyle.copyWith(
-          foreground: Paint()
-            ..style = PaintingStyle.stroke
-            ..strokeCap = StrokeCap.round
-            ..strokeJoin = StrokeJoin.round
-            ..strokeWidth = 4
-            ..color = borderColor,
-        ),
-      ),
-      // Solid text as fill.
-      Text(text).textStyle(textStyle.copyWith(color: foregroundColor)),
-    ].toStack();
-  }
+  int get length => _data.length;
+  @override
+  set length(int newLength) => _data.length = length;
+  @override
+  Queue<_DanmakuPosition> operator [](int index) => _data[index];
+  @override
+  void operator []=(int index, Queue<_DanmakuPosition> value) =>
+      _data[index] = value;
 }
