@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
@@ -112,20 +111,18 @@ class PopmojiGlobalBusiness extends SingleChildStatelessWidget {
   }
 
   Future<void> _preCacheEmojis(EmojiData data) async {
-    final allEmojis = data.categories
-        .map((category) => category.emojis.join())
-        .join();
-    return compute(_layoutFont, allEmojis);
-  }
-
-  void _layoutFont(String allEmojis) {
-    final textPainter = TextPainter(
-      text: TextSpan(
-        text: allEmojis,
-        style: const TextStyle(fontFamily: 'noto_emoji'),
-      ),
-      textDirection: TextDirection.ltr,
-    );
-    textPainter.layout();
+    final allEmojis = data.categories.map((category) => category.emojis.join());
+    for (final emoji in allEmojis) {
+      await Future.microtask(() {
+        final textPainter = TextPainter(
+          text: TextSpan(
+            text: emoji,
+            style: const TextStyle(fontFamily: 'noto_emoji'),
+          ),
+          textDirection: TextDirection.ltr,
+        );
+        textPainter.layout();
+      });
+    }
   }
 }
