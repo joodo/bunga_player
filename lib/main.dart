@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:io';
 
 import 'package:bunga_player/services/logger.dart';
@@ -16,33 +15,25 @@ void main() async {
 
   Provider.debugCheckInvalidValueType = null;
 
-  runZonedGuarded(
-    () async {
-      WidgetsFlutterBinding.ensureInitialized();
+  WidgetsFlutterBinding.ensureInitialized();
 
-      await initializeLogger();
+  await initializeLogger();
 
-      await services.init();
+  await services.init();
 
-      if (kIsDesktop) {
-        await windowManager.ensureInitialized();
-        windowManager.setMinimumSize(const Size(800, 480));
-      } else if (Platform.isAndroid) {
-        await SystemChrome.setEnabledSystemUIMode(
-          SystemUiMode.manual,
-          overlays: [],
-        );
-        await SystemChrome.setPreferredOrientations([
-          DeviceOrientation.landscapeLeft,
-          DeviceOrientation.landscapeRight,
-        ]);
-      }
+  if (kIsDesktop) {
+    await windowManager.ensureInitialized();
+    windowManager.setMinimumSize(const Size(800, 480));
+  } else if (Platform.isAndroid) {
+    await SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.manual,
+      overlays: [],
+    );
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+  }
 
-      runApp(WrappedWidget());
-    },
-    (error, stackTrace) {
-      //logger.e(error, stackTrace: stackTrace);
-      throw error;
-    },
-  );
+  runApp(WrappedWidget());
 }
