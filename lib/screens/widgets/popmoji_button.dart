@@ -167,19 +167,12 @@ class _ThrowAnimationState extends SingleChildState<_ThrowAnimation>
         final scaleX = rect.width / widget.startRect.width;
         final scaleY = rect.height / widget.startRect.height;
 
-        return Stack(
-          children: [
-            Positioned(
-              left: position.dx,
-              top: position.dy,
-              child: Transform(
-                transform: Matrix4.diagonal3Values(scaleX, scaleY, 1.0),
-                alignment: Alignment.center,
-                child: child!,
-              ),
-            ),
-          ],
-        );
+        return child!
+            .transform(
+              transform: Matrix4.diagonal3Values(scaleX, scaleY, 1.0),
+              alignment: Alignment.center,
+            )
+            .positioned(left: position.dx, top: position.dy);
       },
       child: child,
     );
