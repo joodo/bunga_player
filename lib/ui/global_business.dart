@@ -93,6 +93,8 @@ class DialogShareModeNotifier extends ValueNotifier<bool> {
 
 class ScreenBrightnessNotifier extends ValueNotifier<double> {
   ScreenBrightnessNotifier() : super(0) {
+    if (kIsDesktop) return;
+
     ScreenBrightness().setAnimate(false);
     ScreenBrightness().application.then((brightness) {
       value = brightness;
