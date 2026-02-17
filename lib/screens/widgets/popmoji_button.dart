@@ -8,14 +8,14 @@ import 'package:styled_widget/styled_widget.dart';
 class PopmojiButton extends StatelessWidget {
   final String emoji;
   final VoidCallback? onPressed;
-  final Duration? waitDuration;
+  final void Function(bool isHovered)? onHover;
   final double size;
 
   const PopmojiButton(
     this.emoji, {
     super.key,
-    this.waitDuration,
-    required this.onPressed,
+    this.onPressed,
+    this.onHover,
     required this.size,
   });
 
@@ -28,13 +28,14 @@ class PopmojiButton extends StatelessWidget {
       child: Text(emoji, style: TextStyle(fontFamily: 'noto_emoji')),
     ).constrained(width: _iconSize, height: _iconSize);
 
-    return IconButton(
-      icon: iconWidget,
-      iconSize: _iconSize,
-      onPressed: () {
+    return InkWell(
+      onTap: () {
         _showThrowEmojiAnimation(context);
         onPressed?.call();
       },
+      onHover: onHover,
+      borderRadius: BorderRadius.circular(64.0),
+      child: iconWidget.padding(all: 8.0),
     );
   }
 

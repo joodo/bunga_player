@@ -1,8 +1,12 @@
+import 'dart:math';
+
 import 'package:bunga_player/danmaku/business.dart';
 import 'package:bunga_player/danmaku/models/data.dart';
 import 'package:bunga_player/screens/widgets/text_editing_shortcut_wrapper.dart';
 import 'package:bunga_player/utils/business/platform.dart';
+import 'package:bunga_player/utils/business/run_after_build.dart';
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
@@ -22,6 +26,73 @@ class PopmojiPanel extends StatefulWidget implements Panel {
 class _PopmojiPanelState extends State<PopmojiPanel> {
   late final _categories = context.read<EmojiData>().categories;
   late List<EmojiCategory> _data = _categories;
+
+  // Preview overlay
+  final _currentHoveredEmoji = ValueNotifier<String?>(null);
+  final _overlayY = ValueNotifier<double>(0.0);
+  late final OverlayEntry _overlayEntry;
+
+  @override
+  void initState() {
+    super.initState();
+
+    runAfterBuild(() {
+      _overlayEntry = OverlayEntry(
+        builder: (overlayContext) {
+          const width = 180.0;
+
+          final renderbox = context.findRenderObject() as RenderBox?;
+          final offset = renderbox!.localToGlobal(Offset.zero);
+
+          return ValueListenableBuilder(
+            valueListenable: _currentHoveredEmoji,
+            builder: (context, emoji, child) {
+              if (emoji == null) return const SizedBox.shrink();
+              return ValueListenableBuilder(
+                valueListenable: _overlayY,
+                builder: (context, overlayY, child) {
+                  final appHeight =
+                      MediaQuery.of(context).size.height -
+                      MediaQuery.of(context).padding.bottom;
+
+                  final label = context.read<EmojiData>().tags[emoji]?.first;
+                  return [
+                        Lottie.asset(EmojiData.lottiePath(emoji), repeat: true),
+                        if (label != null)
+                          Text(label)
+                              .textStyle(
+                                Theme.of(context).textTheme.labelLarge!,
+                              )
+                              .padding(top: 8.0),
+                      ]
+                      .toColumn()
+                      .padding(all: 12.0)
+                      .card(color: Colors.grey[700]!.withAlpha(150))
+                      .positioned(
+                        left: offset.dx - width + 24.0,
+                        top: min(overlayY, appHeight - width - 36.0),
+                        width: width,
+                      );
+                },
+              );
+            },
+          );
+        },
+      );
+
+      Overlay.of(context).insert(_overlayEntry);
+    });
+  }
+
+  @override
+  void dispose() {
+    _currentHoveredEmoji.dispose();
+    _overlayY.dispose();
+
+    _overlayEntry.remove();
+
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,30 +137,50 @@ class _PopmojiPanelState extends State<PopmojiPanel> {
             padding: const EdgeInsets.only(bottom: 24, left: 8.0, right: 8.0),
             itemCount: items.length,
             prototypeItem: const SizedBox(height: buttonSize),
-            itemBuilder: (context, index) => items[index] is String
-                ? [
-                    const Spacer(),
-                    Text(
-                      items[index],
-                    ).textStyle(Theme.of(context).textTheme.labelLarge!),
-                    const Divider(),
-                  ].toColumn().alignment(.bottomCenter).padding(horizontal: 8.0)
-                : RepaintBoundary(
-                    child: (items[index] as List)
-                        .map(
-                          (emoji) => PopmojiButton(
-                            emoji,
-                            size: buttonSize,
-                            waitDuration: const Duration(milliseconds: 500),
-                            onPressed: () {
-                              Actions.invoke(context, SendPopmojiIntent(emoji));
-                              _addToRecent(emoji);
-                            },
-                          ),
-                        )
-                        .toList()
-                        .toRow(mainAxisAlignment: MainAxisAlignment.center),
-                  ),
+            itemBuilder: (context, index) {
+              if (items[index] is String) {
+                return [
+                  const Spacer(),
+                  Text(
+                    items[index],
+                  ).textStyle(Theme.of(context).textTheme.labelLarge!),
+                  const Divider(),
+                ].toColumn().alignment(.bottomCenter).padding(horizontal: 8.0);
+              }
+
+              final emojiRow = (items[index] as List)
+                  .map(
+                    (emoji) => Builder(
+                      builder: (context) {
+                        return PopmojiButton(
+                          emoji,
+                          size: buttonSize,
+                          onPressed: () {
+                            Actions.invoke(context, SendPopmojiIntent(emoji));
+                            _addToRecent(emoji);
+                          },
+                          onHover: (isHovered) {
+                            if (!isHovered) {
+                              _currentHoveredEmoji.value = null;
+                              return;
+                            }
+
+                            final renderbox =
+                                context.findRenderObject() as RenderBox?;
+                            final y = renderbox!.localToGlobal(Offset.zero).dy;
+
+                            _currentHoveredEmoji.value = emoji;
+                            _overlayY.value = y;
+                          },
+                        );
+                      },
+                    ),
+                  )
+                  .toList()
+                  .toRow(mainAxisAlignment: MainAxisAlignment.center);
+
+              return RepaintBoundary(child: emojiRow);
+            },
           ),
         );
       },

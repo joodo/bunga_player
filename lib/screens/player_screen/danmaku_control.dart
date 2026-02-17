@@ -92,7 +92,7 @@ class _DanmakuControlState extends State<DanmakuControl> {
                       margin: const EdgeInsets.all(8),
                       preferBelow: false,
                       decoration: BoxDecoration(
-                        color: Theme.of(context).shadowColor.withAlpha(215),
+                        color: Colors.grey[700]!.withAlpha(150),
                         borderRadius: const BorderRadius.all(
                           Radius.circular(12),
                         ),
@@ -112,12 +112,15 @@ class _DanmakuControlState extends State<DanmakuControl> {
                                 .padding(top: 4.0),
                         ].toColumn().padding(all: 8.0),
                       ),
-                      child: PopmojiButton(
-                        emoji,
-                        size: buttonSize,
-                        onPressed: Actions.handler(
-                          context,
-                          SendPopmojiIntent(emoji),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: PopmojiButton(
+                          emoji,
+                          size: buttonSize,
+                          onPressed: Actions.handler(
+                            context,
+                            SendPopmojiIntent(emoji),
+                          ),
                         ),
                       ),
                     );
