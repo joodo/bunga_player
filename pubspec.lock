@@ -374,7 +374,7 @@ packages:
     description:
       path: fireworks
       ref: HEAD
-      resolved-ref: "84ad755af4bb1ca0ba4d29c20ee70708f3952b46"
+      resolved-ref: "2916d78418300ad7408ee0f863836e2c3b2542b2"
       url: "https://github.com/joodo/fireworks"
     source: git
     version: "0.0.2"
