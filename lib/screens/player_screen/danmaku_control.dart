@@ -3,9 +3,11 @@ import 'dart:math';
 import 'package:bunga_player/chat/global_business.dart';
 import 'package:bunga_player/chat/models/message_data.dart';
 import 'package:bunga_player/danmaku/business.dart';
+import 'package:bunga_player/danmaku/models/data.dart';
 import 'package:bunga_player/screens/widgets/text_editing_shortcut_wrapper.dart';
 import 'package:bunga_player/utils/business/platform.dart';
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
@@ -84,17 +86,42 @@ class _DanmakuControlState extends State<DanmakuControl> {
                     0,
                     min(recentPopmojis.value.length, maxPopmojisCount),
                   )
-                  .map(
-                    (emoji) => PopmojiButton(
-                      emoji,
-                      size: buttonSize,
-                      waitDuration: Duration(milliseconds: 500),
-                      onPressed: Actions.handler(
-                        context,
-                        SendPopmojiIntent(emoji),
+                  .map((emoji) {
+                    final label = context.read<EmojiData>().tags[emoji]?.first;
+                    return Tooltip(
+                      margin: const EdgeInsets.all(8),
+                      preferBelow: false,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).shadowColor.withAlpha(215),
+                        borderRadius: const BorderRadius.all(
+                          Radius.circular(12),
+                        ),
                       ),
-                    ),
-                  ),
+                      richMessage: WidgetSpan(
+                        child: [
+                          Lottie.asset(
+                            EmojiData.lottiePath(emoji),
+                            repeat: true,
+                            height: 64,
+                          ),
+                          if (label != null)
+                            Text(label)
+                                .textStyle(
+                                  Theme.of(context).textTheme.labelMedium!,
+                                )
+                                .padding(top: 4.0),
+                        ].toColumn().padding(all: 8.0),
+                      ),
+                      child: PopmojiButton(
+                        emoji,
+                        size: buttonSize,
+                        onPressed: Actions.handler(
+                          context,
+                          SendPopmojiIntent(emoji),
+                        ),
+                      ),
+                    );
+                  }),
               IconButton(
                 onPressed: Actions.handler(
                   context,

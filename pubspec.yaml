@@ -71,7 +71,6 @@ dependencies:
   win32: ^5.15.0
   permission_handler: ^12.0.1
   package_info_plus: ^9.0.0
-  vector_graphics: ^1.1.19
   styled_widget: ^0.4.1
   crypto: ^3.0.7
   url_launcher: ^6.3.2
@@ -97,15 +96,13 @@ flutter:
   assets:
     - assets/images/
     - assets/emojis/
-    - assets/emojis/emojis/
+    - assets/emojis/lottie/
     - assets/sounds/
 
-#  emoji loading too slow
-#  https://github.com/flutter/flutter/issues/42586
-#  fonts:
-#    - family: noto_emoji
-#      fonts:
-#        - asset: assets/NotoColorEmoji-Regular.ttf
+  fonts:
+    - family: noto_emoji
+      fonts:
+        - asset: assets/emojis/emojis.ttf
 
 flutter_launcher_icons:
   android: true

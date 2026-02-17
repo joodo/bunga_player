@@ -1,3 +1,6 @@
+import 'dart:ui';
+
+import 'package:flutter/rendering.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'data.g.dart';
@@ -20,11 +23,32 @@ class EmojiData {
       emoji.runes.map((rune) => rune.toRadixString(16)).join(seperator);
   static String emojiString(String codePoint, {String seperator = '_'}) =>
       String.fromCharCodes(
-          codePoint.split(seperator).map<int>((e) => int.parse(e, radix: 16)));
-  static String svgPath(String emoji) =>
-      'assets/emojis/emojis/${codePoint(emoji, seperator: '-')}.svg.vec';
+        codePoint.split(seperator).map<int>((e) => int.parse(e, radix: 16)),
+      );
   static String lottiePath(String emoji) =>
-      'assets/emojis/emojis/${codePoint(emoji)}.json';
+      'assets/emojis/lottie/${codePoint(emoji)}.json';
+
+  // Capture the emoji as a standard GPU texture
+  static Future<Image> createImage(String emoji, double size) {
+    final recorder = PictureRecorder();
+    final canvas = Canvas(recorder);
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: emoji,
+        style: TextStyle(fontFamily: 'noto_emoji', fontSize: size),
+      ),
+      textDirection: TextDirection.ltr,
+    );
+    textPainter.layout();
+    textPainter.paint(canvas, Offset.zero);
+
+    final picture = recorder.endRecording();
+    // Capture the emoji as a standard GPU texture
+    return picture.toImage(
+      textPainter.width.toInt(),
+      textPainter.height.toInt(),
+    );
+  }
 
   final List<EmojiCategory> categories;
   final Map<String, List<String>> tags;

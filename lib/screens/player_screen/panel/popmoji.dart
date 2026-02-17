@@ -25,66 +25,74 @@ class _PopmojiPanelState extends State<PopmojiPanel> {
 
   @override
   Widget build(BuildContext context) {
-    var items = _sliceItems(_data, 5);
-    if (items.isEmpty) items = ['无结果'];
-
     const buttonSize = 56.0;
-    return PanelWidget(
-      actions: [
-        TextEditingShortcutWrapper(
-          child: TextField(
-            autofocus: kIsDesktop,
-            decoration: const InputDecoration(
-              hintText: '搜索表情',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(36)),
-              ),
-              contentPadding: EdgeInsets.symmetric(horizontal: 24),
-            ),
-            onChanged: (value) {
-              if (value.isEmpty) {
-                setState(() {
-                  _data = _categories;
-                });
-                return;
-              }
 
-              setState(() {
-                _data = _emojisByTag(value);
-              });
-            },
+    final actions = [
+      TextEditingShortcutWrapper(
+        child: TextField(
+          autofocus: kIsDesktop,
+          decoration: const InputDecoration(
+            hintText: '搜索表情',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(36)),
+            ),
+            contentPadding: EdgeInsets.symmetric(horizontal: 24),
           ),
-        ).padding(left: 8.0).flexible(),
-      ],
-      child: ListView.builder(
-        padding: const EdgeInsets.only(bottom: 24, left: 8.0, right: 8.0),
-        itemCount: items.length,
-        prototypeItem: const SizedBox(height: buttonSize),
-        itemBuilder: (context, index) => items[index] is String
-            ? [
-                const Spacer(),
-                Text(items[index])
-                    .textStyle(Theme.of(context).textTheme.labelLarge!),
-                const Divider(),
-              ]
-                .toColumn()
-                .alignment(.bottomCenter)
-                .padding(horizontal: 8.0)
-            : (items[index] as List)
-                .map(
-                  (emoji) => PopmojiButton(
-                    emoji,
-                    size: buttonSize,
-                    waitDuration: const Duration(milliseconds: 500),
-                    onPressed: () {
-                      Actions.invoke(context, SendPopmojiIntent(emoji));
-                      _addToRecent(emoji);
-                    },
+          onChanged: (value) {
+            if (value.isEmpty) {
+              setState(() {
+                _data = _categories;
+              });
+              return;
+            }
+
+            setState(() {
+              _data = _emojisByTag(value);
+            });
+          },
+        ),
+      ).padding(left: 8.0).flexible(),
+    ];
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final lineCount = constraints.maxWidth ~/ (buttonSize + 8.0);
+        var items = _sliceItems(_data, lineCount);
+        if (items.isEmpty) items = ['无结果'];
+
+        return PanelWidget(
+          actions: actions,
+          child: ListView.builder(
+            padding: const EdgeInsets.only(bottom: 24, left: 8.0, right: 8.0),
+            itemCount: items.length,
+            prototypeItem: const SizedBox(height: buttonSize),
+            itemBuilder: (context, index) => items[index] is String
+                ? [
+                    const Spacer(),
+                    Text(
+                      items[index],
+                    ).textStyle(Theme.of(context).textTheme.labelLarge!),
+                    const Divider(),
+                  ].toColumn().alignment(.bottomCenter).padding(horizontal: 8.0)
+                : RepaintBoundary(
+                    child: (items[index] as List)
+                        .map(
+                          (emoji) => PopmojiButton(
+                            emoji,
+                            size: buttonSize,
+                            waitDuration: const Duration(milliseconds: 500),
+                            onPressed: () {
+                              Actions.invoke(context, SendPopmojiIntent(emoji));
+                              _addToRecent(emoji);
+                            },
+                          ),
+                        )
+                        .toList()
+                        .toRow(mainAxisAlignment: MainAxisAlignment.center),
                   ),
-                )
-                .toList()
-                .toRow(),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -123,10 +131,7 @@ class _PopmojiPanelState extends State<PopmojiPanel> {
         (emoji) => _tagsContainKeyword(data.tags[emoji]!, keyword),
       );
       if (emojis.isNotEmpty) {
-        result.add(EmojiCategory(
-          name: category.name,
-          emojis: emojis.toList(),
-        ));
+        result.add(EmojiCategory(name: category.name, emojis: emojis.toList()));
       }
     }
 

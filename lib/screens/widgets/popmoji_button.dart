@@ -2,14 +2,8 @@ import 'dart:ui';
 
 import 'package:bunga_player/danmaku/models/data.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:lottie/lottie.dart';
 import 'package:nested/nested.dart';
-import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
-import 'package:vector_graphics/vector_graphics.dart';
-
-// TODO: move file
 
 class PopmojiButton extends StatelessWidget {
   final String emoji;
@@ -25,44 +19,27 @@ class PopmojiButton extends StatelessWidget {
     required this.size,
   });
 
+  double get _iconSize => size - 12;
+
   @override
   Widget build(BuildContext context) {
-    final iconSize = size - 16;
-    final svg = SvgPicture(
-      AssetBytesLoader(EmojiData.svgPath(emoji)),
-      width: iconSize,
-      height: iconSize,
-    );
+    final iconWidget = FittedBox(
+      fit: BoxFit.contain,
+      child: Text(emoji, style: TextStyle(fontFamily: 'noto_emoji')),
+    ).constrained(width: _iconSize, height: _iconSize);
 
-    final button = IconButton(
-      icon: svg,
+    return IconButton(
+      icon: iconWidget,
+      iconSize: _iconSize,
       onPressed: () {
         _showThrowEmojiAnimation(context);
         onPressed?.call();
       },
     );
-
-    return Tooltip(
-      waitDuration: waitDuration,
-      margin: const EdgeInsets.all(8),
-      preferBelow: false,
-      decoration: BoxDecoration(
-        color: Theme.of(context).shadowColor.withAlpha(215),
-        borderRadius: const BorderRadius.all(Radius.circular(12)),
-      ),
-      richMessage: WidgetSpan(
-        child: [
-          Lottie.asset(EmojiData.lottiePath(emoji), repeat: true, height: 64),
-          Text(
-            context.read<EmojiData>().tags[emoji]?.first ?? '',
-          ).padding(top: 4.0),
-        ].toColumn().padding(all: 8.0),
-      ),
-      child: button,
-    );
   }
 
-  void _showThrowEmojiAnimation(BuildContext context) {
+  void _showThrowEmojiAnimation(BuildContext context) async {
+    // Calc
     final RenderBox button = context.findRenderObject()! as RenderBox;
     final RenderBox overlay =
         Navigator.of(
@@ -78,6 +55,23 @@ class PopmojiButton extends StatelessWidget {
       ),
     );
 
+    // Create icon
+    final recorder = PictureRecorder();
+    final canvas = Canvas(recorder);
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: emoji,
+        style: TextStyle(fontFamily: 'noto_emoji', fontSize: _iconSize),
+      ),
+      textDirection: TextDirection.ltr,
+    );
+    textPainter.layout();
+    textPainter.paint(canvas, Offset.zero);
+
+    // Create image
+    final img = await EmojiData.createImage(emoji, _iconSize);
+
+    // Throw
     late final OverlayEntry overlayEntry;
     overlayEntry = OverlayEntry(
       builder: (context) {
@@ -90,15 +84,17 @@ class PopmojiButton extends StatelessWidget {
             0,
           ),
           overlay: overlayEntry,
-          child: SvgPicture(AssetBytesLoader(EmojiData.svgPath(emoji))),
+          child: RawImage(image: img, filterQuality: FilterQuality.low),
         );
       },
     );
+    if (!context.mounted) return;
     Overlay.of(context, rootOverlay: true).insert(overlayEntry);
   }
 }
 
 class _ThrowAnimation extends SingleChildStatefulWidget {
+  static const duration = Duration(milliseconds: 1000);
   final Rect startRect, endRect;
   final OverlayEntry overlay;
   const _ThrowAnimation({
@@ -113,18 +109,12 @@ class _ThrowAnimation extends SingleChildStatefulWidget {
 
 class _ThrowAnimationState extends SingleChildState<_ThrowAnimation>
     with SingleTickerProviderStateMixin {
-  late final _path = Path()
-    ..moveTo(widget.startRect.left, widget.startRect.top)
-    ..quadraticBezierTo(
-      widget.startRect.left,
-      widget.endRect.top,
-      widget.endRect.left,
-      widget.endRect.top,
-    );
-  late var _position = Offset(widget.startRect.left, widget.startRect.top);
+  late final PathMetric _pathMetric;
+  late final double _pathLength;
+
   late final _controller = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 1000),
+    duration: _ThrowAnimation.duration,
   );
   late final _positionTween = Tween(
     begin: 0.0,
@@ -139,34 +129,59 @@ class _ThrowAnimationState extends SingleChildState<_ThrowAnimation>
   void initState() {
     super.initState();
 
-    _positionTween.addListener(() {
-      setState(() {
-        _calcPosition(_positionTween.value);
-      });
-    });
+    final path = Path()
+      ..moveTo(widget.startRect.left, widget.startRect.top)
+      ..quadraticBezierTo(
+        widget.startRect.left,
+        widget.endRect.top,
+        widget.endRect.left,
+        widget.endRect.top,
+      );
+    final pathMetrics = path.computeMetrics();
+    _pathMetric = pathMetrics.first;
+    _pathLength = _pathMetric.length;
+
     _controller.forward().then((_) => widget.overlay.remove());
   }
 
   @override
-  Widget buildWithChild(BuildContext context, Widget? child) {
-    final rect = Rect.lerp(widget.startRect, widget.endRect, _sizeTween.value)!;
-    return Stack(
-      children: [
-        Positioned(
-          left: _position.dx,
-          top: _position.dy,
-          width: rect.width,
-          height: rect.height,
-          child: child!,
-        ),
-      ],
-    );
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
-  void _calcPosition(double tween) {
-    PathMetrics pathMetrics = _path.computeMetrics();
-    PathMetric pathMetric = pathMetrics.elementAt(0);
-    tween = pathMetric.length * tween;
-    _position = pathMetric.getTangentForOffset(tween)!.position;
+  @override
+  Widget buildWithChild(BuildContext context, Widget? child) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        final distance = _pathLength * _positionTween.value;
+        final position = _pathMetric.getTangentForOffset(distance)!.position;
+
+        final rect = Rect.lerp(
+          widget.startRect,
+          widget.endRect,
+          _sizeTween.value,
+        )!;
+
+        final scaleX = rect.width / widget.startRect.width;
+        final scaleY = rect.height / widget.startRect.height;
+
+        return Stack(
+          children: [
+            Positioned(
+              left: position.dx,
+              top: position.dy,
+              child: Transform(
+                transform: Matrix4.diagonal3Values(scaleX, scaleY, 1.0),
+                alignment: Alignment.center,
+                child: child!,
+              ),
+            ),
+          ],
+        );
+      },
+      child: child,
+    );
   }
 }

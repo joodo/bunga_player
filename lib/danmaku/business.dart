@@ -1,10 +1,9 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
-import 'package:vector_graphics/vector_graphics.dart';
 
 import 'package:bunga_player/chat/global_business.dart';
 import 'package:bunga_player/chat/models/message_data.dart';
@@ -113,15 +112,20 @@ class PopmojiGlobalBusiness extends SingleChildStatelessWidget {
   }
 
   Future<void> _preCacheEmojis(EmojiData data) async {
-    svg.cache.maximumSize = 400;
-    for (var category in data.categories) {
-      for (var emoji in category.emojis) {
-        final icon = AssetBytesLoader(EmojiData.svgPath(emoji));
-        await svg.cache.putIfAbsent(
-          icon.cacheKey(null),
-          () => icon.loadBytes(null),
-        );
-      }
-    }
+    final allEmojis = data.categories
+        .map((category) => category.emojis.join())
+        .join();
+    return compute(_layoutFont, allEmojis);
+  }
+
+  void _layoutFont(String allEmojis) {
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: allEmojis,
+        style: const TextStyle(fontFamily: 'noto_emoji'),
+      ),
+      textDirection: TextDirection.ltr,
+    );
+    textPainter.layout();
   }
 }
