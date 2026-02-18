@@ -41,10 +41,12 @@ class ChatGlobalBusiness extends SingleChildStatefulWidget {
 
 class _ChannelActionsState extends SingleChildState<ChatGlobalBusiness> {
   final _messageStreamController = StreamController<Message>.broadcast();
+  StreamSubscription? _clientSubscription;
 
   @override
   void dispose() {
     _messageStreamController.close();
+    _clientSubscription?.cancel();
 
     super.dispose();
   }
@@ -54,9 +56,13 @@ class _ChannelActionsState extends SingleChildState<ChatGlobalBusiness> {
     assert(child != null);
 
     final listener = child!.listenProvider<ChatClient?>((client) {
+      _clientSubscription?.cancel();
+
       if (client != null) {
         // bind stream
-        client.messageStream.listen(_messageStreamController.add);
+        _clientSubscription = client.messageStream.listen(
+          _messageStreamController.add,
+        );
 
         // ask what's on
         final data = WhatsOnMessageData();
