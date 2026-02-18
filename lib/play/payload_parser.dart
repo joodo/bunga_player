@@ -268,16 +268,6 @@ class _HttpParser implements _Parser {
       return _BiliParser(context).parseUrl(url);
     }
 
-    final response = await http.head(url);
-    final contentType = response.headers['content-type'];
-    if (contentType == null ||
-        contentType != 'application/vnd.apple.mpegurl' &&
-            !contentType.startsWith('video')) {
-      throw Exception(
-        'fetch record failed: unknown content-type "$contentType"',
-      );
-    }
-
     return VideoRecord(
       id: '$recordSource-${url.toString().hashStr}',
       title: url.pathSegments.last,
