@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:async/async.dart';
 import 'package:collection/collection.dart';
 import 'package:ffi/ffi.dart';
@@ -63,6 +64,7 @@ class MediaKitPlayService implements PlayService {
     isBufferingNotifier;
     positionNotifier;
     proxyNotifier;
+    videoSizeNotifier;
 
     // Log
     _player.stream.log.listen((log) => logger.w('Media kit log: ${log.text}'));
@@ -409,6 +411,19 @@ class MediaKitPlayService implements PlayService {
         _setProperty('http-proxy', 'http://$proxy');
       }
     });
+
+  // Video Size
+  @override
+  late final videoSizeNotifier = _StreamListenable(
+    _player.stream.videoParams.map((params) {
+      if (params.w != null && params.h != null) {
+        return Size(params.w!.toDouble(), params.h!.toDouble());
+      } else {
+        return null;
+      }
+    }),
+    null,
+  );
 
   void setCacheSize(int sizeInMB) {
     _setProperty('demuxer-max-bytes', '${sizeInMB}MiB');

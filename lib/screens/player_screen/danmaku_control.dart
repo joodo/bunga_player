@@ -35,16 +35,30 @@ class _DanmakuControlState extends State<DanmakuControl> {
 
   @override
   Widget build(BuildContext context) {
-    final danmakuField = [
-      StyledWidget(
-        IconButton(
-          icon: const Icon(Icons.keyboard_arrow_down),
-          onPressed: () {
-            _focusNode.nextFocus();
-            Actions.invoke(context, ToggleDanmakuControlIntent(show: false));
-          },
+    final notifier = context.read<SparkingEmoji>();
+    final spark = MenuAnchor(
+      consumeOutsideTap: true,
+      alignmentOffset: const Offset(0, 10),
+      menuChildren: [
+        ...sparkOptions.map(
+          (e) => MenuItemButton(
+            onPressed: () => notifier.value = e,
+            child: EmojiData.createIcon(e),
+          ),
         ),
-      ).padding(left: 8.0),
+        MenuItemButton(child: Text('抒发感觉')),
+      ],
+      builder: (context, controller, child) => ValueListenableBuilder(
+        valueListenable: notifier,
+        builder: (context, emoji, child) => IconButton.outlined(
+          onPressed: controller.open,
+          icon: EmojiData.createIcon(emoji),
+        ),
+        child: child,
+      ),
+    );
+
+    final danmakuField = [
       TextEditingShortcutWrapper(
         child: TextField(
           style: const TextStyle(height: 1.0),
@@ -71,6 +85,14 @@ class _DanmakuControlState extends State<DanmakuControl> {
         ),
       ).padding(left: 8.0).flexible(),
     ].toRow();
+
+    final closeButton = IconButton(
+      icon: const Icon(Icons.keyboard_arrow_down),
+      onPressed: () {
+        _focusNode.nextFocus();
+        Actions.invoke(context, ToggleDanmakuControlIntent(show: false));
+      },
+    );
 
     const buttonSize = 40.0;
     return LayoutBuilder(
@@ -137,8 +159,10 @@ class _DanmakuControlState extends State<DanmakuControl> {
         );
 
         return [
+          spark.padding(left: 8.0),
           danmakuField.flexible(),
           popmojis.padding(horizontal: 8.0),
+          StyledWidget(closeButton).padding(right: 8.0),
         ].toRow(mainAxisSize: .max);
       },
     );

@@ -19,12 +19,15 @@ class User {
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
   Map<String, dynamic> toJson() => _$UserToJson(this);
 
-  factory User.fromContext(BuildContext context) {
+  factory User.of(BuildContext context) {
     final nickname = context.read<ClientNicknameNotifier>().value;
     final hue = context.read<ClientColorHueNotifier?>()?.value;
     final id = context.read<ClientAccount>().id;
     return User(id: id, name: nickname, colorHue: hue);
   }
+
+  bool isCurrent(BuildContext context) =>
+      id == context.read<ClientAccount>().id;
 
   /// Based on hsv.
   /// brightness 0.0 ~ 1.0, the higher, the lighter

@@ -4,7 +4,7 @@ import 'package:styled_widget/styled_widget.dart';
 
 import 'package:bunga_player/client_info/global_business.dart';
 import 'package:bunga_player/screens/dialogs/settings/widgets.dart';
-import 'package:bunga_player/screens/player_screen/player_widget/danmaku_layer.dart';
+import 'package:bunga_player/screens/player_screen/player_widget/vibe_layer/danmaku.dart';
 import 'package:bunga_player/screens/widgets/input_builder.dart';
 import 'package:bunga_player/screens/widgets/slider_dense_track_shape.dart';
 import 'package:bunga_player/ui/global_business.dart';

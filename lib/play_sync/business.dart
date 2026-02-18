@@ -82,7 +82,7 @@ class JoinInAction extends ContextAction<JoinInIntent> {
         ? null
         : StartProjectionMessageData(videoRecord: intent.myRecord!);
     final data = JoinInMessageData(
-      user: User.fromContext(context!),
+      user: User.of(context!),
       myShare: projection,
     );
     Actions.invoke(context, SendMessageIntent(data));
@@ -284,7 +284,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
 
   void _dealWithWhoAreYou() {
     // TODO: useless?
-    final data = JoinInMessageData(user: User.fromContext(context));
+    final data = JoinInMessageData(user: User.of(context));
     Actions.invoke(context, SendMessageIntent(data));
   }
 

@@ -177,6 +177,21 @@ DanmakuMessageData _$DanmakuMessageDataFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$DanmakuMessageDataToJson(DanmakuMessageData instance) =>
     <String, dynamic>{'code': instance.code, 'message': instance.message};
 
+SparkMessageData _$SparkMessageDataFromJson(Map<String, dynamic> json) =>
+    SparkMessageData(
+      emoji: json['emoji'] as String,
+      fraction: SparkMessageData._fractionalOffsetFromJson(
+        json['fraction'] as List,
+      ),
+    );
+
+Map<String, dynamic> _$SparkMessageDataToJson(SparkMessageData instance) =>
+    <String, dynamic>{
+      'code': instance.code,
+      'emoji': instance.emoji,
+      'fraction': SparkMessageData._fractionalOffsetToJson(instance.fraction),
+    };
+
 ShareSubMessageData _$ShareSubMessageDataFromJson(Map<String, dynamic> json) =>
     ShareSubMessageData(
       url: json['url'] as String,

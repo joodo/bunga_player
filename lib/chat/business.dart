@@ -79,9 +79,8 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
   late final _myId = context.read<ClientAccount>().id;
 
   // Watchers
-  late final _watchersNotifier = WatchersNotifier(
-    myself: User.fromContext(context),
-  )..watchInConsole('Watchers');
+  late final _watchersNotifier = WatchersNotifier(myself: User.of(context))
+    ..watchInConsole('Watchers');
 
   // Leave message for app exit
   Future<void> _sendLeaveMessage() {

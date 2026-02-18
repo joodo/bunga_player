@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 import 'package:bunga_player/play/models/video_record.dart';
@@ -264,24 +265,6 @@ class PlayAtMessageData extends MessageData {
   Map<String, dynamic> toJson() => _$PlayAtMessageDataToJson(this);
 }
 
-/*
-/// Send when asking playing position
-@JsonSerializable()
-class WhereMessageData extends MessageData {
-  static const messageCode = 'where';
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: true)
-  final code = messageCode;
-
-  WhereMessageData();
-
-  factory WhereMessageData.fromJson(Map<String, dynamic> json) =>
-      _$WhereMessageDataFromJson(json);
-  @override
-  Map<String, dynamic> toJson() => _$WhereMessageDataToJson(this);
-}
-*/
-
 /// Send popmoji
 @JsonSerializable()
 class PopmojiMessageData extends MessageData {
@@ -316,6 +299,33 @@ class DanmakuMessageData extends MessageData {
       _$DanmakuMessageDataFromJson(json);
   @override
   Map<String, dynamic> toJson() => _$DanmakuMessageDataToJson(this);
+}
+
+/// Sparking
+@JsonSerializable()
+class SparkMessageData extends MessageData {
+  static const messageCode = 'spark';
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: true)
+  final code = messageCode;
+
+  final String emoji;
+  @JsonKey(fromJson: _fractionalOffsetFromJson, toJson: _fractionalOffsetToJson)
+  final FractionalOffset fraction;
+
+  SparkMessageData({required this.emoji, required this.fraction});
+
+  static FractionalOffset _fractionalOffsetFromJson(List<dynamic> json) =>
+      FractionalOffset(json[0], json[1]);
+  static List<double> _fractionalOffsetToJson(FractionalOffset offset) => [
+    offset.dx,
+    offset.dy,
+  ];
+
+  factory SparkMessageData.fromJson(Map<String, dynamic> json) =>
+      _$SparkMessageDataFromJson(json);
+  @override
+  Map<String, dynamic> toJson() => _$SparkMessageDataToJson(this);
 }
 
 /// Send when sharing subtitle

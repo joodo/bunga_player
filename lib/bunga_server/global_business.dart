@@ -122,7 +122,7 @@ class AlohaAction extends ContextAction<AlohaIntent> {
       doRequest: (headers) => http.post(
         url,
         headers: headers,
-        body: jsonEncode(User.fromContext(context).toJson()),
+        body: jsonEncode(User.of(context).toJson()),
       ),
     );
     final projectionJson = json['current_projection'];

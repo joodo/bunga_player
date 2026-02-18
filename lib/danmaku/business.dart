@@ -24,6 +24,12 @@ class RecentPopmojisNotifier extends ValueNotifier<List<String>> {
   }
 }
 
+class SparkingEmoji extends ValueNotifier<String> {
+  SparkingEmoji() : super('❤️');
+}
+
+const sparkOptions = ['❤️', '☝️', '🙈', '💩', '💀'];
+
 // Actions
 
 @immutable
@@ -69,6 +75,7 @@ class _DanmakuBusinessState extends SingleChildState<DanmakuBusiness> {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => RecentPopmojisNotifier()),
+        Provider.value(value: SparkingEmoji()),
       ],
       child: child!.actions(
         actions: {
