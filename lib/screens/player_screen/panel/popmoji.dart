@@ -29,7 +29,7 @@ class _PopmojiPanelState extends State<PopmojiPanel> {
 
   // Preview overlay
   final _currentHoveredEmoji = ValueNotifier<String?>(null);
-  final _overlayY = ValueNotifier<double>(0.0);
+  double _overlayY = 0.0;
   late final OverlayEntry _overlayEntry;
 
   @override
@@ -39,42 +39,32 @@ class _PopmojiPanelState extends State<PopmojiPanel> {
     runAfterBuild(() {
       _overlayEntry = OverlayEntry(
         builder: (overlayContext) {
-          const width = 180.0;
-
-          final renderbox = context.findRenderObject() as RenderBox?;
-          final offset = renderbox!.localToGlobal(Offset.zero);
+          const size = 180.0;
 
           return ValueListenableBuilder(
             valueListenable: _currentHoveredEmoji,
             builder: (context, emoji, child) {
               if (emoji == null) return const SizedBox.shrink();
-              return ValueListenableBuilder(
-                valueListenable: _overlayY,
-                builder: (context, overlayY, child) {
-                  final appHeight =
-                      MediaQuery.of(context).size.height -
-                      MediaQuery.of(context).padding.bottom;
+              final appHeight =
+                  MediaQuery.of(context).size.height -
+                  MediaQuery.of(context).padding.bottom;
 
-                  final label = context.read<EmojiData>().tags[emoji]?.first;
-                  return [
-                        Lottie.asset(EmojiData.lottiePath(emoji), repeat: true),
-                        if (label != null)
-                          Text(label)
-                              .textStyle(
-                                Theme.of(context).textTheme.labelLarge!,
-                              )
-                              .padding(top: 8.0),
-                      ]
-                      .toColumn()
-                      .padding(all: 12.0)
-                      .card(color: Colors.grey[700]!.withAlpha(150))
-                      .positioned(
-                        left: offset.dx - width + 24.0,
-                        top: min(overlayY, appHeight - width - 36.0),
-                        width: width,
-                      );
-                },
-              );
+              final label = context.read<EmojiData>().tags[emoji]?.first;
+              return [
+                    Lottie.asset(EmojiData.lottiePath(emoji), repeat: true),
+                    if (label != null)
+                      Text(label)
+                          .textStyle(Theme.of(context).textTheme.labelLarge!)
+                          .padding(top: 8.0),
+                  ]
+                  .toColumn()
+                  .padding(all: 12.0)
+                  .card(color: Colors.grey[700]!.withAlpha(150))
+                  .positioned(
+                    right: _panelWidth - 24.0,
+                    top: min(_overlayY, appHeight - size - 36.0),
+                    width: size,
+                  );
             },
           );
         },
@@ -87,12 +77,13 @@ class _PopmojiPanelState extends State<PopmojiPanel> {
   @override
   void dispose() {
     _currentHoveredEmoji.dispose();
-    _overlayY.dispose();
 
     _overlayEntry.remove();
 
     super.dispose();
   }
+
+  double _panelWidth = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -127,7 +118,8 @@ class _PopmojiPanelState extends State<PopmojiPanel> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final lineCount = constraints.maxWidth ~/ (buttonSize + 8.0);
+        _panelWidth = constraints.maxWidth;
+        final lineCount = _panelWidth ~/ buttonSize;
         var items = _sliceItems(_data, lineCount);
         if (items.isEmpty) items = ['无结果'];
 
@@ -169,8 +161,8 @@ class _PopmojiPanelState extends State<PopmojiPanel> {
                                 context.findRenderObject() as RenderBox?;
                             final y = renderbox!.localToGlobal(Offset.zero).dy;
 
+                            _overlayY = y;
                             _currentHoveredEmoji.value = emoji;
-                            _overlayY.value = y;
                           },
                         );
                       },

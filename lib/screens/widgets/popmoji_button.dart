@@ -23,10 +23,7 @@ class PopmojiButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final iconWidget = FittedBox(
-      fit: BoxFit.contain,
-      child: Text(emoji, style: TextStyle(fontFamily: 'noto_emoji')),
-    ).constrained(width: _iconSize, height: _iconSize);
+    final iconWidget = EmojiData.createIcon(emoji, _iconSize - 8.0);
 
     return InkWell(
       onTap: () {

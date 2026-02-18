@@ -1,6 +1,6 @@
-import 'dart:ui';
+import 'dart:ui' as ui;
 
-import 'package:flutter/rendering.dart';
+import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'data.g.dart';
@@ -29,8 +29,8 @@ class EmojiData {
       'assets/emojis/lottie/${codePoint(emoji)}.json';
 
   // Capture the emoji as a standard GPU texture
-  static Future<Image> createImage(String emoji, double size) {
-    final recorder = PictureRecorder();
+  static Future<ui.Image> createImage(String emoji, double size) {
+    final recorder = ui.PictureRecorder();
     final canvas = Canvas(recorder);
     final textPainter = TextPainter(
       text: TextSpan(
@@ -49,6 +49,14 @@ class EmojiData {
       textPainter.height.toInt(),
     );
   }
+
+  static Widget createIcon(String emoji, double? size) => FittedBox(
+    fit: BoxFit.contain,
+    child: Text(
+      emoji,
+      style: TextStyle(fontFamily: 'noto_emoji', fontSize: size),
+    ),
+  );
 
   final List<EmojiCategory> categories;
   final Map<String, List<String>> tags;
