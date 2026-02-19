@@ -69,9 +69,11 @@ class _ChannelActionsState extends SingleChildState<ChatGlobalBusiness> {
           _messageStreamController.add,
         );
 
-        // ask what's on
-        final data = WhatsOnMessageData();
-        client.sendMessage(data.toJson());
+        // Wait in case the playback service has not finished initializing after automatically entering the channel
+        Future.delayed(const Duration(seconds: 2), () {
+          final data = WhatsOnMessageData();
+          client.sendMessage(data.toJson());
+        });
       }
     });
 
