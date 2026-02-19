@@ -1,13 +1,51 @@
 import 'dart:io';
 
 import 'package:audio_session/audio_session.dart';
-import 'package:bunga_player/services/exit_callbacks.dart';
-import 'package:bunga_player/services/services.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 
+import 'package:bunga_player/services/exit_callbacks.dart';
+import 'package:bunga_player/services/preferences.dart';
+import 'package:bunga_player/services/services.dart';
+
 import 'history.dart';
+import 'service/service.agora.dart';
+import 'service/service.dart';
+import 'service/service.media_kit.dart';
+
+enum PlayerBackend { mediaKit, agoraMediaPlayer }
+
+class PlayerBackendNotifier extends ValueNotifier<PlayerBackend> {
+  PlayerBackendNotifier() : super(.mediaKit) {
+    bindPreference<String>(
+      key: 'player_backend',
+      load: (pref) => PlayerBackend.values.byName(pref),
+      update: (value) => value.name,
+    );
+
+    if (!getIt.isRegistered<PlayService>()) _register(value);
+  }
+
+  Future<void> switchTo(PlayerBackend target) async {
+    if (value == target) return;
+
+    final current = getIt<PlayService>();
+    current.dispose();
+    await getIt.unregister<PlayService>();
+
+    _register(target);
+    value = target;
+  }
+
+  void _register(PlayerBackend target) {
+    final instance = switch (target) {
+      PlayerBackend.mediaKit => MediaKitPlayService(),
+      PlayerBackend.agoraMediaPlayer => AgoraPlayService(),
+    };
+    getIt.registerSingleton<PlayService>(instance);
+  }
+}
 
 class PlayGlobalBusiness extends SingleChildStatefulWidget {
   const PlayGlobalBusiness({super.key, super.child});
@@ -34,7 +72,10 @@ class _PlayGlobalBusinessState extends SingleChildState<PlayGlobalBusiness> {
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
     return MultiProvider(
-      providers: [Provider.value(value: _history)],
+      providers: [
+        Provider.value(value: _history),
+        Provider.value(value: PlayerBackendNotifier()),
+      ],
       child: child,
     );
   }

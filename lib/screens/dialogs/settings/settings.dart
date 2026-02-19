@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:styled_widget/styled_widget.dart';
 
 import 'about.dart';
-import 'network.dart';
+import 'advanced.dart';
 import 'appearance.dart';
 import 'reaction.dart';
 import 'shortcut.dart';
@@ -27,7 +27,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
     const ReactionSettings(),
     if (kIsDesktop) const AppearanceSettings(),
     const ShortcutSettings(),
-    const NetworkSettings(),
+    const AdvancedSettings(),
     const AboutSetting(),
   ];
 
@@ -54,11 +54,13 @@ class _SettingsDialogState extends State<SettingsDialog> {
         }),
         labelType: NavigationRailLabelType.all,
         destinations: _tabs
-            .map((tab) => NavigationRailDestination(
-                  icon: Icon(tab.icon),
-                  selectedIcon: Icon(tab.selectedIcon),
-                  label: Text(tab.label),
-                ))
+            .map(
+              (tab) => NavigationRailDestination(
+                icon: Icon(tab.icon),
+                selectedIcon: Icon(tab.selectedIcon),
+                label: Text(tab.label),
+              ),
+            )
             .toList(),
       ).padding(top: 16.0),
       const VerticalDivider(width: 0),
@@ -67,11 +69,11 @@ class _SettingsDialogState extends State<SettingsDialog> {
           duration: const Duration(milliseconds: 300),
           transitionBuilder: (child, animation, secondaryAnimation) =>
               SharedAxisTransition(
-            animation: animation,
-            secondaryAnimation: secondaryAnimation,
-            transitionType: SharedAxisTransitionType.vertical,
-            child: child,
-          ),
+                animation: animation,
+                secondaryAnimation: secondaryAnimation,
+                transitionType: SharedAxisTransitionType.vertical,
+                child: child,
+              ),
           reverse: _reverse,
           child: KeyedSubtree(
             key: ValueKey<int>(_selectedIndex),
@@ -85,10 +87,12 @@ class _SettingsDialogState extends State<SettingsDialog> {
                 .scrollable(padding: EdgeInsets.only(bottom: 16.0)),
           ),
         ),
-        StyledWidget(IconButton(
-          onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.close),
-        )).padding(top: 8.0, right: 16.0).alignment(.topRight),
+        StyledWidget(
+          IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(Icons.close),
+          ),
+        ).padding(top: 8.0, right: 16.0).alignment(.topRight),
       ].toStack().flexible(),
     ].toRow();
   }

@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
 import 'package:bunga_player/play/service/service.dart';
-import 'package:bunga_player/play/service/service.agora.dart';
 import 'package:bunga_player/services/services.dart';
 
 import 'danmaku_layer.dart';
@@ -27,7 +26,7 @@ class PlayerWidget extends StatelessWidget {
         const ChromeLayer(),
         const PopupLayer(),
       ].toStack(fit: StackFit.expand),
-      child: (getIt<PlayService>() as AgoraPlayService).buildVideoWidget(),
+      child: getIt<PlayService>().buildVideoWidget(),
     );
   }
 }

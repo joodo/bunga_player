@@ -30,9 +30,10 @@ class AgoraClient extends VoiceCallClient {
     await client._init();
 
     // Media player
+    AgoraPlayService.engine = client._engine;
     final playService = getIt.get<PlayService>();
     if (playService is AgoraPlayService) {
-      playService.registerEngine(client._engine);
+      playService.registerEngine();
     }
 
     return client;
