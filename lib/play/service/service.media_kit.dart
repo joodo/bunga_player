@@ -40,6 +40,7 @@ class MediaKitPlayService extends PlayService {
 
     // Cache
     _setProperty('cache-on-disk', 'yes');
+    _setProperty('demuxer-max-bytes', '500MiB');
 
     // When video loaded
     _player.stream.duration.listen((duration) {

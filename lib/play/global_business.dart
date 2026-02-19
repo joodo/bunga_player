@@ -1,11 +1,8 @@
 import 'dart:io';
 
 import 'package:audio_session/audio_session.dart';
-import 'package:bunga_player/play/service/service.dart';
-import 'package:bunga_player/play/service/service.media_kit.dart';
 import 'package:bunga_player/services/exit_callbacks.dart';
 import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/services/preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
@@ -17,24 +14,6 @@ class PlayGlobalBusiness extends SingleChildStatefulWidget {
 
   @override
   State<PlayGlobalBusiness> createState() => _PlayGlobalBusinessState();
-}
-
-class NetworkCacheSizeNotifier extends ValueNotifier<int> {
-  NetworkCacheSizeNotifier() : super(500) {
-    bindPreference<int>(
-      key: 'network_cache_size',
-      load: (pref) => pref,
-      update: (value) => value,
-    );
-
-    _applyCacheSize();
-    addListener(_applyCacheSize);
-  }
-
-  void _applyCacheSize() {
-    // TODO: only for MediaKitPlayService
-    //(getIt<PlayService>() as MediaKitPlayService).setCacheSize(value);
-  }
 }
 
 class _PlayGlobalBusinessState extends SingleChildState<PlayGlobalBusiness> {
@@ -55,13 +34,7 @@ class _PlayGlobalBusinessState extends SingleChildState<PlayGlobalBusiness> {
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
     return MultiProvider(
-      providers: [
-        Provider.value(value: _history),
-        ChangeNotifierProvider(
-          create: (context) => NetworkCacheSizeNotifier(),
-          lazy: false,
-        ),
-      ],
+      providers: [Provider.value(value: _history)],
       child: child,
     );
   }

@@ -1,4 +1,3 @@
-import 'package:bunga_player/play/global_business.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
@@ -83,31 +82,6 @@ class NetworkSettings extends StatelessWidget with SettingsTab {
           context.read<SettingProxy>().value = newProxy.isEmpty
               ? null
               : newProxy;
-        },
-      ),
-      InputBuilder(
-        initValue: context.read<NetworkCacheSizeNotifier>().value.toString(),
-        builder: (context, textEditingController, focusNode, child) =>
-            TextField(
-              decoration: const InputDecoration(
-                labelText: '缓存大小',
-                helperText: '缓存越大，网络波动时播放越流畅，但会增加硬盘消耗',
-                border: OutlineInputBorder(),
-                suffixText: 'MB',
-              ),
-              controller: textEditingController,
-              focusNode: focusNode,
-            ).padding(all: 16.0).sectionContainer(),
-        onFocusLose: (controller) {
-          final newSize = int.tryParse(controller.value.text);
-          if (newSize != null && newSize > 0) {
-            context.read<NetworkCacheSizeNotifier>().value = newSize;
-          } else {
-            // Revert to old value
-            controller.value = TextEditingValue(
-              text: context.read<NetworkCacheSizeNotifier>().value.toString(),
-            );
-          }
         },
       ),
     ].toColumn(crossAxisAlignment: .start);
