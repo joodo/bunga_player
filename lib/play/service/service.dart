@@ -60,4 +60,6 @@ abstract class PlayService {
   ValueNotifier<String?> get proxyNotifier;
 
   Widget buildVideoWidget();
+
+  void dispose() {}
 }

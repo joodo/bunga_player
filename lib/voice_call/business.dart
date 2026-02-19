@@ -439,7 +439,7 @@ class VoiceCallGlobalBusiness extends SingleChildStatelessWidget {
 
         return client;
       },
-      // TODO: Dispose agora
+      dispose: (previous) => previous?.dispose(),
       lazy: false,
       child: child,
     );

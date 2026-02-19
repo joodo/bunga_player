@@ -10,4 +10,6 @@ abstract class VoiceCallClient {
 
   Future<void> joinChannel({required String userId});
   Future<void> leaveChannel();
+
+  void dispose() {}
 }
