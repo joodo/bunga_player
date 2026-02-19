@@ -27,16 +27,16 @@ class BungaChatClient extends ChatClient {
   // Messages
 
   WebSocketChannel? _channel;
-  final _streamController = StreamController();
-  late final _rawStream = _streamController.stream.asBroadcastStream();
+  final _streamController = StreamController<Map<String, dynamic>>();
+  late final _jsonStream = _streamController.stream.asBroadcastStream();
 
   @override
-  Stream<Message> get messageStream => _rawStream.map((rawData) {
-    final json = jsonDecode(rawData);
+  Stream<Message> get messageStream => _jsonStream.map((json) {
     return Message(data: json, sender: User.fromJson(json['sender']));
   });
 
   final _messageRawBuffer = <String>[];
+  static const _ignoreLoggingCodes = {'spark'};
   @override
   Future<Message?> sendMessage(Map<String, dynamic> data) async {
     final rawData = jsonEncode(data);
@@ -48,13 +48,18 @@ class BungaChatClient extends ChatClient {
     }
 
     _channel!.sink.add(rawData);
-    logger.i('Chat: send message: $rawData');
+    if (!_ignoreLoggingCodes.contains(data['code'])) {
+      logger.i('Chat: send message: $rawData');
+    }
     return messageStream.first;
   }
 
   void onDataReceived(String rawData) {
-    logger.i('Chat: message received: $rawData');
-    _streamController.add(rawData);
+    final json = jsonDecode(rawData);
+    if (!_ignoreLoggingCodes.contains(json['code'])) {
+      logger.i('Chat: message received: $rawData');
+    }
+    _streamController.add(json);
   }
 
   // Connection
