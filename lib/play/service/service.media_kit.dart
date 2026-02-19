@@ -71,6 +71,41 @@ class MediaKitPlayService extends PlayService {
     _player.stream.log.listen((log) => logger.w('Media kit log: ${log.text}'));
   }
 
+  @override
+  Future<void> dispose() async {
+    // Dispose custom notifiers to cancel internal StreamSubscriptions
+    volumeNotifier.dispose();
+    (bufferNotifier as _StreamListenable).dispose();
+    (durationNotifier as _StreamListenable).dispose();
+    (positionNotifier as _StreamListenable).dispose();
+    (playStatusNotifier as _StreamListenable).dispose();
+    (isBufferingNotifier as _StreamListenable).dispose();
+    playbackRateNotifier.dispose();
+    audioTrackNotifier.dispose();
+    audioTracksNotifier.dispose();
+    subtitleTrackNotifier.dispose();
+    subtitleTracksNotifier.dispose();
+
+    // Dispose tune notifiers (standard ValueNotifiers)
+    subDelayNotifier.dispose();
+    subSizeNotifier.dispose();
+    subPosNotifier.dispose();
+    brightnessNotifier.dispose();
+    contrastNotifier.dispose();
+    saturationNotifier.dispose();
+    gammaNotifier.dispose();
+    hueNotifier.dispose();
+    proxyNotifier.dispose();
+
+    // This stops playback and releases native resources
+    await _player.dispose();
+
+    // Clear local caches if necessary
+    _externalSubPaths.clear();
+
+    super.dispose();
+  }
+
   late final _player = media_kit.Player(
     configuration: const media_kit.PlayerConfiguration(
       logLevel: media_kit.MPVLogLevel.warn,

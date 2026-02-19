@@ -4,7 +4,6 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter/foundation.dart';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 
@@ -18,7 +17,11 @@ import '../models/play_payload.dart';
 import '../models/track.dart';
 
 class AgoraPlayService extends PlayService {
-  RtcEngine? _engine;
+  static RtcEngine? _engine;
+
+  AgoraPlayService() {
+    if (_engine != null) registerEngine(_engine!);
+  }
 
   MediaPlayerController? __player;
   MediaPlayerController get _player => __player!;
@@ -35,17 +38,26 @@ class AgoraPlayService extends PlayService {
 
     _player.registerPlayerSourceObserver(_createObserver());
 
-    playbackRateNotifier.addListener(() {
-      _player.setPlaybackSpeed((100.0 * playbackRateNotifier.value).toInt());
-    });
+    playbackRateNotifier.addListener(_onPlaybackRateChanged);
     _volume.addListener(() {
       _player.adjustPlayoutVolume(_volume.value.volume);
       _player.mute(_volume.value.mute);
     });
   }
 
-  void unregisterEngine() {
-    __player = null;
+  Future<void> unregisterEngine() async {
+    await _disposePlayer();
+    _engine = null;
+  }
+
+  Future<void> _disposePlayer() async {
+    playbackRateNotifier.removeListener(_onPlaybackRateChanged);
+
+    if (__player != null) {
+      await _player.stop();
+      await _player.dispose();
+      __player = null;
+    }
   }
 
   MediaPlayerSourceObserver _createObserver() {
@@ -106,6 +118,32 @@ class AgoraPlayService extends PlayService {
         }
       },
     );
+  }
+
+  void _onPlaybackRateChanged() {
+    _player.setPlaybackSpeed((100.0 * playbackRateNotifier.value).toInt());
+  }
+
+  @override
+  Future<void> dispose() async {
+    if (_openTask?.isCompleted == false) {
+      _openTask?.completeError('Service disposed');
+    }
+
+    await _disposePlayer();
+
+    playbackRateNotifier.dispose();
+    _volume.dispose();
+    _duration.dispose();
+    _buffer.dispose();
+    _isBuffering.dispose();
+    _position.dispose();
+    _playStatus.dispose();
+
+    await _videoProxy?.stop();
+    _videoProxy = null;
+
+    super.dispose();
   }
 
   // Volume

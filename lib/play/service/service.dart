@@ -64,4 +64,6 @@ abstract class PlayService {
   ValueListenable<Size?> get videoSizeNotifier;
 
   Widget buildVideoWidget();
+
+  void dispose() {}
 }

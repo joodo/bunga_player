@@ -80,6 +80,23 @@ class AgoraClient extends VoiceCallClient {
     });
   }
 
+  @override
+  Future<void> dispose() async {
+    await _engine.leaveChannel();
+
+    final playService = getIt.get<PlayService>();
+    if (playService is AgoraPlayService) await playService.unregisterEngine();
+
+    if (kIsDesktop) inputDeviceNotifier.dispose();
+    noiseSuppressionLevelNotifier.dispose();
+    volumeNotifier.dispose();
+    micMuteNotifier.dispose();
+
+    _engine.unregisterEventHandler(RtcEngineEventHandler());
+
+    await _engine.release();
+  }
+
   final _engine = createAgoraRtcEngine();
   Future<void> _init() async {
     // Engine
