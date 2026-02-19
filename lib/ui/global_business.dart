@@ -72,7 +72,7 @@ class ScreenLockedNotifier extends ValueNotifier<bool> {
 }
 
 class AutoJoinChannelNotifier extends ValueNotifier<bool> {
-  AutoJoinChannelNotifier() : super(true) {
+  AutoJoinChannelNotifier() : super(false) {
     bindPreference<bool>(
       key: 'auto_join_channel',
       load: (pref) => pref,
