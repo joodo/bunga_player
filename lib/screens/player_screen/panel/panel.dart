@@ -28,8 +28,8 @@ class _PanelWidgetState extends SingleChildState<PanelWidget> {
       if (widget.title != null)
         Text(widget.title!, overflow: .ellipsis, maxLines: 2)
             .textStyle(Theme.of(context).textTheme.titleMedium!)
-            .padding(left: 8.0)
-            .flexible(),
+            .padding(left: 8.0),
+      if (widget.title != null) Spacer(),
       if (widget.actions != null) ...widget.actions!,
     ].toRow(crossAxisAlignment: .center);
 
