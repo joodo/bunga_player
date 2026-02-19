@@ -115,6 +115,19 @@ class AgoraPlayService extends PlayService {
             {}
         }
       },
+      onPlayerInfoUpdated: (info) {
+        Size? size;
+        try {
+          size = Size(
+            info.videoWidth!.toDouble(),
+            info.videoHeight!.toDouble(),
+          );
+          if (size.isEmpty) size = null;
+        } on TypeError catch (_) {
+          size = null;
+        }
+        _videoSizeNotifier.value = size;
+      },
     );
   }
 
@@ -173,6 +186,11 @@ class AgoraPlayService extends PlayService {
     await _player.open(url: url, startPos: start?.inMilliseconds ?? 0);
     await _openTask!.future;
   }
+
+  // Video size
+  final _videoSizeNotifier = ValueNotifier<Size?>(null);
+  @override
+  ValueListenable<Size?> get videoSizeNotifier => _videoSizeNotifier;
 
   // Duration
   final _duration = ValueNotifier(Duration.zero);

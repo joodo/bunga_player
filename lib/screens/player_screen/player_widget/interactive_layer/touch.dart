@@ -113,6 +113,8 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
         _dragStartPoint = details.localPosition;
         _dargStartVideoPosition = play.positionNotifier.value;
 
+        Actions.maybeInvoke(context, SeekStartIntent());
+
         _isPlayingBeforeDrag = play.playStatusNotifier.value.isPlaying;
         play.pause();
       },
@@ -126,9 +128,9 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
         final positionOffset = Duration(seconds: xOffset.toInt() ~/ 5);
 
         if (_isPlayingBeforeDrag) play.play();
-        Actions.invoke(
+        Actions.invoke<SeekIntent>(
           context,
-          SeekIntent(_dargStartVideoPosition + positionOffset),
+          SeekEndIntent(_dargStartVideoPosition + positionOffset),
         );
 
         context.read<ShouldShowHUDNotifier>().unlock('drag');

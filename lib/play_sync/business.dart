@@ -294,7 +294,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
 
   void _dealWithWhoAreYou() {
     // TODO: useless?
-    final data = JoinInMessageData(user: User.fromContext(context));
+    final data = JoinInMessageData(user: User.of(context));
     context.sendMessage(data);
   }
 
