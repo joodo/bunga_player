@@ -69,6 +69,11 @@ class MediaKitPlayService extends PlayService {
 
     // Log
     _player.stream.log.listen((log) => logger.w('Media kit log: ${log.text}'));
+
+    // Stream
+    _player.stream.completed.listen((event) {
+      if (event) _finishNotifier.fire();
+    });
   }
 
   @override
@@ -209,8 +214,10 @@ class MediaKitPlayService extends PlayService {
   Future<void> pause() => _player.pause();
   @override
   Future<void> stop() => _player.stop();
+
+  final _finishNotifier = _SimpleEvent();
   @override
-  Listenable get finishNotifier => throw UnimplementedError();
+  Listenable get finishNotifier => _finishNotifier;
 
   @override
   late final isBufferingNotifier = _StreamListenable(
@@ -562,4 +569,9 @@ Stream<bool> _bufferingStream(
       }
     }
   }
+}
+
+// TODO: move
+class _SimpleEvent extends ChangeNotifier {
+  void fire() => notifyListeners();
 }

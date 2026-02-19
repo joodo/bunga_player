@@ -17,20 +17,18 @@ import '../models/play_payload.dart';
 import '../models/track.dart';
 
 class AgoraPlayService extends PlayService {
-  static RtcEngine? _engine;
+  static RtcEngine? engine;
 
   AgoraPlayService() {
-    if (_engine != null) registerEngine(_engine!);
+    if (engine != null) registerEngine();
   }
 
   MediaPlayerController? __player;
   MediaPlayerController get _player => __player!;
 
-  Future<void> registerEngine(RtcEngine engine) async {
-    _engine = engine;
-
+  Future<void> registerEngine() async {
     __player = MediaPlayerController(
-      rtcEngine: _engine!,
+      rtcEngine: AgoraPlayService.engine!,
       canvas: VideoCanvas(uid: 0, renderMode: .renderModeHidden),
       useFlutterTexture: true,
     );
@@ -47,7 +45,7 @@ class AgoraPlayService extends PlayService {
 
   Future<void> unregisterEngine() async {
     await _disposePlayer();
-    _engine = null;
+    engine = null;
   }
 
   Future<void> _disposePlayer() async {
