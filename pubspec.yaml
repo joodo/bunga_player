@@ -96,6 +96,7 @@ flutter:
 
   assets:
     - assets/images/
+    - assets/images/gestures/
     - assets/emojis/
     - assets/emojis/lottie/
     - assets/sounds/
