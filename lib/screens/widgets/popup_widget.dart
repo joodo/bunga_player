@@ -1,20 +1,18 @@
 import 'package:animations/animations.dart';
-import 'package:bunga_player/utils/business/run_after_build.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
-import 'package:styled_widget/styled_widget.dart';
+
+import 'package:bunga_player/utils/business/run_after_build.dart';
 
 class PopupWidget extends SingleChildStatefulWidget {
   final bool showing;
-  final Alignment alignment;
-  final EdgeInsets padding;
+  final Widget Function(BuildContext context, Widget child)? layoutBuilder;
 
   const PopupWidget({
     super.key,
     super.child,
     this.showing = false,
-    this.alignment = Alignment.center,
-    this.padding = const EdgeInsets.all(16.0),
+    this.layoutBuilder,
   });
 
   @override
@@ -48,16 +46,21 @@ class _PopupWidgetState extends SingleChildState<PopupWidget>
   Widget buildWithChild(BuildContext context, Widget? child) {
     return OverlayPortal(
       controller: _portalController,
-      overlayChildBuilder: (context) => Padding(
-        padding: widget.padding,
-        child: AnimatedBuilder(
-          animation: _animationController,
-          builder: (BuildContext context, Widget? child) => FadeScaleTransition(
+      overlayChildBuilder: (context) => AnimatedBuilder(
+        animation: _animationController,
+        builder: (BuildContext context, Widget? child) {
+          final animatedChild = FadeScaleTransition(
             animation: _animationController,
             child: child,
-          ),
-          child: child,
-        ).alignment(widget.alignment),
+          );
+
+          if (widget.layoutBuilder != null) {
+            return widget.layoutBuilder!(context, animatedChild);
+          } else {
+            return Center(child: animatedChild);
+          }
+        },
+        child: child,
       ),
     );
   }

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:bunga_player/ui/global_business.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -287,7 +288,13 @@ class _ActionView extends StatelessWidget {
       FilledButton(
         onPressed: () =>
             getIt<Toast>().show('New toast: ${_randomSentence()}.'),
-        child: const Text('Show a toast'),
+        child: const Text('Show a snackbar'),
+      ),
+      FilledButton(
+        onPressed: () => context.read<PlaySyncMessageManager>().show(
+          'New message: ${_randomSentence()}.',
+        ),
+        child: const Text('Show a sync message'),
       ),
       FilledButton(
         onPressed: context.read<BungaServerInfo>().refreshToken,

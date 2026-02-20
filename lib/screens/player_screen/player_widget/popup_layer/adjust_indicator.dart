@@ -1,16 +1,16 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
+import 'package:provider/provider.dart';
+import 'package:styled_widget/styled_widget.dart';
+
 import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/screens/widgets/popup_widget.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/ui/global_business.dart';
 import 'package:bunga_player/utils/business/value_listenable.dart';
-import 'package:bunga_player/utils/extensions/styled_widget.dart';
-import 'package:bunga_player/utils/models/volume.dart';
-import 'package:bunga_player/voice_call/business.dart';
 import 'package:bunga_player/voice_call/client/client.agora.dart';
-import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
-import 'package:provider/provider.dart';
-import 'package:styled_widget/styled_widget.dart';
 
 /// Indicator shows when adjusting volume, brightness etc.
 class AdjustIndicator extends StatefulWidget {
@@ -20,18 +20,9 @@ class AdjustIndicator extends StatefulWidget {
   State<AdjustIndicator> createState() => _AdjustIndicatorState();
 }
 
-enum ChangedValue { brightness, volume, voiceVolume, micMute, lockScreen }
-
 class _AdjustIndicatorState extends State<AdjustIndicator>
     with SingleTickerProviderStateMixin {
-  final _visibleNotifier = AutoResetNotifier(const Duration(seconds: 1));
-  ChangedValue? _changedValue = ChangedValue.brightness;
-
-  late final _brightnessNotifier = context.read<ScreenBrightnessNotifier>();
-  late final _volumeNotifier = getIt<PlayService>().volumeNotifier;
-  ValueNotifier<Volume>? _voiceNotifier;
-  ValueNotifier<bool>? _micMuteNotifier;
-  late final _screenLockedNotifier = context.read<ScreenLockedNotifier>();
+  final _visibleNotifier = AutoResetNotifier(const Duration(seconds: 2));
 
   late final _lockAnimationController = AnimationController(
     vsync: this,
@@ -39,251 +30,164 @@ class _AdjustIndicatorState extends State<AdjustIndicator>
     duration: const Duration(milliseconds: 300),
   );
 
+  final _eventTypeNotifier = ValueNotifier<AdjustIndicatorEventType?>(null);
+  late final StreamSubscription _subscription;
+
   @override
   void initState() {
     super.initState();
 
-    _brightnessNotifier.addListener(_onChangeBrightness);
-    _volumeNotifier.addListener(_onChangeVolume);
-    _screenLockedNotifier.addListener(_onChangeLockScreen);
-
     _lockAnimationController;
+
+    _subscription = context.read<AdjustIndicatorEvent>().listen((newType) {
+      _eventTypeNotifier.value = newType;
+      _visibleNotifier.mark();
+    });
   }
 
   @override
   void dispose() {
     _visibleNotifier.dispose();
-
-    _brightnessNotifier.removeListener(_onChangeBrightness);
-    _volumeNotifier.removeListener(_onChangeVolume);
-    _voiceNotifier?.removeListener(_onChangeVoiceVolume);
-    _micMuteNotifier?.removeListener(_onChangeMicMute);
-    _screenLockedNotifier.removeListener(_onChangeLockScreen);
+    _eventTypeNotifier.dispose();
 
     _lockAnimationController.dispose();
+
+    _subscription.cancel();
 
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    return ValueListenableBuilder(
+      valueListenable: _eventTypeNotifier,
+      builder: (context, eventType, child) {
+        final content = switch (eventType) {
+          .micMute => _createMicMuteWidget(),
+          .lockScreen => _createLockScreenWidget(),
+          .brightness => _createBrightnessWidget(),
+          .volume => _createVolumeWidget(),
+          .voiceVolume => _createVoiceVolumeWidght(),
+          null => null,
+        };
 
-    if (_changedValue == ChangedValue.micMute) {
-      return ValueListenableBuilder(
-        valueListenable: _visibleNotifier,
-        builder: (context, visible, child) => PopupWidget(
-          showing: visible,
-          alignment: Alignment.topLeft,
-          child:
-              [
-                    Icon(
-                      _micMuteNotifier!.value ? Icons.mic_off : Icons.mic,
-                      size: 60.0,
-                    ),
-                    Text(
-                      _micMuteNotifier!.value ? '麦克已关闭' : '麦克已打开',
-                    ).textColor(Colors.white).padding(top: 12.0),
-                  ]
-                  .toColumn()
-                  .padding(horizontal: 12.0, vertical: 16.0)
-                  .card(color: colorScheme.tertiary.withAlpha(170)),
-        ),
-      );
-    }
-
-    if (_changedValue == ChangedValue.lockScreen) {
-      _screenLockedNotifier.value
-          ? _lockAnimationController.reverse()
-          : _lockAnimationController.forward();
-      return ValueListenableBuilder(
-        valueListenable: _visibleNotifier,
-        builder: (context, visible, child) => PopupWidget(
-          showing: visible,
-          alignment: Alignment.topLeft,
-          child:
-              [
-                    Lottie.asset(
-                          'assets/images/lock.json',
-                          controller: _lockAnimationController,
-                        )
-                        .overflow(maxHeight: 80.0, minWidth: 80.0)
-                        .constrained(width: 60.0, height: 60.0),
-                    Text(
-                      _screenLockedNotifier.value ? '已锁屏' : '已解锁',
-                    ).textColor(Colors.white).padding(top: 12.0),
-                  ]
-                  .toColumn()
-                  .padding(horizontal: 12.0, vertical: 16.0)
-                  .card(color: colorScheme.tertiary.withAlpha(150)),
-        ),
-      );
-    }
-
-    final container = Card(
-      clipBehavior: Clip.hardEdge,
-      color: colorScheme.tertiary.withAlpha(150),
-    );
-
-    final leftIndicator =
-        (_changedValue == ChangedValue.brightness
-                ? ValueListenableBuilder(
-                    key: Key('brightness'),
-                    valueListenable: _brightnessNotifier,
-                    builder: (context, value, child) =>
-                        _createIndicator(icon: Icons.sunny, value: value),
-                  )
-                : ValueListenableBuilder(
-                    key: Key('volume'),
-                    valueListenable: _volumeNotifier,
-                    builder: (context, value, child) => _createIndicator(
-                      icon: Icons.volume_up,
-                      value: value.volume / 100.0,
-                    ),
-                  ))
-            .animatedSwitcher(duration: const Duration(milliseconds: 175));
-
-    final rightIndicator = Consumer<AgoraClient?>(
-      builder: (context, client, child) {
-        if (client == null) return SizedBox.shrink();
         return ValueListenableBuilder(
-          valueListenable: client.volumeNotifier,
-          builder: (context, value, child) => _createIndicator(
-            icon: Icons.headphones,
-            value: value.volume / 100.0,
+          valueListenable: _visibleNotifier,
+          builder: (context, visible, child) => PopupWidget(
+            showing: visible,
+            layoutBuilder: (context, child) =>
+                child.padding(left: 12.0).alignment(Alignment.centerLeft),
+            child:
+                AnimatedSize(
+                  duration: const Duration(milliseconds: 150),
+                  curve: Curves.easeOutCubic,
+                  child:
+                      content
+                          ?.padding(horizontal: 12.0, vertical: 16.0)
+                          .constrained(animate: true) ??
+                      const SizedBox.shrink(),
+                ).card(
+                  color: Theme.of(context).colorScheme.tertiary.withAlpha(170),
+                ),
           ),
         );
       },
     );
+  }
 
-    const indicatorWidth = 60.0;
-    final body = Consumer<CallStatus?>(
-      builder: (context, value, child) {
-        final showTalk =
-            _changedValue != ChangedValue.brightness && value == .talking;
-        final hightlightTalk =
-            showTalk && _changedValue == ChangedValue.voiceVolume;
-        return [
-              container.positioned(
-                top: 0,
-                bottom: 0,
-                left: hightlightTalk ? indicatorWidth + 12.0 : 0,
-                width: indicatorWidth,
-                animate: true,
-              ),
-              leftIndicator
-                  .opacity(hightlightTalk ? 0.5 : 1.0, animate: true)
-                  .positioned(
-                    top: 0,
-                    bottom: 0,
-                    left: 0,
-                    width: indicatorWidth,
-                  ),
-              if (showTalk)
-                rightIndicator
-                    .opacity(hightlightTalk ? 1.0 : 0.5, animate: true)
-                    .positioned(
-                      top: 0,
-                      bottom: 0,
-                      right: 0,
-                      width: indicatorWidth,
-                    ),
-            ]
-            .toStack()
-            .constrained(
-              height: 168.0,
-              width: showTalk ? indicatorWidth * 2 + 12.0 : indicatorWidth,
-            )
-            .animate(const Duration(milliseconds: 300), Curves.easeOutCubic);
-      },
-    );
-
-    final consumer = Consumer<AgoraClient?>(
-      builder: (context, client, child) {
-        if (client != null) {
-          _voiceNotifier = client.volumeNotifier
-            ..addListener(_onChangeVoiceVolume);
-          _micMuteNotifier = client.micMuteNotifier
-            ..addListener(_onChangeMicMute);
-        }
-
-        return child!;
-      },
-      child: body,
-    );
-
+  Widget? _createLockScreenWidget() {
+    final notifier = context.read<ScreenLockedNotifier>();
     return ValueListenableBuilder(
-      valueListenable: _visibleNotifier,
-      builder: (context, visible, child) => PopupWidget(
-        showing: visible,
-        alignment: Alignment.topLeft,
-        child: consumer,
+      valueListenable: notifier,
+      builder: (context, isLock, child) {
+        notifier.value
+            ? _lockAnimationController.reverse()
+            : _lockAnimationController.forward();
+        return _createIconIndicator(
+          icon: Lottie.asset(
+            'assets/images/lock.json',
+            controller: _lockAnimationController,
+          ).overflow(maxHeight: 80.0, minWidth: 80.0),
+          text: notifier.value ? '已锁屏' : '已解锁',
+        );
+      },
+    );
+  }
+
+  Widget? _createMicMuteWidget() {
+    final notifier = context.read<AgoraClient?>()?.micMuteNotifier;
+    if (notifier == null) return null;
+    return ValueListenableBuilder(
+      valueListenable: notifier,
+      builder: (context, isMute, child) {
+        return _createIconIndicator(
+          icon: Icon(isMute ? Icons.mic_off : Icons.mic, size: 60.0),
+          text: isMute ? '麦克已关闭' : '麦克已打开',
+        );
+      },
+    );
+  }
+
+  Widget? _createBrightnessWidget() {
+    final notifier = context.read<ScreenBrightnessNotifier>();
+    return ValueListenableBuilder(
+      key: Key('brightness'),
+      valueListenable: notifier,
+      builder: (context, value, child) =>
+          _createProgressIndicator(icon: Icons.sunny, value: value),
+    );
+  }
+
+  Widget? _createVolumeWidget() {
+    final notifier = getIt<PlayService>().volumeNotifier;
+    return ValueListenableBuilder(
+      key: Key('volume'),
+      valueListenable: notifier,
+      builder: (context, value, child) => _createProgressIndicator(
+        icon: Icons.volume_up,
+        value: value.volume / 100.0,
       ),
     );
   }
 
-  void _onChangeBrightness() {
-    _visibleNotifier.mark();
-    setState(() {
-      _changedValue = ChangedValue.brightness;
-    });
+  Widget? _createVoiceVolumeWidght() {
+    final notifier = context.read<AgoraClient?>()?.volumeNotifier;
+    if (notifier == null) return null;
+    return ValueListenableBuilder(
+      valueListenable: notifier,
+      builder: (context, value, child) => _createProgressIndicator(
+        icon: Icons.headphones,
+        value: value.volume / 100.0,
+      ),
+    );
   }
 
-  void _onChangeVolume() {
-    if (context.read<ShouldShowHUDNotifier>().locks.contains('volume slider')) {
-      return;
-    }
-
-    _visibleNotifier.mark();
-    setState(() {
-      _changedValue = ChangedValue.volume;
-    });
-  }
-
-  void _onChangeVoiceVolume() {
-    if (context.read<ShouldShowHUDNotifier>().locks.contains('voice slider')) {
-      return;
-    }
-    _visibleNotifier.mark();
-    setState(() {
-      _changedValue = ChangedValue.voiceVolume;
-    });
-  }
-
-  void _onChangeMicMute() {
-    if (context.read<ShouldShowHUDNotifier>().locks.contains('call button')) {
-      return;
-    }
-    _visibleNotifier.mark();
-    setState(() {
-      _changedValue = ChangedValue.micMute;
-    });
-  }
-
-  void _onChangeLockScreen() {
-    _visibleNotifier.mark();
-    setState(() {
-      _changedValue = ChangedValue.lockScreen;
-    });
-  }
-
-  Widget _createIndicator({required IconData icon, required double value}) {
-    final colorScheme = Theme.of(context).colorScheme;
+  Widget _createIconIndicator({required Widget icon, required String text}) {
+    const iconSize = 60.0;
     return [
-          [
-                Container(color: colorScheme.secondaryContainer),
-                Container(
-                  color: colorScheme.primary,
-                ).constrained(height: value * 100.0),
-              ]
-              .toStack(alignment: .bottomCenter)
-              .constrained(width: 18.0)
-              .clipRRect(all: 12.0)
-              .flexible(),
-          Icon(icon).padding(top: 12.0),
-        ]
-        .toColumn()
-        .padding(horizontal: 12.0, vertical: 16.0)
-        .card(color: Colors.black12, elevation: 0);
+      icon.constrained(width: iconSize, height: iconSize),
+      Text(text).textColor(Colors.white).padding(top: 12.0),
+    ].toColumn(mainAxisSize: .min);
+  }
+
+  Widget _createProgressIndicator({
+    required IconData icon,
+    required double value,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    const progressHeight = 120.0;
+    return [
+      LayoutBuilder(
+        builder: (context, constraints) => [
+          Container(
+            color: colorScheme.secondaryContainer,
+          ).constrained(height: progressHeight),
+          Container(color: colorScheme.primary)
+              .constrained(height: value * progressHeight, animate: true)
+              .animate(const Duration(milliseconds: 150), Curves.easeOutCubic),
+        ].toStack(alignment: .bottomCenter),
+      ).constrained(width: 18.0).clipRRect(all: 12.0).flexible(),
+      Icon(icon).padding(top: 12.0),
+    ].toColumn(mainAxisSize: .min);
   }
 }

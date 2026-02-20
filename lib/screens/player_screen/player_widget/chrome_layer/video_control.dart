@@ -171,7 +171,10 @@ class _SliderSection extends StatelessWidget {
           onPressed: () {
             Actions.invoke(
               context,
-              UpdateVolumeIntent(volume.copyWith(mute: !volume.mute)),
+              UpdateVolumeIntent(
+                volume.copyWith(mute: !volume.mute),
+                save: true,
+              ),
             );
           },
         ),
@@ -187,7 +190,7 @@ class _SliderSection extends StatelessWidget {
             UpdateVolumeIntent(Volume(volume: value.toInt())),
           ),
           onChangeEnd: (value) {
-            Actions.invoke(context, UpdateVolumeIntent.save());
+            Actions.invoke(context, FinishUpdateVolumeIntent());
             context.read<ShouldShowHUDNotifier>().unlock('volume slider');
           },
           focusNode: FocusNode(canRequestFocus: false),

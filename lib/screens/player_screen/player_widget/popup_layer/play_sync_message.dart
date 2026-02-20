@@ -1,12 +1,13 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:styled_widget/styled_widget.dart';
+
 import 'package:bunga_player/screens/widgets/popup_widget.dart';
 import 'package:bunga_player/ui/global_business.dart';
 import 'package:bunga_player/utils/business/value_listenable.dart';
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:styled_widget/styled_widget.dart';
 
 class PlaySyncMessage extends StatefulWidget {
   const PlaySyncMessage({super.key});
@@ -43,8 +44,8 @@ class _PlaySyncMessageState extends State<PlaySyncMessage> {
       valueListenable: _visibleNotifier,
       builder: (context, visible, child) => PopupWidget(
         showing: visible,
-        alignment: Alignment.bottomLeft,
-        padding: EdgeInsets.only(left: 20.0, bottom: 80.0),
+        layoutBuilder: (context, child) =>
+            child.alignment(.bottomLeft).padding(left: 20.0, bottom: 80.0),
         child: child!,
       ),
       child:

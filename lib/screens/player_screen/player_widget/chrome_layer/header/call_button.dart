@@ -117,7 +117,7 @@ class _CallButtonState extends State<CallButton> {
                       );
                     },
                     onChangeEnd: (value) {
-                      Actions.invoke(context, UpdateVoiceVolumeIntent.save());
+                      Actions.invoke(context, FinishUpdateVoiceVolumeIntent());
                       context.read<ShouldShowHUDNotifier>().unlock(
                         'voice slider',
                       );

@@ -71,6 +71,8 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
 
     final lockedNotifier = context.watch<ScreenLockedNotifier>();
 
+    final indicatorEvent = context.read<AdjustIndicatorEvent>();
+
     final lockButton = ValueListenableBuilder(
       valueListenable: _lockButtonVisibleNotifier,
       builder: (context, visible, child) => Visibility(
@@ -84,6 +86,7 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
               lockedNotifier.value = true;
               _showHUDNotifier.reset();
             }
+            indicatorEvent.fire(.lockScreen);
           },
           isSelected: lockedNotifier.value,
           icon: Icon(lockedNotifier.value ? Icons.lock : Icons.lock_open),
@@ -160,6 +163,7 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
           // Adjust brightness
           final target = (_dragStartDeviceValue + delta / 200).clamp(0, 1.0);
           context.read<ScreenBrightnessNotifier>().value = target.toDouble();
+          context.read<AdjustIndicatorEvent>().fire(.brightness);
         } else {
           if (_volumeAdjustType == _VolumeAdjustType.voice) {
             // Adjust voice
@@ -168,6 +172,7 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
               volume: value.clamp(Volume.min, Volume.max),
             );
             Actions.invoke(context, UpdateVoiceVolumeIntent(newVolume));
+            context.read<AdjustIndicatorEvent>().fire(.voiceVolume);
 
             if (!_canAdjustVoice() ||
                 _farthestX - details.localPosition.dx > 20.0) {
@@ -185,6 +190,7 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
               volume: value.clamp(Volume.min, Volume.max),
             );
             Actions.invoke(context, UpdateVolumeIntent(newVolume));
+            context.read<AdjustIndicatorEvent>().fire(.volume);
 
             if (!_canAdjustVoice()) return;
             if (details.localPosition.dx - _farthestX > 20.0) {
@@ -200,8 +206,8 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
       onVerticalDragEnd: (details) {
         if (!_isAdjustingBrightness) {
           // Save volumes
-          Actions.invoke(context, UpdateVolumeIntent.save());
-          Actions.invoke(context, UpdateVoiceVolumeIntent.save());
+          Actions.invoke(context, FinishUpdateVolumeIntent());
+          Actions.invoke(context, FinishUpdateVoiceVolumeIntent());
         }
       },
 
@@ -243,14 +249,17 @@ class _GestureDetector extends SingleChildStatefulWidget {
 
   final GestureDragStartCallback? onHorizentalDragStart,
       onVerticalDragStart,
+      onVerticalMultiFingerDragStart,
       onDoubleTapDragStart;
 
   final GestureDragUpdateCallback? onHorizontalDragUpdate,
       onVerticalDragUpdate,
+      onVerticalMultiFingerDragUpdate,
       onDoubleTapDragUpdated;
 
   final GestureDragEndCallback? onHorizontalDragEnd,
       onVerticalDragEnd,
+      onVerticalMultiFingerDragEnd,
       onDoubleTapDragEnd;
 
   final HitTestBehavior? behavior;
@@ -268,6 +277,9 @@ class _GestureDetector extends SingleChildStatefulWidget {
     this.onVerticalDragEnd,
     this.onDoubleTapDragEnd,
     this.behavior,
+    this.onVerticalMultiFingerDragStart,
+    this.onVerticalMultiFingerDragUpdate,
+    this.onVerticalMultiFingerDragEnd,
     super.child,
   });
 
@@ -276,15 +288,17 @@ class _GestureDetector extends SingleChildStatefulWidget {
 }
 
 class _GestureDetectorState extends SingleChildState<_GestureDetector> {
-  // Configuration Constants
-  static const doubleTapTimeout = Duration(milliseconds: 300);
-
-  // business
+  // Double Tap
   Timer? _doubleTapTimer;
   bool _isPotentialDoubleTap = false;
   bool _isPotentialDoubleTapDragging = false;
   bool _isDoubleTapDragging = false;
   bool _isSingleDragging = false;
+
+  // Two Pointers Drag
+  int _activePointers = 0;
+  bool _isPotentialMultiFingerDrag = false;
+  bool _isMultiFingerDragging = false;
 
   @override
   void dispose() {
@@ -302,15 +316,20 @@ class _GestureDetectorState extends SingleChildState<_GestureDetector> {
       child: GestureDetector(
         behavior: widget.behavior,
         onTap: () {
-          if (!_isPotentialDoubleTapDragging) widget.onTap?.call();
+          if (_isPotentialDoubleTapDragging) return;
+          widget.onTap?.call();
         },
-        onDoubleTap: widget.onDoubleTap,
+        onDoubleTap: () {
+          if (_isDoubleTapDragging) return;
+          widget.onDoubleTap?.call();
+        },
 
         onHorizontalDragStart: (details) {
-          if (!_isDoubleTapDragging) {
-            _isSingleDragging = true;
-            widget.onHorizentalDragStart?.call(details);
-          }
+          if (_isDoubleTapDragging || _isPotentialMultiFingerDrag) return;
+
+          _isSingleDragging = true;
+
+          widget.onHorizentalDragStart?.call(details);
         },
         onHorizontalDragUpdate: (details) {
           if (_isSingleDragging) {
@@ -325,7 +344,12 @@ class _GestureDetectorState extends SingleChildState<_GestureDetector> {
         },
 
         onVerticalDragStart: (details) {
-          if (!_isDoubleTapDragging) {
+          if (_isDoubleTapDragging) return;
+
+          if (_isPotentialMultiFingerDrag) {
+            _isMultiFingerDragging = true;
+            widget.onVerticalMultiFingerDragStart?.call(details);
+          } else {
             _isSingleDragging = true;
             widget.onVerticalDragStart?.call(details);
           }
@@ -334,11 +358,20 @@ class _GestureDetectorState extends SingleChildState<_GestureDetector> {
           if (_isSingleDragging) {
             widget.onVerticalDragUpdate?.call(details);
           }
+
+          if (_isSingleDragging) {
+            widget.onVerticalMultiFingerDragUpdate?.call(details);
+          }
         },
         onVerticalDragEnd: (details) {
           if (_isSingleDragging) {
             widget.onVerticalDragEnd?.call(details);
             _isSingleDragging = false;
+          }
+
+          if (_isMultiFingerDragging) {
+            widget.onVerticalMultiFingerDragEnd?.call(details);
+            _isMultiFingerDragging = false;
           }
         },
 
@@ -348,16 +381,27 @@ class _GestureDetectorState extends SingleChildState<_GestureDetector> {
   }
 
   void _handlePointerDown(PointerDownEvent event) {
+    _activePointers++;
+
+    if (_activePointers > 1) {
+      // Transition to multi-finger mode
+      _isPotentialMultiFingerDrag = true;
+      _isSingleDragging = false;
+      _isPotentialDoubleTap = false;
+      _doubleTapTimer?.cancel();
+      return;
+    }
+
     if (_isPotentialDoubleTap) {
       // Second tap detected!
-      // Now we wait: if the user moves before lifting, it's a Double-Tap-Drag.
+      // Now wait: if the user moves before lifting, it's a Double-Tap-Drag.
       _isPotentialDoubleTapDragging = true;
       _doubleTapTimer?.cancel();
       _isPotentialDoubleTap = false;
     } else {
       // First tap detected
       _isPotentialDoubleTap = true;
-      _doubleTapTimer = Timer(doubleTapTimeout, () {
+      _doubleTapTimer = Timer(kDoubleTapTimeout, () {
         _isPotentialDoubleTap = false;
       });
     }
@@ -388,7 +432,9 @@ class _GestureDetectorState extends SingleChildState<_GestureDetector> {
   }
 
   void _handlePointerUp(PointerUpEvent event) {
-    if (_isDoubleTapDragging) {
+    _activePointers--;
+
+    if (_isDoubleTapDragging && _activePointers == 0) {
       final endDetails = DragEndDetails(
         globalPosition: event.position,
         localPosition: event.localPosition,
@@ -397,6 +443,10 @@ class _GestureDetectorState extends SingleChildState<_GestureDetector> {
 
       _isDoubleTapDragging = false;
     }
-    _isPotentialDoubleTapDragging = false;
+
+    if (_activePointers == 0) {
+      _isPotentialMultiFingerDrag = false;
+      _isPotentialDoubleTapDragging = false;
+    }
   }
 }

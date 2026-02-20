@@ -139,6 +139,37 @@ class PlayToggleVisualSignal extends SimpleEvent {
   PlayToggleVisualSignal();
 }
 
+enum AdjustIndicatorEventType {
+  brightness,
+  volume,
+  voiceVolume,
+  micMute,
+  lockScreen,
+}
+
+class AdjustIndicatorEvent extends Stream<AdjustIndicatorEventType> {
+  final _controller = StreamController<AdjustIndicatorEventType>.broadcast();
+
+  @override
+  StreamSubscription<AdjustIndicatorEventType> listen(
+    void Function(AdjustIndicatorEventType event)? onData, {
+    Function? onError,
+    void Function()? onDone,
+    bool? cancelOnError,
+  }) => _controller.stream.listen(
+    onData,
+    onError: onError,
+    onDone: onDone,
+    cancelOnError: cancelOnError,
+  );
+
+  void fire(AdjustIndicatorEventType eventType) => _controller.add(eventType);
+
+  void dispose() {
+    _controller.close();
+  }
+}
+
 class UIGlobalBusiness extends SingleChildStatefulWidget {
   const UIGlobalBusiness({super.key, super.child});
 
@@ -191,7 +222,12 @@ class _UIGlobalBusinessState extends SingleChildState<UIGlobalBusiness> {
         ),
         Provider.value(value: BungaAudioPlayer()),
         Provider.value(value: PlaySyncMessageManager()),
-        Provider.value(value: PlayToggleVisualSignal()),
+        ChangeNotifierProvider(create: (context) => PlayToggleVisualSignal()),
+        Provider(
+          create: (context) => AdjustIndicatorEvent(),
+          dispose: (context, stream) => stream.dispose(),
+          lazy: false,
+        ),
       ],
       child: child,
     );

@@ -49,46 +49,20 @@ class SavedPositionNotifier extends ValueNotifier<Duration?> {
   SavedPositionNotifier() : super(null);
 }
 
-const _playVolumeKey = 'play_volume';
-
 // Actions
-
-@immutable
 class UpdateVolumeIntent extends Intent {
-  final Volume? volume;
-  final int? offset;
+  final Volume volume;
   final bool save;
-  const UpdateVolumeIntent(this.volume) : offset = null, save = false;
-  const UpdateVolumeIntent.increase(this.offset) : volume = null, save = true;
-  const UpdateVolumeIntent.save() : volume = null, offset = null, save = true;
+  const UpdateVolumeIntent(this.volume, {this.save = false});
 }
 
-class UpdateVolumeAction extends ContextAction<UpdateVolumeIntent> {
-  @override
-  Future<void> invoke(
-    UpdateVolumeIntent intent, [
-    BuildContext? context,
-  ]) async {
-    if (intent.volume != null) {
-      getIt<PlayService>().volumeNotifier.value = intent.volume!;
-    }
-    if (intent.offset != null) {
-      final currentVolume = getIt<PlayService>().volumeNotifier.value;
-      final newVolume = Volume(
-        volume: (currentVolume.volume + intent.offset!).clamp(
-          Volume.min,
-          Volume.max,
-        ),
-      );
-      getIt<PlayService>().volumeNotifier.value = newVolume;
-    }
-    if (intent.save) {
-      getIt<Preferences>().set(
-        _playVolumeKey,
-        getIt<PlayService>().volumeNotifier.value.volume,
-      );
-    }
-  }
+class FinishUpdateVolumeIntent extends Intent {
+  const FinishUpdateVolumeIntent();
+}
+
+class UpdateVolumeForwardIntent extends Intent {
+  final int offset;
+  const UpdateVolumeForwardIntent(this.offset);
 }
 
 @immutable
@@ -395,8 +369,8 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
     final shortcuts = child!.applyShortcuts({
-      ShortcutKey.volumeUp: UpdateVolumeIntent.increase(10),
-      ShortcutKey.volumeDown: UpdateVolumeIntent.increase(-10),
+      ShortcutKey.volumeUp: UpdateVolumeForwardIntent(10),
+      ShortcutKey.volumeDown: UpdateVolumeForwardIntent(-10),
       ShortcutKey.forward5Sec: SeekForwardIntent(Duration(seconds: 5)),
       ShortcutKey.backward5Sec: SeekForwardIntent(Duration(seconds: -5)),
       ShortcutKey.togglePlay: ToggleIntent(),
@@ -405,7 +379,34 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
 
     final actions = shortcuts.actions(
       actions: {
-        UpdateVolumeIntent: UpdateVolumeAction(),
+        UpdateVolumeIntent: CallbackAction<UpdateVolumeIntent>(
+          onInvoke: (intent) {
+            getIt<PlayService>().volumeNotifier.value = intent.volume;
+            if (intent.save) _saveVolume();
+            return null;
+          },
+        ),
+        FinishUpdateVolumeIntent: CallbackAction<FinishUpdateVolumeIntent>(
+          onInvoke: (intent) => _saveVolume,
+        ),
+        UpdateVolumeForwardIntent: CallbackAction<UpdateVolumeForwardIntent>(
+          onInvoke: (intent) {
+            final currentVolume = getIt<PlayService>().volumeNotifier.value;
+            final newVolume = Volume(
+              volume: (currentVolume.volume + intent.offset).clamp(
+                Volume.min,
+                Volume.max,
+              ),
+            );
+            getIt<PlayService>().volumeNotifier.value = newVolume;
+
+            _saveVolume();
+
+            context.read<AdjustIndicatorEvent>().fire(.volume);
+
+            return null;
+          },
+        ),
         OpenVideoIntent: OpenVideoAction(
           dirInfoNotifier: _dirInfoNotifier,
           payloadNotifer: _playPayloadNotifier,
@@ -456,6 +457,14 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
       duration: play.durationNotifier.value,
     );
     _history.updateProgress(currentRecord, progress);
+  }
+
+  static const _playVolumeKey = 'play_volume';
+  void _saveVolume() {
+    getIt<Preferences>().set(
+      _playVolumeKey,
+      getIt<PlayService>().volumeNotifier.value.volume,
+    );
   }
 }
 

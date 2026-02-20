@@ -26,25 +26,19 @@ import 'client/client.agora.dart';
 
 // Data
 
-const _voiceVolumeKey = 'call_volume';
-
 enum CallStatus { none, callIn, callOut, talking }
 
 // Actions
 
-@immutable
+const _voiceVolumeKey = 'call_volume';
+void _saveVoiceVolume(Volume value) {
+  getIt<Preferences>().set(_voiceVolumeKey, value);
+}
+
 class UpdateVoiceVolumeIntent extends Intent {
-  final Volume? volume;
-  final int? offset;
+  final Volume volume;
   final bool save;
-  const UpdateVoiceVolumeIntent(this.volume) : offset = null, save = false;
-  const UpdateVoiceVolumeIntent.increase(this.offset)
-    : volume = null,
-      save = true;
-  const UpdateVoiceVolumeIntent.save()
-    : volume = null,
-      offset = null,
-      save = true;
+  const UpdateVoiceVolumeIntent(this.volume, {this.save = false});
 }
 
 class UpdateVoiceVolumeAction extends ContextAction<UpdateVoiceVolumeIntent> {
@@ -54,34 +48,71 @@ class UpdateVoiceVolumeAction extends ContextAction<UpdateVoiceVolumeIntent> {
     BuildContext? context,
   ]) async {
     final client = context!.read<AgoraClient>();
-    if (intent.volume != null) {
-      client.volumeNotifier.value = intent.volume!;
-    }
-    if (intent.offset != null) {
-      final currentVolume = client.volumeNotifier.value;
-      final newVolume = Volume(
-        volume: (currentVolume.volume + intent.offset!).clamp(
-          Volume.min,
-          Volume.max,
-        ),
-      );
-      client.volumeNotifier.value = newVolume;
-    }
-    if (intent.save) {
-      getIt<Preferences>().set(
-        _voiceVolumeKey,
-        client.volumeNotifier.value.volume,
-      );
-    }
+    client.volumeNotifier.value = intent.volume;
+    if (intent.save) _saveVoiceVolume(intent.volume);
   }
 
   @override
-  bool isEnabled(UpdateVoiceVolumeIntent intent, [BuildContext? context]) {
-    return context?.read<CallStatus?>() == .talking;
-  }
+  bool isEnabled(UpdateVoiceVolumeIntent intent, [BuildContext? context]) =>
+      context?.read<CallStatus?>() == .talking;
 }
 
-@immutable
+class FinishUpdateVoiceVolumeIntent extends Intent {
+  const FinishUpdateVoiceVolumeIntent();
+}
+
+class FinishUpdateVoiceVolumeAction
+    extends ContextAction<FinishUpdateVoiceVolumeIntent> {
+  @override
+  Future<void> invoke(
+    FinishUpdateVoiceVolumeIntent intent, [
+    BuildContext? context,
+  ]) async {
+    final client = context!.read<AgoraClient>();
+    _saveVoiceVolume(client.volumeNotifier.value);
+  }
+
+  @override
+  bool isEnabled(
+    FinishUpdateVoiceVolumeIntent intent, [
+    BuildContext? context,
+  ]) => context?.read<CallStatus?>() == .talking;
+}
+
+class UpdateVoiceVolumeForwardIntent extends Intent {
+  final int offset;
+  const UpdateVoiceVolumeForwardIntent(this.offset);
+}
+
+class UpdateVoiceVolumeForwardAction
+    extends ContextAction<UpdateVoiceVolumeForwardIntent> {
+  @override
+  Future<void> invoke(
+    UpdateVoiceVolumeForwardIntent intent, [
+    BuildContext? context,
+  ]) async {
+    final client = context!.read<AgoraClient>();
+    final currentVolume = client.volumeNotifier.value;
+    final newVolume = Volume(
+      volume: (currentVolume.volume + intent.offset).clamp(
+        Volume.min,
+        Volume.max,
+      ),
+    );
+    client.volumeNotifier.value = newVolume;
+
+    _saveVoiceVolume(newVolume);
+
+    context.read<AdjustIndicatorEvent>().fire(.voiceVolume);
+  }
+
+  @override
+  bool isEnabled(
+    UpdateVoiceVolumeForwardIntent intent, [
+    BuildContext? context,
+  ]) => context?.read<CallStatus?>() == .talking;
+}
+
 class ToggleMicIntent extends Intent {
   const ToggleMicIntent();
 }
@@ -91,15 +122,21 @@ class ToggleMicAction extends ContextAction<ToggleMicIntent> {
   void invoke(ToggleMicIntent intent, [BuildContext? context]) {
     final client = context!.read<AgoraClient>();
     client.micMuteNotifier.value = !client.micMuteNotifier.value;
+
+    final isCallButtonActived = context
+        .read<ShouldShowHUDNotifier>()
+        .locks
+        .contains('call button');
+    if (!isCallButtonActived) {
+      context.read<AdjustIndicatorEvent>().fire(.micMute);
+    }
   }
 
   @override
-  bool isEnabled(ToggleMicIntent intent, [BuildContext? context]) {
-    return context?.read<CallStatus?>() == .talking;
-  }
+  bool isEnabled(ToggleMicIntent intent, [BuildContext? context]) =>
+      context?.read<CallStatus?>() == .talking;
 }
 
-@immutable
 class StartCallingRequestIntent extends Intent {
   final List<String> hopeList;
   const StartCallingRequestIntent({required this.hopeList});
@@ -125,7 +162,6 @@ class StartCallingRequestAction
   }
 }
 
-@immutable
 class CancelCallingRequestIntent extends Intent {
   const CancelCallingRequestIntent();
 }
@@ -153,7 +189,6 @@ class CancelCallingRequestAction
   }
 }
 
-@immutable
 class RejectCallingRequestIntent extends Intent {
   const RejectCallingRequestIntent();
 }
@@ -172,12 +207,10 @@ class RejectCallingRequestAction
   }
 }
 
-@immutable
 class AcceptCallingRequestIntent extends Intent {
   const AcceptCallingRequestIntent();
 }
 
-@immutable
 class TalkerId {
   final String value;
   const TalkerId(this.value);
@@ -203,7 +236,6 @@ class AcceptCallingRequestAction
   }
 }
 
-@immutable
 class HangUpIntent extends Intent {
   const HangUpIntent();
 }
@@ -286,8 +318,8 @@ class _VoiceCallBusinessState extends SingleChildState<VoiceCallBusiness> {
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
     final shortcuts = child!.applyShortcuts({
-      ShortcutKey.voiceVolumeUp: UpdateVoiceVolumeIntent.increase(10),
-      ShortcutKey.voiceVolumeDown: UpdateVoiceVolumeIntent.increase(-10),
+      ShortcutKey.voiceVolumeUp: UpdateVoiceVolumeForwardIntent(10),
+      ShortcutKey.voiceVolumeDown: UpdateVoiceVolumeForwardIntent(-10),
       ShortcutKey.muteMic: ToggleMicIntent(),
     });
 
@@ -313,6 +345,8 @@ class _VoiceCallBusinessState extends SingleChildState<VoiceCallBusiness> {
           stopTalking: _stopTalking,
         ),
         UpdateVoiceVolumeIntent: UpdateVoiceVolumeAction(),
+        FinishUpdateVoiceVolumeIntent: FinishUpdateVoiceVolumeAction(),
+        UpdateVoiceVolumeForwardIntent: UpdateVoiceVolumeForwardAction(),
         ToggleMicIntent: ToggleMicAction(),
       },
     );

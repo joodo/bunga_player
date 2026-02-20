@@ -89,10 +89,8 @@ class AutoResetNotifier extends ChangeNotifier
     _resetTimer.cancel();
   }
 
-  late final _resetTimer = RestartableTimer(
-    cooldown,
-    () => _value = false,
-  )..cancel();
+  late final _resetTimer = RestartableTimer(cooldown, () => _value = false)
+    ..cancel();
 
   @override
   void dispose() {
