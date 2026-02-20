@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:bunga_player/play/service/service.dart';
+import 'package:bunga_player/services/services.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
@@ -65,7 +67,8 @@ class _AdjustIndicatorState extends State<AdjustIndicator>
           .lockScreen => _createLockScreenWidget(),
           .brightness => _createBrightnessWidget(),
           .volume => _createVolumeWidget(),
-          .voiceVolume => _createVoiceVolumeWidght(),
+          .voiceVolume => _createVoiceVolumeWidget(),
+          .mediaVolume => _createMediaVolumeWidget(),
           null => null,
         };
 
@@ -146,13 +149,22 @@ class _AdjustIndicatorState extends State<AdjustIndicator>
     );
   }
 
-  Widget? _createVoiceVolumeWidght() {
+  Widget? _createVoiceVolumeWidget() {
     final notifier = context.read<VoiceCallClient?>()?.volumeNotifier;
     if (notifier == null) return null;
     return ValueListenableBuilder(
       valueListenable: notifier,
       builder: (context, value, child) =>
-          _createProgressIndicator(icon: Icons.headphones, value: value.level),
+          _createProgressIndicator(icon: Icons.voice_chat, value: value.level),
+    );
+  }
+
+  Widget? _createMediaVolumeWidget() {
+    final notifier = getIt<PlayService>().volumeNotifier;
+    return ValueListenableBuilder(
+      valueListenable: notifier,
+      builder: (context, volume, child) =>
+          _createProgressIndicator(icon: Icons.music_note, value: volume.level),
     );
   }
 

@@ -108,7 +108,10 @@ class _VideoProgressBarState extends State<VideoProgressBar> {
             if (_isPlayingBeforeDraggingSlider) player.play();
 
             final pos = Duration(milliseconds: value.toInt());
-            Actions.invoke<SeekIntent>(context, SeekEndIntent(pos));
+            player.seek(pos).then((_) {
+              if (!context.mounted) return;
+              Actions.maybeInvoke(context, SeekEndIntent());
+            });
 
             _positionNotifier.addListener(_followPlayerPosition);
 

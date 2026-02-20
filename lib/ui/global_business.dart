@@ -147,6 +147,7 @@ enum AdjustIndicatorEventType {
   brightness,
   volume,
   voiceVolume,
+  mediaVolume,
   micMute,
   lockScreen,
 }

@@ -76,8 +76,8 @@ class AgoraClient extends VoiceCallClient {
       final volume = volumeNotifier.value;
       final value = volume.mute ? 0.0 : volume.level;
       _engine.adjustPlaybackSignalVolume(
-        value.toLevel * 3,
-      ); // max 3 times of origin
+        value.toLevel * 4,
+      ); // max 4 times of origin
     });
     micMuteNotifier.addListener(() {
       _engine.muteLocalAudioStream(micMuteNotifier.value);
@@ -137,7 +137,7 @@ class AgoraClient extends VoiceCallClient {
     // Profile
     await _engine.setAudioProfile(
       profile: AudioProfileType.audioProfileDefault,
-      scenario: AudioScenarioType.audioScenarioGameStreaming,
+      scenario: AudioScenarioType.audioScenarioChorus,
     );
 
     if (kIsDesktop) {
@@ -150,6 +150,9 @@ class AgoraClient extends VoiceCallClient {
         );
       });
     }
+
+    // Volume
+    await _engine.adjustPlaybackSignalVolume(400);
   }
 
   // Noise suppress
@@ -159,7 +162,7 @@ class AgoraClient extends VoiceCallClient {
 
   // Volume
   @override
-  final volumeNotifier = ValueNotifier<Volume>(Volume(level: 100));
+  final volumeNotifier = ValueNotifier<Volume>(Volume.max);
 
   // Mic
   @override

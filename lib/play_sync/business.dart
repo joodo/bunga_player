@@ -251,7 +251,14 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
           },
         ),
         SeekForwardIntent: CallbackAction<SeekForwardIntent>(
-          onInvoke: _applySeekAndSendMessage,
+          onInvoke: (intent) {
+            final player = getIt<PlayService>();
+            player.seek(intent.position);
+
+            final messageData = SeekMessageData(position: intent.position);
+            context.sendMessage(messageData);
+            return null;
+          },
         ),
         SeekStartIntent: CallbackAction<SeekStartIntent>(
           onInvoke: (intent) {
@@ -263,7 +270,12 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
         ),
         SeekEndIntent: CallbackAction<SeekEndIntent>(
           onInvoke: (intent) {
-            _applySeekAndSendMessage(intent);
+            final player = getIt<PlayService>();
+            final messageData = SeekMessageData(
+              position: player.positionNotifier.value,
+            );
+            context.sendMessage(messageData);
+
             _seeking = false;
             _sendBufferingStatus();
             return;
@@ -282,14 +294,6 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
       ],
       child: actions,
     );
-  }
-
-  void _applySeekAndSendMessage(SeekIntent intent) {
-    final player = getIt<PlayService>();
-    player.seek(intent.position);
-
-    final messageData = SeekMessageData(position: intent.position);
-    context.sendMessage(messageData);
   }
 
   void _dealWithWhoAreYou() {

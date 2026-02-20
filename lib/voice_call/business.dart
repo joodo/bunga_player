@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:async/async.dart';
 import 'package:bunga_player/chat/models/message_data.dart';
+import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/services/logger.dart';
+import 'package:bunga_player/utils/business/platform.dart';
 import 'package:flutter/widgets.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
@@ -34,7 +36,7 @@ enum CallStatus { none, callIn, callOut, talking }
 
 const _voiceVolumeKey = 'call_volume';
 void _saveVoiceVolume(Volume value) {
-  getIt<Preferences>().set(_voiceVolumeKey, value);
+  getIt<Preferences>().set(_voiceVolumeKey, value.level);
 }
 
 class UpdateVoiceVolumeIntent extends Intent {
@@ -249,6 +251,11 @@ class HangUpAction extends ContextAction<HangUpIntent> {
     context!.read<BungaAudioPlayer>().playSfx('hang_up');
 
     stopTalking();
+
+    if (!kIsDesktop) {
+      // Restore media volume after talking
+      getIt<PlayService>().volumeNotifier.value = Volume.max;
+    }
   }
 }
 

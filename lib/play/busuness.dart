@@ -285,10 +285,9 @@ class SeekStartIntent extends Intent {
   const SeekStartIntent();
 }
 
-class SeekEndIntent extends SeekIntent {
+class SeekEndIntent extends Intent {
   @override
-  final Duration position;
-  const SeekEndIntent(this.position);
+  const SeekEndIntent();
 }
 
 class SeekForwardIntent extends SeekIntent {
@@ -407,7 +406,6 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
           saveWatchProgressTimer: _saveWatchProgressTimer,
         ),
         SeekForwardIntent: SeekAction(),
-        SeekEndIntent: SeekAction(),
         SetSubtitleTrackIntent: SetSubtitleTrackAction(),
         ScreenshotIntent: ScreenshotAction(
           playPayloadNotifier: _playPayloadNotifier,

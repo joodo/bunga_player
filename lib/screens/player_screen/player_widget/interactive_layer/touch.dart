@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'dart:math';
 
+import 'package:bunga_player/voice_call/business.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
@@ -9,15 +9,12 @@ import 'package:styled_widget/styled_widget.dart';
 
 import 'package:bunga_player/utils/business/value_listenable.dart';
 import 'package:bunga_player/utils/models/volume.dart';
-import 'package:bunga_player/voice_call/business.dart';
 import 'package:bunga_player/play/busuness.dart';
 import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/ui/global_business.dart';
 import 'package:bunga_player/screens/player_screen/player_widget/interactive_layer/spark_business.dart';
 import 'package:bunga_player/voice_call/client/client.dart';
-
-enum _VolumeAdjustType { media, voice }
 
 class TouchInteractiveLayer extends StatefulWidget {
   const TouchInteractiveLayer({super.key});
@@ -27,22 +24,22 @@ class TouchInteractiveLayer extends StatefulWidget {
 }
 
 class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
-  late final _showHUDNotifier = context.read<ShouldShowHUDNotifier>();
+  static const _verticalFactor = 1 / 200.0;
 
-  Offset _dragStartPoint = Offset.zero;
+  // Dragging
+  _DragBusiness? _dragBusiness;
 
   // Horizontal drag
-  Duration _dargStartVideoPosition = Duration.zero;
   bool _isPlayingBeforeDrag = false;
 
   // Vertical drag
-  bool _isAdjustingBrightness = false;
-  double _dragStartDeviceValue = 0;
+  bool _isDraggingLeftSide = false;
 
-  // Lock button
+  // Screen locking
   final _lockButtonVisibleNotifier = AutoResetNotifier(
     const Duration(seconds: 5),
   )..mark();
+  late final _showHUDNotifier = context.read<ShouldShowHUDNotifier>();
 
   // Spark
   late final SparkSendController _sparkController;
@@ -66,12 +63,9 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
   Widget build(BuildContext context) {
     final play = getIt<PlayService>();
 
-    final voiceNotifier = context.read<VoiceCallClient>().volumeNotifier;
-
-    final lockedNotifier = context.watch<ScreenLockedNotifier>();
-
     final indicatorEvent = context.read<AdjustIndicatorEvent>();
 
+    final lockedNotifier = context.watch<ScreenLockedNotifier>();
     final lockButton = ValueListenableBuilder(
       valueListenable: _lockButtonVisibleNotifier,
       builder: (context, visible, child) => Visibility(
@@ -112,8 +106,15 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
       onHorizentalDragStart: (details) {
         _showHUDNotifier.lockUp('drag');
 
-        _dragStartPoint = details.localPosition;
-        _dargStartVideoPosition = play.positionNotifier.value;
+        _dragBusiness = _DragBusiness(
+          startPosition: details.localPosition,
+          orientation: .horizontal,
+          startValue: play.positionNotifier.value,
+          onUpdate: (startValue, distance) {
+            final delta = Duration(milliseconds: (distance * 200).round());
+            return play.seek(startValue + delta);
+          },
+        );
 
         Actions.maybeInvoke(context, SeekStartIntent());
 
@@ -121,89 +122,98 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
         play.pause();
       },
       onHorizontalDragUpdate: (details) {
-        final xOffset = details.localPosition.dx - _dragStartPoint.dx;
-        final positionOffset = Duration(seconds: xOffset.toInt() ~/ 5);
-        play.seek(_dargStartVideoPosition + positionOffset);
+        _dragBusiness!.updatePosition(details.localPosition);
       },
       onHorizontalDragEnd: (details) {
-        final xOffset = details.localPosition.dx - _dragStartPoint.dx;
-        final positionOffset = Duration(seconds: xOffset.toInt() ~/ 5);
+        final action =
+            _dragBusiness!.updatePosition(details.localPosition) as Future;
+        action.then((_) {
+          if (_isPlayingBeforeDrag) play.play();
+          if (context.mounted) Actions.maybeInvoke(context, SeekEndIntent());
+        });
 
-        if (_isPlayingBeforeDrag) play.play();
-        Actions.invoke<SeekIntent>(
-          context,
-          SeekEndIntent(_dargStartVideoPosition + positionOffset),
-        );
-
+        _dragBusiness = null;
         context.read<ShouldShowHUDNotifier>().unlock('drag');
       },
 
       onVerticalDragStart: (details) {
-        _dragStartPoint = details.localPosition;
+        final startPosition = details.localPosition;
 
-        _isAdjustingBrightness = _dragStartPoint.dx < context.size!.width / 2;
+        _isDraggingLeftSide = _isLeftScreen(startPosition);
 
-        if (_isAdjustingBrightness) {
-          // Adjust brightness
-          _dragStartDeviceValue = context
-              .read<ScreenBrightnessNotifier>()
-              .value;
-        } else {
-          // Adjust volume
-          _dragStartDeviceValue = context
-              .read<MediaVolumeNotifier>()
-              .value
-              .level;
-        }
+        _dragBusiness = _DragBusiness(
+          startPosition: startPosition,
+          orientation: .vertical,
+          startValue: _isDraggingLeftSide
+              ? context.read<ScreenBrightnessNotifier>().value
+              : context.read<MediaVolumeNotifier>().value.level,
+          onUpdate: _isDraggingLeftSide
+              ? (startValue, distance) {
+                  final delta = distance * _verticalFactor;
+                  final target = (startValue + delta).clamp(0, 1.0);
+                  context.read<ScreenBrightnessNotifier>().value = target
+                      .toDouble();
+                  indicatorEvent.fire(.brightness);
+                }
+              : (startValue, distance) {
+                  final delta = distance * _verticalFactor;
+                  final newVolume = Volume(level: startValue + delta);
+                  Actions.invoke(context, UpdateVolumeIntent(newVolume));
+                  indicatorEvent.fire(.volume);
+                },
+        );
       },
-      onVerticalDragUpdate: (details) {
-        final delta = _dragStartPoint.dy - details.localPosition.dy;
-
-        if (_isAdjustingBrightness) {
-          // Adjust brightness
-          final target = (_dragStartDeviceValue + delta / 200).clamp(0, 1.0);
-          context.read<ScreenBrightnessNotifier>().value = target.toDouble();
-          context.read<AdjustIndicatorEvent>().fire(.brightness);
-        } else {
-          /*if (_volumeAdjustType == _VolumeAdjustType.voice) {
-            // Adjust voice
-            final value = (_dragStartDeviceValue + delta) / 100.0;
-            final newVolume = Volume(level: value);
-            Actions.invoke(context, UpdateVoiceVolumeIntent(newVolume));
-            context.read<AdjustIndicatorEvent>().fire(.voiceVolume);
-
-            if (!_canAdjustVoice() ||
-                _farthestX - details.localPosition.dx > 20.0) {
-              _volumeAdjustType = _VolumeAdjustType.media;
-              _dragStartDeviceValue = context
-                  .read<MediaVolumeNotifier>()
-                  .value
-                  .level;
-              _farthestX = details.localPosition.dx;
-            } else {
-              _farthestX = max(_farthestX, details.localPosition.dx);
-            }
-          } else*/
-          final value = _dragStartDeviceValue + delta / 100.0;
-          final newVolume = Volume(level: value);
-          Actions.invoke(context, UpdateVolumeIntent(newVolume));
-          context.read<AdjustIndicatorEvent>().fire(.volume);
-          /*
-          if (!_canAdjustVoice()) return;
-          if (details.localPosition.dx - _farthestX > 20.0) {
-            _volumeAdjustType = _VolumeAdjustType.voice;
-            _dragStartDeviceValue = voiceNotifier.value.level.toDouble();
-            _dragStartPoint = details.localPosition;
-          } else {
-            _farthestX = min(_farthestX, details.localPosition.dx);
-          }*/
-        }
-      },
+      onVerticalDragUpdate: (details) =>
+          _dragBusiness!.updatePosition(details.localPosition),
       onVerticalDragEnd: (details) {
-        if (!_isAdjustingBrightness) {
-          // Save volumes
+        _dragBusiness = null;
+        if (!_isDraggingLeftSide) {
           Actions.invoke(context, FinishUpdateVolumeIntent());
-          //Actions.invoke(context, FinishUpdateVoiceVolumeIntent());
+        }
+      },
+
+      onVerticalMultiFingerDragStart: (details) {
+        final action =
+            Actions.maybeFind<UpdateVoiceVolumeIntent>(context)
+                as UpdateVoiceVolumeAction?;
+        final isEnabled =
+            action?.isEnabled(UpdateVoiceVolumeIntent(Volume.max), context) ==
+            true;
+        if (!isEnabled) {
+          _dragBusiness = null;
+          return;
+        }
+
+        final startPosition = details.localPosition;
+        _isDraggingLeftSide = _isLeftScreen(startPosition);
+        final mediaVolumeNotifer = getIt<PlayService>().volumeNotifier;
+        _dragBusiness = _DragBusiness(
+          startPosition: startPosition,
+          orientation: .vertical,
+          startValue: _isDraggingLeftSide
+              ? mediaVolumeNotifer.value.level
+              : context.read<VoiceCallClient>().volumeNotifier.value.level,
+          onUpdate: _isDraggingLeftSide
+              ? (startValue, distance) {
+                  final delta = distance * _verticalFactor;
+                  final newValue = Volume(level: startValue + delta);
+                  mediaVolumeNotifer.value = newValue;
+                  indicatorEvent.fire(.mediaVolume);
+                }
+              : (startValue, distance) {
+                  final delta = distance * _verticalFactor;
+                  final newValue = Volume(level: startValue + delta);
+                  Actions.invoke(context, UpdateVoiceVolumeIntent(newValue));
+                  indicatorEvent.fire(.voiceVolume);
+                },
+        );
+      },
+      onVerticalMultiFingerDragUpdate: (details) =>
+          _dragBusiness?.updatePosition(details.localPosition),
+      onVerticalMultiFingerDragEnd: (details) {
+        if (_dragBusiness != null) {
+          _dragBusiness = null;
+          Actions.maybeInvoke(context, FinishUpdateVoiceVolumeIntent());
         }
       },
 
@@ -221,6 +231,8 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
     );
   }
 
+  bool _isLeftScreen(Offset position) => position.dx < context.size!.width / 2;
+
   void _onHUDVisibleChanged() {
     if (_showHUDNotifier.value) {
       _lockButtonVisibleNotifier.lockUp('hud');
@@ -232,6 +244,28 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
         _lockButtonVisibleNotifier.reset();
       }
     }
+  }
+}
+
+class _DragBusiness<T> {
+  final Offset startPosition;
+  final Axis orientation;
+  final T startValue;
+  final dynamic Function(T startValue, double distance) onUpdate;
+
+  _DragBusiness({
+    required this.startPosition,
+    required this.orientation,
+    required this.startValue,
+    required this.onUpdate,
+  });
+
+  dynamic updatePosition(Offset currentPosition) {
+    final distance = switch (orientation) {
+      Axis.horizontal => currentPosition.dx - startPosition.dx,
+      Axis.vertical => startPosition.dy - currentPosition.dy,
+    };
+    return onUpdate(startValue, distance);
   }
 }
 
@@ -350,7 +384,7 @@ class _GestureDetectorState extends SingleChildState<_GestureDetector> {
             widget.onVerticalDragUpdate?.call(details);
           }
 
-          if (_isSingleDragging) {
+          if (_isMultiFingerDragging) {
             widget.onVerticalMultiFingerDragUpdate?.call(details);
           }
         },
