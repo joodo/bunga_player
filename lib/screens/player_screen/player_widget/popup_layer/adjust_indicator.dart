@@ -5,12 +5,10 @@ import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
-import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/screens/widgets/popup_widget.dart';
-import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/ui/global_business.dart';
 import 'package:bunga_player/utils/business/value_listenable.dart';
-import 'package:bunga_player/voice_call/client/client.agora.dart';
+import 'package:bunga_player/voice_call/client/client.dart';
 
 /// Indicator shows when adjusting volume, brightness etc.
 class AdjustIndicator extends StatefulWidget {
@@ -115,7 +113,7 @@ class _AdjustIndicatorState extends State<AdjustIndicator>
   }
 
   Widget? _createMicMuteWidget() {
-    final notifier = context.read<AgoraClient?>()?.micMuteNotifier;
+    final notifier = context.read<VoiceCallClient?>()?.micMuteNotifier;
     if (notifier == null) return null;
     return ValueListenableBuilder(
       valueListenable: notifier,
@@ -139,26 +137,22 @@ class _AdjustIndicatorState extends State<AdjustIndicator>
   }
 
   Widget? _createVolumeWidget() {
-    final notifier = getIt<PlayService>().volumeNotifier;
+    final notifier = context.read<MediaVolumeNotifier>();
     return ValueListenableBuilder(
       key: Key('volume'),
       valueListenable: notifier,
-      builder: (context, value, child) => _createProgressIndicator(
-        icon: Icons.volume_up,
-        value: value.volume / 100.0,
-      ),
+      builder: (context, value, child) =>
+          _createProgressIndicator(icon: Icons.volume_up, value: value.level),
     );
   }
 
   Widget? _createVoiceVolumeWidght() {
-    final notifier = context.read<AgoraClient?>()?.volumeNotifier;
+    final notifier = context.read<VoiceCallClient?>()?.volumeNotifier;
     if (notifier == null) return null;
     return ValueListenableBuilder(
       valueListenable: notifier,
-      builder: (context, value, child) => _createProgressIndicator(
-        icon: Icons.headphones,
-        value: value.volume / 100.0,
-      ),
+      builder: (context, value, child) =>
+          _createProgressIndicator(icon: Icons.headphones, value: value.level),
     );
   }
 

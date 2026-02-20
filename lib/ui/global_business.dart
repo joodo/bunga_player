@@ -1,17 +1,21 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
+import 'package:flutter_volume_controller/flutter_volume_controller.dart';
+import 'package:nested/nested.dart';
+import 'package:provider/provider.dart';
+import 'package:screen_brightness/screen_brightness.dart';
+import 'package:window_manager/window_manager.dart';
+
 import 'package:bunga_player/console/service.dart';
+import 'package:bunga_player/play/service/service.dart';
+import 'package:bunga_player/utils/models/volume.dart';
 import 'package:bunga_player/services/exit_callbacks.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/business/platform.dart';
 import 'package:bunga_player/utils/business/simple_event.dart';
 import 'package:bunga_player/utils/business/value_listenable.dart';
-import 'package:flutter/material.dart';
-import 'package:nested/nested.dart';
-import 'package:provider/provider.dart';
-import 'package:screen_brightness/screen_brightness.dart';
-import 'package:window_manager/window_manager.dart';
 
 import 'shortcuts.dart';
 import 'audio_player.dart';
@@ -170,6 +174,25 @@ class AdjustIndicatorEvent extends Stream<AdjustIndicatorEventType> {
   }
 }
 
+class MediaVolumeNotifier extends VolumeNotifier {
+  MediaVolumeNotifier() : super(preferenceKey: 'media_volume') {
+    if (kIsDesktop) {
+      addListener(() {
+        getIt<PlayService>().volumeNotifier.value = value;
+      });
+      loadFromPref();
+    } else {
+      FlutterVolumeController.updateShowSystemUI(false);
+      FlutterVolumeController.getVolume().then((level) {
+        if (level != null) value = Volume(level: level);
+        addListener(() {
+          FlutterVolumeController.setVolume(value.mute ? 0.0 : value.level);
+        });
+      });
+    }
+  }
+}
+
 class UIGlobalBusiness extends SingleChildStatefulWidget {
   const UIGlobalBusiness({super.key, super.child});
 
@@ -226,6 +249,10 @@ class _UIGlobalBusinessState extends SingleChildState<UIGlobalBusiness> {
         Provider(
           create: (context) => AdjustIndicatorEvent(),
           dispose: (context, stream) => stream.dispose(),
+          lazy: false,
+        ),
+        ChangeNotifierProvider(
+          create: (context) => MediaVolumeNotifier(),
           lazy: false,
         ),
       ],

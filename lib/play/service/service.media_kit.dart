@@ -120,11 +120,9 @@ class MediaKitPlayService extends PlayService {
 
   // Volume
   @override
-  late final volumeNotifier = ValueNotifier<Volume>(Volume(volume: Volume.max))
+  late final volumeNotifier = ValueNotifier<Volume>(Volume.max)
     ..addListener(() {
-      final target = volumeNotifier.value.mute
-          ? 0
-          : volumeNotifier.value.volume;
+      final target = volumeNotifier.value.mute ? 0 : volumeNotifier.value.level;
       _player.setVolume(target.toDouble());
     });
 

@@ -7,6 +7,7 @@ import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/business/platform.dart';
+import 'package:bunga_player/utils/extensions/double_lerp.dart';
 import 'package:bunga_player/utils/models/volume.dart';
 import 'package:flutter/material.dart';
 
@@ -73,8 +74,10 @@ class AgoraClient extends VoiceCallClient {
     });
     volumeNotifier.addListener(() {
       final volume = volumeNotifier.value;
-      final value = volume.mute ? 0 : volume.volume;
-      _engine.adjustPlaybackSignalVolume(value * 3); // max 3 times of origin
+      final value = volume.mute ? 0.0 : volume.level;
+      _engine.adjustPlaybackSignalVolume(
+        value.toLevel * 3,
+      ); // max 3 times of origin
     });
     micMuteNotifier.addListener(() {
       _engine.muteLocalAudioStream(micMuteNotifier.value);
@@ -133,8 +136,8 @@ class AgoraClient extends VoiceCallClient {
 
     // Profile
     await _engine.setAudioProfile(
-      profile: AudioProfileType.audioProfileSpeechStandard,
-      scenario: AudioScenarioType.audioScenarioChatroom,
+      profile: AudioProfileType.audioProfileDefault,
+      scenario: AudioScenarioType.audioScenarioGameStreaming,
     );
 
     if (kIsDesktop) {
@@ -156,7 +159,7 @@ class AgoraClient extends VoiceCallClient {
 
   // Volume
   @override
-  final volumeNotifier = ValueNotifier<Volume>(Volume(volume: 100));
+  final volumeNotifier = ValueNotifier<Volume>(Volume(level: 100));
 
   // Mic
   @override
@@ -174,7 +177,11 @@ class AgoraClient extends VoiceCallClient {
   Future<void> joinChannel({required String userId}) async {
     const options = ChannelMediaOptions(
       clientRoleType: ClientRoleType.clientRoleBroadcaster,
-      channelProfile: ChannelProfileType.channelProfileCommunication,
+      channelProfile: ChannelProfileType.channelProfileLiveBroadcasting,
+      publishMicrophoneTrack: true,
+      publishCameraTrack: false,
+      autoSubscribeAudio: true,
+      autoSubscribeVideo: false,
     );
 
     return _engine.joinChannel(

@@ -8,7 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 
 import 'package:bunga_player/utils/models/volume.dart';
-import 'package:bunga_player/utils/extensions/duration.dart';
+import 'package:bunga_player/utils/extensions/extensions.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:styled_widget/styled_widget.dart';
 
@@ -38,7 +38,7 @@ class AgoraPlayService extends PlayService {
 
     playbackRateNotifier.addListener(_onPlaybackRateChanged);
     _volume.addListener(() {
-      _player.adjustPlayoutVolume(_volume.value.volume);
+      _player.adjustPlayoutVolume(_volume.value.level.toLevel);
       _player.mute(_volume.value.mute);
     });
   }
@@ -158,7 +158,7 @@ class AgoraPlayService extends PlayService {
   }
 
   // Volume
-  final _volume = ValueNotifier(Volume(volume: Volume.max));
+  final _volume = ValueNotifier(Volume.max);
   @override
   ValueNotifier<Volume> get volumeNotifier => _volume;
 

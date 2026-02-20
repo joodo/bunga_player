@@ -1,21 +1,21 @@
 import 'dart:io';
 
 import 'package:async/async.dart';
-import 'package:bunga_player/console/service.dart';
-import 'package:bunga_player/services/preferences.dart';
-import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/ui/toast.dart';
-import 'package:bunga_player/ui/audio_player.dart';
-import 'package:bunga_player/ui/global_business.dart';
-import 'package:bunga_player/ui/shortcuts.dart';
-import 'package:bunga_player/utils/extensions/styled_widget.dart';
-import 'package:bunga_player/utils/models/volume.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:path/path.dart' as path_tool;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+
+import 'package:bunga_player/console/service.dart';
+import 'package:bunga_player/services/services.dart';
+import 'package:bunga_player/ui/toast.dart';
+import 'package:bunga_player/ui/audio_player.dart';
+import 'package:bunga_player/ui/global_business.dart';
+import 'package:bunga_player/ui/shortcuts.dart';
+import 'package:bunga_player/utils/extensions/extensions.dart';
+import 'package:bunga_player/utils/models/volume.dart';
 
 import 'history.dart';
 import 'models/history.dart';
@@ -61,7 +61,7 @@ class FinishUpdateVolumeIntent extends Intent {
 }
 
 class UpdateVolumeForwardIntent extends Intent {
-  final int offset;
+  final double offset;
   const UpdateVolumeForwardIntent(this.offset);
 }
 
@@ -255,7 +255,6 @@ class ToggleAction extends ContextAction<ToggleIntent> {
 
   @override
   Future<void> invoke(ToggleIntent intent, [BuildContext? context]) async {
-    // TODO: change to add listener
     final service = getIt<PlayService>();
     await service.toggle();
 
@@ -359,18 +358,13 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
 
     // History
     _history = context.read<History>();
-
-    // Load init volume
-    getIt<PlayService>().volumeNotifier.value = Volume(
-      volume: getIt<Preferences>().get(_playVolumeKey) ?? Volume.max,
-    );
   }
 
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
     final shortcuts = child!.applyShortcuts({
-      ShortcutKey.volumeUp: UpdateVolumeForwardIntent(10),
-      ShortcutKey.volumeDown: UpdateVolumeForwardIntent(-10),
+      ShortcutKey.volumeUp: UpdateVolumeForwardIntent(0.1),
+      ShortcutKey.volumeDown: UpdateVolumeForwardIntent(-0.1),
       ShortcutKey.forward5Sec: SeekForwardIntent(Duration(seconds: 5)),
       ShortcutKey.backward5Sec: SeekForwardIntent(Duration(seconds: -5)),
       ShortcutKey.togglePlay: ToggleIntent(),
@@ -381,26 +375,24 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
       actions: {
         UpdateVolumeIntent: CallbackAction<UpdateVolumeIntent>(
           onInvoke: (intent) {
-            getIt<PlayService>().volumeNotifier.value = intent.volume;
-            if (intent.save) _saveVolume();
+            final notifier = context.read<MediaVolumeNotifier>();
+            notifier.value = intent.volume;
+            if (intent.save) notifier.saveToPref();
             return null;
           },
         ),
         FinishUpdateVolumeIntent: CallbackAction<FinishUpdateVolumeIntent>(
-          onInvoke: (intent) => _saveVolume,
+          onInvoke: (intent) {
+            final notifier = context.read<MediaVolumeNotifier>();
+            notifier.saveToPref();
+            return null;
+          },
         ),
         UpdateVolumeForwardIntent: CallbackAction<UpdateVolumeForwardIntent>(
           onInvoke: (intent) {
-            final currentVolume = getIt<PlayService>().volumeNotifier.value;
-            final newVolume = Volume(
-              volume: (currentVolume.volume + intent.offset).clamp(
-                Volume.min,
-                Volume.max,
-              ),
-            );
-            getIt<PlayService>().volumeNotifier.value = newVolume;
-
-            _saveVolume();
+            final notifier = context.read<MediaVolumeNotifier>();
+            notifier.forward(intent.offset);
+            notifier.saveToPref();
 
             context.read<AdjustIndicatorEvent>().fire(.volume);
 
@@ -457,14 +449,6 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
       duration: play.durationNotifier.value,
     );
     _history.updateProgress(currentRecord, progress);
-  }
-
-  static const _playVolumeKey = 'play_volume';
-  void _saveVolume() {
-    getIt<Preferences>().set(
-      _playVolumeKey,
-      getIt<PlayService>().volumeNotifier.value.volume,
-    );
   }
 }
 

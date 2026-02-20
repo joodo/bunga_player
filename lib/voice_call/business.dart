@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:async/async.dart';
 import 'package:bunga_player/chat/models/message_data.dart';
+import 'package:bunga_player/services/logger.dart';
 import 'package:flutter/widgets.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
@@ -21,6 +22,7 @@ import 'package:bunga_player/utils/models/volume.dart';
 import 'package:bunga_player/console/service.dart';
 import 'package:bunga_player/services/services.dart';
 
+import 'client/client.dart';
 import 'models/message_data.dart';
 import 'client/client.agora.dart';
 
@@ -47,7 +49,7 @@ class UpdateVoiceVolumeAction extends ContextAction<UpdateVoiceVolumeIntent> {
     UpdateVoiceVolumeIntent intent, [
     BuildContext? context,
   ]) async {
-    final client = context!.read<AgoraClient>();
+    final client = context!.read<VoiceCallClient>();
     client.volumeNotifier.value = intent.volume;
     if (intent.save) _saveVoiceVolume(intent.volume);
   }
@@ -68,7 +70,7 @@ class FinishUpdateVoiceVolumeAction
     FinishUpdateVoiceVolumeIntent intent, [
     BuildContext? context,
   ]) async {
-    final client = context!.read<AgoraClient>();
+    final client = context!.read<VoiceCallClient>();
     _saveVoiceVolume(client.volumeNotifier.value);
   }
 
@@ -91,14 +93,9 @@ class UpdateVoiceVolumeForwardAction
     UpdateVoiceVolumeForwardIntent intent, [
     BuildContext? context,
   ]) async {
-    final client = context!.read<AgoraClient>();
+    final client = context!.read<VoiceCallClient>();
     final currentVolume = client.volumeNotifier.value;
-    final newVolume = Volume(
-      volume: (currentVolume.volume + intent.offset).clamp(
-        Volume.min,
-        Volume.max,
-      ),
-    );
+    final newVolume = Volume(level: currentVolume.level + intent.offset);
     client.volumeNotifier.value = newVolume;
 
     _saveVoiceVolume(newVolume);
@@ -120,7 +117,7 @@ class ToggleMicIntent extends Intent {
 class ToggleMicAction extends ContextAction<ToggleMicIntent> {
   @override
   void invoke(ToggleMicIntent intent, [BuildContext? context]) {
-    final client = context!.read<AgoraClient>();
+    final client = context!.read<VoiceCallClient>();
     client.micMuteNotifier.value = !client.micMuteNotifier.value;
 
     final isCallButtonActived = context
@@ -432,7 +429,7 @@ class _VoiceCallBusinessState extends SingleChildState<VoiceCallBusiness> {
 
   Future<void> _startTalking() async {
     final myId = context.read<ClientAccount>().id;
-    final client = context.read<AgoraClient>();
+    final client = context.read<VoiceCallClient>();
 
     await getIt<Permissions>().requestMicrophone();
 
@@ -445,7 +442,7 @@ class _VoiceCallBusinessState extends SingleChildState<VoiceCallBusiness> {
   Future<void> _stopTalking() async {
     context.sendMessage(TalkStatusMessageData(status: .end));
 
-    final client = context.read<AgoraClient>();
+    final client = context.read<VoiceCallClient>();
     client.micMuteNotifier.value = false;
     await client.leaveChannel();
   }
@@ -461,15 +458,19 @@ class VoiceCallGlobalBusiness extends SingleChildStatelessWidget {
 
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
-    return ProxyFutureProvider<BungaServerInfo?, AgoraClient?>(
+    return ProxyFutureProvider<BungaServerInfo?, VoiceCallClient?>(
       create: (info) async {
         if (info == null) return null;
         final client = await AgoraClient.create(info);
 
         // Load init volume
-        client?.volumeNotifier.value = Volume(
-          volume: getIt<Preferences>().get(_voiceVolumeKey) ?? Volume.max,
-        );
+        try {
+          client?.volumeNotifier.value = Volume(
+            level: getIt<Preferences>().get<double>(_voiceVolumeKey) ?? 1.0,
+          );
+        } catch (e) {
+          logger.w('[Voice Call]: Failed load volume');
+        }
 
         return client;
       },

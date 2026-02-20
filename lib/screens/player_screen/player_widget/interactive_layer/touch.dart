@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:bunga_player/screens/player_screen/player_widget/interactive_layer/spark_business.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
@@ -11,11 +10,12 @@ import 'package:styled_widget/styled_widget.dart';
 import 'package:bunga_player/utils/business/value_listenable.dart';
 import 'package:bunga_player/utils/models/volume.dart';
 import 'package:bunga_player/voice_call/business.dart';
-import 'package:bunga_player/voice_call/client/client.agora.dart';
 import 'package:bunga_player/play/busuness.dart';
 import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/ui/global_business.dart';
+import 'package:bunga_player/screens/player_screen/player_widget/interactive_layer/spark_business.dart';
+import 'package:bunga_player/voice_call/client/client.dart';
 
 enum _VolumeAdjustType { media, voice }
 
@@ -38,8 +38,6 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
   // Vertical drag
   bool _isAdjustingBrightness = false;
   double _dragStartDeviceValue = 0;
-  _VolumeAdjustType _volumeAdjustType = _VolumeAdjustType.media;
-  double _farthestX = 0;
 
   // Lock button
   final _lockButtonVisibleNotifier = AutoResetNotifier(
@@ -67,7 +65,8 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
   @override
   Widget build(BuildContext context) {
     final play = getIt<PlayService>();
-    final voiceNotifier = context.read<AgoraClient>().volumeNotifier;
+
+    final voiceNotifier = context.read<VoiceCallClient>().volumeNotifier;
 
     final lockedNotifier = context.watch<ScreenLockedNotifier>();
 
@@ -151,9 +150,10 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
               .value;
         } else {
           // Adjust volume
-          _farthestX = _dragStartPoint.dx;
-          _volumeAdjustType = _VolumeAdjustType.media;
-          _dragStartDeviceValue = play.volumeNotifier.value.volume.toDouble();
+          _dragStartDeviceValue = context
+              .read<MediaVolumeNotifier>()
+              .value
+              .level;
         }
       },
       onVerticalDragUpdate: (details) {
@@ -165,49 +165,45 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
           context.read<ScreenBrightnessNotifier>().value = target.toDouble();
           context.read<AdjustIndicatorEvent>().fire(.brightness);
         } else {
-          if (_volumeAdjustType == _VolumeAdjustType.voice) {
+          /*if (_volumeAdjustType == _VolumeAdjustType.voice) {
             // Adjust voice
-            final value = (_dragStartDeviceValue + delta).toInt();
-            final newVolume = Volume(
-              volume: value.clamp(Volume.min, Volume.max),
-            );
+            final value = (_dragStartDeviceValue + delta) / 100.0;
+            final newVolume = Volume(level: value);
             Actions.invoke(context, UpdateVoiceVolumeIntent(newVolume));
             context.read<AdjustIndicatorEvent>().fire(.voiceVolume);
 
             if (!_canAdjustVoice() ||
                 _farthestX - details.localPosition.dx > 20.0) {
               _volumeAdjustType = _VolumeAdjustType.media;
-              _dragStartDeviceValue = play.volumeNotifier.value.volume
-                  .toDouble();
+              _dragStartDeviceValue = context
+                  .read<MediaVolumeNotifier>()
+                  .value
+                  .level;
               _farthestX = details.localPosition.dx;
             } else {
               _farthestX = max(_farthestX, details.localPosition.dx);
             }
+          } else*/
+          final value = _dragStartDeviceValue + delta / 100.0;
+          final newVolume = Volume(level: value);
+          Actions.invoke(context, UpdateVolumeIntent(newVolume));
+          context.read<AdjustIndicatorEvent>().fire(.volume);
+          /*
+          if (!_canAdjustVoice()) return;
+          if (details.localPosition.dx - _farthestX > 20.0) {
+            _volumeAdjustType = _VolumeAdjustType.voice;
+            _dragStartDeviceValue = voiceNotifier.value.level.toDouble();
+            _dragStartPoint = details.localPosition;
           } else {
-            // Adjust media
-            final value = (_dragStartDeviceValue + delta).toInt();
-            final newVolume = Volume(
-              volume: value.clamp(Volume.min, Volume.max),
-            );
-            Actions.invoke(context, UpdateVolumeIntent(newVolume));
-            context.read<AdjustIndicatorEvent>().fire(.volume);
-
-            if (!_canAdjustVoice()) return;
-            if (details.localPosition.dx - _farthestX > 20.0) {
-              _volumeAdjustType = _VolumeAdjustType.voice;
-              _dragStartDeviceValue = voiceNotifier.value.volume.toDouble();
-              _dragStartPoint = details.localPosition;
-            } else {
-              _farthestX = min(_farthestX, details.localPosition.dx);
-            }
-          }
+            _farthestX = min(_farthestX, details.localPosition.dx);
+          }*/
         }
       },
       onVerticalDragEnd: (details) {
         if (!_isAdjustingBrightness) {
           // Save volumes
           Actions.invoke(context, FinishUpdateVolumeIntent());
-          Actions.invoke(context, FinishUpdateVoiceVolumeIntent());
+          //Actions.invoke(context, FinishUpdateVoiceVolumeIntent());
         }
       },
 
@@ -236,11 +232,6 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
         _lockButtonVisibleNotifier.reset();
       }
     }
-  }
-
-  bool _canAdjustVoice() {
-    final status = context.read<CallStatus?>();
-    return status == .talking;
   }
 }
 

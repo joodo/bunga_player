@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Volume {
 
- int get volume; bool get mute;
+ double get level; bool get mute;
 /// Create a copy of Volume
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $VolumeCopyWith<Volume> get copyWith => _$VolumeCopyWithImpl<Volume>(this as Vol
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Volume&&(identical(other.volume, volume) || other.volume == volume)&&(identical(other.mute, mute) || other.mute == mute));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Volume&&(identical(other.level, level) || other.level == level)&&(identical(other.mute, mute) || other.mute == mute));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,volume,mute);
+int get hashCode => Object.hash(runtimeType,level,mute);
 
 @override
 String toString() {
-  return 'Volume(volume: $volume, mute: $mute)';
+  return 'Volume(level: $level, mute: $mute)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $VolumeCopyWith<$Res>  {
   factory $VolumeCopyWith(Volume value, $Res Function(Volume) _then) = _$VolumeCopyWithImpl;
 @useResult
 $Res call({
- int volume, bool mute
+ double level, bool mute
 });
 
 
@@ -62,10 +62,10 @@ class _$VolumeCopyWithImpl<$Res>
 
 /// Create a copy of Volume
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? volume = null,Object? mute = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? level = null,Object? mute = null,}) {
   return _then(_self.copyWith(
-volume: null == volume ? _self.volume : volume // ignore: cast_nullable_to_non_nullable
-as int,mute: null == mute ? _self.mute : mute // ignore: cast_nullable_to_non_nullable
+level: null == level ? _self.level : level // ignore: cast_nullable_to_non_nullable
+as double,mute: null == mute ? _self.mute : mute // ignore: cast_nullable_to_non_nullable
 as bool,
   ));
 }
@@ -87,11 +87,11 @@ extension VolumePatterns on Volume {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _Volume value)?  $default,{required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _Volume value)?  raw,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
-case _Volume() when $default != null:
-return $default(_that);case _:
+case _Volume() when raw != null:
+return raw(_that);case _:
   return orElse();
 
 }
@@ -109,11 +109,11 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _Volume value)  $default,){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _Volume value)  raw,}){
 final _that = this;
 switch (_that) {
 case _Volume():
-return $default(_that);case _:
+return raw(_that);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -130,11 +130,11 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _Volume value)?  $default,){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _Volume value)?  raw,}){
 final _that = this;
 switch (_that) {
-case _Volume() when $default != null:
-return $default(_that);case _:
+case _Volume() when raw != null:
+return raw(_that);case _:
   return null;
 
 }
@@ -151,10 +151,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int volume,  bool mute)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( double level,  bool mute)?  raw,required TResult orElse(),}) {final _that = this;
 switch (_that) {
-case _Volume() when $default != null:
-return $default(_that.volume,_that.mute);case _:
+case _Volume() when raw != null:
+return raw(_that.level,_that.mute);case _:
   return orElse();
 
 }
@@ -172,10 +172,10 @@ return $default(_that.volume,_that.mute);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int volume,  bool mute)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( double level,  bool mute)  raw,}) {final _that = this;
 switch (_that) {
 case _Volume():
-return $default(_that.volume,_that.mute);case _:
+return raw(_that.level,_that.mute);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -192,10 +192,10 @@ return $default(_that.volume,_that.mute);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int volume,  bool mute)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( double level,  bool mute)?  raw,}) {final _that = this;
 switch (_that) {
-case _Volume() when $default != null:
-return $default(_that.volume,_that.mute);case _:
+case _Volume() when raw != null:
+return raw(_that.level,_that.mute);case _:
   return null;
 
 }
@@ -206,12 +206,12 @@ return $default(_that.volume,_that.mute);case _:
 /// @nodoc
 
 
-class _Volume implements Volume {
-   _Volume({required this.volume, this.mute = false});
+class _Volume extends Volume {
+  const _Volume({required this.level, required this.mute}): super._();
   
 
-@override final  int volume;
-@override@JsonKey() final  bool mute;
+@override final  double level;
+@override final  bool mute;
 
 /// Create a copy of Volume
 /// with the given fields replaced by the non-null parameter values.
@@ -223,16 +223,16 @@ _$VolumeCopyWith<_Volume> get copyWith => __$VolumeCopyWithImpl<_Volume>(this, _
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Volume&&(identical(other.volume, volume) || other.volume == volume)&&(identical(other.mute, mute) || other.mute == mute));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Volume&&(identical(other.level, level) || other.level == level)&&(identical(other.mute, mute) || other.mute == mute));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,volume,mute);
+int get hashCode => Object.hash(runtimeType,level,mute);
 
 @override
 String toString() {
-  return 'Volume(volume: $volume, mute: $mute)';
+  return 'Volume.raw(level: $level, mute: $mute)';
 }
 
 
@@ -243,7 +243,7 @@ abstract mixin class _$VolumeCopyWith<$Res> implements $VolumeCopyWith<$Res> {
   factory _$VolumeCopyWith(_Volume value, $Res Function(_Volume) _then) = __$VolumeCopyWithImpl;
 @override @useResult
 $Res call({
- int volume, bool mute
+ double level, bool mute
 });
 
 
@@ -260,10 +260,10 @@ class __$VolumeCopyWithImpl<$Res>
 
 /// Create a copy of Volume
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? volume = null,Object? mute = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? level = null,Object? mute = null,}) {
   return _then(_Volume(
-volume: null == volume ? _self.volume : volume // ignore: cast_nullable_to_non_nullable
-as int,mute: null == mute ? _self.mute : mute // ignore: cast_nullable_to_non_nullable
+level: null == level ? _self.level : level // ignore: cast_nullable_to_non_nullable
+as double,mute: null == mute ? _self.mute : mute // ignore: cast_nullable_to_non_nullable
 as bool,
   ));
 }

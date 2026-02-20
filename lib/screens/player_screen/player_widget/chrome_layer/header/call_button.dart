@@ -1,16 +1,16 @@
-import 'package:bunga_player/chat/business.dart';
-import 'package:bunga_player/client_info/models/client_account.dart';
-import 'package:bunga_player/ui/global_business.dart';
-import 'package:bunga_player/utils/models/volume.dart';
-import 'package:bunga_player/voice_call/business.dart';
-import 'package:bunga_player/voice_call/client/client.agora.dart';
+import 'package:bunga_player/voice_call/client/client.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
+import 'package:bunga_player/chat/business.dart';
+import 'package:bunga_player/client_info/models/client_account.dart';
+import 'package:bunga_player/ui/global_business.dart';
+import 'package:bunga_player/utils/extensions/extensions.dart';
+import 'package:bunga_player/utils/models/volume.dart';
+import 'package:bunga_player/voice_call/business.dart';
 import 'package:bunga_player/screens/widgets/slider_item.dart';
-import 'package:bunga_player/utils/extensions/styled_widget.dart';
 
 import '../../../actions.dart';
 import '../../../panel/calling_settings.dart';
@@ -95,22 +95,21 @@ class _CallButtonState extends State<CallButton> {
               ).padding(vertical: 16.0).center(),
             ],
             .talking => [
-              Consumer<AgoraClient>(
+              Consumer<VoiceCallClient>(
                 builder: (context, client, child) => ValueListenableBuilder(
                   valueListenable: client.volumeNotifier,
                   builder: (context, volume, child) => SliderItem(
                     icon: Icons.headphones,
                     title: '语音音量',
-                    value: volume.volume.toDouble(),
-                    label: '${volume.volume}%',
-                    max: 100.0,
+                    value: volume.level,
+                    label: '${volume.level.toLevel}%',
                     onChangeStart: (value) {
                       context.read<ShouldShowHUDNotifier>().lockUp(
                         'voice slider',
                       );
                     },
                     onChanged: (double value) {
-                      final newVolume = Volume(volume: value.toInt());
+                      final newVolume = Volume(level: value);
                       Actions.invoke(
                         context,
                         UpdateVoiceVolumeIntent(newVolume),
@@ -127,7 +126,7 @@ class _CallButtonState extends State<CallButton> {
               ),
               const Divider(),
               [
-                    Consumer<AgoraClient>(
+                    Consumer<VoiceCallClient>(
                       builder: (context, client, child) =>
                           ValueListenableBuilder(
                             valueListenable: client.micMuteNotifier,
@@ -234,7 +233,7 @@ class _CallButtonState extends State<CallButton> {
                   )
                   .then(delay: 1000.ms)
                   .shake(duration: 1500.ms),
-            .talking => Consumer<AgoraClient>(
+            .talking => Consumer<VoiceCallClient>(
               builder: (context, client, child) => ValueListenableBuilder(
                 valueListenable: client.micMuteNotifier,
                 builder: (context, muted, child) => IconButton(

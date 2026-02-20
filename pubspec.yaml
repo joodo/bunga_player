@@ -43,6 +43,7 @@ dependencies:
 
   # Mobile
   screen_brightness: ^2.1.7
+  flutter_volume_controller: ^1.3.4
 
   # Popmoji
   flutter_svg: ^2.2.2

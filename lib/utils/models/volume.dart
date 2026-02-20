@@ -4,8 +4,14 @@ part 'volume.freezed.dart';
 
 @freezed
 abstract class Volume with _$Volume {
-  static const int max = 100;
-  static const int min = 0;
+  static const Volume max = Volume.raw(level: 1.0, mute: false);
 
-  factory Volume({required int volume, @Default(false) bool mute}) = _Volume;
+  const Volume._();
+
+  const factory Volume.raw({required double level, required bool mute}) =
+      _Volume;
+
+  factory Volume({required double level, bool mute = false}) {
+    return Volume.raw(level: level.clamp(0.0, 1.0), mute: mute);
+  }
 }

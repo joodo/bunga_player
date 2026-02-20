@@ -8,10 +8,8 @@ import 'package:bunga_player/screens/widgets/divider.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/business/preference_notifier.dart';
 import 'package:bunga_player/utils/business/platform.dart';
-import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:bunga_player/utils/models/volume.dart';
-import 'package:bunga_player/utils/extensions/comparable.dart';
-import 'package:bunga_player/utils/extensions/duration.dart';
+import 'package:bunga_player/utils/extensions/extensions.dart';
 import 'package:bunga_player/utils/business/value_listenable.dart';
 import 'package:bunga_player/ui/global_business.dart';
 
@@ -33,7 +31,7 @@ class VideoControl extends StatelessWidget {
         const _PlayButton().padding(horizontal: 8.0),
 
         // Volume section
-        if (constraints.maxWidth > 630) const _SliderSection(),
+        if (kIsDesktop && constraints.maxWidth > 630) const _SliderSection(),
 
         const ControlDivider(),
         const Spacer(),
@@ -160,9 +158,8 @@ class _SliderSection extends StatelessWidget {
   const _SliderSection();
   @override
   Widget build(BuildContext context) {
-    final play = getIt<PlayService>();
     return ValueListenableBuilder(
-      valueListenable: play.volumeNotifier,
+      valueListenable: context.read<MediaVolumeNotifier>(),
       builder: (context, volume, child) => [
         IconButton(
           icon: volume.mute
@@ -179,16 +176,13 @@ class _SliderSection extends StatelessWidget {
           },
         ),
         Slider(
-          value: volume.mute ? 0.0 : volume.volume.toDouble(),
-          max: Volume.max.toDouble(),
-          label: '${volume.volume}%',
+          value: volume.mute ? 0.0 : volume.level,
+          label: '${volume.level.toLevel}%',
           onChangeStart: (value) {
             context.read<ShouldShowHUDNotifier>().lockUp('volume slider');
           },
-          onChanged: (value) => Actions.invoke(
-            context,
-            UpdateVolumeIntent(Volume(volume: value.toInt())),
-          ),
+          onChanged: (value) =>
+              Actions.invoke(context, UpdateVolumeIntent(Volume(level: value))),
           onChangeEnd: (value) {
             Actions.invoke(context, FinishUpdateVolumeIntent());
             context.read<ShouldShowHUDNotifier>().unlock('volume slider');

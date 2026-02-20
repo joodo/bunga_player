@@ -1,7 +1,11 @@
 import 'dart:async';
 
 import 'package:async/async.dart';
+import 'package:bunga_player/services/preferences.dart';
+import 'package:bunga_player/services/services.dart';
 import 'package:flutter/foundation.dart';
+
+import 'package:bunga_player/utils/models/volume.dart';
 
 mixin StreamBinding<T> on ValueNotifier<T> {
   StreamSubscription<T>? _subscription;
@@ -120,6 +124,24 @@ class ProxyValueNotifier<T1, T2> extends ChangeNotifier
   late T1 _value;
   @override
   T1 get value => _value;
+}
+
+class VolumeNotifier extends ValueNotifier<Volume> {
+  final String preferenceKey;
+  VolumeNotifier({required this.preferenceKey}) : super(Volume.max);
+
+  void forward(double offset) {
+    value = Volume(level: value.level + offset);
+  }
+
+  void loadFromPref() {
+    final level = getIt<Preferences>().get<double>(preferenceKey);
+    if (level != null) value = Volume(level: level);
+  }
+
+  void saveToPref() {
+    getIt<Preferences>().set(preferenceKey, value.level);
+  }
 }
 
 extension Mapping<T> on ValueListenable<T> {
