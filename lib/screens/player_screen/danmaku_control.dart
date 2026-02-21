@@ -13,6 +13,7 @@ import 'package:styled_widget/styled_widget.dart';
 
 import '../widgets/popmoji_button.dart';
 import 'actions.dart';
+import 'business.dart';
 import 'panel/popmoji.dart';
 
 class DanmakuControl extends StatefulWidget {
@@ -35,6 +36,9 @@ class _DanmakuControlState extends State<DanmakuControl> {
 
   @override
   Widget build(BuildContext context) {
+    final danmakuVisible = context.watch<DanmakuVisible>();
+    if (danmakuVisible.value) _focusNode.requestFocus();
+
     final notifier = context.read<SparkingEmoji>();
     final spark = MenuAnchor(
       consumeOutsideTap: true,
@@ -88,10 +92,10 @@ class _DanmakuControlState extends State<DanmakuControl> {
 
     final closeButton = IconButton(
       icon: const Icon(Icons.keyboard_arrow_down),
-      onPressed: () {
-        _focusNode.nextFocus();
-        Actions.invoke(context, ToggleDanmakuControlIntent(show: false));
-      },
+      onPressed: Actions.handler(
+        context,
+        ToggleDanmakuControlIntent(show: false),
+      ),
     );
 
     const buttonSize = 40.0;

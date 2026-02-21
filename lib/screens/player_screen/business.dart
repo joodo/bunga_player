@@ -53,15 +53,39 @@ class _WidgetBusinessState extends SingleChildState<_WidgetBusiness> {
   // Danmaku Control
   final _showDanmakuControlNotifier = ValueNotifier(false);
 
+  final _focusNode = FocusNode();
+
   @override
   void initState() {
     super.initState();
 
     WakelockPlus.enable();
+
+    _showDanmakuControlNotifier.addListener(() {
+      if (!_showDanmakuControlNotifier.value) {
+        _focusNode.requestFocus();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    WakelockPlus.disable();
+
+    _panelNotifier.dispose();
+    _showDanmakuControlNotifier.dispose();
+    _focusNode.dispose();
+    super.dispose();
   }
 
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
+    final focusWrap = Focus(
+      autofocus: true,
+      focusNode: _focusNode,
+      child: child!,
+    );
+
     final popScope = PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
@@ -70,7 +94,7 @@ class _WidgetBusinessState extends SingleChildState<_WidgetBusiness> {
         _resetPlayState();
         Navigator.pop(context);
       },
-      child: child!,
+      child: focusWrap,
     );
 
     final shortcutsWrap = Consumer<ShortcutMappingNotifier>(
@@ -97,8 +121,6 @@ class _WidgetBusinessState extends SingleChildState<_WidgetBusiness> {
       },
     );
 
-    final focusWrap = Focus(autofocus: true, child: actionWrap);
-
     return MultiProvider(
       providers: [
         ValueListenableProvider.value(value: _panelNotifier),
@@ -107,17 +129,8 @@ class _WidgetBusinessState extends SingleChildState<_WidgetBusiness> {
           proxy: (value) => DanmakuVisible(value),
         ),
       ],
-      child: focusWrap,
+      child: actionWrap,
     );
-  }
-
-  @override
-  void dispose() {
-    WakelockPlus.disable();
-
-    _panelNotifier.dispose();
-    _showDanmakuControlNotifier.dispose();
-    super.dispose();
   }
 
   void _resetPlayState() {

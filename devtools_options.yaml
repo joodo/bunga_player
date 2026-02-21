@@ -1,1 +1,4 @@
 extensions:
+  - get_it: true
+  - provider: true
+  - shared_preferences: true

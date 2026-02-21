@@ -168,7 +168,7 @@ class _ProgressSliderState extends State<_ProgressSlider> {
           secondaryTrackValue: buffer.clamp(0, duration).toDouble(),
           max: duration.toDouble(),
           // avoid control by left / right key
-          focusNode: FocusNode(canRequestFocus: false),
+          focusNode: FocusNode(skipTraversal: true, canRequestFocus: false),
           label: Duration(milliseconds: position.toInt()).hhmmss,
           onChangeStart: _onChangeStart,
           onChanged: _onChanged,
