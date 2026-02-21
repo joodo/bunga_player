@@ -27,6 +27,14 @@ class AppearanceSettings extends StatelessWidget with SettingsTab {
           onChanged: (value) => alwaysOnTopNotifier.value = value,
         ),
       ).sectionContainer(),
+      const Text('行为').sectionTitle(),
+      Consumer<AutoJoinChannelNotifier>(
+        builder: (context, autoJoinNotifier, child) => SwitchListTile(
+          title: const Text('频道中有人分享时自动加入'),
+          value: autoJoinNotifier.value,
+          onChanged: (value) => autoJoinNotifier.value = value,
+        ),
+      ).sectionContainer(),
     ].toColumn(crossAxisAlignment: .start);
   }
 }

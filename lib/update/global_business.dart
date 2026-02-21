@@ -5,8 +5,8 @@ import 'dart:ui';
 import 'package:bunga_player/network/service.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/permissions.dart';
-import 'package:bunga_player/ui/toast.dart';
 import 'package:bunga_player/utils/business/platform.dart';
+import 'package:bunga_player/utils/extensions/extensions.dart';
 import 'package:bunga_player/utils/models/network_progress.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -92,7 +92,7 @@ class _UpdateGlobalBusinessState
     }
 
     _checkUpdate().onError((error, stackTrace) {
-      getIt<Toast>().show('检查更新失败，请稍后再试。');
+      if (mounted) context.popBar('检查更新失败，请稍后再试。');
       logger.e('Update: error: $error');
       return false;
     });

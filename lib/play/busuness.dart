@@ -10,7 +10,6 @@ import 'package:provider/provider.dart';
 
 import 'package:bunga_player/console/service.dart';
 import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/ui/toast.dart';
 import 'package:bunga_player/ui/audio_player.dart';
 import 'package:bunga_player/ui/global_business.dart';
 import 'package:bunga_player/ui/shortcuts.dart';
@@ -130,7 +129,7 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
 
       return payload;
     } catch (e) {
-      getIt<Toast>().show('载入视频失败');
+      if (context.mounted) context.popBar('载入视频失败');
       rethrow;
     } finally {
       busyNotifier.remove('open video');

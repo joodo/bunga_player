@@ -8,8 +8,7 @@ import 'package:bunga_player/play_sync/business.dart';
 import 'package:bunga_player/screens/player_screen/business.dart';
 import 'package:bunga_player/screens/widgets/slider_item.dart';
 import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/ui/toast.dart';
-import 'package:bunga_player/utils/extensions/styled_widget.dart';
+import 'package:bunga_player/utils/extensions/extensions.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as path_tool;
@@ -184,7 +183,7 @@ class _SubtitlePanelState extends State<SubtitlePanel> {
       if (!mounted) return;
       Actions.invoke(context, SetSubtitleTrackIntent(track.id));
     } catch (e) {
-      getIt<Toast>().show('字幕载入失败');
+      if (mounted) context.popBar('字幕载入失败');
     }
   }
 
@@ -203,9 +202,9 @@ class _SubtitlePanelState extends State<SubtitlePanel> {
         title: title,
       );
       await chatClient.sendMessage(messageData.toJson());
-      getIt<Toast>().show('分享成功');
+      if (mounted) context.popBar('分享成功');
     } catch (e) {
-      getIt<Toast>().show('分享失败');
+      if (mounted) context.popBar('分享失败');
       rethrow;
     }
   }
@@ -255,7 +254,7 @@ class _ChannelSubtitleRadioTileState extends State<_ChannelSubtitleRadioTile> {
       final trackId = subtitleTrackIdOfUrl[url]!;
       Actions.invoke(context, SetSubtitleTrackIntent(trackId));
     } catch (e) {
-      getIt<Toast>().show('获取字幕失败');
+      context.popBar('获取字幕失败');
       rethrow;
     } finally {
       busyNotifier.value = false;

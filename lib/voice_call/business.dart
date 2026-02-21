@@ -9,7 +9,7 @@ import 'package:flutter/widgets.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 
-import 'package:bunga_player/bunga_server/models/bunga_server_info.dart';
+import 'package:bunga_player/bunga_server/models/channel_tokens.dart';
 import 'package:bunga_player/chat/global_business.dart';
 import 'package:bunga_player/client_info/models/client_account.dart';
 import 'package:bunga_player/chat/models/message.dart';
@@ -465,7 +465,7 @@ class VoiceCallGlobalBusiness extends SingleChildStatelessWidget {
 
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
-    return ProxyFutureProvider<BungaServerInfo?, VoiceCallClient?>(
+    return ProxyFutureProvider<ChannelTokens?, VoiceCallClient?>(
       create: (info) async {
         if (info == null) return null;
         final client = await AgoraClient.create(info);

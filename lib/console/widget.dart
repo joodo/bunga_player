@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:bunga_player/ui/global_business.dart';
+import 'package:bunga_player/utils/extensions/extensions.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -9,13 +10,12 @@ import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
 import 'package:bunga_player/bunga_server/global_business.dart';
-import 'package:bunga_player/bunga_server/models/bunga_server_info.dart';
+import 'package:bunga_player/bunga_server/models/channel_tokens.dart';
 import 'package:bunga_player/client_info/models/client_account.dart';
 import 'package:bunga_player/restart/global_business.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/ui/toast.dart';
 
 import 'wrapper.dart';
 import 'service.dart';
@@ -134,12 +134,11 @@ class _LogViewState extends State<_LogView> with AutomaticKeepAliveClientMixin {
 
   Future<void> _uploadLog() async {
     final act = Actions.invoke(context, UploadLogIntent()) as Future;
-    final toast = getIt<Toast>();
     try {
       await act;
-      toast.show('上传成功');
+      if (mounted) context.popBar('上传成功');
     } catch (e) {
-      toast.show('上传失败: $e');
+      if (mounted) context.popBar('上传失败: $e');
     }
   }
 }
@@ -286,8 +285,7 @@ class _ActionView extends StatelessWidget {
         child: const Text('Throw an exception'),
       ),
       FilledButton(
-        onPressed: () =>
-            getIt<Toast>().show('New toast: ${_randomSentence()}.'),
+        onPressed: () => context.popBar('New toast: ${_randomSentence()}.'),
         child: const Text('Show a snackbar'),
       ),
       FilledButton(
@@ -297,7 +295,7 @@ class _ActionView extends StatelessWidget {
         child: const Text('Show a sync message'),
       ),
       FilledButton(
-        onPressed: context.read<BungaServerInfo>().refreshToken,
+        onPressed: context.read<ChannelTokens>().refreshToken,
         child: const Text('Refresh Token'),
       ),
     ].toColumn(separator: const SizedBox(height: 8));
@@ -332,7 +330,7 @@ class _ActionView extends StatelessWidget {
     final act = Actions.invoke(context, ConnectToHostIntent(host)) as Future;
     await act;
 
-    getIt<Toast>().show('User ID has changed to $newID');
+    if (context.mounted) context.popBar('User ID has changed to $newID');
   }
 
   String _randomSentence() {

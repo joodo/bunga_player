@@ -3,11 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
-import 'package:bunga_player/bunga_server/global_business.dart';
-import 'package:bunga_player/bunga_server/models/bunga_server_info.dart';
 import 'package:bunga_player/screens/widgets/input_builder.dart';
 import 'package:bunga_player/screens/dialogs/settings/widgets.dart';
-import 'package:bunga_player/screens/widgets/loading_button_icon.dart';
 import 'package:bunga_player/network/global_business.dart';
 
 class AdvancedSettings extends StatelessWidget with SettingsTab {
@@ -25,53 +22,6 @@ class AdvancedSettings extends StatelessWidget with SettingsTab {
     return [
       const Text('网络').sectionTitle(),
       [
-            Consumer3<BungaServerInfo?, FetchingBungaClient, BungaHostAddress>(
-              builder: (context, clientInfo, fetching, hostAddress, child) =>
-                  InputBuilder(
-                    initValue: hostAddress.value,
-                    builder:
-                        (
-                          context,
-                          textEditingController,
-                          focusNode,
-                          child,
-                        ) => TextField(
-                          decoration: InputDecoration(
-                            labelText: 'Bunga 服务器',
-                            errorText: clientInfo == null && !fetching.value
-                                ? hostAddress.value.isEmpty
-                                      ? '设置服务器地址'
-                                      : '无法连接'
-                                : null,
-                            border: const OutlineInputBorder(),
-                            suffixIcon: ValueListenableBuilder(
-                              valueListenable: textEditingController,
-                              builder: (context, hostFieldValue, child) =>
-                                  fetching.value
-                                  ? const LoadingButtonIcon()
-                                        .center()
-                                        .constrained(width: 36.0, height: 36.0)
-                                  : hostFieldValue.text == hostAddress.value &&
-                                        clientInfo != null
-                                  ? const Icon(Icons.check)
-                                        .iconSize(IconTheme.of(context).size!)
-                                        .iconColor(Colors.greenAccent)
-                                  : TextButton(
-                                      onPressed: Actions.handler(
-                                        context,
-                                        ConnectToHostIntent(
-                                          hostFieldValue.text,
-                                        ),
-                                      ),
-                                      child: const Text('连接'),
-                                    ),
-                            ).padding(right: 8.0),
-                          ),
-                          enabled: !fetching.value,
-                          controller: textEditingController,
-                        ),
-                  ),
-            ),
             InputBuilder(
               initValue: context.read<SettingProxy>().value,
               builder: (context, textEditingController, focusNode, child) =>

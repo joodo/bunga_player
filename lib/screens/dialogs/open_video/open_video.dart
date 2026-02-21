@@ -1,5 +1,5 @@
 import 'package:animations/animations.dart';
-import 'package:bunga_player/bunga_server/models/bunga_server_info.dart';
+import 'package:bunga_player/bunga_server/models/channel_tokens.dart';
 import 'package:bunga_player/ui/global_business.dart';
 import 'package:bunga_player/utils/business/value_listenable.dart';
 import 'package:flutter/material.dart';
@@ -25,7 +25,7 @@ class OpenVideoDialog extends StatefulWidget {
 class _OpenVideoDialogState extends State<OpenVideoDialog> {
   @override
   Widget build(BuildContext context) {
-    final aListEnabled = context.read<BungaServerInfo?>()?.alist != null;
+    final aListEnabled = context.read<ChannelTokens?>()?.alist != null;
     final theme = Theme.of(context);
     final body = Consumer<DialogShareModeNotifier>(
       builder: (context, shareModeNotifier, child) =>

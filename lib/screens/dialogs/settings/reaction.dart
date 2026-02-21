@@ -1,13 +1,20 @@
+import 'dart:convert';
+
+import 'package:bunga_player/services/logger.dart';
+import 'package:bunga_player/services/preferences.dart';
+import 'package:bunga_player/services/services.dart';
+import 'package:bunga_player/utils/extensions/extensions.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
 import 'package:bunga_player/client_info/global_business.dart';
 import 'package:bunga_player/screens/dialogs/settings/widgets.dart';
 import 'package:bunga_player/screens/player_screen/player_widget/vibe_layer/danmaku.dart';
-import 'package:bunga_player/screens/widgets/input_builder.dart';
-import 'package:bunga_player/screens/widgets/slider_dense_track_shape.dart';
-import 'package:bunga_player/ui/global_business.dart';
+import 'package:bunga_player/screens/widgets/widgets.dart';
+import 'package:bunga_player/bunga_server/global_business.dart';
+import 'package:bunga_player/bunga_server/models/channel_tokens.dart';
 
 class ReactionSettings extends StatefulWidget with SettingsTab {
   @override
@@ -31,6 +38,8 @@ class _ReactionSettingsState extends State<ReactionSettings> {
   @override
   Widget build(BuildContext context) {
     return [
+      const Text('频道').sectionTitle(),
+      const _ChannelSwitcher().sectionContainer(),
       const Text('个性化').sectionTitle(),
       InputBuilder(
         builder: (context, textEditingController, focusNode, child) =>
@@ -63,15 +72,216 @@ class _ReactionSettingsState extends State<ReactionSettings> {
           .toColumn(crossAxisAlignment: .start)
           .padding(all: 16.0)
           .sectionContainer(),
-      const Text('行为').sectionTitle(),
-      Consumer<AutoJoinChannelNotifier>(
-        builder: (context, autoJoinNotifier, child) => SwitchListTile(
-          title: const Text('频道中有人分享时自动加入'),
-          value: autoJoinNotifier.value,
-          onChanged: (value) => autoJoinNotifier.value = value,
-        ),
-      ).sectionContainer(),
     ].toColumn(crossAxisAlignment: .start);
+  }
+}
+
+class _ChannelSwitcher extends StatefulWidget {
+  const _ChannelSwitcher();
+  @override
+  State<_ChannelSwitcher> createState() => _ChannelSwitcherState();
+}
+
+typedef ChannelInfo = ({String name, String url});
+
+class _ChannelSwitcherState extends State<_ChannelSwitcher> {
+  static const _prefKey = 'channel_infos';
+
+  final _channelInfos = <ChannelInfo>[];
+
+  late bool _tryFailed;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadInfos();
+
+    // Have address, but didn't get tokens, that means failed
+    _tryFailed =
+        context.read<BungaHostAddress>().value.isNotEmpty &&
+        context.read<ChannelTokens?>() == null;
+  }
+
+  @override
+  void dispose() {
+    _saveInfos();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return [
+      Consumer2<ChannelTokens?, FetchingChannelTokens>(
+        builder: (context, channelTokens, fetching, child) => InputBuilder(
+          builder: (context, textEditingController, focusNode, child) {
+            final awaitToFill = channelTokens == null && !fetching.value;
+            return TextField(
+              decoration: InputDecoration(
+                labelText: '添加服务器',
+                errorText: _tryFailed
+                    ? '无法连接'
+                    : awaitToFill
+                    ? '设置服务器地址'
+                    : null,
+                border: const OutlineInputBorder(),
+                suffixIcon: ValueListenableBuilder(
+                  valueListenable: textEditingController,
+                  builder: (context, textValue, child) => fetching.value
+                      ? const LoadingButtonIcon().center().constrained(
+                          width: 36.0,
+                          height: 36.0,
+                        )
+                      : TextButton(
+                          onPressed: () async {
+                            final success = await _addServer(textValue.text);
+                            if (success) textEditingController.clear();
+                          },
+                          child: const Text('连接'),
+                        ),
+                ).padding(right: 8.0),
+              ),
+              enabled: !fetching.value,
+              controller: textEditingController,
+            );
+          },
+        ),
+      ).padding(all: 16.0),
+      if (_channelInfos.isNotEmpty) const Divider(),
+      if (_channelInfos.isNotEmpty) _createRadios(),
+    ].toColumn();
+  }
+
+  Widget _createRadios() {
+    return Consumer2<BungaHostAddress?, FetchingChannelTokens>(
+      builder: (context, hostAddress, isFetching, child) => RadioGroup<String>(
+        groupValue: hostAddress?.value,
+        onChanged: (url) {
+          _connectTo(url!);
+        },
+        child: _channelInfos
+            .asMap()
+            .entries
+            .map((entry) {
+              final index = entry.key;
+              final info = entry.value;
+              final selected = hostAddress?.value == info.url;
+
+              final controller = MenuController();
+              return RadioListTile(
+                enabled: !isFetching.value,
+                value: info.url,
+                title: Text(info.name),
+                subtitle: Text(
+                  Uri.parse(info.url).origin,
+                  maxLines: 1,
+                  overflow: .ellipsis,
+                ),
+                secondary: MenuAnchor(
+                  controller: controller,
+                  menuChildren: [
+                    MenuItemButton(
+                      leadingIcon: Icon(Icons.copy),
+                      onPressed: () => _copyToClipboard(info.url),
+                      child: const Text('复制地址'),
+                    ),
+                    MenuItemButton(
+                      leadingIcon: Icon(Icons.delete),
+                      onPressed: selected ? null : () => _remove(index),
+                      child: const Text('删除'),
+                    ),
+                  ],
+                  child: IconButton(
+                    onPressed: controller.open,
+                    icon: Icon(Icons.more_horiz),
+                  ),
+                ),
+              );
+            })
+            .toList()
+            .toColumn(),
+      ),
+    );
+  }
+
+  void _loadInfos() {
+    try {
+      final strings = getIt<Preferences>().get<List<String>>(_prefKey);
+      if (strings == null) return;
+
+      _channelInfos.addAll(
+        strings.map((e) {
+          final json = jsonDecode(e);
+          return (name: json['name'], url: json['url']);
+        }),
+      );
+    } catch (e) {
+      logger.w('Channel Info: failed loading ($e)');
+    }
+  }
+
+  void _saveInfos() {
+    getIt<Preferences>().set(
+      _prefKey,
+      _channelInfos.map((info) {
+        final json = {'name': info.name, 'url': info.url};
+        return jsonEncode(json);
+      }).toList(),
+    );
+  }
+
+  void _copyToClipboard(String url) async {
+    await Clipboard.setData(ClipboardData(text: url));
+    if (mounted) context.popBar('已复制到剪切板');
+  }
+
+  Future<bool> _addServer(String url) async {
+    final result = await _connectTo(url);
+
+    if (!mounted) return false;
+
+    if (result != null) {
+      setState(() {
+        if (!_channelInfos.any((info) => info.url == url)) {
+          _channelInfos.add((name: result.channel.name, url: url));
+        }
+        _tryFailed = false;
+      });
+      context.popBar('添加成功');
+      return true;
+    } else {
+      setState(() {
+        _tryFailed = true;
+      });
+      return false;
+    }
+  }
+
+  Future<ChannelTokens?> _connectTo(String url) {
+    return Actions.invoke(context, ConnectToHostIntent(url))
+        as Future<ChannelTokens?>;
+  }
+
+  void _remove(int index) {
+    final deletedItem = _channelInfos[index];
+    setState(() {
+      _channelInfos.removeAt(index);
+    });
+
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('已删除 ${deletedItem.name}'),
+        duration: Duration(seconds: 3),
+        action: SnackBarAction(
+          label: '撤销',
+          onPressed: () {
+            setState(() {
+              _channelInfos.insert(index, deletedItem);
+            });
+          },
+        ),
+      ),
+    );
   }
 }
 

@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:bunga_player/bunga_server/models/bunga_server_info.dart';
+import 'package:bunga_player/bunga_server/models/channel_tokens.dart';
 import 'package:bunga_player/chat/client/client.bunga.dart';
 import 'package:bunga_player/utils/business/provider.dart';
 import 'package:bunga_player/utils/extensions/listen_provider.dart';
@@ -85,7 +85,7 @@ class _ChannelActionsState extends SingleChildState<ChatGlobalBusiness> {
     return MultiProvider(
       providers: [
         Provider.value(value: _messageStreamController.stream),
-        ProxyFutureProvider<BungaServerInfo?, ChatClient?>(
+        ProxyFutureProvider<ChannelTokens?, ChatClient?>(
           create: (info) => info != null
               ? BungaChatClient.create(serverInfo: info)
               : Future.value(null),

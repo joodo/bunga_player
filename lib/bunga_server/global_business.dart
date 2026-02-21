@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:bunga_player/bunga_server/models/bunga_server_info.dart';
+import 'package:bunga_player/bunga_server/models/channel_tokens.dart';
 import 'package:bunga_player/chat/models/user.dart';
 import 'package:bunga_player/client_info/models/client_account.dart';
 import 'package:bunga_player/console/service.dart';
@@ -16,9 +16,9 @@ import 'package:http/http.dart' as http;
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 
-class FetchingBungaClient {
+class FetchingChannelTokens {
   final bool value;
-  const FetchingBungaClient(this.value);
+  const FetchingChannelTokens(this.value);
 }
 
 class BungaHostAddress {
@@ -33,18 +33,18 @@ class ConnectToHostIntent extends Intent {
 }
 
 class ConnectToHostAction extends ContextAction<ConnectToHostIntent> {
-  final ValueNotifier<FetchingBungaClient> fetchingNotifier;
-  final ValueNotifier<BungaServerInfo?> infoNotifier;
+  final ValueNotifier<FetchingChannelTokens> fetchingNotifier;
+  final ValueNotifier<ChannelTokens?> tokensNotifier;
   final ValueNotifier<BungaHostAddress> hostNotifier;
 
   ConnectToHostAction({
     required this.fetchingNotifier,
-    required this.infoNotifier,
+    required this.tokensNotifier,
     required this.hostNotifier,
   });
 
   @override
-  Future<void> invoke(
+  Future<ChannelTokens?> invoke(
     ConnectToHostIntent intent, [
     BuildContext? context,
   ]) async {
@@ -53,7 +53,7 @@ class ConnectToHostAction extends ContextAction<ConnectToHostIntent> {
 
     late final http.Response response;
     try {
-      fetchingNotifier.value = FetchingBungaClient(true);
+      fetchingNotifier.value = FetchingChannelTokens(true);
       final registerUrl = Uri.parse(intent.url);
       response = await http.post(registerUrl, body: account.toJson());
       if (!response.isSuccess) {
@@ -61,20 +61,24 @@ class ConnectToHostAction extends ContextAction<ConnectToHostIntent> {
       }
 
       final responseData = jsonDecode(response.body);
-      infoNotifier.value = BungaServerInfo.fromJson({
+      tokensNotifier.value = ChannelTokens.fromJson({
         ...responseData,
         'origin': registerUrl.origin,
       });
 
       hostNotifier.value = BungaHostAddress(intent.url);
+
+      return tokensNotifier.value;
+    } catch (_) {
+      return null;
     } finally {
-      fetchingNotifier.value = FetchingBungaClient(false);
+      fetchingNotifier.value = FetchingChannelTokens(false);
     }
   }
 }
 
 Future<JsonMap> _retryIfTokenExpired({
-  required BungaServerInfo serverInfo,
+  required ChannelTokens serverInfo,
   required Future<http.Response> Function(Map<String, String> headers)
   doRequest,
 }) async {
@@ -112,7 +116,7 @@ class AlohaAction extends ContextAction<AlohaIntent> {
     assert(context != null);
     final read = context!.read;
 
-    final serverInfo = read<BungaServerInfo>();
+    final serverInfo = read<ChannelTokens>();
     final url = serverInfo.origin.replace(
       pathSegments: ['api', 'channels', serverInfo.channel.id, 'aloha', ''],
     );
@@ -148,7 +152,7 @@ class UploadSubtitleAction extends ContextAction<UploadSubtitleIntent> {
   ]) async {
     assert(context != null);
     final read = context!.read;
-    final serverInfo = read<BungaServerInfo>();
+    final serverInfo = read<ChannelTokens>();
     final recordId = read<PlayPayload>().record.id;
     final filePath = intent.path;
 
@@ -190,7 +194,7 @@ class UploadLogIntent extends Intent {
 class UploadLogAction extends ContextAction<UploadLogIntent> {
   @override
   Object? invoke(UploadLogIntent intent, [BuildContext? context]) async {
-    final serverInfo = context!.read<BungaServerInfo>();
+    final serverInfo = context!.read<ChannelTokens>();
 
     Future<http.Response> reqFunc(Map<String, String> headers) async {
       final uploadUri = serverInfo.origin.replace(
@@ -226,7 +230,7 @@ class ProjectAction extends ContextAction<ProjectIntent> {
   Future<void> invoke(ProjectIntent intent, [BuildContext? context]) async {
     assert(context != null);
     final read = context!.read;
-    final serverInfo = read<BungaServerInfo>();
+    final serverInfo = read<ChannelTokens>();
     final url = serverInfo.origin.replace(
       pathSegments: ['api', 'channels', serverInfo.channel.id, 'project', ''],
     );
@@ -256,10 +260,10 @@ class BungaServerGlobalBusiness extends SingleChildStatefulWidget {
 
 class _BungaServerGlobalBusinessState
     extends SingleChildState<BungaServerGlobalBusiness> {
-  final _serverInfoNotifier = ValueNotifier<BungaServerInfo?>(null)
+  final _serverInfoNotifier = ValueNotifier<ChannelTokens?>(null)
     ..watchInConsole('Bunga Server Info');
-  final _fetchingNotifier = ValueNotifier<FetchingBungaClient>(
-    FetchingBungaClient(false),
+  final _fetchingNotifier = ValueNotifier<FetchingChannelTokens>(
+    FetchingChannelTokens(false),
   );
   final _hostAddressNotifier =
       ValueNotifier<BungaHostAddress>(BungaHostAddress(''))
@@ -270,7 +274,7 @@ class _BungaServerGlobalBusinessState
         );
   late final _connectToHostAction = ConnectToHostAction(
     fetchingNotifier: _fetchingNotifier,
-    infoNotifier: _serverInfoNotifier,
+    tokensNotifier: _serverInfoNotifier,
     hostNotifier: _hostAddressNotifier,
   );
 

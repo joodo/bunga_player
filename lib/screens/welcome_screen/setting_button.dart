@@ -1,7 +1,7 @@
 import 'package:animations/animations.dart';
 import 'package:bunga_player/bunga_server/global_business.dart';
-import 'package:bunga_player/bunga_server/models/bunga_server_info.dart';
-import 'package:bunga_player/screens/dialogs/settings/advanced.dart';
+import 'package:bunga_player/bunga_server/models/channel_tokens.dart';
+import 'package:bunga_player/screens/dialogs/settings/reaction.dart';
 import 'package:bunga_player/screens/dialogs/settings/settings.dart';
 import 'package:bunga_player/screens/widgets/loading_button_icon.dart';
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
@@ -14,7 +14,7 @@ class SettingButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Consumer2<BungaServerInfo?, FetchingBungaClient>(
+    return Consumer2<ChannelTokens?, FetchingChannelTokens>(
       builder: (context, clientInfo, fetchingNotifer, child) {
         final failed = !fetchingNotifer.value && clientInfo == null;
         return OpenContainer(
@@ -53,7 +53,7 @@ class SettingButton extends StatelessWidget {
               ),
           closedColor: theme.primaryColor,
           openBuilder: (dialogContext, closeContainer) => Dialog.fullscreen(
-            child: SettingsDialog(page: failed ? AdvancedSettings : null),
+            child: SettingsDialog(page: failed ? ReactionSettings : null),
           ),
           openColor: theme.primaryColor,
         );

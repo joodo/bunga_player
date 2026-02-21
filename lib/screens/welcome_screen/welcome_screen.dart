@@ -8,7 +8,7 @@ import 'package:styled_widget/styled_widget.dart';
 import 'package:bunga_player/chat/models/message_data.dart';
 import 'package:bunga_player/screens/dialogs/open_video/open_video.dart';
 import 'package:bunga_player/bunga_server/global_business.dart';
-import 'package:bunga_player/bunga_server/models/bunga_server_info.dart';
+import 'package:bunga_player/bunga_server/models/channel_tokens.dart';
 import 'package:bunga_player/chat/models/message.dart';
 import 'package:bunga_player/screens/player_screen/player_screen.dart';
 import 'package:bunga_player/ui/global_business.dart';
@@ -77,7 +77,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       );
     }
 
-    return Consumer2<BungaServerInfo?, FetchingBungaClient>(
+    return Consumer2<ChannelTokens?, FetchingChannelTokens>(
       builder: (context, infoNotifier, fetchingNotifier, child) =>
           infoNotifier == null && !fetchingNotifier.value
           ? Arrow()

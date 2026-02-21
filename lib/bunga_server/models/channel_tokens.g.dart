@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'bunga_server_info.dart';
+part of 'channel_tokens.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
@@ -60,8 +60,8 @@ ChannelInfo _$ChannelInfoFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$ChannelInfoToJson(ChannelInfo instance) =>
     <String, dynamic>{'id': instance.id, 'name': instance.name};
 
-BungaServerInfo _$BungaServerInfoFromJson(Map<String, dynamic> json) =>
-    BungaServerInfo(
+ChannelTokens _$ChannelTokensFromJson(Map<String, dynamic> json) =>
+    ChannelTokens(
       token: Token.fromJson(json['token'] as Map<String, dynamic>),
       channel: ChannelInfo.fromJson(json['channel'] as Map<String, dynamic>),
       im: IMInfo.fromJson(json['im'] as Map<String, dynamic>),
@@ -77,7 +77,7 @@ BungaServerInfo _$BungaServerInfoFromJson(Map<String, dynamic> json) =>
           : AListInfo.fromJson(json['alist'] as Map<String, dynamic>),
     );
 
-Map<String, dynamic> _$BungaServerInfoToJson(BungaServerInfo instance) =>
+Map<String, dynamic> _$ChannelTokensToJson(ChannelTokens instance) =>
     <String, dynamic>{
       'origin': instance.origin.toString(),
       'channel': instance.channel.toJson(),

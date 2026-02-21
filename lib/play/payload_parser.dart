@@ -2,8 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:bunga_player/bunga_server/global_business.dart';
-import 'package:bunga_player/bunga_server/models/bunga_server_info.dart';
+import 'package:bunga_player/bunga_server/models/channel_tokens.dart';
 import 'package:bunga_player/play/history.dart';
+import 'package:bunga_player/utils/extensions/extensions.dart';
 import 'package:bunga_player/utils/extensions/file.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -15,8 +16,6 @@ import 'package:bunga_player/alist/business.dart';
 import 'package:bunga_player/alist/extensions.dart';
 import 'package:bunga_player/alist/models.dart';
 import 'package:bunga_player/bilibili/extensions.dart';
-import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/ui/toast.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/utils/extensions/string.dart';
 import 'package:bunga_player/utils/models/file_extensions.dart';
@@ -183,7 +182,7 @@ class _AListParser implements _Parser {
     final path = Uri.decodeComponent(url.path);
 
     const encode = Uri.encodeComponent;
-    final channelId = context.read<BungaServerInfo>().channel.id;
+    final channelId = context.read<ChannelTokens>().channel.id;
     final host = context.read<BungaHostAddress>().uri;
     final thumbUrl = host.resolve(
       '/api/channels/${encode(channelId)}/alist-thumbnail?path=${encode(path)}',
@@ -300,7 +299,7 @@ class _BiliParser implements _Parser {
   final BuildContext context;
   _BiliParser(this.context);
 
-  late final biliToken = context.read<BungaServerInfo?>()?.bilibili;
+  late final biliToken = context.read<ChannelTokens?>()?.bilibili;
   late final biliHeaders = biliToken == null
       ? null
       : {
@@ -381,7 +380,7 @@ class _BiliVideoParser extends _BiliParser {
 
     // fetch video info
     final isHD = biliToken != null;
-    if (!isHD) getIt<Toast>().show('无法获取高清视频');
+    if (!isHD) super.context.popBar('无法获取高清视频');
 
     final query = {'bvid': bvid}.asBiliQueryEncWbi(biliToken?.mixinKey);
     final response = await http.get(

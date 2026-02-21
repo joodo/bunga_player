@@ -178,10 +178,13 @@ class AdjustIndicatorEvent extends Stream<AdjustIndicatorEventType> {
 class MediaVolumeNotifier extends VolumeNotifier {
   MediaVolumeNotifier() : super(preferenceKey: 'media_volume') {
     if (kIsDesktop) {
-      addListener(() {
-        getIt<MediaPlayer>().volumeNotifier.value = value;
+      // Wait for MediaPlayer register
+      Future.microtask(() {
+        addListener(() {
+          getIt<MediaPlayer>().volumeNotifier.value = value;
+        });
+        loadFromPref();
       });
-      loadFromPref();
     } else {
       FlutterVolumeController.updateShowSystemUI(false);
       FlutterVolumeController.getVolume().then((level) {

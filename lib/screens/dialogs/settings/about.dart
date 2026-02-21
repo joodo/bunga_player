@@ -1,9 +1,9 @@
 import 'package:bunga_player/console/wrapper.dart';
 import 'package:bunga_player/screens/dialogs/settings/widgets.dart';
 import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/ui/toast.dart';
 import 'package:bunga_player/update/global_business.dart';
 import 'package:bunga_player/update/wrapper.dart';
+import 'package:bunga_player/utils/extensions/extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -70,7 +70,7 @@ class AboutSetting extends StatelessWidget with SettingsTab {
     final job = Actions.invoke(context, CheckUpdateIntent()) as Future<bool>;
     final hasNewUpdate = await job;
     if (!hasNewUpdate) {
-      getIt<Toast>().show('已是最新版本');
+      if (context.mounted) context.popBar('已是最新版本');
     }
   }
 }

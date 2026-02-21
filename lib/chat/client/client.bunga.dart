@@ -2,22 +2,23 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
-import 'package:bunga_player/bunga_server/models/bunga_server_info.dart';
-import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/ui/toast.dart';
+import 'package:flutter/material.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+
+import 'package:bunga_player/bunga_server/models/channel_tokens.dart';
+import 'package:bunga_player/services/logger.dart';
 
 import 'client.dart';
 import '../models/message.dart';
 import '../models/user.dart';
 
 class BungaChatClient extends ChatClient {
-  final BungaServerInfo _serverInfo;
-  BungaChatClient._(BungaServerInfo serverInfo) : _serverInfo = serverInfo;
+  final ChannelTokens _serverInfo;
+  BungaChatClient._(ChannelTokens serverInfo) : _serverInfo = serverInfo;
 
   static Future<BungaChatClient> create({
-    required BungaServerInfo serverInfo,
+    required ChannelTokens serverInfo,
   }) async {
     final client = BungaChatClient._(serverInfo);
     await client._connect();
@@ -111,7 +112,10 @@ class BungaChatClient extends ChatClient {
               'Websocket: connection break, fatal reasion. Code $closeCode',
             );
             _channel = null;
-            getIt<Toast>().show('和服务器沟通失败，部分功能不可用。');
+            getIt<GlobalKey<ScaffoldMessengerState>>().currentState!
+                .showSnackBar(
+                  SnackBar(content: const Text(('和服务器沟通失败，部分功能不可用。'))),
+                );
         }
       },
     );

@@ -4,7 +4,7 @@ import 'package:bunga_player/services/logger.dart';
 import 'package:http/http.dart' as http;
 import 'package:json_annotation/json_annotation.dart';
 
-part 'bunga_server_info.g.dart';
+part 'channel_tokens.g.dart';
 
 @JsonSerializable()
 class Token {
@@ -102,7 +102,7 @@ class ChannelInfo {
 }
 
 @JsonSerializable()
-class BungaServerInfo {
+class ChannelTokens {
   @JsonKey(name: 'token')
   Token _token;
   final Uri origin;
@@ -112,7 +112,7 @@ class BungaServerInfo {
   final BilibiliInfo? bilibili;
   final AListInfo? alist;
 
-  BungaServerInfo({
+  ChannelTokens({
     required Token token,
     required this.channel,
     required this.im,
@@ -136,10 +136,10 @@ class BungaServerInfo {
     return _token;
   }
 
-  factory BungaServerInfo.fromJson(Map<String, dynamic> json) =>
-      _$BungaServerInfoFromJson(json);
+  factory ChannelTokens.fromJson(Map<String, dynamic> json) =>
+      _$ChannelTokensFromJson(json);
 
-  Map<String, dynamic> toJson() => _$BungaServerInfoToJson(this);
+  Map<String, dynamic> toJson() => _$ChannelTokensToJson(this);
 
   @override
   String toString() => jsonEncode(toJson());

@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 
-import 'package:bunga_player/bunga_server/models/bunga_server_info.dart';
+import 'package:bunga_player/bunga_server/models/channel_tokens.dart';
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:bunga_player/utils/extensions/http_response.dart';
 
@@ -107,7 +107,7 @@ class AListGlobalBusiness extends SingleChildStatelessWidget {
 
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
-    return Consumer<BungaServerInfo?>(
+    return Consumer<ChannelTokens?>(
       builder: (context, clientInfo, child) {
         final alistInfo = clientInfo?.alist;
         return child!.actions(
