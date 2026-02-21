@@ -66,6 +66,7 @@ class _VideoProgressBarState extends State<VideoProgressBar> {
                     ),
                     trackHeight: 2 + 2 * hoveredValue,
                     trackShape: SliderDenseTrackShape(),
+                    overlayShape: SliderComponentShape.noOverlay,
                     showValueIndicator: .onDrag,
                   );
 
