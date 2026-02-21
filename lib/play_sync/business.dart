@@ -128,7 +128,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
   late final StreamSubscription _streamSubscription;
 
   // Player status
-  final _playerBufferingNotifier = getIt<PlayService>().isBufferingNotifier;
+  final _playerBufferingNotifier = getIt<MediaPlayer>().isBufferingNotifier;
   final _watchersBufferStatusNotifier = WatcherBufferingStatusNotifier()
     ..watchInConsole('Watchers Sync Status');
 
@@ -198,7 +198,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
 
     _playerBufferingNotifier.addListener(_sendBufferingStatus);
 
-    final playService = getIt<PlayService>();
+    final playService = getIt<MediaPlayer>();
     playService.positionNotifier.addListener(_silentCatchUp);
     playService.finishNotifier.addListener(_sendFinishMessage);
   }
@@ -207,7 +207,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
   void dispose() {
     _playerBufferingNotifier.removeListener(_sendBufferingStatus);
 
-    final playService = getIt<PlayService>();
+    final playService = getIt<MediaPlayer>();
     playService.positionNotifier.removeListener(_silentCatchUp);
     playService.finishNotifier.removeListener(_sendFinishMessage);
 
@@ -232,7 +232,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
           onInvoke: (intent) {
             if (_remoteJustToggledNotifier.value) return;
 
-            final playService = getIt<PlayService>();
+            final playService = getIt<MediaPlayer>();
             final messageData = SetPlaybackMessageData(
               isPlay: !playService.playStatusNotifier.value.isPlaying,
             );
@@ -242,7 +242,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
         ),
         SeekForwardIntent: CallbackAction<SeekForwardIntent>(
           onInvoke: (intent) {
-            final player = getIt<PlayService>();
+            final player = getIt<MediaPlayer>();
             player.seek(intent.position);
 
             final messageData = SeekMessageData(position: intent.position);
@@ -260,7 +260,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
         ),
         SeekEndIntent: CallbackAction<SeekEndIntent>(
           onInvoke: (intent) {
-            final player = getIt<PlayService>();
+            final player = getIt<MediaPlayer>();
             final messageData = SeekMessageData(
               position: player.positionNotifier.value,
             );
@@ -360,7 +360,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
   }
 
   void _handlePlayAt(User sender, bool isPlay, Duration position) async {
-    final playService = getIt<PlayService>();
+    final playService = getIt<MediaPlayer>();
 
     // Seek
     final localPosition = playService.positionNotifier.value;
@@ -413,7 +413,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
   // Silent Catch-Up
   _CatchUpTarget? _catchUpTarget;
   void _silentCatchUp() {
-    final playService = getIt<PlayService>();
+    final playService = getIt<MediaPlayer>();
 
     if (_catchUpTarget == null) {
       playService.playbackRateNotifier.value = 1.0;

@@ -24,7 +24,7 @@ class PlayerWidget extends StatelessWidget {
         const ChromeLayer(),
         const PopupLayer(),
       ].toStack(fit: StackFit.expand),
-      child: getIt<PlayService>().buildVideoWidget(),
+      child: getIt<MediaPlayer>().buildVideoWidget(),
     );
   }
 }

@@ -160,7 +160,7 @@ class _AdjustIndicatorState extends State<AdjustIndicator>
   }
 
   Widget? _createMediaVolumeWidget() {
-    final notifier = getIt<PlayService>().volumeNotifier;
+    final notifier = getIt<MediaPlayer>().volumeNotifier;
     return ValueListenableBuilder(
       valueListenable: notifier,
       builder: (context, volume, child) =>

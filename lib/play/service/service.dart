@@ -13,7 +13,7 @@ enum PlayStatus {
   bool get isPlaying => this == play;
 }
 
-abstract class PlayService {
+abstract class MediaPlayer {
   static const int maxVolume = 100;
   static const int minVolume = 0;
 

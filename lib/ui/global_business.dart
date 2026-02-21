@@ -179,7 +179,7 @@ class MediaVolumeNotifier extends VolumeNotifier {
   MediaVolumeNotifier() : super(preferenceKey: 'media_volume') {
     if (kIsDesktop) {
       addListener(() {
-        getIt<PlayService>().volumeNotifier.value = value;
+        getIt<MediaPlayer>().volumeNotifier.value = value;
       });
       loadFromPref();
     } else {

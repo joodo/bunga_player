@@ -45,7 +45,7 @@ class _VideoProgressBarState extends State<VideoProgressBar> {
     );
 
     final animatedSlider = ValueListenableBuilder(
-      valueListenable: getIt<PlayService>().isBufferingNotifier,
+      valueListenable: getIt<MediaPlayer>().isBufferingNotifier,
       builder: (context, amIBuffering, child) =>
           Selector<WatcherBufferingStatusNotifier?, bool>(
             selector: (context, notifier) => notifier?.hasBuffering ?? false,
@@ -122,7 +122,7 @@ class _ProgressSlider extends StatefulWidget {
 
 class _ProgressSliderState extends State<_ProgressSlider> {
   // Player
-  final _player = getIt<PlayService>();
+  final _player = getIt<MediaPlayer>();
   late final _playerPositionNotifier = _player.positionNotifier;
 
   // Current position

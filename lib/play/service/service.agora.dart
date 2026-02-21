@@ -5,7 +5,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/foundation.dart';
-import 'package:agora_rtc_engine/agora_rtc_engine.dart';
+import 'package:agora_rtc_engine/agora_rtc_engine.dart' as agora;
 
 import 'package:bunga_player/utils/models/volume.dart';
 import 'package:bunga_player/utils/extensions/extensions.dart';
@@ -16,20 +16,20 @@ import 'service.dart';
 import '../models/play_payload.dart';
 import '../models/track.dart';
 
-class AgoraPlayService extends PlayService {
-  static RtcEngine? engine;
+class AgoraMediaPlayer extends MediaPlayer {
+  static agora.RtcEngine? engine;
 
-  AgoraPlayService() {
+  AgoraMediaPlayer() {
     if (engine != null) registerEngine();
   }
 
-  MediaPlayerController? __player;
-  MediaPlayerController get _player => __player!;
+  agora.MediaPlayerController? __player;
+  agora.MediaPlayerController get _player => __player!;
 
   Future<void> registerEngine() async {
-    __player = MediaPlayerController(
-      rtcEngine: AgoraPlayService.engine!,
-      canvas: VideoCanvas(uid: 0, renderMode: .renderModeHidden),
+    __player = agora.MediaPlayerController(
+      rtcEngine: AgoraMediaPlayer.engine!,
+      canvas: agora.VideoCanvas(uid: 0, renderMode: .renderModeHidden),
       useFlutterTexture: true,
     );
     await _player.initialize();
@@ -58,8 +58,8 @@ class AgoraPlayService extends PlayService {
     }
   }
 
-  MediaPlayerSourceObserver _createObserver() {
-    return MediaPlayerSourceObserver(
+  agora.MediaPlayerSourceObserver _createObserver() {
+    return agora.MediaPlayerSourceObserver(
       onPlayBufferUpdated: (playCachedBuffer) {
         final buffer = Duration(milliseconds: playCachedBuffer);
         _buffer.value = _position.value + buffer;
@@ -311,7 +311,9 @@ class AgoraPlayService extends PlayService {
   Widget buildVideoWidget() {
     return RepaintBoundary(
       key: _widgetKey,
-      child: AgoraVideoView(controller: _player).backgroundColor(Colors.black),
+      child: agora.AgoraVideoView(
+        controller: _player,
+      ).backgroundColor(Colors.black),
     );
   }
 }

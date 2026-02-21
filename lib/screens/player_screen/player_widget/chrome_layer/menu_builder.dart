@@ -52,7 +52,7 @@ class MenuBuilder extends SingleChildStatelessWidget {
                 context,
                 OpenVideoIntent.record(
                   payload!.record,
-                  start: getIt<PlayService>().positionNotifier.value,
+                  start: getIt<MediaPlayer>().positionNotifier.value,
                 ),
               ),
               child: const Text('重新载入'),

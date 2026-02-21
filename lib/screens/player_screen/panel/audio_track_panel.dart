@@ -15,7 +15,7 @@ class AudioTrackPanel extends StatelessWidget implements Panel {
 
   @override
   Widget build(BuildContext context) {
-    final player = getIt<PlayService>();
+    final player = getIt<MediaPlayer>();
     return ValueListenableBuilder(
       valueListenable: player.audioTracksNotifier,
       builder: (context, tracks, child) => ValueListenableBuilder(
@@ -23,11 +23,13 @@ class AudioTrackPanel extends StatelessWidget implements Panel {
         builder: (context, currentTrack, child) => PanelWidget(
           title: '音轨',
           child: tracks
-              .map((e) => RadioListTile(
-                    key: ValueKey(e.id),
-                    title: Text(_toTitle(e)),
-                    value: e,
-                  ))
+              .map(
+                (e) => RadioListTile(
+                  key: ValueKey(e.id),
+                  title: Text(_toTitle(e)),
+                  value: e,
+                ),
+              )
               .toList()
               .toColumn()
               .scrollable(padding: EdgeInsets.only(bottom: 16.0))

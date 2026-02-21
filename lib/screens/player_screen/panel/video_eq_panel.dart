@@ -20,27 +20,27 @@ class VideoEqPanel extends StatelessWidget implements Panel {
     (
       icon: Icons.brightness_4,
       name: '亮度',
-      notifier: getIt<PlayService>().brightnessNotifier,
+      notifier: getIt<MediaPlayer>().brightnessNotifier,
     ),
     (
       icon: Icons.contrast,
       name: '对比度',
-      notifier: getIt<PlayService>().contrastNotifier,
+      notifier: getIt<MediaPlayer>().contrastNotifier,
     ),
     (
       icon: Icons.opacity,
       name: '饱和度',
-      notifier: getIt<PlayService>().saturationNotifier,
+      notifier: getIt<MediaPlayer>().saturationNotifier,
     ),
     (
       icon: Icons.signal_cellular_0_bar,
       name: '伽玛',
-      notifier: getIt<PlayService>().gammaNotifier,
+      notifier: getIt<MediaPlayer>().gammaNotifier,
     ),
     (
       icon: Icons.palette,
       name: '色相',
-      notifier: getIt<PlayService>().hueNotifier,
+      notifier: getIt<MediaPlayer>().hueNotifier,
     ),
   ];
 
@@ -68,7 +68,7 @@ class VideoEqPanel extends StatelessWidget implements Panel {
                       onSelected: (preset) {
                         notifier.value = preset;
                         if (preset == null) return;
-                        final player = getIt<PlayService>();
+                        final player = getIt<MediaPlayer>();
                         player.brightnessNotifier.value = preset.value[0];
                         player.contrastNotifier.value = preset.value[1];
                         player.saturationNotifier.value = preset.value[2];

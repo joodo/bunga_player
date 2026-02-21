@@ -32,7 +32,7 @@ class _VideoSourcePanelState extends State<VideoSourcePanel> {
 
   @override
   Widget build(BuildContext context) {
-    final proxy = getIt<PlayService>().proxyNotifier.value;
+    final proxy = getIt<MediaPlayer>().proxyNotifier.value;
     return PanelWidget(
       title: '片源选择',
       actions: [
@@ -71,7 +71,7 @@ class _VideoSourcePanelState extends State<VideoSourcePanel> {
                     context,
                     OpenVideoIntent.payload(
                       payload.copyWith(videoSourceIndex: value!),
-                      start: getIt<PlayService>().positionNotifier.value,
+                      start: getIt<MediaPlayer>().positionNotifier.value,
                     ),
                   );
                 },

@@ -125,7 +125,7 @@ class _WidgetBusinessState extends SingleChildState<_WidgetBusiness> {
 
     // Stop playing
     read<WindowTitleNotifier>().reset();
-    getIt<PlayService>().stop();
+    getIt<MediaPlayer>().stop();
 
     // Send bye message
     if (read<IsInChannel>().value) {

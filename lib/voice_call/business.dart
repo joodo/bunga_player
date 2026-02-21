@@ -254,7 +254,7 @@ class HangUpAction extends ContextAction<HangUpIntent> {
 
     if (!kIsDesktop) {
       // Restore media volume after talking
-      getIt<PlayService>().volumeNotifier.value = Volume.max;
+      getIt<MediaPlayer>().volumeNotifier.value = Volume.max;
     }
   }
 }

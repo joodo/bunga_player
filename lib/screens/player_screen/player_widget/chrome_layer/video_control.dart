@@ -130,7 +130,7 @@ class _PlayButtonState extends State<_PlayButton>
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
-      valueListenable: getIt<PlayService>().playStatusNotifier,
+      valueListenable: getIt<MediaPlayer>().playStatusNotifier,
       builder: (context, status, child) {
         status.isPlaying ? controller.forward() : controller.reverse();
         return Selector<BusyStateNotifier, bool>(
@@ -215,7 +215,7 @@ class _DurationButtonState extends State<_DurationButton> {
 
   @override
   Widget build(BuildContext context) {
-    final playService = getIt<PlayService>();
+    final playService = getIt<MediaPlayer>();
     return ListenableBuilder(
       listenable: Listenable.merge([
         playService.positionNotifier,

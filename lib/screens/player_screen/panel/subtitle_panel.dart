@@ -44,7 +44,7 @@ class _SubtitlePanelState extends State<SubtitlePanel> {
     (
       icon: Icons.timer,
       title: '延迟',
-      notifier: getIt<PlayService>().subDelayNotifier,
+      notifier: getIt<MediaPlayer>().subDelayNotifier,
       min: -20.0,
       max: 20.0,
       labelFormatter: (value) => value.toStringAsFixed(1),
@@ -54,7 +54,7 @@ class _SubtitlePanelState extends State<SubtitlePanel> {
     (
       icon: Icons.format_size,
       title: '大小',
-      notifier: getIt<PlayService>().subSizeNotifier,
+      notifier: getIt<MediaPlayer>().subSizeNotifier,
       min: 20.0,
       max: 72.0,
       labelFormatter: (value) => value.toInt().toString(),
@@ -64,7 +64,7 @@ class _SubtitlePanelState extends State<SubtitlePanel> {
     (
       icon: Icons.height,
       title: '高度',
-      notifier: getIt<PlayService>().subPosNotifier,
+      notifier: getIt<MediaPlayer>().subPosNotifier,
       min: -100.0,
       max: 50.0,
       labelFormatter: (value) => value.toInt().toString(),
@@ -75,7 +75,7 @@ class _SubtitlePanelState extends State<SubtitlePanel> {
 
   @override
   Widget build(BuildContext context) {
-    final player = getIt<PlayService>();
+    final player = getIt<MediaPlayer>();
     final theme = Theme.of(context);
 
     final tracksSection = Consumer<IsInChannel>(
@@ -177,7 +177,7 @@ class _SubtitlePanelState extends State<SubtitlePanel> {
     final file = await openFile();
     if (!context.mounted || file == null) return;
 
-    final player = getIt<PlayService>();
+    final player = getIt<MediaPlayer>();
     try {
       final track = await player.loadSubtitleTrack(file.path);
 
@@ -190,7 +190,7 @@ class _SubtitlePanelState extends State<SubtitlePanel> {
 
   void _shareSubtitle(String trackId) async {
     final chatClient = context.read<ChatClient>();
-    final path = getIt<PlayService>().subtitleTrackNotifier.value.path!;
+    final path = getIt<MediaPlayer>().subtitleTrackNotifier.value.path!;
 
     try {
       final job =
@@ -240,7 +240,7 @@ class _ChannelSubtitleRadioTileState extends State<_ChannelSubtitleRadioTile> {
 
   void _loadChannelData() async {
     final busyNotifier = context.read<PanelBusyNotifier>();
-    final playService = getIt<PlayService>();
+    final playService = getIt<MediaPlayer>();
     final subtitleTrackIdOfUrl = context.read<SubtitleTrackIdOfUrl>().value;
     final url = widget.info.url;
     try {

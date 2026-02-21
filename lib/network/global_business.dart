@@ -11,7 +11,7 @@ class SettingProxy extends ValueNotifier<String?> {
   SettingProxy() : super(null) {
     addListener(() {
       getIt<NetworkService>().setProxy(value);
-      getIt<PlayService>().proxyNotifier.value = value;
+      getIt<MediaPlayer>().proxyNotifier.value = value;
     });
     bindPreference<String>(
       key: 'proxy',
@@ -29,7 +29,9 @@ class NetworkGlobalBusiness extends SingleChildStatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
-            create: (context) => SettingProxy(), lazy: false),
+          create: (context) => SettingProxy(),
+          lazy: false,
+        ),
       ],
       child: child,
     );

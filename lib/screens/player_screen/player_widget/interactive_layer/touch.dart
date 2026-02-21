@@ -61,7 +61,7 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
 
   @override
   Widget build(BuildContext context) {
-    final play = getIt<PlayService>();
+    final play = getIt<MediaPlayer>();
 
     final indicatorEvent = context.read<AdjustIndicatorEvent>();
 
@@ -186,7 +186,7 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
 
         final startPosition = details.localPosition;
         _isDraggingLeftSide = _isLeftScreen(startPosition);
-        final mediaVolumeNotifer = getIt<PlayService>().volumeNotifier;
+        final mediaVolumeNotifer = getIt<MediaPlayer>().volumeNotifier;
         _dragBusiness = _DragBusiness(
           startPosition: startPosition,
           orientation: .vertical,

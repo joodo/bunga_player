@@ -67,7 +67,7 @@ class _SparkLayerState extends State<SparkLayer>
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
-      valueListenable: getIt<PlayService>().videoSizeNotifier,
+      valueListenable: getIt<MediaPlayer>().videoSizeNotifier,
       builder: (context, videoSize, child) {
         if (videoSize == null) {
           return const SizedBox.shrink();

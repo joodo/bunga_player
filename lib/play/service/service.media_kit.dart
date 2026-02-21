@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:ui';
+
 import 'package:async/async.dart';
 import 'package:collection/collection.dart';
 import 'package:ffi/ffi.dart';
@@ -21,8 +21,8 @@ import '../models/play_payload.dart';
 import '../models/track.dart';
 import 'service.dart';
 
-class MediaKitPlayService extends PlayService {
-  MediaKitPlayService() {
+class MediaKitMediaPlayer extends MediaPlayer {
+  MediaKitMediaPlayer() {
     media_kit.MediaKit.ensureInitialized();
 
     getIt<Permissions>().requestVideoAndAudio();

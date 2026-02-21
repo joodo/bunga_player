@@ -22,7 +22,7 @@ class SparkSendController {
 
   Rect? _videoRect;
   void _updateVideoRect() {
-    final videoSize = getIt<PlayService>().videoSizeNotifier.value;
+    final videoSize = getIt<MediaPlayer>().videoSizeNotifier.value;
     if (videoSize == null) {
       _videoRect = null;
       return;

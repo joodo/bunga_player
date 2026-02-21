@@ -143,7 +143,7 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
     String? subtitlePath,
     Duration? start,
   }) async {
-    final play = getIt<PlayService>();
+    final play = getIt<MediaPlayer>();
     await play.open(payload, start);
 
     // load history
@@ -169,7 +169,7 @@ class SetSubtitleTrackIntent extends Intent {
 class SetSubtitleTrackAction extends ContextAction<SetSubtitleTrackIntent> {
   @override
   void invoke(SetSubtitleTrackIntent intent, [BuildContext? context]) {
-    final track = getIt<PlayService>().setSubtitleTrack(intent.trackId);
+    final track = getIt<MediaPlayer>().setSubtitleTrack(intent.trackId);
 
     final record = context!.read<PlayPayload>().record;
     final externalSubPath = track.path;
@@ -190,7 +190,7 @@ class ScreenshotAction extends ContextAction<ScreenshotIntent> {
 
   @override
   Future<File> invoke(ScreenshotIntent intent, [BuildContext? context]) async {
-    final positionStr = getIt<PlayService>().positionNotifier.value.toString();
+    final positionStr = getIt<MediaPlayer>().positionNotifier.value.toString();
     final positionStamp = positionStr
         .substring(0, positionStr.length - 4)
         .replaceAll(RegExp(r'[:|.]'), '_');
@@ -198,7 +198,7 @@ class ScreenshotAction extends ContextAction<ScreenshotIntent> {
     final videoName = path_tool.basenameWithoutExtension(videoFileName);
     final fileName = '${videoName}_$positionStamp.jpg';
 
-    final data = await getIt<PlayService>().screenshot();
+    final data = await getIt<MediaPlayer>().screenshot();
     assert(data != null);
 
     final documentDir = await getApplicationDocumentsDirectory();
@@ -255,7 +255,7 @@ class ToggleAction extends ContextAction<ToggleIntent> {
 
   @override
   Future<void> invoke(ToggleIntent intent, [BuildContext? context]) async {
-    final service = getIt<PlayService>();
+    final service = getIt<MediaPlayer>();
     await service.toggle();
 
     // Handle progress saving business
@@ -295,7 +295,7 @@ class SeekForwardIntent extends SeekIntent {
   const SeekForwardIntent(this.delta);
   @override
   Duration get position {
-    final player = getIt<PlayService>();
+    final player = getIt<MediaPlayer>();
     final current = player.positionNotifier.value;
     return current + delta;
   }
@@ -304,13 +304,13 @@ class SeekForwardIntent extends SeekIntent {
 class SeekAction extends ContextAction<SeekIntent> {
   @override
   void invoke(SeekIntent intent, [BuildContext? context]) {
-    final service = getIt<PlayService>();
+    final service = getIt<MediaPlayer>();
     service.seek(intent.position);
   }
 
   @override
   bool isEnabled(SeekIntent intent, [BuildContext? context]) {
-    return getIt<PlayService>().playStatusNotifier.value != PlayStatus.stop;
+    return getIt<MediaPlayer>().playStatusNotifier.value != PlayStatus.stop;
   }
 }
 
@@ -424,7 +424,7 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
     final currentRecord = _playPayloadNotifier.value?.record;
     if (currentRecord == null) return;
 
-    final play = getIt<PlayService>();
+    final play = getIt<MediaPlayer>();
 
     final progress = WatchProgress(
       position: play.positionNotifier.value,

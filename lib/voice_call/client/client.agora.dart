@@ -1,15 +1,16 @@
 import 'dart:async';
 
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
+import 'package:flutter/material.dart';
+
 import 'package:bunga_player/bunga_server/models/bunga_server_info.dart';
 import 'package:bunga_player/play/service/service.agora.dart';
-import 'package:bunga_player/play/service/service.dart';
+import 'package:bunga_player/play/service/service.dart' as service;
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/business/platform.dart';
 import 'package:bunga_player/utils/extensions/double_lerp.dart';
 import 'package:bunga_player/utils/models/volume.dart';
-import 'package:flutter/material.dart';
 
 import 'client.dart';
 
@@ -31,9 +32,9 @@ class AgoraClient extends VoiceCallClient {
     await client._init();
 
     // Media player
-    AgoraPlayService.engine = client._engine;
-    final playService = getIt.get<PlayService>();
-    if (playService is AgoraPlayService) {
+    AgoraMediaPlayer.engine = client._engine;
+    final playService = getIt.get<service.MediaPlayer>();
+    if (playService is AgoraMediaPlayer) {
       playService.registerEngine();
     }
 
@@ -88,8 +89,8 @@ class AgoraClient extends VoiceCallClient {
   Future<void> dispose() async {
     await _engine.leaveChannel();
 
-    final playService = getIt.get<PlayService>();
-    if (playService is AgoraPlayService) await playService.unregisterEngine();
+    final playService = getIt.get<service.MediaPlayer>();
+    if (playService is AgoraMediaPlayer) await playService.unregisterEngine();
 
     if (kIsDesktop) inputDeviceNotifier.dispose();
     noiseSuppressionLevelNotifier.dispose();
