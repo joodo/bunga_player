@@ -55,7 +55,10 @@ class ChromeLayer extends StatelessWidget {
                         .padding(all: 16.0)
                         .alignment(Alignment.bottomLeft),
                   ),
-                  chrome.opacity(show ? 1.0 : 0.0, animate: true),
+                  TickerMode(
+                    enabled: show,
+                    child: chrome,
+                  ).opacity(show ? 1.0 : 0.0, animate: true),
                 ]
                 .toStack()
                 .animate(const Duration(milliseconds: 300), Curves.easeOutCubic)

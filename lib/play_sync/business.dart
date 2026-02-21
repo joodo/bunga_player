@@ -58,7 +58,7 @@ class WatcherBufferingStatusNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  bool get isAnyBuffering => _bufferingIds.isNotEmpty;
+  bool get hasBuffering => _bufferingIds.isNotEmpty;
 
   bool isBuffering(String userId) => _bufferingIds.contains(userId);
 
@@ -132,16 +132,8 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
   final _watchersBufferStatusNotifier = WatcherBufferingStatusNotifier()
     ..watchInConsole('Watchers Sync Status');
 
-  late final _busyNotifier = context.read<BusyStateNotifier>();
-
   // Seeking business
   bool _seeking = false;
-
-  void _updateBusyState() {
-    _watchersBufferStatusNotifier.isAnyBuffering
-        ? _busyNotifier.add('watchers buffering')
-        : _busyNotifier.remove('watchers buffering');
-  }
 
   // Subtitle sharing
   final _channelSubtitleNotifier = ValueNotifier<ChannelSubtitle?>(null)
@@ -205,7 +197,6 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
     });
 
     _playerBufferingNotifier.addListener(_sendBufferingStatus);
-    _watchersBufferStatusNotifier.addListener(_updateBusyState);
 
     final playService = getIt<PlayService>();
     playService.positionNotifier.addListener(_silentCatchUp);
@@ -215,7 +206,6 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
   @override
   void dispose() {
     _playerBufferingNotifier.removeListener(_sendBufferingStatus);
-    _watchersBufferStatusNotifier.removeListener(_updateBusyState);
 
     final playService = getIt<PlayService>();
     playService.positionNotifier.removeListener(_silentCatchUp);

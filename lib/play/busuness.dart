@@ -322,18 +322,6 @@ class PlayBusiness extends SingleChildStatefulWidget {
 }
 
 class _PlayBusinessState extends SingleChildState<PlayBusiness> {
-  // Progress indicator
-  late final _isVideoBufferingNotifier =
-      getIt<PlayService>().isBufferingNotifier;
-
-  late final _busyNotifier = context.read<BusyStateNotifier>();
-
-  void _updateBusyState() {
-    _isVideoBufferingNotifier.value
-        ? _busyNotifier.add('video buffering')
-        : _busyNotifier.remove('video buffering');
-  }
-
   // Play payload
   final _playPayloadNotifier = ValueNotifier<PlayPayload?>(null)
     ..watchInConsole('Play Payload');
@@ -352,8 +340,6 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
   @override
   void initState() {
     super.initState();
-
-    _isVideoBufferingNotifier.addListener(_updateBusyState);
 
     // History
     _history = context.read<History>();
@@ -427,8 +413,6 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
   @override
   void dispose() {
     _playPayloadNotifier.dispose();
-
-    _isVideoBufferingNotifier.removeListener(_updateBusyState);
 
     _history.save();
     _saveWatchProgressTimer.cancel();
