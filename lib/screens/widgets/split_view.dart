@@ -1,7 +1,12 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
+import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
+
+import 'package:bunga_player/utils/business/drag_business.dart';
+
+typedef SplitPlacement = ({AxisDirection direction, double size});
 
 class SplitView extends SingleChildStatefulWidget {
   final double minSize, size, maxSize;
@@ -24,46 +29,85 @@ class SplitView extends SingleChildStatefulWidget {
 
 class _SplitViewState extends SingleChildState<SplitView> {
   static const double _handleSize = 12.0;
-  late double _currentSize = widget.size;
+  late final _sizeNotifier = ValueNotifier(widget.size);
 
-  Offset _startDragPosition = Offset.zero;
-  double _startDragSize = 0.0;
+  DragBusiness? _dragBusiness;
+
+  Axis get _axis => widget.direction == .left || widget.direction == .right
+      ? .horizontal
+      : .vertical;
+
+  late final _placementNotifier = ValueNotifier<SplitPlacement>((
+    direction: widget.direction,
+    size: widget.size,
+  ));
+  void _updateLayout() => _placementNotifier.value = (
+    direction: widget.direction,
+    size: _sizeNotifier.value,
+  );
+
+  @override
+  void dispose() {
+    _sizeNotifier.dispose();
+    _placementNotifier.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(covariant SplitView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _updateLayout();
+  }
 
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
-    final isHorizontal =
-        widget.direction == .left || widget.direction == .right;
     final isReverse = widget.direction == .right || widget.direction == .down;
 
-    final split = isHorizontal
-        ? widget.split?.constrained(width: _currentSize)
-        : widget.split?.constrained(height: _currentSize);
+    // Pre-build static components.
+    final Widget memoizedHandle = _createHandle();
+    final Widget memoizedChild = RepaintBoundary(child: child!).flexible();
+    final Widget? memoizedSplit = widget.split != null
+        ? ValueListenableProvider.value(
+            value: _placementNotifier,
+            child: RepaintBoundary(child: widget.split!),
+          )
+        : null;
 
-    final list = [
-      if (split != null) KeyedSubtree.wrap(split, 1),
-      if (split != null) KeyedSubtree.wrap(_createHandle(), 2),
-      KeyedSubtree.wrap(child!.flexible(), 3),
-    ];
+    return ValueListenableBuilder(
+      valueListenable: _sizeNotifier,
+      builder: (context, size, child) {
+        final split = switch (_axis) {
+          Axis.horizontal => memoizedSplit?.constrained(width: size),
+          Axis.vertical => memoizedSplit?.constrained(height: size),
+        };
 
-    final flex = Flex(
-      direction: isHorizontal ? .horizontal : .vertical,
-      children: isReverse ? list.reversed.toList() : list,
+        final list = [
+          if (split != null) KeyedSubtree.wrap(split, 1),
+          if (split != null) KeyedSubtree.wrap(memoizedHandle, 2),
+          KeyedSubtree.wrap(child!, 3),
+        ];
+
+        return Flex(
+          direction: _axis,
+          children: isReverse ? list.reversed.toList() : list,
+        );
+      },
+      child: memoizedChild,
     );
-
-    return flex;
   }
 
   Widget _createHandle({Key? key}) {
-    final isHorizontal =
-        widget.direction == .left || widget.direction == .right;
-
     final inkWell = InkWell(
       onTap: () {},
-      mouseCursor: isHorizontal
-          ? SystemMouseCursors.resizeLeftRight
-          : SystemMouseCursors.resizeUpDown,
+      mouseCursor: switch (_axis) {
+        Axis.horizontal => SystemMouseCursors.resizeLeftRight,
+        Axis.vertical => SystemMouseCursors.resizeUpDown,
+      },
       child: RotatedBox(
-        quarterTurns: isHorizontal ? 0 : 1,
+        quarterTurns: switch (_axis) {
+          Axis.horizontal => 0,
+          Axis.vertical => 1,
+        },
         child: Icon(
           Icons.drag_indicator,
           size: 12.0,
@@ -71,43 +115,68 @@ class _SplitViewState extends SingleChildState<SplitView> {
         ).center(),
       ),
     );
-    final constrainedInkWell = isHorizontal
-        ? inkWell.constrained(width: _handleSize)
-        : inkWell.constrained(height: _handleSize);
+    final constrainedInkWell = switch (_axis) {
+      Axis.horizontal => inkWell.constrained(width: _handleSize),
+      Axis.vertical => inkWell.constrained(height: _handleSize),
+    };
 
     final gestureDetector = GestureDetector(
       dragStartBehavior: DragStartBehavior.down,
-      onHorizontalDragStart: isHorizontal
+      onHorizontalDragStart: _axis == .horizontal
           ? (details) {
-              _startDragPosition = details.globalPosition;
-              _startDragSize = _currentSize;
+              _dragBusiness = DragBusiness<double>(
+                startPosition: details.globalPosition,
+                orientation: _axis,
+                startValue: _sizeNotifier.value,
+                onUpdate: (startValue, distance) {
+                  if (widget.direction == .right) distance = -distance;
+                  final newSize = startValue + distance;
+                  _sizeNotifier.value = newSize.clamp(
+                    widget.minSize,
+                    widget.maxSize,
+                  );
+                },
+              );
             }
           : null,
-      onHorizontalDragUpdate: isHorizontal
+      onHorizontalDragUpdate: _axis == .horizontal
           ? (details) {
-              final delta = details.globalPosition.dx - _startDragPosition.dx;
-              setState(() {
-                final newSize =
-                    _startDragSize +
-                    delta * (widget.direction == .left ? 1 : -1);
-                _currentSize = newSize.clamp(widget.minSize, widget.maxSize);
-              });
+              _dragBusiness!.updatePosition(details.globalPosition);
             }
           : null,
-      onVerticalDragStart: !isHorizontal
+      onHorizontalDragEnd: _axis == .horizontal
           ? (details) {
-              _startDragPosition = details.globalPosition;
-              _startDragSize = _currentSize;
+              _dragBusiness!.updatePosition(details.globalPosition);
+              _updateLayout();
             }
           : null,
-      onVerticalDragUpdate: !isHorizontal
+
+      onVerticalDragStart: _axis == .vertical
           ? (details) {
-              final delta = details.globalPosition.dy - _startDragPosition.dy;
-              setState(() {
-                final newSize =
-                    _startDragSize + delta * (widget.direction == .up ? 1 : -1);
-                _currentSize = newSize.clamp(widget.minSize, widget.maxSize);
-              });
+              _dragBusiness = DragBusiness<double>(
+                startPosition: details.globalPosition,
+                orientation: _axis,
+                startValue: _sizeNotifier.value,
+                onUpdate: (startValue, distance) {
+                  if (widget.direction == .up) distance = -distance;
+                  final newSize = startValue + distance;
+                  _sizeNotifier.value = newSize.clamp(
+                    widget.minSize,
+                    widget.maxSize,
+                  );
+                },
+              );
+            }
+          : null,
+      onVerticalDragUpdate: _axis == .vertical
+          ? (details) {
+              _dragBusiness!.updatePosition(details.globalPosition);
+            }
+          : null,
+      onVerticalDragEnd: _axis == .vertical
+          ? (details) {
+              _dragBusiness!.updatePosition(details.globalPosition);
+              _updateLayout();
             }
           : null,
       child: constrainedInkWell,

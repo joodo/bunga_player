@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:bunga_player/danmaku/business.dart';
 import 'package:bunga_player/danmaku/models/data.dart';
 import 'package:bunga_player/screens/widgets/text_editing_shortcut_wrapper.dart';
+import 'package:bunga_player/screens/widgets/widgets.dart';
 import 'package:bunga_player/utils/business/platform.dart';
 import 'package:bunga_player/utils/business/run_after_build.dart';
 import 'package:flutter/material.dart';
@@ -116,9 +117,9 @@ class _PopmojiPanelState extends State<PopmojiPanel> {
       ).padding(left: 8.0).flexible(),
     ];
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        _panelWidth = constraints.maxWidth;
+    return Consumer<SplitPlacement>(
+      builder: (context, placement, child) {
+        _panelWidth = placement.size;
         final lineCount = _panelWidth ~/ buttonSize;
         var items = _sliceItems(_data, lineCount);
         if (items.isEmpty) items = ['无结果'];
@@ -173,7 +174,7 @@ class _PopmojiPanelState extends State<PopmojiPanel> {
 
               return RepaintBoundary(child: emojiRow);
             },
-          ),
+          ).overflow(minWidth: placement.size, alignment: .topLeft),
         );
       },
     );
