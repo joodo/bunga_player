@@ -22,11 +22,15 @@ class PlayerScreen extends StatelessWidget {
     final body = Consumer2<Panel?, DanmakuVisible>(
       builder: (context, panel, danmakuVisible, child) {
         final playerWidget = child!;
-        final danmakuWidget = RepaintBoundary(
-          child: const DanmakuControl().constrained(
-            key: Key('danmaku'),
-            height: danmakuHeight,
-          ),
+        final danmakuWidget = Consumer<IsInChannel>(
+          builder: (context, isInChannel, child) => isInChannel.value
+              ? RepaintBoundary(
+                  child: const DanmakuControl().constrained(
+                    key: Key('danmaku'),
+                    height: danmakuHeight,
+                  ),
+                )
+              : const SizedBox.shrink(),
         );
         return [
               playerWidget.positioned(
