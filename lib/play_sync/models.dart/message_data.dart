@@ -22,22 +22,38 @@ class BufferStateChangedMessageData extends MessageData {
   Map<String, dynamic> toJson() => _$BufferStateChangedMessageDataToJson(this);
 }
 
-/// Send when toggle playback
+/// Send/Receive when start play
 @JsonSerializable()
-class SetPlaybackMessageData extends MessageData {
-  static const messageCode = 'set-playback';
+class PlayMessageData extends MessageData {
+  static const messageCode = 'play';
   @override
   @JsonKey(includeFromJson: false, includeToJson: true)
   final code = messageCode;
 
-  final bool isPlay;
+  PlayMessageData();
 
-  SetPlaybackMessageData({required this.isPlay});
-
-  factory SetPlaybackMessageData.fromJson(Map<String, dynamic> json) =>
-      _$SetPlaybackMessageDataFromJson(json);
+  factory PlayMessageData.fromJson(Map<String, dynamic> json) =>
+      _$PlayMessageDataFromJson(json);
   @override
-  Map<String, dynamic> toJson() => _$SetPlaybackMessageDataToJson(this);
+  Map<String, dynamic> toJson() => _$PlayMessageDataToJson(this);
+}
+
+/// Send/Receive when pause
+@JsonSerializable()
+class PauseMessageData extends MessageData {
+  static const messageCode = 'pause';
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: true)
+  final code = messageCode;
+
+  final Duration position;
+
+  PauseMessageData({required this.position});
+
+  factory PauseMessageData.fromJson(Map<String, dynamic> json) =>
+      _$PauseMessageDataFromJson(json);
+  @override
+  Map<String, dynamic> toJson() => _$PauseMessageDataToJson(this);
 }
 
 /// Send when seek video

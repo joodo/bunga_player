@@ -17,13 +17,22 @@ Map<String, dynamic> _$BufferStateChangedMessageDataToJson(
   'is_buffering': instance.isBuffering,
 };
 
-SetPlaybackMessageData _$SetPlaybackMessageDataFromJson(
-  Map<String, dynamic> json,
-) => SetPlaybackMessageData(isPlay: json['is_play'] as bool);
+PlayMessageData _$PlayMessageDataFromJson(Map<String, dynamic> json) =>
+    PlayMessageData();
 
-Map<String, dynamic> _$SetPlaybackMessageDataToJson(
-  SetPlaybackMessageData instance,
-) => <String, dynamic>{'code': instance.code, 'is_play': instance.isPlay};
+Map<String, dynamic> _$PlayMessageDataToJson(PlayMessageData instance) =>
+    <String, dynamic>{'code': instance.code};
+
+PauseMessageData _$PauseMessageDataFromJson(Map<String, dynamic> json) =>
+    PauseMessageData(
+      position: Duration(microseconds: (json['position'] as num).toInt()),
+    );
+
+Map<String, dynamic> _$PauseMessageDataToJson(PauseMessageData instance) =>
+    <String, dynamic>{
+      'code': instance.code,
+      'position': instance.position.inMicroseconds,
+    };
 
 SeekMessageData _$SeekMessageDataFromJson(Map<String, dynamic> json) =>
     SeekMessageData(

@@ -168,13 +168,20 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
         case PlayAtMessageData.messageCode:
           final data = PlayAtMessageData.fromJson(message.data);
           _handlePlayAt(message.sender, data.isPlay, data.position);
-        case SetPlaybackMessageData.messageCode:
+        case PlayMessageData.messageCode:
           if (message.sender.id == myId) break;
-          final isPlay = SetPlaybackMessageData.fromJson(message.data).isPlay;
 
           final manager = read<PlaySyncMessageManager>();
           final name = message.sender.name;
-          manager.show('$name ${isPlay ? '播放' : '暂停'}了视频');
+          manager.show('$name 播放了视频');
+
+          _remoteJustToggledNotifier.mark();
+        case PauseMessageData.messageCode:
+          if (message.sender.id == myId) break;
+
+          final manager = read<PlaySyncMessageManager>();
+          final name = message.sender.name;
+          manager.show('$name 暂停了视频');
 
           _remoteJustToggledNotifier.mark();
         case SeekMessageData.messageCode:
@@ -230,9 +237,18 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
             if (_remoteJustToggledNotifier.value) return;
 
             final playService = getIt<MediaPlayer>();
-            final messageData = SetPlaybackMessageData(
-              isPlay: !playService.playStatusNotifier.value.isPlaying,
-            );
+            final wantPlay = !playService.playStatusNotifier.value.isPlaying;
+
+            late final MessageData messageData;
+            if (wantPlay) {
+              messageData = PlayMessageData();
+            } else {
+              // pause control by myself
+              playService.pause();
+              messageData = PauseMessageData(
+                position: playService.positionNotifier.value,
+              );
+            }
             context.sendMessage(messageData);
             return;
           },
