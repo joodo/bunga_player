@@ -60,7 +60,7 @@ class _ChannelActionsState extends SingleChildState<ChatGlobalBusiness> {
   Widget buildWithChild(BuildContext context, Widget? child) {
     assert(child != null);
 
-    final listener = child!.listenProvider<ChatClient?>((client) {
+    final listener = child!.listenProvider<ChatClient?>((context, client) {
       _clientSubscription?.cancel();
 
       if (client != null) {

@@ -1,8 +1,8 @@
-import 'package:bunga_player/screens/widgets/split_view.dart';
-import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
+
+import 'package:bunga_player/screens/widgets/split_view.dart';
 
 import 'panel/panel.dart';
 import 'player_widget/player_widget.dart';
@@ -24,14 +24,27 @@ class PlayerScreen extends StatelessWidget {
       key: _bodyKey,
       builder: (context, panel, danmakuVisible, child) {
         final playerWidget = child!.card(margin: EdgeInsets.all(0));
-        final danmakuWidget = danmakuVisible.value
-            ? const DanmakuControl().constrained(
-                key: Key('danmaku'),
+        final danmakuWidget = const DanmakuControl().constrained(
+          key: Key('danmaku'),
+          height: danmakuHeight,
+        );
+        return [
+              playerWidget.positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: danmakuVisible.value ? danmakuHeight : 0,
+                animate: true,
+              ),
+              danmakuWidget.positioned(
+                left: 0,
+                right: 0,
                 height: danmakuHeight,
-              )
-            : const SizedBox.shrink(key: Key('none'));
-        return [playerWidget.flexible(), _animate(danmakuWidget, .vertical)]
-            .toColumn()
+                bottom: danmakuVisible.value ? 0 : -danmakuHeight,
+                animate: true,
+              ),
+            ]
+            .toStack()
             .splitView(
               minSize: 260.0,
               size: 300.0,
@@ -48,16 +61,4 @@ class PlayerScreen extends StatelessWidget {
       getChildContext: () => _bodyKey.currentContext!,
     );
   }
-
-  Widget _animate(Widget widget, Axis axis) => widget.animatedSwitcher(
-    duration: const Duration(milliseconds: 350),
-    switchInCurve: Curves.easeOutCubic,
-    switchOutCurve: Curves.easeInCubic,
-    transitionBuilder: (child, animation) => SizeTransition(
-      sizeFactor: animation,
-      axis: axis,
-      axisAlignment: -1.0,
-      child: child,
-    ),
-  );
 }
