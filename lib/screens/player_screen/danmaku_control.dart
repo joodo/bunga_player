@@ -149,15 +149,12 @@ class _DanmakuControlState extends State<DanmakuControl> {
                             .padding(top: 4.0),
                     ].toColumn().padding(all: 8.0),
                   ),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: PopmojiButton(
-                      emoji,
-                      size: _buttonSize,
-                      onPressed: Actions.handler(
-                        context,
-                        SendPopmojiIntent(emoji),
-                      ),
+                  child: PopmojiButton(
+                    emoji,
+                    size: _buttonSize,
+                    onPressed: Actions.handler(
+                      context,
+                      SendPopmojiIntent(emoji),
                     ),
                   ),
                 );

@@ -1,9 +1,11 @@
 import 'dart:ui';
 
-import 'package:bunga_player/danmaku/models/data.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:styled_widget/styled_widget.dart';
+
+import 'package:bunga_player/danmaku/models/data.dart';
+import 'package:bunga_player/screens/player_screen/player_screen.dart';
 
 class PopmojiButton extends StatelessWidget {
   final String emoji;
@@ -70,17 +72,23 @@ class PopmojiButton extends StatelessWidget {
     final img = await EmojiData.createImage(emoji, _iconSize);
 
     // Throw
+    final playerBox =
+        PlayerScreen.playerKey.currentContext!.findRenderObject()! as RenderBox;
+    final playerLocalCenter = Offset(
+      playerBox.size.width / 2,
+      playerBox.size.height / 2,
+    );
+    final playerCenter = playerBox.localToGlobal(
+      playerLocalCenter,
+      ancestor: overlay,
+    );
+
     late final OverlayEntry overlayEntry;
     overlayEntry = OverlayEntry(
       builder: (context) {
         return _ThrowAnimation(
           startRect: position,
-          endRect: Rect.fromLTWH(
-            overlay.size.width / 2,
-            overlay.size.height / 2,
-            0,
-            0,
-          ),
+          endRect: Rect.fromPoints(playerCenter, playerCenter),
           overlay: overlayEntry,
           child: RawImage(image: img, filterQuality: FilterQuality.low),
         );
