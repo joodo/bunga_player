@@ -1,10 +1,11 @@
 import 'dart:async';
 import 'dart:collection';
 
-import 'package:bunga_player/chat/models/message.dart';
-import 'package:bunga_player/chat/models/message_data.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+import 'package:bunga_player/chat/models/models.dart';
+import 'package:bunga_player/danmaku/models/models.dart';
 
 class DanmakuTextPainter {
   static const textStyle = TextStyle(fontSize: 40, letterSpacing: 2);

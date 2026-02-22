@@ -94,122 +94,14 @@ ResetMessageData _$ResetMessageDataFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$ResetMessageDataToJson(ResetMessageData instance) =>
     <String, dynamic>{'code': instance.code};
 
-BufferStateChangedMessageData _$BufferStateChangedMessageDataFromJson(
-  Map<String, dynamic> json,
-) => BufferStateChangedMessageData(json['is_buffering'] as bool);
-
-Map<String, dynamic> _$BufferStateChangedMessageDataToJson(
-  BufferStateChangedMessageData instance,
-) => <String, dynamic>{
-  'code': instance.code,
-  'is_buffering': instance.isBuffering,
-};
-
 AlohaMessageData _$AlohaMessageDataFromJson(Map<String, dynamic> json) =>
     AlohaMessageData();
 
 Map<String, dynamic> _$AlohaMessageDataToJson(AlohaMessageData instance) =>
     <String, dynamic>{'code': instance.code};
 
-HereIsMessageData _$HereIsMessageDataFromJson(Map<String, dynamic> json) =>
-    HereIsMessageData(
-      user: User.fromJson(json['user'] as Map<String, dynamic>),
-      isTalking: json['is_talking'] as bool,
-    );
-
-Map<String, dynamic> _$HereIsMessageDataToJson(HereIsMessageData instance) =>
-    <String, dynamic>{
-      'code': instance.code,
-      'user': instance.user.toJson(),
-      'is_talking': instance.isTalking,
-    };
-
 ByeMessageData _$ByeMessageDataFromJson(Map<String, dynamic> json) =>
     ByeMessageData();
 
 Map<String, dynamic> _$ByeMessageDataToJson(ByeMessageData instance) =>
     <String, dynamic>{'code': instance.code};
-
-SetPlaybackMessageData _$SetPlaybackMessageDataFromJson(
-  Map<String, dynamic> json,
-) => SetPlaybackMessageData(isPlay: json['is_play'] as bool);
-
-Map<String, dynamic> _$SetPlaybackMessageDataToJson(
-  SetPlaybackMessageData instance,
-) => <String, dynamic>{'code': instance.code, 'is_play': instance.isPlay};
-
-SeekMessageData _$SeekMessageDataFromJson(Map<String, dynamic> json) =>
-    SeekMessageData(
-      position: Duration(microseconds: (json['position'] as num).toInt()),
-    );
-
-Map<String, dynamic> _$SeekMessageDataToJson(SeekMessageData instance) =>
-    <String, dynamic>{
-      'code': instance.code,
-      'position': instance.position.inMicroseconds,
-    };
-
-PlayFinishedMessageData _$PlayFinishedMessageDataFromJson(
-  Map<String, dynamic> json,
-) => PlayFinishedMessageData();
-
-Map<String, dynamic> _$PlayFinishedMessageDataToJson(
-  PlayFinishedMessageData instance,
-) => <String, dynamic>{'code': instance.code};
-
-PlayAtMessageData _$PlayAtMessageDataFromJson(Map<String, dynamic> json) =>
-    PlayAtMessageData(
-      position: Duration(microseconds: (json['position'] as num).toInt()),
-      isPlay: json['is_play'] as bool,
-    );
-
-Map<String, dynamic> _$PlayAtMessageDataToJson(PlayAtMessageData instance) =>
-    <String, dynamic>{
-      'code': instance.code,
-      'position': instance.position.inMicroseconds,
-      'is_play': instance.isPlay,
-    };
-
-PopmojiMessageData _$PopmojiMessageDataFromJson(Map<String, dynamic> json) =>
-    PopmojiMessageData(popmojiCode: json['popmoji_code'] as String);
-
-Map<String, dynamic> _$PopmojiMessageDataToJson(PopmojiMessageData instance) =>
-    <String, dynamic>{
-      'code': instance.code,
-      'popmoji_code': instance.popmojiCode,
-    };
-
-DanmakuMessageData _$DanmakuMessageDataFromJson(Map<String, dynamic> json) =>
-    DanmakuMessageData(message: json['message'] as String);
-
-Map<String, dynamic> _$DanmakuMessageDataToJson(DanmakuMessageData instance) =>
-    <String, dynamic>{'code': instance.code, 'message': instance.message};
-
-SparkMessageData _$SparkMessageDataFromJson(Map<String, dynamic> json) =>
-    SparkMessageData(
-      emoji: json['emoji'] as String,
-      fraction: SparkMessageData._fractionalOffsetFromJson(
-        json['fraction'] as List,
-      ),
-    );
-
-Map<String, dynamic> _$SparkMessageDataToJson(SparkMessageData instance) =>
-    <String, dynamic>{
-      'code': instance.code,
-      'emoji': instance.emoji,
-      'fraction': SparkMessageData._fractionalOffsetToJson(instance.fraction),
-    };
-
-ShareSubMessageData _$ShareSubMessageDataFromJson(Map<String, dynamic> json) =>
-    ShareSubMessageData(
-      url: json['url'] as String,
-      title: json['title'] as String,
-    );
-
-Map<String, dynamic> _$ShareSubMessageDataToJson(
-  ShareSubMessageData instance,
-) => <String, dynamic>{
-  'code': instance.code,
-  'url': instance.url,
-  'title': instance.title,
-};

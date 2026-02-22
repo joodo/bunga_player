@@ -1,19 +1,20 @@
-import 'package:bunga_player/bunga_server/global_business.dart';
-import 'package:bunga_player/chat/client/client.dart';
-import 'package:bunga_player/chat/models/message_data.dart';
-import 'package:bunga_player/play/busuness.dart';
-import 'package:bunga_player/play/models/track.dart';
-import 'package:bunga_player/play/service/service.dart';
-import 'package:bunga_player/play_sync/business.dart';
-import 'package:bunga_player/screens/player_screen/business.dart';
-import 'package:bunga_player/screens/widgets/slider_item.dart';
-import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/utils/extensions/extensions.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as path_tool;
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
+
+import 'package:bunga_player/bunga_server/global_business.dart';
+import 'package:bunga_player/chat/client/client.dart';
+import 'package:bunga_player/play/busuness.dart';
+import 'package:bunga_player/play/models/models.dart';
+import 'package:bunga_player/play/service/service.dart';
+import 'package:bunga_player/play_sync/business.dart';
+import 'package:bunga_player/play_sync/models.dart/message_data.dart';
+import 'package:bunga_player/screens/player_screen/business.dart';
+import 'package:bunga_player/screens/widgets/slider_item.dart';
+import 'package:bunga_player/services/services.dart';
+import 'package:bunga_player/utils/extensions/extensions.dart';
 
 import 'panel.dart';
 
