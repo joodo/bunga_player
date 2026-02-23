@@ -285,7 +285,7 @@ class _ChannelSwitcherState extends State<_ChannelSwitcher> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('已删除 ${deletedItem.name}'),
-        duration: Duration(seconds: 3),
+        persist: false,
         action: SnackBarAction(
           label: '撤销',
           onPressed: () {
