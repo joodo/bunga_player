@@ -375,6 +375,16 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
   void _handlePlayAt(User sender, bool isPlay, Duration position) async {
     final playService = getIt<MediaPlayer>();
 
+    // Toggle play/pause
+    final localPlay = playService.playStatusNotifier.value.isPlaying;
+    final shouldToggle = isPlay != localPlay;
+    if (shouldToggle) {
+      final act =
+          Actions.invoke(context, ToggleIntent(showVisualFeedback: true))
+              as Future;
+      await act;
+    }
+
     // Seek
     final localPosition = playService.positionNotifier.value;
     final shouldSeek =
@@ -393,13 +403,6 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
         // Not "near" enough, change playback rate instead of seeking to avoid jarring
         _catchUpTarget = _CatchUpTarget(position);
       }
-    }
-
-    // Toggle play/pause
-    final localPlay = playService.playStatusNotifier.value.isPlaying;
-    final shouldToggle = isPlay != localPlay;
-    if (shouldToggle && mounted) {
-      Actions.invoke(context, ToggleIntent());
     }
   }
 
