@@ -89,17 +89,12 @@ class _ChannelSwitcherState extends State<_ChannelSwitcher> {
 
   final _channelInfos = <ChannelInfo>[];
 
-  late bool _tryFailed;
+  bool _tryFailed = false;
 
   @override
   void initState() {
     super.initState();
     _loadInfos();
-
-    // Have address, but didn't get tokens, that means failed
-    _tryFailed =
-        context.read<BungaHostAddress>().value.isNotEmpty &&
-        context.read<ChannelTokens?>() == null;
   }
 
   @override
@@ -153,53 +148,72 @@ class _ChannelSwitcherState extends State<_ChannelSwitcher> {
 
   Widget _createRadios() {
     return Consumer2<BungaHostAddress?, FetchingChannelTokens>(
-      builder: (context, hostAddress, isFetching, child) => RadioGroup<String>(
-        groupValue: hostAddress?.value,
-        onChanged: (url) {
-          _connectTo(url!);
-        },
-        child: _channelInfos
-            .asMap()
-            .entries
-            .map((entry) {
-              final index = entry.key;
-              final info = entry.value;
-              final selected = hostAddress?.value == info.url;
+      builder: (context, hostAddress, isFetching, child) {
+        // Have address, but didn't get tokens,
+        // that means current server unalivable
+        final currentUnalivable =
+            context.read<BungaHostAddress>().value.isNotEmpty &&
+            context.read<ChannelTokens?>() == null;
+        final errorColor = Theme.of(context).colorScheme.error;
+        return RadioGroup<String>(
+          groupValue: hostAddress?.value,
+          onChanged: (url) {
+            _connectTo(url!);
+          },
+          child: _channelInfos
+              .asMap()
+              .entries
+              .map((entry) {
+                final index = entry.key;
+                final info = entry.value;
+                final selected = hostAddress?.value == info.url;
 
-              final controller = MenuController();
-              return RadioListTile(
-                enabled: !isFetching.value,
-                value: info.url,
-                title: Text(info.name),
-                subtitle: Text(
-                  Uri.parse(info.url).origin,
-                  maxLines: 1,
-                  overflow: .ellipsis,
-                ),
-                secondary: MenuAnchor(
-                  controller: controller,
-                  menuChildren: [
-                    MenuItemButton(
-                      leadingIcon: Icon(Icons.copy),
-                      onPressed: () => _copyToClipboard(info.url),
-                      child: const Text('复制地址'),
-                    ),
-                    MenuItemButton(
-                      leadingIcon: Icon(Icons.delete),
-                      onPressed: selected ? null : () => _remove(index),
-                      child: const Text('删除'),
-                    ),
-                  ],
-                  child: IconButton(
-                    onPressed: controller.open,
-                    icon: Icon(Icons.more_horiz),
+                final error = selected && currentUnalivable;
+
+                final controller = MenuController();
+                return RadioListTile(
+                  enabled: !isFetching.value,
+                  value: info.url,
+                  title: error
+                      ? Text('${info.name} （不可用）').textColor(errorColor)
+                      : Text(info.name),
+                  subtitle: Text(
+                    Uri.parse(info.url).origin,
+                    maxLines: 1,
+                    overflow: .ellipsis,
                   ),
-                ),
-              );
-            })
-            .toList()
-            .toColumn(),
-      ),
+                  activeColor: error ? errorColor : null,
+                  secondary: MenuAnchor(
+                    controller: controller,
+                    menuChildren: [
+                      MenuItemButton(
+                        leadingIcon: Icon(Icons.copy),
+                        onPressed: () => _copyToClipboard(info.url),
+                        child: const Text('复制地址'),
+                      ),
+                      MenuItemButton(
+                        leadingIcon: Icon(Icons.delete),
+                        onPressed: selected ? null : () => _remove(index),
+                        child: const Text('删除'),
+                      ),
+                      if (error)
+                        MenuItemButton(
+                          leadingIcon: Icon(Icons.cached),
+                          onPressed: () => _connectTo(info.url),
+                          child: const Text('重试'),
+                        ),
+                    ],
+                    child: IconButton(
+                      onPressed: controller.open,
+                      icon: Icon(Icons.more_horiz),
+                    ),
+                  ),
+                );
+              })
+              .toList()
+              .toColumn(),
+        );
+      },
     );
   }
 
@@ -271,7 +285,7 @@ class _ChannelSwitcherState extends State<_ChannelSwitcher> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('已删除 ${deletedItem.name}'),
-        duration: Duration(seconds: 3),
+        persist: false,
         action: SnackBarAction(
           label: '撤销',
           onPressed: () {

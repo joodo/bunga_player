@@ -102,7 +102,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   }
 
   void _dealWithNowPlaying(User sharer, VideoRecord data) {
-    //if (_currentProjection != null) return; // TODO: why?
     _dealWithProjection(sharer, StartProjectionMessageData(videoRecord: data));
   }
 

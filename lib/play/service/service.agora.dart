@@ -95,8 +95,8 @@ class AgoraMediaPlayer extends MediaPlayer {
           case .playerStatePaused:
             _playStatus.value = .pause;
           case .playerStatePlaybackAllLoopsCompleted:
-            _finishNotifier.fire();
             _playStatus.value = .pause;
+            _finishNotifier.fire();
           case .playerStateFailed:
             _playStatus.value = .stop;
             _openTask?.completeError(reason);
@@ -105,7 +105,7 @@ class AgoraMediaPlayer extends MediaPlayer {
         }
       },
       onPlayerEvent: (eventCode, elapsedTime, message) {
-        logger.i('Player event: $eventCode, message: $message');
+        //logger.i('Player event: $eventCode, message: $message');
         switch (eventCode) {
           /*case .playerEventBufferLow:
             _isBuffering.value = true;

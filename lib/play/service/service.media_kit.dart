@@ -16,6 +16,7 @@ import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/network/service.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/models/volume.dart';
+import 'package:bunga_player/utils/business/simple_event.dart';
 
 import '../models/play_payload.dart';
 import '../models/track.dart';
@@ -203,7 +204,6 @@ class MediaKitMediaPlayer extends MediaPlayer {
         .map<PlayStatus>((playing) => playing ? .play : .pause)
         .distinct(),
     .pause,
-    // TODO: status stop
   );
 
   @override
@@ -213,7 +213,7 @@ class MediaKitMediaPlayer extends MediaPlayer {
   @override
   Future<void> stop() => _player.stop();
 
-  final _finishNotifier = _SimpleEvent();
+  final _finishNotifier = SimpleEvent();
   @override
   Listenable get finishNotifier => _finishNotifier;
 
@@ -567,9 +567,4 @@ Stream<bool> _bufferingStream(
       }
     }
   }
-}
-
-// TODO: move
-class _SimpleEvent extends ChangeNotifier {
-  void fire() => notifyListeners();
 }

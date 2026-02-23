@@ -1,20 +1,20 @@
 import 'dart:convert';
 
-import 'package:bunga_player/bunga_server/models/channel_tokens.dart';
-import 'package:bunga_player/chat/models/user.dart';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:nested/nested.dart';
+import 'package:provider/provider.dart';
+
 import 'package:bunga_player/client_info/models/client_account.dart';
 import 'package:bunga_player/console/service.dart';
 import 'package:bunga_player/play/models/play_payload.dart';
-import 'package:bunga_player/play/models/video_record.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/utils/business/run_after_build.dart';
 import 'package:bunga_player/utils/extensions/http_response.dart';
 import 'package:bunga_player/utils/typedef.dart';
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:nested/nested.dart';
-import 'package:provider/provider.dart';
+
+import 'models/channel_tokens.dart';
 
 class FetchingChannelTokens {
   final bool value;
@@ -69,7 +69,8 @@ class ConnectToHostAction extends ContextAction<ConnectToHostIntent> {
       hostNotifier.value = BungaHostAddress(intent.url);
 
       return tokensNotifier.value;
-    } catch (_) {
+    } catch (e) {
+      logger.e('Cannot connect to server ${intent.url}: $e');
       return null;
     } finally {
       fetchingNotifier.value = FetchingChannelTokens(false);
@@ -97,45 +98,6 @@ Future<JsonMap> _retryIfTokenExpired({
     return _retryIfTokenExpired(serverInfo: serverInfo, doRequest: doRequest);
   } else {
     throw Exception('Bunga request failed: ${response.body}');
-  }
-}
-
-// TODO: useless
-class AlohaIntent extends Intent {
-  const AlohaIntent();
-}
-
-typedef AlohaResponse = ({User user, VideoRecord videoRecord});
-
-class AlohaAction extends ContextAction<AlohaIntent> {
-  @override
-  Future<AlohaResponse?> invoke(
-    AlohaIntent intent, [
-    BuildContext? context,
-  ]) async {
-    assert(context != null);
-    final read = context!.read;
-
-    final serverInfo = read<ChannelTokens>();
-    final url = serverInfo.origin.replace(
-      pathSegments: ['api', 'channels', serverInfo.channel.id, 'aloha', ''],
-    );
-
-    final json = await _retryIfTokenExpired(
-      serverInfo: serverInfo,
-      doRequest: (headers) => http.post(
-        url,
-        headers: headers,
-        body: jsonEncode(User.of(context).toJson()),
-      ),
-    );
-    final projectionJson = json['current_projection'];
-    return projectionJson != null
-        ? (
-            user: User.fromJson(projectionJson['sharer']),
-            videoRecord: VideoRecord.fromJson(projectionJson['video_record']),
-          )
-        : null;
   }
 }
 
@@ -219,37 +181,6 @@ class UploadLogAction extends ContextAction<UploadLogIntent> {
   }
 }
 
-// TODO: useless
-class ProjectIntent extends Intent {
-  final VideoRecord videoRecord;
-  const ProjectIntent(this.videoRecord);
-}
-
-class ProjectAction extends ContextAction<ProjectIntent> {
-  @override
-  Future<void> invoke(ProjectIntent intent, [BuildContext? context]) async {
-    assert(context != null);
-    final read = context!.read;
-    final serverInfo = read<ChannelTokens>();
-    final url = serverInfo.origin.replace(
-      pathSegments: ['api', 'channels', serverInfo.channel.id, 'project', ''],
-    );
-
-    try {
-      await _retryIfTokenExpired(
-        serverInfo: serverInfo,
-        doRequest: (headers) => http.post(
-          url,
-          headers: headers,
-          body: jsonEncode(intent.videoRecord.toJson()),
-        ),
-      );
-    } catch (e) {
-      throw Exception('Projection failed: $e');
-    }
-  }
-}
-
 class BungaServerGlobalBusiness extends SingleChildStatefulWidget {
   const BungaServerGlobalBusiness({super.key, super.child});
 
@@ -300,10 +231,8 @@ class _BungaServerGlobalBusinessState
     final actions = Actions(
       actions: <Type, Action<Intent>>{
         ConnectToHostIntent: _connectToHostAction,
-        AlohaIntent: AlohaAction(),
         UploadSubtitleIntent: UploadSubtitleAction(),
         UploadLogIntent: UploadLogAction(),
-        ProjectIntent: ProjectAction(),
       },
       child: child!,
     );

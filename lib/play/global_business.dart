@@ -1,6 +1,3 @@
-import 'dart:io';
-
-import 'package:audio_session/audio_session.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
@@ -62,8 +59,6 @@ class _PlayGlobalBusinessState extends SingleChildState<PlayGlobalBusiness> {
   void initState() {
     super.initState();
 
-    _preventAudioDucking();
-
     // History
     _history.load();
     getIt<ExitCallbacks>().add(_history.save);
@@ -78,13 +73,5 @@ class _PlayGlobalBusinessState extends SingleChildState<PlayGlobalBusiness> {
       ],
       child: child,
     );
-  }
-
-  void _preventAudioDucking() async {
-    // TODO: useless?
-    if (!Platform.isAndroid && !Platform.isIOS && !Platform.isWindows) return;
-
-    final session = await AudioSession.instance;
-    await session.configure(const AudioSessionConfiguration.speech());
   }
 }

@@ -8,26 +8,23 @@ import 'package:path/path.dart' as path_tool;
 import 'package:provider/provider.dart';
 
 import 'package:bunga_player/chat/global_business.dart';
-import 'package:bunga_player/chat/models/message.dart';
-import 'package:bunga_player/chat/models/message_data.dart';
-import 'package:bunga_player/chat/models/user.dart';
+import 'package:bunga_player/chat/models/models.dart';
+import 'package:bunga_player/chat/client/client.dart';
 import 'package:bunga_player/client_info/models/client_account.dart';
 import 'package:bunga_player/play/busuness.dart';
-import 'package:bunga_player/play/models/play_payload.dart';
-import 'package:bunga_player/play/models/video_record.dart';
+import 'package:bunga_player/play/models/models.dart';
 import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/screens/dialogs/open_video/direct_link.dart';
 import 'package:bunga_player/screens/dialogs/video_conflict.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/business/value_listenable.dart';
-import 'package:bunga_player/utils/extensions/duration.dart';
-import 'package:bunga_player/utils/extensions/file.dart';
-import 'package:bunga_player/utils/extensions/styled_widget.dart';
-import 'package:bunga_player/chat/client/client.dart';
+import 'package:bunga_player/utils/extensions/extensions.dart';
 import 'package:bunga_player/console/service.dart';
 import 'package:bunga_player/play/payload_parser.dart';
 import 'package:bunga_player/ui/global_business.dart';
 import 'package:bunga_player/ui/shortcuts.dart';
+
+import 'models.dart/message_data.dart';
 
 // Data types
 
@@ -171,13 +168,20 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
         case PlayAtMessageData.messageCode:
           final data = PlayAtMessageData.fromJson(message.data);
           _handlePlayAt(message.sender, data.isPlay, data.position);
-        case SetPlaybackMessageData.messageCode:
+        case PlayMessageData.messageCode:
           if (message.sender.id == myId) break;
-          final isPlay = SetPlaybackMessageData.fromJson(message.data).isPlay;
 
           final manager = read<PlaySyncMessageManager>();
           final name = message.sender.name;
-          manager.show('$name ${isPlay ? '播放' : '暂停'}了视频');
+          manager.show('$name 播放了视频');
+
+          _remoteJustToggledNotifier.mark();
+        case PauseMessageData.messageCode:
+          if (message.sender.id == myId) break;
+
+          final manager = read<PlaySyncMessageManager>();
+          final name = message.sender.name;
+          manager.show('$name 暂停了视频');
 
           _remoteJustToggledNotifier.mark();
         case SeekMessageData.messageCode:
@@ -233,9 +237,18 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
             if (_remoteJustToggledNotifier.value) return;
 
             final playService = getIt<MediaPlayer>();
-            final messageData = SetPlaybackMessageData(
-              isPlay: !playService.playStatusNotifier.value.isPlaying,
-            );
+            final wantPlay = !playService.playStatusNotifier.value.isPlaying;
+
+            late final MessageData messageData;
+            if (wantPlay) {
+              messageData = PlayMessageData();
+            } else {
+              // pause control by myself
+              playService.pause();
+              messageData = PauseMessageData(
+                position: playService.positionNotifier.value,
+              );
+            }
             context.sendMessage(messageData);
             return;
           },
@@ -287,7 +300,6 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
   }
 
   void _dealWithWhoAreYou() {
-    // TODO: useless?
     final data = JoinInMessageData(user: User.of(context));
     context.sendMessage(data);
   }
@@ -362,6 +374,16 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
   void _handlePlayAt(User sender, bool isPlay, Duration position) async {
     final playService = getIt<MediaPlayer>();
 
+    // Toggle play/pause
+    final localPlay = playService.playStatusNotifier.value.isPlaying;
+    final shouldToggle = isPlay != localPlay;
+    if (shouldToggle) {
+      final act =
+          Actions.invoke(context, ToggleIntent(showVisualFeedback: true))
+              as Future;
+      await act;
+    }
+
     // Seek
     final localPosition = playService.positionNotifier.value;
     final shouldSeek =
@@ -380,13 +402,6 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
         // Not "near" enough, change playback rate instead of seeking to avoid jarring
         _catchUpTarget = _CatchUpTarget(position);
       }
-    }
-
-    // Toggle play/pause
-    final localPlay = playService.playStatusNotifier.value.isPlaying;
-    final shouldToggle = isPlay != localPlay;
-    if (shouldToggle && mounted) {
-      Actions.invoke(context, ToggleIntent());
     }
   }
 
@@ -427,7 +442,6 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
         playService.playbackRateNotifier.value = 0.95;
       case 0:
         _catchUpTarget = null;
-        print('finish');
       case > 0:
         playService.playbackRateNotifier.value = 1.05;
     }
@@ -449,8 +463,6 @@ class _CatchUpTarget {
     final now = DateTime.now();
     final elapsed = now.difference(_createdAt);
     final currentTarget = _target + elapsed;
-
-    print((currentTarget - other).inMilliseconds);
 
     if (currentTarget.near(other)) return 0;
     return currentTarget.compareTo(other);

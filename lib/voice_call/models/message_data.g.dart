@@ -7,7 +7,15 @@ part of 'message_data.dart';
 // **************************************************************************
 
 CallMessageData _$CallMessageDataFromJson(Map<String, dynamic> json) =>
-    CallMessageData(action: $enumDecode(_$CallActionEnumMap, json['action']));
+    $checkedCreate('CallMessageData', json, ($checkedConvert) {
+      final val = CallMessageData(
+        action: $checkedConvert(
+          'action',
+          (v) => $enumDecode(_$CallActionEnumMap, v),
+        ),
+      );
+      return val;
+    });
 
 Map<String, dynamic> _$CallMessageDataToJson(CallMessageData instance) =>
     <String, dynamic>{
@@ -24,9 +32,15 @@ const _$CallActionEnumMap = {
 
 TalkStatusMessageData _$TalkStatusMessageDataFromJson(
   Map<String, dynamic> json,
-) => TalkStatusMessageData(
-  status: $enumDecode(_$TalkStatusEnumMap, json['status']),
-);
+) => $checkedCreate('TalkStatusMessageData', json, ($checkedConvert) {
+  final val = TalkStatusMessageData(
+    status: $checkedConvert(
+      'status',
+      (v) => $enumDecode(_$TalkStatusEnumMap, v),
+    ),
+  );
+  return val;
+});
 
 Map<String, dynamic> _$TalkStatusMessageDataToJson(
   TalkStatusMessageData instance,

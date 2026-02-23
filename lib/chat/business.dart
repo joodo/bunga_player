@@ -97,6 +97,7 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
     _streamSubscription = messageStream.listen((message) {
       switch (message.data['code']) {
         case AlohaMessageData.messageCode:
+          if (message.sender.id == _myId) break;
           _dealWithAloha(message.sender);
         case HereAreMessageData.messageCode:
           final watchers = HereAreMessageData.fromJson(message.data).watchers;

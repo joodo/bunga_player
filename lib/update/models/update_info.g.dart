@@ -6,12 +6,23 @@ part of 'update_info.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-UpdateInfo _$UpdateInfoFromJson(Map<String, dynamic> json) => UpdateInfo(
-  checkedAt: DateTime.parse(json['checked_at'] as String),
-  version: json['version'] as String,
-  name: json['name'] as String,
-  body: json['body'] as String,
-  downloadUrl: json['download_url'] as String,
+UpdateInfo _$UpdateInfoFromJson(Map<String, dynamic> json) => $checkedCreate(
+  'UpdateInfo',
+  json,
+  ($checkedConvert) {
+    final val = UpdateInfo(
+      checkedAt: $checkedConvert(
+        'checked_at',
+        (v) => DateTime.parse(v as String),
+      ),
+      version: $checkedConvert('version', (v) => v as String),
+      name: $checkedConvert('name', (v) => v as String),
+      body: $checkedConvert('body', (v) => v as String),
+      downloadUrl: $checkedConvert('download_url', (v) => v as String),
+    );
+    return val;
+  },
+  fieldKeyMap: const {'checkedAt': 'checked_at', 'downloadUrl': 'download_url'},
 );
 
 Map<String, dynamic> _$UpdateInfoToJson(UpdateInfo instance) =>

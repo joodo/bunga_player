@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:bunga_player/voice_call/business.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
@@ -9,6 +8,8 @@ import 'package:styled_widget/styled_widget.dart';
 
 import 'package:bunga_player/utils/business/value_listenable.dart';
 import 'package:bunga_player/utils/models/volume.dart';
+import 'package:bunga_player/utils/business/drag_business.dart';
+import 'package:bunga_player/voice_call/business.dart';
 import 'package:bunga_player/play/busuness.dart';
 import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/services/services.dart';
@@ -27,7 +28,7 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
   static const _verticalFactor = 1 / 200.0;
 
   // Dragging
-  _DragBusiness? _dragBusiness;
+  DragBusiness? _dragBusiness;
 
   // Horizontal drag
   bool _isPlayingBeforeDrag = false;
@@ -106,7 +107,7 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
       onHorizentalDragStart: (details) {
         _showHUDNotifier.lockUp('drag');
 
-        _dragBusiness = _DragBusiness(
+        _dragBusiness = DragBusiness(
           startPosition: details.localPosition,
           orientation: .horizontal,
           startValue: play.positionNotifier.value,
@@ -141,7 +142,7 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
 
         _isDraggingLeftSide = _isLeftScreen(startPosition);
 
-        _dragBusiness = _DragBusiness(
+        _dragBusiness = DragBusiness(
           startPosition: startPosition,
           orientation: .vertical,
           startValue: _isDraggingLeftSide
@@ -187,7 +188,7 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
         final startPosition = details.localPosition;
         _isDraggingLeftSide = _isLeftScreen(startPosition);
         final mediaVolumeNotifer = getIt<MediaPlayer>().volumeNotifier;
-        _dragBusiness = _DragBusiness(
+        _dragBusiness = DragBusiness(
           startPosition: startPosition,
           orientation: .vertical,
           startValue: _isDraggingLeftSide
@@ -213,7 +214,9 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
       onVerticalMultiFingerDragEnd: (details) {
         if (_dragBusiness != null) {
           _dragBusiness = null;
-          Actions.maybeInvoke(context, FinishUpdateVoiceVolumeIntent());
+          if (!_isDraggingLeftSide) {
+            Actions.maybeInvoke(context, FinishUpdateVoiceVolumeIntent());
+          }
         }
       },
 
@@ -244,28 +247,6 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
         _lockButtonVisibleNotifier.reset();
       }
     }
-  }
-}
-
-class _DragBusiness<T> {
-  final Offset startPosition;
-  final Axis orientation;
-  final T startValue;
-  final dynamic Function(T startValue, double distance) onUpdate;
-
-  _DragBusiness({
-    required this.startPosition,
-    required this.orientation,
-    required this.startValue,
-    required this.onUpdate,
-  });
-
-  dynamic updatePosition(Offset currentPosition) {
-    final distance = switch (orientation) {
-      Axis.horizontal => currentPosition.dx - startPosition.dx,
-      Axis.vertical => startPosition.dy - currentPosition.dy,
-    };
-    return onUpdate(startValue, distance);
   }
 }
 

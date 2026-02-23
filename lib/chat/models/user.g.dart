@@ -6,11 +6,15 @@ part of 'user.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-User _$UserFromJson(Map<String, dynamic> json) => User(
-  id: json['id'] as String,
-  name: json['name'] as String,
-  colorHue: (json['color_hue'] as num?)?.toInt(),
-);
+User _$UserFromJson(Map<String, dynamic> json) =>
+    $checkedCreate('User', json, ($checkedConvert) {
+      final val = User(
+        id: $checkedConvert('id', (v) => v as String),
+        name: $checkedConvert('name', (v) => v as String),
+        colorHue: $checkedConvert('color_hue', (v) => (v as num?)?.toInt()),
+      );
+      return val;
+    }, fieldKeyMap: const {'colorHue': 'color_hue'});
 
 Map<String, dynamic> _$UserToJson(User instance) => <String, dynamic>{
   'id': instance.id,

@@ -22,22 +22,6 @@ class Token {
 }
 
 @JsonSerializable()
-class IMInfo {
-  final String appId;
-  final String userId;
-  final String userSig;
-
-  IMInfo({required this.appId, required this.userId, required this.userSig});
-
-  factory IMInfo.fromJson(Map<String, dynamic> json) => _$IMInfoFromJson(json);
-
-  Map<String, dynamic> toJson() => _$IMInfoToJson(this);
-
-  @override
-  String toString() => jsonEncode(toJson());
-}
-
-@JsonSerializable()
 class VoiceCallInfo {
   final String key;
   final String channelToken;
@@ -87,6 +71,7 @@ class AListInfo {
 
 @JsonSerializable()
 class ChannelInfo {
+  @JsonKey(name: 'channel_id')
   final String id;
   final String name;
 
@@ -107,7 +92,6 @@ class ChannelTokens {
   Token _token;
   final Uri origin;
   final ChannelInfo channel;
-  final IMInfo im;
   final VoiceCallInfo? voiceCall;
   final BilibiliInfo? bilibili;
   final AListInfo? alist;
@@ -115,7 +99,6 @@ class ChannelTokens {
   ChannelTokens({
     required Token token,
     required this.channel,
-    required this.im,
     required this.origin,
     this.voiceCall,
     this.bilibili,

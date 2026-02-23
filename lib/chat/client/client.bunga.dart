@@ -83,8 +83,11 @@ class BungaChatClient extends ChatClient {
     final origin = _serverInfo.origin;
     final wsUrl = origin.replace(
       scheme: origin.scheme == 'http' ? 'ws' : 'wss',
-      path: 'chat/${_serverInfo.channel.id}/',
-      queryParameters: {'token': _serverInfo.token.access},
+      path: 'chat/',
+      queryParameters: {
+        'token': _serverInfo.token.access,
+        'channel_id': _serverInfo.channel.id,
+      },
     );
     _channel = WebSocketChannel.connect(wsUrl);
 
