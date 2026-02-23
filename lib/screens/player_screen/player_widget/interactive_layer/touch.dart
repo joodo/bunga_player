@@ -214,7 +214,9 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
       onVerticalMultiFingerDragEnd: (details) {
         if (_dragBusiness != null) {
           _dragBusiness = null;
-          Actions.maybeInvoke(context, FinishUpdateVoiceVolumeIntent());
+          if (!_isDraggingLeftSide) {
+            Actions.maybeInvoke(context, FinishUpdateVoiceVolumeIntent());
+          }
         }
       },
 

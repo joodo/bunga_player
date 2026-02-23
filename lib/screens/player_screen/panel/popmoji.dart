@@ -1,17 +1,16 @@
 import 'dart:math';
 
-import 'package:bunga_player/danmaku/business.dart';
-import 'package:bunga_player/danmaku/models/data.dart';
-import 'package:bunga_player/screens/widgets/text_editing_shortcut_wrapper.dart';
-import 'package:bunga_player/screens/widgets/widgets.dart';
-import 'package:bunga_player/utils/business/platform.dart';
-import 'package:bunga_player/utils/business/run_after_build.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
-import '../../widgets/popmoji_button.dart';
+import 'package:bunga_player/danmaku/business.dart';
+import 'package:bunga_player/danmaku/models/data.dart';
+import 'package:bunga_player/screens/widgets/widgets.dart';
+import 'package:bunga_player/utils/business/platform.dart';
+import 'package:bunga_player/utils/business/run_after_build.dart';
+
 import 'panel.dart';
 
 class PopmojiPanel extends StatefulWidget implements Panel {

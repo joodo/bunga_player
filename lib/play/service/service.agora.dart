@@ -105,7 +105,7 @@ class AgoraMediaPlayer extends MediaPlayer {
         }
       },
       onPlayerEvent: (eventCode, elapsedTime, message) {
-        logger.i('Player event: $eventCode, message: $message');
+        //logger.i('Player event: $eventCode, message: $message');
         switch (eventCode) {
           /*case .playerEventBufferLow:
             _isBuffering.value = true;

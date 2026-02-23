@@ -300,7 +300,6 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
   }
 
   void _dealWithWhoAreYou() {
-    // TODO: useless?
     final data = JoinInMessageData(user: User.of(context));
     context.sendMessage(data);
   }
@@ -443,7 +442,6 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
         playService.playbackRateNotifier.value = 0.95;
       case 0:
         _catchUpTarget = null;
-        print('finish');
       case > 0:
         playService.playbackRateNotifier.value = 1.05;
     }
@@ -465,8 +463,6 @@ class _CatchUpTarget {
     final now = DateTime.now();
     final elapsed = now.difference(_createdAt);
     final currentTarget = _target + elapsed;
-
-    print((currentTarget - other).inMilliseconds);
 
     if (currentTarget.near(other)) return 0;
     return currentTarget.compareTo(other);
