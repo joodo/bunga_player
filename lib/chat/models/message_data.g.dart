@@ -8,24 +8,39 @@ part of 'message_data.dart';
 
 WhoAreYouMessageData _$WhoAreYouMessageDataFromJson(
   Map<String, dynamic> json,
-) => WhoAreYouMessageData();
+) => $checkedCreate('WhoAreYouMessageData', json, ($checkedConvert) {
+  final val = WhoAreYouMessageData();
+  return val;
+});
 
 Map<String, dynamic> _$WhoAreYouMessageDataToJson(
   WhoAreYouMessageData instance,
 ) => <String, dynamic>{'code': instance.code};
 
 WhatsOnMessageData _$WhatsOnMessageDataFromJson(Map<String, dynamic> json) =>
-    WhatsOnMessageData();
+    $checkedCreate('WhatsOnMessageData', json, ($checkedConvert) {
+      final val = WhatsOnMessageData();
+      return val;
+    });
 
 Map<String, dynamic> _$WhatsOnMessageDataToJson(WhatsOnMessageData instance) =>
     <String, dynamic>{'code': instance.code};
 
 NowPlayingMessageData _$NowPlayingMessageDataFromJson(
   Map<String, dynamic> json,
-) => NowPlayingMessageData(
-  record: VideoRecord.fromJson(json['record'] as Map<String, dynamic>),
-  sharer: User.fromJson(json['sharer'] as Map<String, dynamic>),
-);
+) => $checkedCreate('NowPlayingMessageData', json, ($checkedConvert) {
+  final val = NowPlayingMessageData(
+    record: $checkedConvert(
+      'record',
+      (v) => VideoRecord.fromJson(v as Map<String, dynamic>),
+    ),
+    sharer: $checkedConvert(
+      'sharer',
+      (v) => User.fromJson(v as Map<String, dynamic>),
+    ),
+  );
+  return val;
+});
 
 Map<String, dynamic> _$NowPlayingMessageDataToJson(
   NowPlayingMessageData instance,
@@ -36,14 +51,21 @@ Map<String, dynamic> _$NowPlayingMessageDataToJson(
 };
 
 JoinInMessageData _$JoinInMessageDataFromJson(Map<String, dynamic> json) =>
-    JoinInMessageData(
-      user: User.fromJson(json['user'] as Map<String, dynamic>),
-      myShare: json['my_share'] == null
-          ? null
-          : StartProjectionMessageData.fromJson(
-              json['my_share'] as Map<String, dynamic>,
-            ),
-    );
+    $checkedCreate('JoinInMessageData', json, ($checkedConvert) {
+      final val = JoinInMessageData(
+        user: $checkedConvert(
+          'user',
+          (v) => User.fromJson(v as Map<String, dynamic>),
+        ),
+        myShare: $checkedConvert(
+          'my_share',
+          (v) => v == null
+              ? null
+              : StartProjectionMessageData.fromJson(v as Map<String, dynamic>),
+        ),
+      );
+      return val;
+    }, fieldKeyMap: const {'myShare': 'my_share'});
 
 Map<String, dynamic> _$JoinInMessageDataToJson(JoinInMessageData instance) =>
     <String, dynamic>{
@@ -53,14 +75,21 @@ Map<String, dynamic> _$JoinInMessageDataToJson(JoinInMessageData instance) =>
     };
 
 HereAreMessageData _$HereAreMessageDataFromJson(Map<String, dynamic> json) =>
-    HereAreMessageData(
-      watchers: (json['watchers'] as List<dynamic>)
-          .map((e) => User.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      buffering: (json['buffering'] as List<dynamic>)
-          .map((e) => e as String)
-          .toList(),
-    );
+    $checkedCreate('HereAreMessageData', json, ($checkedConvert) {
+      final val = HereAreMessageData(
+        watchers: $checkedConvert(
+          'watchers',
+          (v) => (v as List<dynamic>)
+              .map((e) => User.fromJson(e as Map<String, dynamic>))
+              .toList(),
+        ),
+        buffering: $checkedConvert(
+          'buffering',
+          (v) => (v as List<dynamic>).map((e) => e as String).toList(),
+        ),
+      );
+      return val;
+    });
 
 Map<String, dynamic> _$HereAreMessageDataToJson(HereAreMessageData instance) =>
     <String, dynamic>{
@@ -71,13 +100,25 @@ Map<String, dynamic> _$HereAreMessageDataToJson(HereAreMessageData instance) =>
 
 StartProjectionMessageData _$StartProjectionMessageDataFromJson(
   Map<String, dynamic> json,
-) => StartProjectionMessageData(
-  videoRecord: VideoRecord.fromJson(
-    json['video_record'] as Map<String, dynamic>,
-  ),
-  position: json['position'] == null
-      ? Duration.zero
-      : Duration(microseconds: (json['position'] as num).toInt()),
+) => $checkedCreate(
+  'StartProjectionMessageData',
+  json,
+  ($checkedConvert) {
+    final val = StartProjectionMessageData(
+      videoRecord: $checkedConvert(
+        'video_record',
+        (v) => VideoRecord.fromJson(v as Map<String, dynamic>),
+      ),
+      position: $checkedConvert(
+        'position',
+        (v) => v == null
+            ? Duration.zero
+            : Duration(microseconds: (v as num).toInt()),
+      ),
+    );
+    return val;
+  },
+  fieldKeyMap: const {'videoRecord': 'video_record'},
 );
 
 Map<String, dynamic> _$StartProjectionMessageDataToJson(
@@ -89,19 +130,28 @@ Map<String, dynamic> _$StartProjectionMessageDataToJson(
 };
 
 ResetMessageData _$ResetMessageDataFromJson(Map<String, dynamic> json) =>
-    ResetMessageData();
+    $checkedCreate('ResetMessageData', json, ($checkedConvert) {
+      final val = ResetMessageData();
+      return val;
+    });
 
 Map<String, dynamic> _$ResetMessageDataToJson(ResetMessageData instance) =>
     <String, dynamic>{'code': instance.code};
 
 AlohaMessageData _$AlohaMessageDataFromJson(Map<String, dynamic> json) =>
-    AlohaMessageData();
+    $checkedCreate('AlohaMessageData', json, ($checkedConvert) {
+      final val = AlohaMessageData();
+      return val;
+    });
 
 Map<String, dynamic> _$AlohaMessageDataToJson(AlohaMessageData instance) =>
     <String, dynamic>{'code': instance.code};
 
 ByeMessageData _$ByeMessageDataFromJson(Map<String, dynamic> json) =>
-    ByeMessageData();
+    $checkedCreate('ByeMessageData', json, ($checkedConvert) {
+      final val = ByeMessageData();
+      return val;
+    });
 
 Map<String, dynamic> _$ByeMessageDataToJson(ByeMessageData instance) =>
     <String, dynamic>{'code': instance.code};

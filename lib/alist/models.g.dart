@@ -7,11 +7,17 @@ part of 'models.dart';
 // **************************************************************************
 
 AListFileInfo _$AListFileInfoFromJson(Map<String, dynamic> json) =>
-    AListFileInfo(
-      name: json['name'] as String,
-      size: (json['size'] as num).toInt(),
-      type: $enumDecode(_$AListFileTypeEnumMap, json['type']),
-    );
+    $checkedCreate('AListFileInfo', json, ($checkedConvert) {
+      final val = AListFileInfo(
+        name: $checkedConvert('name', (v) => v as String),
+        size: $checkedConvert('size', (v) => (v as num).toInt()),
+        type: $checkedConvert(
+          'type',
+          (v) => $enumDecode(_$AListFileTypeEnumMap, v),
+        ),
+      );
+      return val;
+    });
 
 Map<String, dynamic> _$AListFileInfoToJson(AListFileInfo instance) =>
     <String, dynamic>{
@@ -30,16 +36,25 @@ const _$AListFileTypeEnumMap = {
 };
 
 AListFileDetail _$AListFileDetailFromJson(Map<String, dynamic> json) =>
-    AListFileDetail(
-      name: json['name'] as String,
-      size: (json['size'] as num).toInt(),
-      type: $enumDecode(_$AListFileTypeEnumMap, json['type']),
-      created: DateTime.parse(json['created'] as String),
-      modified: DateTime.parse(json['modified'] as String),
-      thumb: json['thumb'] as String,
-      sign: json['sign'] as String,
-      rawUrl: json['raw_url'] as String?,
-    );
+    $checkedCreate('AListFileDetail', json, ($checkedConvert) {
+      final val = AListFileDetail(
+        name: $checkedConvert('name', (v) => v as String),
+        size: $checkedConvert('size', (v) => (v as num).toInt()),
+        type: $checkedConvert(
+          'type',
+          (v) => $enumDecode(_$AListFileTypeEnumMap, v),
+        ),
+        created: $checkedConvert('created', (v) => DateTime.parse(v as String)),
+        modified: $checkedConvert(
+          'modified',
+          (v) => DateTime.parse(v as String),
+        ),
+        thumb: $checkedConvert('thumb', (v) => v as String),
+        sign: $checkedConvert('sign', (v) => v as String),
+        rawUrl: $checkedConvert('raw_url', (v) => v as String?),
+      );
+      return val;
+    }, fieldKeyMap: const {'rawUrl': 'raw_url'});
 
 Map<String, dynamic> _$AListFileDetailToJson(AListFileDetail instance) =>
     <String, dynamic>{
@@ -54,12 +69,18 @@ Map<String, dynamic> _$AListFileDetailToJson(AListFileDetail instance) =>
     };
 
 AListSearchResult _$AListSearchResultFromJson(Map<String, dynamic> json) =>
-    AListSearchResult(
-      name: json['name'] as String,
-      size: (json['size'] as num).toInt(),
-      type: $enumDecode(_$AListFileTypeEnumMap, json['type']),
-      parent: json['parent'] as String,
-    );
+    $checkedCreate('AListSearchResult', json, ($checkedConvert) {
+      final val = AListSearchResult(
+        name: $checkedConvert('name', (v) => v as String),
+        size: $checkedConvert('size', (v) => (v as num).toInt()),
+        type: $checkedConvert(
+          'type',
+          (v) => $enumDecode(_$AListFileTypeEnumMap, v),
+        ),
+        parent: $checkedConvert('parent', (v) => v as String),
+      );
+      return val;
+    });
 
 Map<String, dynamic> _$AListSearchResultToJson(AListSearchResult instance) =>
     <String, dynamic>{

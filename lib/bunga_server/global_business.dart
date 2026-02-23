@@ -69,7 +69,8 @@ class ConnectToHostAction extends ContextAction<ConnectToHostIntent> {
       hostNotifier.value = BungaHostAddress(intent.url);
 
       return tokensNotifier.value;
-    } catch (_) {
+    } catch (e) {
+      logger.e('Cannot connect to server ${intent.url}: $e');
       return null;
     } finally {
       fetchingNotifier.value = FetchingChannelTokens(false);

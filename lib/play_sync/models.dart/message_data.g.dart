@@ -8,7 +8,17 @@ part of 'message_data.dart';
 
 BufferStateChangedMessageData _$BufferStateChangedMessageDataFromJson(
   Map<String, dynamic> json,
-) => BufferStateChangedMessageData(json['is_buffering'] as bool);
+) => $checkedCreate(
+  'BufferStateChangedMessageData',
+  json,
+  ($checkedConvert) {
+    final val = BufferStateChangedMessageData(
+      $checkedConvert('is_buffering', (v) => v as bool),
+    );
+    return val;
+  },
+  fieldKeyMap: const {'isBuffering': 'is_buffering'},
+);
 
 Map<String, dynamic> _$BufferStateChangedMessageDataToJson(
   BufferStateChangedMessageData instance,
@@ -18,15 +28,24 @@ Map<String, dynamic> _$BufferStateChangedMessageDataToJson(
 };
 
 PlayMessageData _$PlayMessageDataFromJson(Map<String, dynamic> json) =>
-    PlayMessageData();
+    $checkedCreate('PlayMessageData', json, ($checkedConvert) {
+      final val = PlayMessageData();
+      return val;
+    });
 
 Map<String, dynamic> _$PlayMessageDataToJson(PlayMessageData instance) =>
     <String, dynamic>{'code': instance.code};
 
 PauseMessageData _$PauseMessageDataFromJson(Map<String, dynamic> json) =>
-    PauseMessageData(
-      position: Duration(microseconds: (json['position'] as num).toInt()),
-    );
+    $checkedCreate('PauseMessageData', json, ($checkedConvert) {
+      final val = PauseMessageData(
+        position: $checkedConvert(
+          'position',
+          (v) => Duration(microseconds: (v as num).toInt()),
+        ),
+      );
+      return val;
+    });
 
 Map<String, dynamic> _$PauseMessageDataToJson(PauseMessageData instance) =>
     <String, dynamic>{
@@ -35,9 +54,15 @@ Map<String, dynamic> _$PauseMessageDataToJson(PauseMessageData instance) =>
     };
 
 SeekMessageData _$SeekMessageDataFromJson(Map<String, dynamic> json) =>
-    SeekMessageData(
-      position: Duration(microseconds: (json['position'] as num).toInt()),
-    );
+    $checkedCreate('SeekMessageData', json, ($checkedConvert) {
+      final val = SeekMessageData(
+        position: $checkedConvert(
+          'position',
+          (v) => Duration(microseconds: (v as num).toInt()),
+        ),
+      );
+      return val;
+    });
 
 Map<String, dynamic> _$SeekMessageDataToJson(SeekMessageData instance) =>
     <String, dynamic>{
@@ -47,17 +72,26 @@ Map<String, dynamic> _$SeekMessageDataToJson(SeekMessageData instance) =>
 
 PlayFinishedMessageData _$PlayFinishedMessageDataFromJson(
   Map<String, dynamic> json,
-) => PlayFinishedMessageData();
+) => $checkedCreate('PlayFinishedMessageData', json, ($checkedConvert) {
+  final val = PlayFinishedMessageData();
+  return val;
+});
 
 Map<String, dynamic> _$PlayFinishedMessageDataToJson(
   PlayFinishedMessageData instance,
 ) => <String, dynamic>{'code': instance.code};
 
 PlayAtMessageData _$PlayAtMessageDataFromJson(Map<String, dynamic> json) =>
-    PlayAtMessageData(
-      position: Duration(microseconds: (json['position'] as num).toInt()),
-      isPlay: json['is_play'] as bool,
-    );
+    $checkedCreate('PlayAtMessageData', json, ($checkedConvert) {
+      final val = PlayAtMessageData(
+        position: $checkedConvert(
+          'position',
+          (v) => Duration(microseconds: (v as num).toInt()),
+        ),
+        isPlay: $checkedConvert('is_play', (v) => v as bool),
+      );
+      return val;
+    }, fieldKeyMap: const {'isPlay': 'is_play'});
 
 Map<String, dynamic> _$PlayAtMessageDataToJson(PlayAtMessageData instance) =>
     <String, dynamic>{
@@ -67,10 +101,13 @@ Map<String, dynamic> _$PlayAtMessageDataToJson(PlayAtMessageData instance) =>
     };
 
 ShareSubMessageData _$ShareSubMessageDataFromJson(Map<String, dynamic> json) =>
-    ShareSubMessageData(
-      url: json['url'] as String,
-      title: json['title'] as String,
-    );
+    $checkedCreate('ShareSubMessageData', json, ($checkedConvert) {
+      final val = ShareSubMessageData(
+        url: $checkedConvert('url', (v) => v as String),
+        title: $checkedConvert('title', (v) => v as String),
+      );
+      return val;
+    });
 
 Map<String, dynamic> _$ShareSubMessageDataToJson(
   ShareSubMessageData instance,
