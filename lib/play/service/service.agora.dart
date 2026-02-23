@@ -95,8 +95,8 @@ class AgoraMediaPlayer extends MediaPlayer {
           case .playerStatePaused:
             _playStatus.value = .pause;
           case .playerStatePlaybackAllLoopsCompleted:
-            _finishNotifier.fire();
             _playStatus.value = .pause;
+            _finishNotifier.fire();
           case .playerStateFailed:
             _playStatus.value = .stop;
             _openTask?.completeError(reason);
