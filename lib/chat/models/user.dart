@@ -29,6 +29,8 @@ class User {
   bool isCurrent(BuildContext context) =>
       id == context.read<ClientAccount>().id;
 
+  bool get isServer => id == 'server';
+
   /// Based on hsv.
   /// brightness 0.0 ~ 1.0, the higher, the lighter
   Color getColor({required double brightness}) {
