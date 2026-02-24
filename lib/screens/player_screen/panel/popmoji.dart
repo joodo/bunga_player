@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
 import 'package:bunga_player/danmaku/business.dart';
-import 'package:bunga_player/danmaku/models/data.dart';
+import 'package:bunga_player/danmaku/models/emoji_data.dart';
 import 'package:bunga_player/screens/widgets/widgets.dart';
 import 'package:bunga_player/utils/business/platform.dart';
 import 'package:bunga_player/utils/business/run_after_build.dart';

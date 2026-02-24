@@ -8,7 +8,7 @@ import 'package:bunga_player/chat/global_business.dart';
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:bunga_player/services/preferences.dart';
 
-import 'models/data.dart';
+import 'models/emoji_data.dart';
 import 'models/message_data.dart';
 
 // Data types
@@ -124,7 +124,7 @@ class PopmojiGlobalBusiness extends SingleChildStatelessWidget {
         final textPainter = TextPainter(
           text: TextSpan(
             text: emoji,
-            style: const TextStyle(fontFamily: 'noto_emoji'),
+            style: TextStyle(fontFamily: EmojiData.fontFamily),
           ),
           textDirection: TextDirection.ltr,
         );

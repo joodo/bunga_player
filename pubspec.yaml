@@ -108,6 +108,8 @@ flutter:
     - family: noto_emoji
       fonts:
         - asset: assets/emojis/emojis.ttf
+    - family: noto_emoji_windows
+      fonts:
         - asset: assets/emojis/emojis_windows.ttf
 
 flutter_launcher_icons:
