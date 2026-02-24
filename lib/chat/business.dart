@@ -6,11 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 
-import 'package:bunga_player/chat/global_business.dart';
 import 'package:bunga_player/client_info/models/client_account.dart';
 import 'package:bunga_player/console/service.dart';
-import 'package:bunga_player/services/exit_callbacks.dart';
-import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/ui/audio_player.dart';
 
 import 'models/message.dart';
@@ -82,11 +79,6 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
   late final _watchersNotifier = WatchersNotifier(myself: User.of(context))
     ..watchInConsole('Watchers');
 
-  // Leave message for app exit
-  Future<void> _sendLeaveMessage() {
-    return context.sendMessage(ByeMessageData());
-  }
-
   @override
   void initState() {
     super.initState();
@@ -107,9 +99,6 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
           _dealWithBye(message.sender.id);
       }
     });
-
-    // Register leave message sender
-    getIt<ExitCallbacks>().add(_sendLeaveMessage);
   }
 
   @override
@@ -124,7 +113,6 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
   void dispose() {
     _watchersNotifier.dispose();
     _streamSubscription.cancel();
-    getIt<ExitCallbacks>().remove(_sendLeaveMessage);
     super.dispose();
   }
 
