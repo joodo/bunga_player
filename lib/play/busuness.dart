@@ -341,6 +341,7 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
     super.initState();
 
     // History
+    _saveWatchProgressTimer;
     _history = context.read<History>();
   }
 
