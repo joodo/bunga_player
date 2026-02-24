@@ -1,9 +1,10 @@
+import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-part 'data.g.dart';
+part 'emoji_data.g.dart';
 
 @JsonSerializable()
 class EmojiCategory {
@@ -50,11 +51,15 @@ class EmojiData {
     );
   }
 
+  static final fontFamily = Platform.isWindows
+      ? 'noto_emoji_windows'
+      : 'noto_emoji';
+
   static Widget createIcon(String emoji, [double? size]) => FittedBox(
     fit: BoxFit.contain,
     child: Text(
       emoji,
-      style: TextStyle(fontFamily: 'noto_emoji', fontSize: size),
+      style: TextStyle(fontFamily: fontFamily, fontSize: size),
     ),
   );
 
