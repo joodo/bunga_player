@@ -10,7 +10,6 @@ import 'package:window_manager/window_manager.dart';
 import 'package:bunga_player/console/service.dart';
 import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/utils/models/volume.dart';
-import 'package:bunga_player/services/exit_callbacks.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/business/platform.dart';
@@ -205,15 +204,6 @@ class UIGlobalBusiness extends SingleChildStatefulWidget {
 }
 
 class _UIGlobalBusinessState extends SingleChildState<UIGlobalBusiness> {
-  @override
-  void initState() {
-    super.initState();
-
-    getIt<ExitCallbacks>().setShutter(() {
-      return Future.delayed(const Duration(milliseconds: 3000));
-    });
-  }
-
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
     return MultiProvider(

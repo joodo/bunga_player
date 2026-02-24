@@ -90,9 +90,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     final isCurrentRoute = ModalRoute.of(context)?.isCurrent ?? false;
     final isFirstShare = _currentProjection == null;
 
-    _currentProjection = data;
-    _currentSharer = sharer;
-    setState(() {});
+    if (!sharer.isServer) {
+      _currentProjection = data;
+      _currentSharer = sharer;
+      setState(() {});
+    }
 
     if (isCurrentRoute) {
       context.read<BungaAudioPlayer>().playSfx('start_play');

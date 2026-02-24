@@ -9,6 +9,7 @@ import 'package:bunga_player/play/busuness.dart';
 import 'package:bunga_player/play/models/play_payload.dart';
 import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/play_sync/business.dart';
+import 'package:bunga_player/play/global_business.dart';
 import 'package:bunga_player/screens/dialogs/open_video/open_video.dart';
 import 'package:bunga_player/screens/player_screen/panel/audio_track_panel.dart';
 import 'package:bunga_player/screens/player_screen/panel/subtitle_panel.dart';
@@ -35,6 +36,9 @@ class MenuBuilder extends SingleChildStatelessWidget {
     return Consumer<PlayPayload?>(
       builder: (BuildContext context, PlayPayload? payload, Widget? child) {
         final isLocalVideo = {'local', null}.contains(payload?.record.source);
+        final isAgoraBackend =
+            context.read<PlayerBackendNotifier>().value == .agoraMediaPlayer;
+
         final menuChildren = [
           if (!kIsDesktop) ...[
             MenuItemButton(
@@ -71,41 +75,44 @@ class MenuBuilder extends SingleChildStatelessWidget {
             const Divider(),
           ],
 
-          SubmenuButton(
-            leadingIcon: const Icon(Icons.tune),
-            menuChildren: [
-              // Video button
-              MenuItemButton(
-                leadingIcon: const Icon(Icons.image),
-                onPressed: Actions.handler(
-                  context,
-                  ShowPanelIntent(builder: (context) => const VideoEqPanel()),
-                ),
-                child: const Text('画面   '),
-              ),
-              // Audio button
-              MenuItemButton(
-                leadingIcon: const Icon(Icons.music_note),
-                onPressed: Actions.handler(
-                  context,
-                  ShowPanelIntent(
-                    builder: (context) => const AudioTrackPanel(),
+          if (!isAgoraBackend)
+            SubmenuButton(
+              leadingIcon: const Icon(Icons.tune),
+              menuChildren: [
+                // Video button
+                MenuItemButton(
+                  leadingIcon: const Icon(Icons.image),
+                  onPressed: Actions.handler(
+                    context,
+                    ShowPanelIntent(builder: (context) => const VideoEqPanel()),
                   ),
+                  child: const Text('画面   '),
                 ),
-                child: const Text('音轨'),
-              ),
-              // Subtitle Button
-              MenuItemButton(
-                leadingIcon: const Icon(Icons.subtitles),
-                onPressed: Actions.handler(
-                  context,
-                  ShowPanelIntent(builder: (context) => const SubtitlePanel()),
+                // Audio button
+                MenuItemButton(
+                  leadingIcon: const Icon(Icons.music_note),
+                  onPressed: Actions.handler(
+                    context,
+                    ShowPanelIntent(
+                      builder: (context) => const AudioTrackPanel(),
+                    ),
+                  ),
+                  child: const Text('音轨'),
                 ),
-                child: const Text('字幕'),
-              ),
-            ],
-            child: const Text('调整'),
-          ),
+                // Subtitle Button
+                MenuItemButton(
+                  leadingIcon: const Icon(Icons.subtitles),
+                  onPressed: Actions.handler(
+                    context,
+                    ShowPanelIntent(
+                      builder: (context) => const SubtitlePanel(),
+                    ),
+                  ),
+                  child: const Text('字幕'),
+                ),
+              ],
+              child: const Text('调整'),
+            ),
 
           // Change Video Button
           MenuItemButton(

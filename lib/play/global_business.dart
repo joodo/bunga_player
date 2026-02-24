@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 
-import 'package:bunga_player/services/exit_callbacks.dart';
+import 'package:bunga_player/services/presence_callbacks.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
 
@@ -61,7 +61,7 @@ class _PlayGlobalBusinessState extends SingleChildState<PlayGlobalBusiness> {
 
     // History
     _history.load();
-    getIt<ExitCallbacks>().add(_history.save);
+    getIt<PresenceCallbacks>().add(_history.save);
   }
 
   @override

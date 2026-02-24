@@ -232,55 +232,13 @@ class AgoraMediaPlayer extends MediaPlayer {
   @override
   final playbackRateNotifier = ValueNotifier(1.0);
 
-  // Audio Track
-  @override
-  // TODO: implement audioTrackNotifier
-  ValueNotifier<AudioTrack> get audioTrackNotifier =>
-      throw UnimplementedError();
-  @override
-  // TODO: implement audioTracksNotifier
-  ValueNotifier<Iterable<AudioTrack>> get audioTracksNotifier =>
-      throw UnimplementedError();
-
-  // Subtitle Track
-  @override
-  Future<SubtitleTrack> loadSubtitleTrack(String uri) {
-    // TODO: implement loadSubtitleTrack
-    throw UnimplementedError();
-  }
-
-  @override
-  SubtitleTrack setSubtitleTrack(String id) {
-    // TODO: implement setSubtitleTrack
-    throw UnimplementedError();
-  }
-
-  @override
-  // TODO: implement subtitleTrackNotifier
-  ValueNotifier<SubtitleTrack> get subtitleTrackNotifier =>
-      throw UnimplementedError();
-
-  @override
-  // TODO: implement subtitleTracksNotifier
-  ValueNotifier<Iterable<SubtitleTrack>> get subtitleTracksNotifier =>
-      throw UnimplementedError();
-
-  @override
-  // TODO: implement subDelayNotifier
-  ValueNotifier<double> get subDelayNotifier => throw UnimplementedError();
-
-  @override
-  // TODO: implement subPosNotifier
-  ValueNotifier<double> get subPosNotifier => throw UnimplementedError();
-
-  @override
-  // TODO: implement subSizeNotifier
-  ValueNotifier<double> get subSizeNotifier => throw UnimplementedError();
-
   // Utils
 
   @override
-  ValueNotifier<String?> get proxyNotifier => throw UnimplementedError();
+  late final proxyNotifier = ValueNotifier<String?>(null)
+    ..addListener(() {
+      logger.w(' Proxy change not work for agora media player.');
+    });
 
   @override
   Future<Uint8List?> screenshot() async {
@@ -293,8 +251,9 @@ class AgoraMediaPlayer extends MediaPlayer {
     return byteData?.buffer.asUint8List();
   }
 
-  // Video effects are not supported by agora
+  // These are not supported by agora
   // So we just throw unimplemented error for all of them
+  // Video
   @override
   ValueNotifier<int> get brightnessNotifier => throw UnimplementedError();
   @override
@@ -305,6 +264,31 @@ class AgoraMediaPlayer extends MediaPlayer {
   ValueNotifier<int> get hueNotifier => throw UnimplementedError();
   @override
   ValueNotifier<int> get saturationNotifier => throw UnimplementedError();
+  // Audio
+  @override
+  ValueNotifier<AudioTrack> get audioTrackNotifier =>
+      throw UnimplementedError();
+  @override
+  ValueNotifier<Iterable<AudioTrack>> get audioTracksNotifier =>
+      throw UnimplementedError();
+  // Subtitle
+  @override
+  Future<SubtitleTrack> loadSubtitleTrack(String uri) =>
+      throw UnimplementedError();
+  @override
+  SubtitleTrack setSubtitleTrack(String id) => throw UnimplementedError();
+  @override
+  ValueNotifier<SubtitleTrack> get subtitleTrackNotifier =>
+      throw UnimplementedError();
+  @override
+  ValueNotifier<Iterable<SubtitleTrack>> get subtitleTracksNotifier =>
+      throw UnimplementedError();
+  @override
+  ValueNotifier<double> get subDelayNotifier => throw UnimplementedError();
+  @override
+  ValueNotifier<double> get subPosNotifier => throw UnimplementedError();
+  @override
+  ValueNotifier<double> get subSizeNotifier => throw UnimplementedError();
 
   final _widgetKey = GlobalKey();
   @override
