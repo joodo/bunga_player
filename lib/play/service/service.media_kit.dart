@@ -157,9 +157,10 @@ class MediaKitMediaPlayer extends MediaPlayer {
     }
   }
 
-  Future<void> _clampSeek(Duration position) {
+  Future<void> _clampSeek(Duration position) async {
     position = position.clamp(Duration.zero, _player.state.duration);
-    return _player.seek(position);
+    await _player.seek(position);
+    await _player.stream.position.first;
   }
 
   // Playback rate
