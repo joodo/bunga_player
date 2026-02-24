@@ -29,6 +29,10 @@ class EmojiData {
   static String lottiePath(String emoji) =>
       'assets/emojis/lottie/${codePoint(emoji)}.json';
 
+  static final fontFamily = Platform.isWindows
+      ? 'noto_emoji_windows'
+      : 'noto_emoji';
+
   // Capture the emoji as a standard GPU texture
   static Future<ui.Image> createImage(String emoji, double size) {
     final recorder = ui.PictureRecorder();
@@ -36,7 +40,7 @@ class EmojiData {
     final textPainter = TextPainter(
       text: TextSpan(
         text: emoji,
-        style: TextStyle(fontFamily: 'noto_emoji', fontSize: size),
+        style: TextStyle(fontFamily: fontFamily, fontSize: size),
       ),
       textDirection: TextDirection.ltr,
     );
@@ -50,10 +54,6 @@ class EmojiData {
       textPainter.height.toInt(),
     );
   }
-
-  static final fontFamily = Platform.isWindows
-      ? 'noto_emoji_windows'
-      : 'noto_emoji';
 
   static Widget createIcon(String emoji, [double? size]) => FittedBox(
     fit: BoxFit.contain,
