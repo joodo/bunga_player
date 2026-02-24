@@ -384,7 +384,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
       final act =
           Actions.invoke(
                 context,
-                SetPlaybackIntent.toggle(showVisualFeedback: true),
+                SetPlaybackIntent.toggle(showVisualFeedback: false),
               )
               as Future;
       await act;
@@ -397,7 +397,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
         (isPlay
             ? !localPosition.near(
                 position,
-                tolerance: const Duration(seconds: 2),
+                tolerance: const Duration(seconds: 4),
               )
             : localPosition != position);
     if (shouldSeek) {
