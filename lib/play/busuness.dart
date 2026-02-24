@@ -423,8 +423,6 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
   @override
   void dispose() {
     _playPayloadNotifier.dispose();
-
-    _history.save();
     _saveWatchProgressTimer.cancel();
 
     super.dispose();

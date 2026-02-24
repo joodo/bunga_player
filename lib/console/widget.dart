@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:bunga_player/services/presence_callbacks.dart';
 import 'package:bunga_player/ui/global_business.dart';
 import 'package:bunga_player/utils/extensions/extensions.dart';
 import 'package:collection/collection.dart';
@@ -297,6 +298,10 @@ class _ActionView extends StatelessWidget {
       FilledButton(
         onPressed: context.read<ChannelTokens>().refreshToken,
         child: const Text('Refresh Token'),
+      ),
+      FilledButton(
+        onPressed: getIt<PresenceCallbacks>().doPresence,
+        child: const Text('Do Presence'),
       ),
     ].toColumn(separator: const SizedBox(height: 8));
   }

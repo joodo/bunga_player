@@ -9,13 +9,17 @@ class PresenceCallbacks {
   late final AppLifecycleListener listener;
   PresenceCallbacks() {
     listener = !kIsDesktop
-        ? AppLifecycleListener(onHide: _runAll)
+        ? AppLifecycleListener(onHide: doPresence)
         : AppLifecycleListener(
             onExitRequested: () async {
-              await Future.any([_runAll(), _shutter()]);
+              await doPresence();
               return .exit;
             },
           );
+  }
+
+  Future<void> doPresence() {
+    return Future.any([_runAll(), _shutter()]);
   }
 
   final _callbacks = <PresenceCallback>[];

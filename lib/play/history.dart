@@ -18,7 +18,7 @@ class History extends DelegatingMap<String, VideoSession> {
 
   // Load and save
   static Future<File> _getHistoryFile() async {
-    final dir = await getApplicationDocumentsDirectory();
+    final dir = await getApplicationSupportDirectory();
     final file = File('${dir.path}/play_history.json');
     return file;
   }
@@ -30,7 +30,7 @@ class History extends DelegatingMap<String, VideoSession> {
 
     final content = await _file!.readAsString();
 
-    late final List<JsonMap> list;
+    late final List<dynamic> list;
     try {
       list = jsonDecode(content);
     } catch (e) {
@@ -39,7 +39,7 @@ class History extends DelegatingMap<String, VideoSession> {
     }
     for (final json in list) {
       try {
-        final session = VideoSession.fromJson(json);
+        final session = VideoSession.fromJson(json as JsonMap);
         this[session.videoRecord.id] = session;
       } catch (e) {
         logger.w('History: failed to load session ${jsonEncode(json)}');
@@ -50,19 +50,18 @@ class History extends DelegatingMap<String, VideoSession> {
   Future<void> save() async {
     _file ??= await _getHistoryFile();
 
-    if (length > maxCount) {
-      final list = values
-          .sortedBy((element) => element.updatedAt)
-          .reversed
-          .toList()
-          .sublist(0, min(length, maxCount))
-          .map((e) => e.toJson());
+    final list = values
+        .sortedBy((element) => element.updatedAt)
+        .reversed
+        .toList()
+        .sublist(0, min(length, maxCount))
+        .map((e) => e.toJson())
+        .toList();
 
-      try {
-        await _file!.writeAsString(jsonEncode(list));
-      } catch (e) {
-        logger.w('History: failed to save json file ${_file!.path}: $e');
-      }
+    try {
+      await _file!.writeAsString(jsonEncode(list));
+    } catch (e) {
+      logger.w('History: failed to save json file ${_file!.path}: $e');
     }
   }
 
