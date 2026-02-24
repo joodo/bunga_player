@@ -219,9 +219,17 @@ class AgoraMediaPlayer extends MediaPlayer {
   @override
   ValueListenable<PlayStatus> get playStatusNotifier => _playStatus;
   @override
-  Future<void> pause() => _player.pause();
+  Future<void> pause() {
+    _player.pause();
+    return _playStatus.waitUntil((status) => !status.isPlaying);
+  }
+
   @override
-  Future<void> play() => _player.play();
+  Future<void> play() {
+    _player.play();
+    return _playStatus.waitUntil((status) => status.isPlaying);
+  }
+
   @override
   Future<void> stop() => _player.stop();
   final _finishNotifier = _SimpleEvent();

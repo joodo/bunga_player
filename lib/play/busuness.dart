@@ -242,20 +242,30 @@ class RefreshDirAction extends ContextAction<RefreshDirIntent> {
 }
 
 @immutable
-class ToggleIntent extends Intent {
+class SetPlaybackIntent extends Intent {
   final bool showVisualFeedback;
-  const ToggleIntent({this.showVisualFeedback = true});
+  final bool? isPlay;
+  const SetPlaybackIntent(this.isPlay, {this.showVisualFeedback = true});
+  const SetPlaybackIntent.toggle({this.showVisualFeedback = true})
+    : isPlay = null;
 }
 
-class ToggleAction extends ContextAction<ToggleIntent> {
+class SetPlaybackAction extends ContextAction<SetPlaybackIntent> {
   final RestartableTimer saveWatchProgressTimer;
 
-  ToggleAction({required this.saveWatchProgressTimer});
+  SetPlaybackAction({required this.saveWatchProgressTimer});
 
   @override
-  Future<void> invoke(ToggleIntent intent, [BuildContext? context]) async {
+  Future<void> invoke(SetPlaybackIntent intent, [BuildContext? context]) async {
     final service = getIt<MediaPlayer>();
-    await service.toggle();
+    switch (intent.isPlay) {
+      case null:
+        await service.toggle();
+      case true:
+        await service.play();
+      case false:
+        await service.pause();
+    }
 
     // Handle progress saving business
     if (service.playStatusNotifier.value.isPlaying) {
@@ -270,7 +280,7 @@ class ToggleAction extends ContextAction<ToggleIntent> {
   }
 
   @override
-  bool isEnabled(ToggleIntent intent, [BuildContext? context]) {
+  bool isEnabled(SetPlaybackIntent intent, [BuildContext? context]) {
     return context != null;
   }
 }
@@ -352,7 +362,7 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
       ShortcutKey.volumeDown: UpdateVolumeForwardIntent(-0.1),
       ShortcutKey.forward5Sec: SeekForwardIntent(Duration(seconds: 5)),
       ShortcutKey.backward5Sec: SeekForwardIntent(Duration(seconds: -5)),
-      ShortcutKey.togglePlay: ToggleIntent(),
+      ShortcutKey.togglePlay: SetPlaybackIntent.toggle(),
       ShortcutKey.screenshot: ScreenshotIntent(),
     });
 
@@ -388,7 +398,7 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
           dirInfoNotifier: _dirInfoNotifier,
           payloadNotifer: _playPayloadNotifier,
         ),
-        ToggleIntent: ToggleAction(
+        SetPlaybackIntent: SetPlaybackAction(
           saveWatchProgressTimer: _saveWatchProgressTimer,
         ),
         SeekForwardIntent: SeekAction(),

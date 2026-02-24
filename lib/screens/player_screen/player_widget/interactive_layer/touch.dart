@@ -102,7 +102,7 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
             ? _showHUDNotifier.reset()
             : _showHUDNotifier.mark();
       },
-      onDoubleTap: Actions.handler(context, ToggleIntent()),
+      onDoubleTap: Actions.handler(context, SetPlaybackIntent.toggle()),
 
       onHorizentalDragStart: (details) {
         _showHUDNotifier.lockUp('drag');

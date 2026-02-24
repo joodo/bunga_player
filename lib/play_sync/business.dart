@@ -227,12 +227,12 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
     final shortcuts = child!.applyShortcuts({
       ShortcutKey.forward5Sec: SeekForwardIntent(Duration(seconds: 5)),
       ShortcutKey.backward5Sec: SeekForwardIntent(Duration(seconds: -5)),
-      ShortcutKey.togglePlay: ToggleIntent(),
+      ShortcutKey.togglePlay: SetPlaybackIntent.toggle(),
     });
 
     final actions = shortcuts.actions(
       actions: {
-        ToggleIntent: CallbackAction<ToggleIntent>(
+        SetPlaybackIntent: CallbackAction<SetPlaybackIntent>(
           onInvoke: (intent) {
             if (_remoteJustToggledNotifier.value) return;
 
@@ -244,7 +244,10 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
               messageData = PlayMessageData();
             } else {
               // pause control by myself
-              playService.pause();
+              Actions.invoke(
+                context,
+                SetPlaybackIntent(false, showVisualFeedback: true),
+              );
               messageData = PauseMessageData(
                 position: playService.positionNotifier.value,
               );
@@ -379,7 +382,10 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
     final shouldToggle = isPlay != localPlay;
     if (shouldToggle) {
       final act =
-          Actions.invoke(context, ToggleIntent(showVisualFeedback: true))
+          Actions.invoke(
+                context,
+                SetPlaybackIntent.toggle(showVisualFeedback: true),
+              )
               as Future;
       await act;
     }
