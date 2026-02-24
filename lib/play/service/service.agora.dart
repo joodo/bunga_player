@@ -82,7 +82,7 @@ class AgoraMediaPlayer extends MediaPlayer {
         _position.value = Duration(milliseconds: positionMs);
       },
       onPlayerSourceStateChanged: (state, reason) async {
-        logger.i('Player state changed: $state, reason: $reason');
+        //logger.i('Player state changed: $state, reason: $reason');
         switch (state) {
           case .playerStatePlaying:
             _playStatus.value = .play;
