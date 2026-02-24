@@ -96,14 +96,19 @@ flutter:
   assets:
     - assets/images/
     - assets/images/gestures/
-    - assets/emojis/
+    - assets/emojis/emojis.json
     - assets/emojis/lottie/
     - assets/sounds/
+    - path: assets/emojis/emojis.ttf
+      platforms: [android, ios, macos, linux]
+    - path: assets/emojis/emojis_windows.ttf
+      platforms: [windows]
 
   fonts:
     - family: noto_emoji
       fonts:
         - asset: assets/emojis/emojis.ttf
+        - asset: assets/emojis/emojis_windows.ttf
 
 flutter_launcher_icons:
   android: true

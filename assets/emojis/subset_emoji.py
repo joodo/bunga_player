@@ -7,6 +7,10 @@
 # ]
 # ///
 
+# 1. Move Emoji font to this dir and rename to `NotoColorEmoji.ttf`
+# 2. Run `uv run subset_emoji.py`
+# 3. Delete original font file.
+
 import os
 import json
 from fontTools import subset
@@ -21,7 +25,7 @@ def get_target_emojis() -> str:
 
 
 def create_subset(target_emojis: str) -> None:
-    input_font = "NotoColorEmoji-Regular.ttf"
+    input_font = "NotoColorEmoji.ttf"
     output_font = "emojis.ttf"
 
     # We need to preserve 'CBDT' and 'CBLC' tables for color bitmaps
