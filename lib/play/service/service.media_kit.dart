@@ -124,7 +124,7 @@ class MediaKitMediaPlayer extends MediaPlayer {
   late final volumeNotifier = ValueNotifier<Volume>(Volume.max)
     ..addListener(() {
       final target = volumeNotifier.value.mute ? 0 : volumeNotifier.value.level;
-      _player.setVolume(target.toDouble());
+      _player.setVolume(target.toDouble() * 100.0);
     });
 
   // Buffer, Duration
