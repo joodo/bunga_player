@@ -2,6 +2,7 @@ import 'package:animations/animations.dart';
 import 'package:bunga_player/gallery/models/models.dart';
 import 'package:bunga_player/screens/widgets/input_builder.dart';
 import 'package:bunga_player/screens/widgets/scroll_optimizer.dart';
+import 'package:bunga_player/screens/widgets/widgets.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/utils/business/image.dart';
 import 'package:bunga_player/utils/business/run_after_build.dart';
@@ -144,11 +145,11 @@ class _SearchPageState extends State<_SearchPage> {
       ),
     );
 
+    final historyNotifier = context.read<gallery.HistoryNotifier>();
     final historySection = ValueListenableBuilder(
-      valueListenable: context.read<gallery.HistoryNotifier>(),
+      valueListenable: historyNotifier,
       builder: (context, historys, child) {
         if (historys.isEmpty) return const SizedBox.shrink();
-
         return CarouselView.weighted(
               flexWeights: const [3, 3, 3, 1],
               consumeMaxWeight: false,
@@ -158,7 +159,18 @@ class _SearchPageState extends State<_SearchPage> {
               controller: _carouselController,
               children: [
                 ...historys.map(
-                  (e) => _MediaTile(item: e.item, linkerId: e.linkerId),
+                  (e) => _MediaTile(item: e.item, linkerId: e.linkerId)
+                      .contextMenu(
+                        items: [
+                          PopupMenuItem(
+                            child: const Text('删除'),
+                            onTap: () => historyNotifier.remove(
+                              linkerId: e.linkerId,
+                              itemKey: e.item.key,
+                            ),
+                          ),
+                        ],
+                      ),
                 ),
                 if (historys.length >= 3)
                   Card(

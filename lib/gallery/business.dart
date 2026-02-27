@@ -130,10 +130,12 @@ class HistoryNotifier extends ChangeNotifier
     notifyListeners();
   }
 
-  bool remove(String key) {
-    if (!value.any((element) => element.item.key == key)) return false;
+  bool remove({required String linkerId, required String itemKey}) {
+    bool test(SummaryWithLinkerId e) =>
+        e.item.key == itemKey && e.linkerId == linkerId;
+    if (!value.any(test)) return false;
 
-    value.removeWhere((element) => element.item.key == key);
+    value.removeWhere(test);
     notifyListeners();
     return true;
   }

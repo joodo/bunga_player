@@ -40,3 +40,16 @@ class ContextMenuRegion<T> extends SingleChildStatelessWidget {
     onSelected?.call(selected);
   }
 }
+
+extension ContextMenuRegionExtension on Widget {
+  Widget contextMenu<T>({
+    Key? key,
+    required List<PopupMenuEntry<T>> items,
+    void Function(T? value)? onSelected,
+  }) => ContextMenuRegion<T>(
+    key: key,
+    onSelected: onSelected,
+    items: items,
+    child: this,
+  );
+}
