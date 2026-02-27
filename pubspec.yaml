@@ -55,6 +55,7 @@ dependencies:
 
   # Network
   http: ^1.6.0
+  m3u_nullsafe: ^1.0.4
 
   # Utils
   logger: ^2.6.2

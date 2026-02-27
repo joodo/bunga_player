@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:bunga_player/network/video_source.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:bunga_player/services/logger.dart';
@@ -7,6 +6,8 @@ import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/extensions/http_response.dart';
 import 'package:bunga_player/utils/models/network_progress.dart';
+
+import 'video_source.dart';
 
 typedef SourceInfo = ({String location, int bps});
 
@@ -32,7 +33,7 @@ class NetworkService {
     late final String location;
     late final int bps;
 
-    final s = VideoSource(Uri.parse(source), headers: headers);
+    final s = await VideoSource.create(Uri.parse(source), headers: headers);
 
     await Future.wait([
       s.getIpLocation().then((value) => location = value),
