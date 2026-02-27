@@ -2,8 +2,6 @@ import 'package:animations/animations.dart';
 import 'package:bunga_player/gallery/models/models.dart';
 import 'package:bunga_player/play/history.dart';
 import 'package:bunga_player/play/payload_parser.dart';
-import 'package:bunga_player/screens/widgets/input_builder.dart';
-import 'package:bunga_player/screens/widgets/scroll_optimizer.dart';
 import 'package:bunga_player/screens/widgets/widgets.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/utils/business/image.dart';
@@ -31,21 +29,25 @@ class GalleryTab extends StatelessWidget {
           initialRoute: 'search',
           observers: [HeroController()],
           onGenerateRoute: (RouteSettings settings) {
-            WidgetBuilder builder;
             switch (settings.name) {
               case 'search':
-                builder = (context) => _SearchPage();
-                break;
+                return MaterialPageRoute(
+                  builder: (context) => _SearchPage(),
+                  settings: settings,
+                );
               case 'results':
-                builder = (context) => _ResultPage();
-                break;
+                return MaterialPageRoute(
+                  builder: (context) => _ResultPage(),
+                  settings: settings,
+                );
               case 'detail':
-                builder = (context) => _DetailPage();
-                break;
+                return MaterialPageRoute<bool>(
+                  builder: (context) => _DetailPage(),
+                  settings: settings,
+                );
               default:
                 throw Exception('Invalid route: ${settings.name}');
             }
-            return MaterialPageRoute(builder: builder, settings: settings);
           },
         ).theme(
           data: Theme.of(context).copyWith(
@@ -255,7 +257,17 @@ class _ResultPageState extends State<_ResultPage> {
     Widget? tileBuilder(BuildContext context, int index) {
       final (linkerId: linkerId, item: item) = _data[index];
 
-      final tile = _MediaTile(item: item, linkerId: linkerId);
+      final tile = _MediaTile(
+        item: item,
+        linkerId: linkerId,
+        onBack: (value) {
+          if (!value) return;
+
+          // Update history
+          final notifier = context.read<gallery.HistoryNotifier>();
+          runAfterBuild(() => notifier.update(linkerId: linkerId, item: item));
+        },
+      );
 
       return Skeleton.leaf(child: tile);
     }
@@ -342,7 +354,8 @@ typedef _DetailPageArg = ({String linkerId, MediaSummary summary});
 class _MediaTile extends StatelessWidget {
   final MediaSummary item;
   final String linkerId;
-  const _MediaTile({required this.item, required this.linkerId});
+  final ValueSetter<bool>? onBack;
+  const _MediaTile({required this.item, required this.linkerId, this.onBack});
 
   @override
   Widget build(BuildContext context) {
@@ -354,7 +367,9 @@ class _MediaTile extends StatelessWidget {
       child: InkWell(
         onTap: () {
           final _DetailPageArg args = (linkerId: linkerId, summary: item);
-          Navigator.of(context).pushNamed('detail', arguments: args);
+          Navigator.of(context)
+              .pushNamed<bool>('detail', arguments: args)
+              .then((value) => onBack?.call(value!));
         },
       ),
     ).material();
@@ -408,15 +423,6 @@ class _DetailPage extends StatelessWidget {
             }
 
             final item = snapshot.data ?? _fakeData;
-            if (snapshot.hasData) {
-              final notifier = context.read<gallery.HistoryNotifier>();
-              runAfterBuild(
-                () => notifier.update(
-                  linkerId: args.linkerId,
-                  item: args.summary,
-                ),
-              );
-            }
 
             final sortedEps = item.episodes.sorted(
               (a, b) => compareNatural(a.title, b.title),
@@ -424,7 +430,10 @@ class _DetailPage extends StatelessWidget {
             final epProgress = _getEpProgress(context, args, sortedEps);
             final header =
                 [
-                  const BackButton(),
+                  BackButton(
+                    onPressed: () =>
+                        Navigator.of(context).pop(snapshot.hasData),
+                  ),
                   snapshot.hasData
                       ? _createPlayButton(context, args, sortedEps, epProgress)
                       : const FilledButton(
