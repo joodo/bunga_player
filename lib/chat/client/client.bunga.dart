@@ -102,7 +102,8 @@ class BungaChatClient extends ChatClient {
             break;
 
           case 1005 || 1006 || 1015: // Network unstable
-          case 1011: // Server error
+          case 1002: // Client unstable
+          case 1001 || 1011 || 1012 || 1013: // Server problem
             logger.w('Websocket: connection break. Code $closeCode');
             return _reconnect();
 

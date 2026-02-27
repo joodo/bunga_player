@@ -10,6 +10,7 @@ import 'package:bunga_player/client_info/models/client_account.dart';
 import 'package:bunga_player/console/service.dart';
 import 'package:bunga_player/ui/audio_player.dart';
 
+import 'global_business.dart';
 import 'models/message.dart';
 import 'models/message_data.dart';
 import 'models/user.dart';
@@ -45,14 +46,22 @@ class WatchersNotifier extends ChangeNotifier
     notifyListeners();
   }
 
-  void upsert(User user) {
-    _data[user.id] = user;
-    notifyListeners();
+  bool upsert(User user) {
+    if (_data[user.id] != user) {
+      _data[user.id] = user;
+      notifyListeners();
+      return true;
+    }
+    return false;
   }
 
-  void removeId(String id) {
-    _data.remove(id);
-    notifyListeners();
+  bool removeId(String id) {
+    final removed = _data.remove(id);
+    if (removed != null) {
+      notifyListeners();
+      return true;
+    }
+    return false;
   }
 
   bool containsId(String id) {
@@ -88,6 +97,8 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
 
     _streamSubscription = messageStream.listen((message) {
       switch (message.data['code']) {
+        case RemindMeMessageData.messageCode:
+          _handleRemindMe();
         case AlohaMessageData.messageCode:
           if (message.sender.id == _myId) break;
           _dealWithAloha(message.sender);
@@ -120,6 +131,11 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
     _addWatcher(sender);
   }
 
+  void _handleRemindMe() {
+    final data = IAmMessageData(User.of(context));
+    context.sendMessage(data);
+  }
+
   void _dealWithHereAre(List<User> watchers) {
     _watchersNotifier.set(watchers);
   }
@@ -129,13 +145,15 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
   }
 
   void _addWatcher(User user) {
-    _watchersNotifier.upsert(user);
-    context.read<BungaAudioPlayer>().playSfx('user_join');
+    if (_watchersNotifier.upsert(user)) {
+      context.read<BungaAudioPlayer>().playSfx('user_join');
+    }
   }
 
   void _removeWatcher(String id) {
-    _watchersNotifier.removeId(id);
-    context.read<BungaAudioPlayer>().playSfx('user_leave');
+    if (_watchersNotifier.removeId(id)) {
+      context.read<BungaAudioPlayer>().playSfx('user_leave');
+    }
   }
 }
 

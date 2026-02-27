@@ -11,22 +11,6 @@ abstract class MessageData {
   Map<String, dynamic> toJson();
 }
 
-/// Receive when reconnected to chat server
-@JsonSerializable()
-class WhoAreYouMessageData extends MessageData {
-  static const messageCode = 'who-are-you';
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: true)
-  final code = messageCode;
-
-  WhoAreYouMessageData();
-
-  factory WhoAreYouMessageData.fromJson(Map<String, dynamic> json) =>
-      _$WhoAreYouMessageDataFromJson(json);
-  @override
-  Map<String, dynamic> toJson() => _$WhoAreYouMessageDataToJson(this);
-}
-
 /// Send when asking what's playing
 @JsonSerializable()
 class WhatsOnMessageData extends MessageData {
@@ -168,4 +152,38 @@ class ByeMessageData extends MessageData {
       _$ByeMessageDataFromJson(json);
   @override
   Map<String, dynamic> toJson() => _$ByeMessageDataToJson(this);
+}
+
+/// Receive when reconnected to chat server
+@JsonSerializable()
+class RemindMeMessageData extends MessageData {
+  static const messageCode = 'remind-me';
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: true)
+  final code = messageCode;
+
+  RemindMeMessageData();
+
+  factory RemindMeMessageData.fromJson(Map<String, dynamic> json) =>
+      _$RemindMeMessageDataFromJson(json);
+  @override
+  Map<String, dynamic> toJson() => _$RemindMeMessageDataToJson(this);
+}
+
+/// Send when reconnected to chat server
+@JsonSerializable()
+class IAmMessageData extends MessageData {
+  static const messageCode = 'i-am';
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: true)
+  final code = messageCode;
+
+  final User info;
+
+  IAmMessageData(this.info);
+
+  factory IAmMessageData.fromJson(Map<String, dynamic> json) =>
+      _$IAmMessageDataFromJson(json);
+  @override
+  Map<String, dynamic> toJson() => _$IAmMessageDataToJson(this);
 }

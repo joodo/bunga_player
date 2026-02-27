@@ -40,4 +40,15 @@ class User {
 
   @override
   String toString() => toJson().toString();
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is User &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          name == other.name &&
+          colorHue == other.colorHue;
+  @override
+  int get hashCode => id.hashCode ^ name.hashCode ^ colorHue.hashCode;
 }

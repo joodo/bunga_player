@@ -147,8 +147,6 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
     final messageStream = read<Stream<Message>>();
     _streamSubscription = messageStream.listen((message) {
       switch (message.data['code']) {
-        case WhoAreYouMessageData.messageCode:
-          _dealWithWhoAreYou();
         case StartProjectionMessageData.messageCode:
           final data = StartProjectionMessageData.fromJson(message.data);
           _handleProjection(
@@ -312,11 +310,6 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
       ],
       child: actions,
     );
-  }
-
-  void _dealWithWhoAreYou() {
-    final data = JoinInMessageData(user: User.of(context));
-    context.sendMessage(data);
   }
 
   void _handleProjection(
