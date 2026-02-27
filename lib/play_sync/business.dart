@@ -232,6 +232,18 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
 
     final actions = shortcuts.actions(
       actions: {
+        OpenVideoIntent: CallbackAction<OpenVideoIntent>(
+          onInvoke: (intent) {
+            // Send pause request first
+            final playService = getIt<MediaPlayer>();
+            final messageData = PauseMessageData(
+              position: playService.positionNotifier.value,
+            );
+            context.sendMessage(messageData);
+
+            return Actions.invoke(context, intent);
+          },
+        ),
         SetPlaybackIntent: CallbackAction<SetPlaybackIntent>(
           onInvoke: (intent) {
             if (_remoteJustToggledNotifier.value) return;
