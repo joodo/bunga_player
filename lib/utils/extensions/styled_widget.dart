@@ -154,6 +154,9 @@ extension BungaStyledWidget on Widget {
     );
   }
 
-  Widget ignorePointer({required bool ignoring}) =>
-      IgnorePointer(ignoring: ignoring, child: this);
+  Widget ignorePointer({Key? key, required bool ignoring}) =>
+      IgnorePointer(key: key, ignoring: ignoring, child: this);
+
+  Hero hero({Key? key, required Object tag}) =>
+      Hero(key: key, tag: tag, child: this);
 }

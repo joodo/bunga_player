@@ -78,29 +78,6 @@ class ConnectToHostAction extends ContextAction<ConnectToHostIntent> {
   }
 }
 
-Future<JsonMap> _retryIfTokenExpired({
-  required ChannelTokens serverInfo,
-  required Future<http.Response> Function(Map<String, String> headers)
-  doRequest,
-}) async {
-  final response = await doRequest({
-    'Authorization': 'Bearer ${serverInfo.token.access}',
-    'Content-Type': 'application/json',
-  });
-
-  if (response.isSuccess) {
-    final body = response.body;
-    if (body.isEmpty) return {};
-    return jsonDecode(body);
-  }
-  if (jsonDecode(response.body)['code'] == 'token_expired') {
-    await serverInfo.refreshToken();
-    return _retryIfTokenExpired(serverInfo: serverInfo, doRequest: doRequest);
-  } else {
-    throw Exception('Bunga request failed: ${response.body}');
-  }
-}
-
 class UploadSubtitleIntent extends Intent {
   final String path;
   const UploadSubtitleIntent(this.path);
@@ -146,6 +123,29 @@ class UploadSubtitleAction extends ContextAction<UploadSubtitleIntent> {
     } catch (e) {
       throw Exception('Subtitle upload failed: $e');
     }
+  }
+}
+
+class DoServerRequestIntent extends Intent {
+  final Future<http.Response> Function(Uri origin, Map<String, String> headers)
+  reqFunc;
+
+  const DoServerRequestIntent({required this.reqFunc});
+}
+
+class DoServerRequestAction extends ContextAction<DoServerRequestIntent> {
+  @override
+  Future<JsonMap> invoke(
+    DoServerRequestIntent intent, [
+    BuildContext? context,
+  ]) {
+    final serverInfo = context!.read<ChannelTokens>();
+    return _retryIfTokenExpired(
+      serverInfo: serverInfo,
+      doRequest: (headers) {
+        return intent.reqFunc(serverInfo.origin, headers);
+      },
+    );
   }
 }
 
@@ -233,6 +233,7 @@ class _BungaServerGlobalBusinessState
         ConnectToHostIntent: _connectToHostAction,
         UploadSubtitleIntent: UploadSubtitleAction(),
         UploadLogIntent: UploadLogAction(),
+        DoServerRequestIntent: DoServerRequestAction(),
       },
       child: child!,
     );
@@ -251,5 +252,28 @@ class _BungaServerGlobalBusinessState
     final bungaHost = _hostAddressNotifier.value.value;
     if (bungaHost.isEmpty) return;
     _connectToHostAction.invoke(ConnectToHostIntent(bungaHost), context);
+  }
+}
+
+Future<JsonMap> _retryIfTokenExpired({
+  required ChannelTokens serverInfo,
+  required Future<http.Response> Function(Map<String, String> headers)
+  doRequest,
+}) async {
+  final response = await doRequest({
+    'Authorization': 'Bearer ${serverInfo.token.access}',
+    'Content-Type': 'application/json',
+  });
+
+  if (response.isSuccess) {
+    final body = response.body;
+    if (body.isEmpty) return {};
+    return jsonDecode(body);
+  }
+  if (jsonDecode(response.body)['code'] == 'token_expired') {
+    await serverInfo.refreshToken();
+    return _retryIfTokenExpired(serverInfo: serverInfo, doRequest: doRequest);
+  } else {
+    throw Exception('Bunga request failed: ${response.body}');
   }
 }

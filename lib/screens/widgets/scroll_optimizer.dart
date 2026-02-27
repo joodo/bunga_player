@@ -22,9 +22,10 @@ class ScrollOptimizer extends SingleChildStatelessWidget {
         onPointerSignal: (event) {
           if (event is PointerScrollEvent) {
             scrollController.animateTo(
-                scrollController.offset + event.scrollDelta.dy,
-                duration: const Duration(milliseconds: 2),
-                curve: Curves.bounceIn);
+              scrollController.offset + event.scrollDelta.dy / 2,
+              duration: const Duration(milliseconds: 2),
+              curve: Curves.bounceIn,
+            );
           }
         },
         child: child,
@@ -35,10 +36,7 @@ class ScrollOptimizer extends SingleChildStatelessWidget {
 
 extension ScrollOptimizerStyler on Widget {
   Widget scrollOptimizer(ScrollController controller) {
-    return ScrollOptimizer(
-      scrollController: controller,
-      child: this,
-    );
+    return ScrollOptimizer(scrollController: controller, child: this);
   }
 }
 

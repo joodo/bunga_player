@@ -16,6 +16,7 @@ import 'package:bunga_player/alist/models.dart';
 import 'package:bunga_player/bilibili/extensions.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/utils/models/file_extensions.dart';
+import 'package:bunga_player/gallery/business.dart' as gallery;
 
 import 'history.dart';
 import 'models/play_payload.dart';
@@ -45,6 +46,8 @@ class PlayPayloadParser {
       case _BiliBangumiParser.recordSource:
         final [_, ep] = record.path.split('/');
         return 'https://www.bilibili.com/bangumi/play/ep$ep (B 站番剧)';
+      case _GalleryParser.recordSource:
+        return '影视库';
       default:
         throw ArgumentError.value(record.source, 'record.source');
     }
@@ -71,6 +74,7 @@ class PlayPayloadParser {
       'alist' => _AListParser(context).parseUrl,
       'http' || 'https' => _HttpParser(context).parseUrl,
       'history' => _parseHistoryUrl,
+      'gallery' => _GalleryParser(context).parseUrl,
       String() => throw TypeError(),
     };
     return parser(url);
@@ -88,6 +92,7 @@ class PlayPayloadParser {
         _HttpParser.recordSource => _HttpParser(context),
         _BiliVideoParser.recordSource => _BiliVideoParser(context),
         _BiliBangumiParser.recordSource => _BiliBangumiParser(context),
+        _GalleryParser.recordSource => _GalleryParser(context),
         String() => throw TypeError(),
       };
 
@@ -624,6 +629,75 @@ class _BiliBangumiParser extends _BiliParser {
       name: responseData['season_title'] as String,
       info: info,
       current: current,
+    );
+  }
+}
+
+class _GalleryParser extends _Parser {
+  static const recordSource = 'gallery';
+
+  final BuildContext context;
+  _GalleryParser(this.context);
+
+  @override
+  Future<VideoRecord> parseUrl(Uri url) async {
+    final linkerId = url.host;
+    final mediaKey = url.pathSegments.first;
+    final path = '${url.host}${url.path}';
+
+    final media = await gallery.detail(context, linkerId, mediaKey);
+    return VideoRecord(
+      id: '$recordSource-${path.hashStr}',
+      title: media.title,
+      thumbUrl: media.thumbUrl,
+      source: recordSource,
+      path: path,
+    );
+  }
+
+  @override
+  Future<PlayPayload> parseVideoRecord(VideoRecord record) async {
+    final split = record.path.split('/');
+    final linkerId = split[0];
+    final mediaKey = split[1];
+    final epId = split[2];
+
+    final sources = await gallery.sources(context, linkerId, mediaKey, epId);
+    return PlayPayload(
+      record: record,
+      sources: VideoSources(videos: sources.map((e) => e.url).toList()),
+    );
+  }
+
+  @override
+  Future<DirInfo?> fetchDirInfo(
+    VideoRecord record, {
+    bool refresh = false,
+  }) async {
+    final split = record.path.split('/');
+    final linkerId = split[0];
+    final mediaKey = split[1];
+    final epId = split[2];
+
+    final media = await gallery.detail(context, linkerId, mediaKey);
+
+    final eps = media.episodes.sorted(
+      (a, b) => compareNatural(a.title, b.title),
+    );
+    final current = eps.indexWhere((element) => element.id == epId);
+
+    return (
+      name: media.title,
+      current: current,
+      info: eps
+          .map(
+            (e) => (
+              name: e.title,
+              url: gallery.createUrl(linkerId, mediaKey, e.id),
+              thumb: null,
+            ),
+          )
+          .toList(),
     );
   }
 }

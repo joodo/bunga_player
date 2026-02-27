@@ -14,7 +14,7 @@ import 'package:bunga_player/client_info/models/client_account.dart';
 import 'package:bunga_player/play/busuness.dart';
 import 'package:bunga_player/play/models/models.dart';
 import 'package:bunga_player/play/service/service.dart';
-import 'package:bunga_player/screens/dialogs/open_video/direct_link.dart';
+import 'package:bunga_player/screens/dialogs/open_video/gallery.dart';
 import 'package:bunga_player/screens/dialogs/video_conflict.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/business/value_listenable.dart';

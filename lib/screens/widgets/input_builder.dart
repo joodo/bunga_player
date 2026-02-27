@@ -7,7 +7,8 @@ class InputBuilder extends SingleChildStatefulWidget {
     TextEditingController textEditingController,
     FocusNode focusNode,
     Widget? child,
-  ) builder;
+  )
+  builder;
   final String? initValue;
   final void Function(TextEditingController controller)? onFocusLose;
   final void Function(TextEditingController controller)? onFocusGot;
@@ -50,12 +51,7 @@ class _InputBuilderState extends SingleChildState<InputBuilder> {
 
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
-    return widget.builder(
-      context,
-      _editingControl,
-      _focusNode,
-      child,
-    );
+    return widget.builder(context, _editingControl, _focusNode, child);
   }
 
   void _onFocusChange() {
