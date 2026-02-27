@@ -111,6 +111,7 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
       if (!context.mounted) throw StateError('Context unmounted.');
 
       // Window title
+      payloadNotifer.value = payload;
       context.read<WindowTitleNotifier>().value = payload.record.title;
 
       // History
@@ -124,8 +125,6 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
         subtitlePath: subPath,
         start: intent.start ?? session?.progress?.position,
       );
-
-      payloadNotifer.value = payload;
 
       return payload;
     } catch (e) {
