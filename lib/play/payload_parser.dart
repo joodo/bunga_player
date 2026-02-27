@@ -46,7 +46,7 @@ class PlayPayloadParser {
       case _BiliBangumiParser.recordSource:
         final [_, ep] = record.path.split('/');
         return 'https://www.bilibili.com/bangumi/play/ep$ep (B 站番剧)';
-      case _GalleryParser.recordSource:
+      case GalleryParser.recordSource:
         return '影视库';
       default:
         throw ArgumentError.value(record.source, 'record.source');
@@ -74,7 +74,7 @@ class PlayPayloadParser {
       'alist' => _AListParser(context).parseUrl,
       'http' || 'https' => _HttpParser(context).parseUrl,
       'history' => _parseHistoryUrl,
-      'gallery' => _GalleryParser(context).parseUrl,
+      'gallery' => GalleryParser(context).parseUrl,
       String() => throw TypeError(),
     };
     return parser(url);
@@ -92,7 +92,7 @@ class PlayPayloadParser {
         _HttpParser.recordSource => _HttpParser(context),
         _BiliVideoParser.recordSource => _BiliVideoParser(context),
         _BiliBangumiParser.recordSource => _BiliBangumiParser(context),
-        _GalleryParser.recordSource => _GalleryParser(context),
+        GalleryParser.recordSource => GalleryParser(context),
         String() => throw TypeError(),
       };
 
@@ -642,11 +642,20 @@ class _BiliBangumiParser extends _BiliParser {
   }
 }
 
-class _GalleryParser extends _Parser {
+class GalleryParser extends _Parser {
   static const recordSource = 'gallery';
 
+  static String getRecordId({
+    required String linkerId,
+    required String mediaKey,
+    required String epId,
+  }) {
+    final path = '$linkerId/$mediaKey/$epId';
+    return '$recordSource-${path.hashStr}';
+  }
+
   final BuildContext context;
-  _GalleryParser(this.context);
+  GalleryParser(this.context);
 
   @override
   Future<VideoRecord> parseUrl(Uri url) async {
@@ -661,7 +670,7 @@ class _GalleryParser extends _Parser {
     final epTitle = media.episodes.firstWhere((e) => e.id == epId).title;
 
     return VideoRecord(
-      id: '$recordSource-${path.hashStr}',
+      id: getRecordId(epId: epId, linkerId: linkerId, mediaKey: mediaKey),
       title: '${media.title} - $epTitle',
       thumbUrl: media.thumbUrl,
       source: recordSource,

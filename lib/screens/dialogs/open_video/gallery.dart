@@ -1,5 +1,7 @@
 import 'package:animations/animations.dart';
 import 'package:bunga_player/gallery/models/models.dart';
+import 'package:bunga_player/play/history.dart';
+import 'package:bunga_player/play/payload_parser.dart';
 import 'package:bunga_player/screens/widgets/input_builder.dart';
 import 'package:bunga_player/screens/widgets/scroll_optimizer.dart';
 import 'package:bunga_player/screens/widgets/widgets.dart';
@@ -389,6 +391,7 @@ class _DetailPage extends StatelessWidget {
       Episode(id: BoneMock.words(1), title: BoneMock.title),
     ),
   );
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -415,23 +418,19 @@ class _DetailPage extends StatelessWidget {
               );
             }
 
-            final latestWatchedEpId = item.episodes.first.id;
+            final sortedEps = item.episodes.sorted(
+              (a, b) => compareNatural(a.title, b.title),
+            );
+            final epProgress = _getEpProgress(context, args, sortedEps);
             final header =
                 [
                   const BackButton(),
-                  FilledButton(
-                    onPressed: Actions.handler(
-                      context,
-                      SelectUrlIntent(
-                        gallery.createUrl(
-                          args.linkerId,
-                          args.summary.key,
-                          latestWatchedEpId,
+                  snapshot.hasData
+                      ? _createPlayButton(context, args, sortedEps, epProgress)
+                      : const FilledButton(
+                          onPressed: null,
+                          child: SizedBox(width: 100),
                         ),
-                      ),
-                    ),
-                    child: const Text('开始观看'),
-                  ),
                   IconButton(
                     icon: Icon(Icons.star_border),
                     selectedIcon: Icon(Icons.star),
@@ -499,11 +498,16 @@ class _DetailPage extends StatelessWidget {
                   Skeleton.keep(
                     child: Text('选集', style: theme.textTheme.titleMedium),
                   ).padding(top: 16.0),
-                  item.episodes
-                      .sorted((a, b) => compareNatural(a.title, b.title))
-                      .map(
-                        (e) => ActionChip(
-                          label: Text(e.title),
+                  sortedEps
+                      .map((e) {
+                        final progress = epProgress[e.id];
+                        final title = progress == null
+                            ? e.title
+                            : progress > 0.90
+                            ? '${e.title} (已看完)'
+                            : '${e.title} (已看 ${progress.toLevel}%)';
+                        return ActionChip(
+                          label: Text(title),
                           avatar: const Icon(Icons.play_arrow_rounded),
                           onPressed: Actions.handler(
                             context,
@@ -515,8 +519,8 @@ class _DetailPage extends StatelessWidget {
                               ),
                             ),
                           ),
-                        ),
-                      )
+                        );
+                      })
                       .toList()
                       .toWrap(spacing: 12.0, runSpacing: 8.0),
 
@@ -564,6 +568,71 @@ class _DetailPage extends StatelessWidget {
         )
         .scrollable(padding: EdgeInsets.all(16.0))
         .backgroundColor(theme.colorScheme.surface);
+  }
+
+  Map<String, double> _getEpProgress(
+    BuildContext context,
+    _DetailPageArg args,
+    List<Episode> episodes,
+  ) {
+    final result = <String, double>{};
+
+    final history = context.read<History>();
+
+    for (final ep in episodes) {
+      final recordId = GalleryParser.getRecordId(
+        linkerId: args.linkerId,
+        mediaKey: args.summary.key,
+        epId: ep.id,
+      );
+
+      final progress = history[recordId]?.progress;
+      if (progress != null) {
+        result[ep.id] = progress.ratio;
+      }
+    }
+    return result;
+  }
+
+  Widget _createPlayButton(
+    BuildContext context,
+    _DetailPageArg args,
+    List<Episode> episodes,
+    Map<String, double> epProgress,
+  ) {
+    late final String epId;
+    late final String text;
+
+    if (epProgress.isEmpty) {
+      epId = episodes.first.id;
+      text = '开始观看 ${episodes.first.title}';
+    } else {
+      final lastProgress = epProgress.values.last;
+      final lastId = epProgress.keys.last;
+      final lastIndex = episodes.indexWhere((e) => e.id == lastId);
+      if (lastProgress < 0.9) {
+        epId = epProgress.keys.last;
+        text = '继续观看 ${episodes[lastIndex].title} (已看${lastProgress.toLevel}%)';
+      } else {
+        if (lastIndex < episodes.length - 1) {
+          epId = episodes[lastIndex + 1].id;
+          text = '继续观看 ${episodes[lastIndex + 1].title}';
+        } else {
+          epId = episodes.first.id;
+          text = '重新观看 ${episodes.first.title}';
+        }
+      }
+    }
+
+    return FilledButton(
+      onPressed: Actions.handler(
+        context,
+        SelectUrlIntent(
+          gallery.createUrl(args.linkerId, args.summary.key, epId),
+        ),
+      ),
+      child: Text(text),
+    );
   }
 
   TableRow? _createRow(BuildContext context, String label, dynamic value) {
