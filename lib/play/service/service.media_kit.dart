@@ -7,7 +7,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:media_kit/media_kit.dart' as media_kit;
 import 'package:media_kit_video/media_kit_video.dart' as media_kit;
-import 'package:media_kit_video/media_kit_video_controls/src/controls/extensions/duration.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 
@@ -17,9 +16,11 @@ import 'package:bunga_player/network/service.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/models/volume.dart';
 import 'package:bunga_player/utils/business/simple_event.dart';
+import 'package:bunga_player/utils/extensions/extensions.dart';
 
 import '../models/play_payload.dart';
 import '../models/track.dart';
+import 'local_video_proxy.dart';
 import 'service.dart';
 
 class MediaKitMediaPlayer extends MediaPlayer {
@@ -106,6 +107,8 @@ class MediaKitMediaPlayer extends MediaPlayer {
     // This stops playback and releases native resources
     await _player.dispose();
 
+    _videoProxy.stop();
+
     // Clear local caches if necessary
     _externalSubPaths.clear();
 
@@ -172,13 +175,23 @@ class MediaKitMediaPlayer extends MediaPlayer {
   );
 
   // Video loading
+  final _videoProxy = LocalVideoProxy();
   @override
   Future<void> open(PlayPayload payload, [Duration? start]) async {
     assert(payload.sources.videos.length > payload.videoSourceIndex);
 
     // open video
-    final videoUrl = payload.sources.videos[payload.videoSourceIndex].url;
+    String videoUrl = payload.sources.videos[payload.videoSourceIndex].url;
     final httpHeaders = payload.sources.requestHeaders;
+
+    if (proxyNotifier.value != null) {
+      videoUrl = await _videoProxy.startProxy(
+        videoUrl,
+        httpHeaders,
+        proxyNotifier.value,
+      );
+    }
+
     await _player.open(
       media_kit.Media(videoUrl, httpHeaders: httpHeaders, start: start),
       play: false,
@@ -428,15 +441,7 @@ class MediaKitMediaPlayer extends MediaPlayer {
 
   // Proxy
   @override
-  late final proxyNotifier = ValueNotifier<String?>(null)
-    ..addListener(() {
-      final proxy = proxyNotifier.value;
-      if (proxy == null || proxy.isEmpty) {
-        _setProperty('http-proxy', '');
-      } else {
-        _setProperty('http-proxy', 'http://$proxy');
-      }
-    });
+  final proxyNotifier = ValueNotifier<String?>(null);
 
   // Video Size
   @override
