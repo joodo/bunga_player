@@ -1,12 +1,12 @@
-import 'dart:convert';
 import 'dart:io';
+import 'package:bunga_player/network/video_source.dart';
+import 'package:http/http.dart' as http;
 
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/extensions/http_response.dart';
 import 'package:bunga_player/utils/models/network_progress.dart';
-import 'package:http/http.dart' as http;
 
 typedef SourceInfo = ({String location, int bps});
 
@@ -32,59 +32,14 @@ class NetworkService {
     late final String location;
     late final int bps;
 
+    final s = VideoSource(Uri.parse(source), headers: headers);
+
     await Future.wait([
-      _getUrlIpLocation(source).then((value) => location = value),
-      _estimateDownloadSpeed(source, headers).then((value) => bps = value),
+      s.getIpLocation().then((value) => location = value),
+      s.estimateSpeed().then((value) => bps = value),
     ]);
 
     return (location: location, bps: bps);
-  }
-
-  Future<int> _estimateDownloadSpeed(
-    String url,
-    Map<String, String>? headers,
-  ) async {
-    const testMb = 2; // download 500 kb for test
-
-    final client = HttpClient();
-    final request = await client.getUrl(Uri.parse(url));
-    headers?.forEach((key, value) {
-      request.headers.set(key, value);
-    });
-    final response = await request.close().timeout(const Duration(seconds: 5));
-
-    int downloadedBytes = 0;
-    final stopwatch = Stopwatch()..start();
-
-    await for (final chunk in response) {
-      downloadedBytes += chunk.length;
-
-      if (downloadedBytes >= testMb * 1024 * 1024) {
-        stopwatch.stop();
-        break;
-      }
-    }
-    client.close();
-
-    final seconds = stopwatch.elapsedMilliseconds / 1000;
-    final bytesPerSecond = downloadedBytes / seconds;
-    return bytesPerSecond.toInt();
-  }
-
-  Future<String> _getUrlIpLocation(String url) async {
-    final uri = Uri.parse(url);
-    final host = uri.host;
-
-    final addresses = await InternetAddress.lookup(host);
-    final ip =
-        addresses.firstWhere((e) => e.type == InternetAddressType.IPv4).address;
-
-    final response = await http.get(
-      Uri.parse(
-          'https://opendata.baidu.com/api.php?query=$ip&co=&resource_id=6006&oe=utf8'),
-    );
-    final location = jsonDecode(response.body)['data'][0]['location'] as String;
-    return location;
   }
 
   Stream<RequestProgress> downloadFile(String url, String path) async* {
