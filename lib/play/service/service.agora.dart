@@ -6,11 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/foundation.dart';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart' as agora;
+import 'package:styled_widget/styled_widget.dart';
 
 import 'package:bunga_player/utils/models/volume.dart';
 import 'package:bunga_player/utils/extensions/extensions.dart';
-import 'package:bunga_player/services/logger.dart';
-import 'package:styled_widget/styled_widget.dart';
 
 import 'service.dart';
 import '../models/play_payload.dart';
@@ -151,8 +150,7 @@ class AgoraMediaPlayer extends MediaPlayer {
     _position.dispose();
     _playStatus.dispose();
 
-    await _videoProxy?.stop();
-    _videoProxy = null;
+    await _videoProxy.stop();
 
     super.dispose();
   }
@@ -163,12 +161,11 @@ class AgoraMediaPlayer extends MediaPlayer {
   ValueNotifier<Volume> get volumeNotifier => _volume;
 
   // Open
-  _LocalVideoProxy? _videoProxy;
+  final _videoProxy = _LocalVideoProxy();
   Completer? _openTask;
   @override
   Future<void> open(PlayPayload payload, [Duration? start]) async {
     await _player.stop();
-    await _videoProxy?.stop();
     if (_openTask?.isCompleted == false) {
       _openTask!.complete();
     }
@@ -176,9 +173,8 @@ class AgoraMediaPlayer extends MediaPlayer {
     // Headers
     String url = payload.sources.videos[payload.videoSourceIndex].url;
     final headers = payload.sources.requestHeaders;
-    if (headers != null) {
-      _videoProxy = _LocalVideoProxy();
-      url = await _videoProxy!.startProxy(url, headers);
+    if (headers != null || proxyNotifier.value != null) {
+      url = await _videoProxy.startProxy(url, headers, proxyNotifier.value);
     }
 
     // Open
@@ -212,7 +208,10 @@ class AgoraMediaPlayer extends MediaPlayer {
   @override
   ValueListenable<Duration> get positionNotifier => _position;
   @override
-  Future<void> seek(Duration position) => _player.seek(position.inMilliseconds);
+  Future<void> seek(Duration position) async {
+    await _player.seek(position.inMilliseconds);
+    await _position.waitUntil((value) => position == value);
+  }
 
   // Playback
   final _playStatus = ValueNotifier<PlayStatus>(.stop);
@@ -243,10 +242,7 @@ class AgoraMediaPlayer extends MediaPlayer {
   // Utils
 
   @override
-  late final proxyNotifier = ValueNotifier<String?>(null)
-    ..addListener(() {
-      logger.w(' Proxy change not work for agora media player.');
-    });
+  late final proxyNotifier = ValueNotifier<String?>(null);
 
   @override
   Future<Uint8List?> screenshot() async {
@@ -316,20 +312,44 @@ class _SimpleEvent extends ChangeNotifier {
 
 class _LocalVideoProxy {
   HttpServer? _server;
-  final HttpClient _httpClient = HttpClient();
+  final _httpClient = HttpClient()
+    ..badCertificateCallback = (X509Certificate cert, String host, int port) =>
+        true;
+
+  // To handle relative paths in m3u8, we store the base remote URL
+  String? _baseRemoteUrl;
 
   Future<String> startProxy(
     String remoteUrl,
-    Map<String, String> headers,
+    Map<String, String>? headers,
+    String? proxy,
   ) async {
+    _setProxy(proxy);
+
     await stop();
     _server = await HttpServer.bind('127.0.0.1', 0);
 
+    // Parse the base URL (e.g., http://site.com/path/to/video.m3u8 -> http://site.com/path/to/)
+    final uri = Uri.parse(remoteUrl);
+    _baseRemoteUrl = uri.resolve('.').toString();
+
     _server!.listen((HttpRequest request) async {
       try {
-        final clientReq = await _httpClient.getUrl(Uri.parse(remoteUrl));
+        Uri targetUri;
+        if (request.uri.path == '/proxy_video') {
+          targetUri = Uri.parse(remoteUrl);
+        } else {
+          // Resolve relative paths (for .ts files or sub-m3u8)
+          targetUri = Uri.parse(
+            _baseRemoteUrl!,
+          ).resolve(request.uri.path.substring(1));
+        }
+        final clientReq = await _httpClient.getUrl(targetUri);
 
-        headers.forEach((key, value) => clientReq.headers.set(key, value));
+        // Forward headers from agora
+        headers?.forEach((key, value) => clientReq.headers.set(key, value));
+
+        // Handle Range requests for MP4 seeking
         String? range = request.headers.value('range');
         if (range != null) clientReq.headers.set('range', range);
 
@@ -337,25 +357,32 @@ class _LocalVideoProxy {
 
         request.response.statusCode = clientRes.statusCode;
 
-        request.response.headers.set('Content-Type', 'video/mp4');
-        request.response.headers.set('Accept-Ranges', 'bytes');
-        request.response.headers.set('Server', 'Tengine');
-
+        // Headers
         clientRes.headers.forEach((name, values) {
-          String n = name.toLowerCase();
-          if (n == 'content-range' ||
-              n == 'content-length' ||
-              n == 'last-modified') {
-            request.response.headers.set(name, values.join(','));
+          final String n = name.toLowerCase();
+
+          if (n == 'transfer-encoding' ||
+              n == 'content-encoding' ||
+              n == 'connection' ||
+              n == 'content-disposition') {
+            return;
           }
+
           if (n == 'etag') {
             String etag = values.join(',');
             request.response.headers.set(
               'etag',
               etag.startsWith('"') ? etag : '"$etag"',
             );
+          } else {
+            request.response.headers.set(name, values.join(','));
           }
         });
+
+        request.response.headers.set('Accept-Ranges', 'bytes');
+        request.response.headers.set('Access-Control-Allow-Origin', '*');
+        request.response.headers.set('Access-Control-Allow-Headers', '*');
+        request.response.headers.set('Server', 'BungaPlayerProxy/1.0');
 
         await request.response.addStream(clientRes);
         await request.response.close();
@@ -364,8 +391,20 @@ class _LocalVideoProxy {
       }
     });
 
-    return "http://127.0.0.1:${_server!.port}/video.mp4";
+    return "http://127.0.0.1:${_server!.port}/proxy_video";
   }
 
   Future<void> stop() async => await _server?.close(force: true);
+
+  void _setProxy(String? proxy) {
+    if (proxy != null) {
+      _httpClient.findProxy = (uri) {
+        return "PROXY $proxy";
+      };
+    } else {
+      _httpClient.findProxy = (uri) {
+        return "DIRECT";
+      };
+    }
+  }
 }

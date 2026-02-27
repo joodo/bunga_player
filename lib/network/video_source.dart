@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:bunga_player/play/service/service.dart';
+import 'package:bunga_player/services/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/io_client.dart';
 import 'package:m3u_nullsafe/m3u_nullsafe.dart';
@@ -27,9 +29,7 @@ class VideoSource {
   const VideoSource._(this.url, this.headers);
 
   Future<int> estimateSpeed() async {
-    final client = HttpClient()
-      ..badCertificateCallback =
-          (X509Certificate cert, String host, int port) => true;
+    final client = _getHttp();
 
     try {
       final request = await client.getUrl(url);
@@ -98,9 +98,7 @@ class VideoSource {
   }
 
   static Future<bool> _isM3U8(Uri url, Map<String, String>? headers) async {
-    final httpClient = HttpClient()
-      ..badCertificateCallback =
-          (X509Certificate cert, String host, int port) => true;
+    final httpClient = _getHttp();
     final ioClient = IOClient(httpClient);
 
     final response = await ioClient.head(url, headers: headers);
@@ -122,9 +120,7 @@ class VideoSource {
     Uri m3u8Url,
     Map<String, String>? headers,
   ) async {
-    final httpClient = HttpClient()
-      ..badCertificateCallback =
-          (X509Certificate cert, String host, int port) => true;
+    final httpClient = _getHttp();
     final ioClient = IOClient(httpClient);
     final response = await ioClient.get(m3u8Url, headers: headers);
 
@@ -159,5 +155,20 @@ class VideoSource {
         return null;
       }
     }
+  }
+
+  static HttpClient _getHttp() {
+    final client = HttpClient()
+      ..badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
+
+    final proxy = getIt<MediaPlayer>().proxyNotifier.value;
+    if (proxy != null) {
+      client.findProxy = (uri) {
+        return "PROXY $proxy;";
+      };
+    }
+
+    return client;
   }
 }
