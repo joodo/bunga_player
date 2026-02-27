@@ -652,12 +652,17 @@ class _GalleryParser extends _Parser {
   Future<VideoRecord> parseUrl(Uri url) async {
     final linkerId = url.host;
     final mediaKey = url.pathSegments.first;
-    final path = '${url.host}${url.path}';
+    final epId = url.pathSegments[1];
+
+    final path = '$linkerId/$mediaKey/$epId';
 
     final media = await gallery.detail(context, linkerId, mediaKey);
+
+    final epTitle = media.episodes.firstWhere((e) => e.id == epId).title;
+
     return VideoRecord(
       id: '$recordSource-${path.hashStr}',
-      title: media.title,
+      title: '${media.title} - $epTitle',
       thumbUrl: media.thumbUrl,
       source: recordSource,
       path: path,
