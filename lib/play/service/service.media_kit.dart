@@ -177,7 +177,7 @@ class MediaKitMediaPlayer extends MediaPlayer {
     assert(payload.sources.videos.length > payload.videoSourceIndex);
 
     // open video
-    final videoUrl = payload.sources.videos[payload.videoSourceIndex];
+    final videoUrl = payload.sources.videos[payload.videoSourceIndex].url;
     final httpHeaders = payload.sources.requestHeaders;
     await _player.open(
       media_kit.Media(videoUrl, httpHeaders: httpHeaders, start: start),

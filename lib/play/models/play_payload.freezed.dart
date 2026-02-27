@@ -13,9 +13,275 @@ part of 'play_payload.dart';
 T _$identity<T>(T value) => value;
 
 /// @nodoc
+mixin _$Source {
+
+ String? get name; String get url;
+/// Create a copy of Source
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$SourceCopyWith<Source> get copyWith => _$SourceCopyWithImpl<Source>(this as Source, _$identity);
+
+  /// Serializes this Source to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Source&&(identical(other.name, name) || other.name == name)&&(identical(other.url, url) || other.url == url));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,name,url);
+
+@override
+String toString() {
+  return 'Source(name: $name, url: $url)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $SourceCopyWith<$Res>  {
+  factory $SourceCopyWith(Source value, $Res Function(Source) _then) = _$SourceCopyWithImpl;
+@useResult
+$Res call({
+ String? name, String url
+});
+
+
+
+
+}
+/// @nodoc
+class _$SourceCopyWithImpl<$Res>
+    implements $SourceCopyWith<$Res> {
+  _$SourceCopyWithImpl(this._self, this._then);
+
+  final Source _self;
+  final $Res Function(Source) _then;
+
+/// Create a copy of Source
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? name = freezed,Object? url = null,}) {
+  return _then(_self.copyWith(
+name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String?,url: null == url ? _self.url : url // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [Source].
+extension SourcePatterns on Source {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _Source value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _Source() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _Source value)  $default,){
+final _that = this;
+switch (_that) {
+case _Source():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _Source value)?  $default,){
+final _that = this;
+switch (_that) {
+case _Source() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? name,  String url)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _Source() when $default != null:
+return $default(_that.name,_that.url);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? name,  String url)  $default,) {final _that = this;
+switch (_that) {
+case _Source():
+return $default(_that.name,_that.url);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? name,  String url)?  $default,) {final _that = this;
+switch (_that) {
+case _Source() when $default != null:
+return $default(_that.name,_that.url);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _Source extends Source {
+  const _Source({this.name, required this.url}): super._();
+  factory _Source.fromJson(Map<String, dynamic> json) => _$SourceFromJson(json);
+
+@override final  String? name;
+@override final  String url;
+
+/// Create a copy of Source
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$SourceCopyWith<_Source> get copyWith => __$SourceCopyWithImpl<_Source>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$SourceToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Source&&(identical(other.name, name) || other.name == name)&&(identical(other.url, url) || other.url == url));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,name,url);
+
+@override
+String toString() {
+  return 'Source(name: $name, url: $url)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$SourceCopyWith<$Res> implements $SourceCopyWith<$Res> {
+  factory _$SourceCopyWith(_Source value, $Res Function(_Source) _then) = __$SourceCopyWithImpl;
+@override @useResult
+$Res call({
+ String? name, String url
+});
+
+
+
+
+}
+/// @nodoc
+class __$SourceCopyWithImpl<$Res>
+    implements _$SourceCopyWith<$Res> {
+  __$SourceCopyWithImpl(this._self, this._then);
+
+  final _Source _self;
+  final $Res Function(_Source) _then;
+
+/// Create a copy of Source
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? name = freezed,Object? url = null,}) {
+  return _then(_Source(
+name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String?,url: null == url ? _self.url : url // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
+
+
+/// @nodoc
 mixin _$VideoSources {
 
- List<String> get videos; List<String>? get audios; Map<String, String>? get requestHeaders;
+ List<Source> get videos; List<Source>? get audios; Map<String, String>? get requestHeaders;
 /// Create a copy of VideoSources
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +314,7 @@ abstract mixin class $VideoSourcesCopyWith<$Res>  {
   factory $VideoSourcesCopyWith(VideoSources value, $Res Function(VideoSources) _then) = _$VideoSourcesCopyWithImpl;
 @useResult
 $Res call({
- List<String> videos, List<String>? audios, Map<String, String>? requestHeaders
+ List<Source> videos, List<Source>? audios, Map<String, String>? requestHeaders
 });
 
 
@@ -68,8 +334,8 @@ class _$VideoSourcesCopyWithImpl<$Res>
 @pragma('vm:prefer-inline') @override $Res call({Object? videos = null,Object? audios = freezed,Object? requestHeaders = freezed,}) {
   return _then(_self.copyWith(
 videos: null == videos ? _self.videos : videos // ignore: cast_nullable_to_non_nullable
-as List<String>,audios: freezed == audios ? _self.audios : audios // ignore: cast_nullable_to_non_nullable
-as List<String>?,requestHeaders: freezed == requestHeaders ? _self.requestHeaders : requestHeaders // ignore: cast_nullable_to_non_nullable
+as List<Source>,audios: freezed == audios ? _self.audios : audios // ignore: cast_nullable_to_non_nullable
+as List<Source>?,requestHeaders: freezed == requestHeaders ? _self.requestHeaders : requestHeaders // ignore: cast_nullable_to_non_nullable
 as Map<String, String>?,
   ));
 }
@@ -155,7 +421,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<String> videos,  List<String>? audios,  Map<String, String>? requestHeaders)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<Source> videos,  List<Source>? audios,  Map<String, String>? requestHeaders)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _VideoSources() when $default != null:
 return $default(_that.videos,_that.audios,_that.requestHeaders);case _:
@@ -176,7 +442,7 @@ return $default(_that.videos,_that.audios,_that.requestHeaders);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<String> videos,  List<String>? audios,  Map<String, String>? requestHeaders)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<Source> videos,  List<Source>? audios,  Map<String, String>? requestHeaders)  $default,) {final _that = this;
 switch (_that) {
 case _VideoSources():
 return $default(_that.videos,_that.audios,_that.requestHeaders);case _:
@@ -196,7 +462,7 @@ return $default(_that.videos,_that.audios,_that.requestHeaders);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<String> videos,  List<String>? audios,  Map<String, String>? requestHeaders)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<Source> videos,  List<Source>? audios,  Map<String, String>? requestHeaders)?  $default,) {final _that = this;
 switch (_that) {
 case _VideoSources() when $default != null:
 return $default(_that.videos,_that.audios,_that.requestHeaders);case _:
@@ -211,18 +477,18 @@ return $default(_that.videos,_that.audios,_that.requestHeaders);case _:
 @JsonSerializable()
 
 class _VideoSources extends VideoSources {
-  const _VideoSources({required final  List<String> videos, final  List<String>? audios, final  Map<String, String>? requestHeaders}): _videos = videos,_audios = audios,_requestHeaders = requestHeaders,super._();
+  const _VideoSources({required final  List<Source> videos, final  List<Source>? audios, final  Map<String, String>? requestHeaders}): _videos = videos,_audios = audios,_requestHeaders = requestHeaders,super._();
   factory _VideoSources.fromJson(Map<String, dynamic> json) => _$VideoSourcesFromJson(json);
 
- final  List<String> _videos;
-@override List<String> get videos {
+ final  List<Source> _videos;
+@override List<Source> get videos {
   if (_videos is EqualUnmodifiableListView) return _videos;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableListView(_videos);
 }
 
- final  List<String>? _audios;
-@override List<String>? get audios {
+ final  List<Source>? _audios;
+@override List<Source>? get audios {
   final value = _audios;
   if (value == null) return null;
   if (_audios is EqualUnmodifiableListView) return _audios;
@@ -273,7 +539,7 @@ abstract mixin class _$VideoSourcesCopyWith<$Res> implements $VideoSourcesCopyWi
   factory _$VideoSourcesCopyWith(_VideoSources value, $Res Function(_VideoSources) _then) = __$VideoSourcesCopyWithImpl;
 @override @useResult
 $Res call({
- List<String> videos, List<String>? audios, Map<String, String>? requestHeaders
+ List<Source> videos, List<Source>? audios, Map<String, String>? requestHeaders
 });
 
 
@@ -293,8 +559,8 @@ class __$VideoSourcesCopyWithImpl<$Res>
 @override @pragma('vm:prefer-inline') $Res call({Object? videos = null,Object? audios = freezed,Object? requestHeaders = freezed,}) {
   return _then(_VideoSources(
 videos: null == videos ? _self._videos : videos // ignore: cast_nullable_to_non_nullable
-as List<String>,audios: freezed == audios ? _self._audios : audios // ignore: cast_nullable_to_non_nullable
-as List<String>?,requestHeaders: freezed == requestHeaders ? _self._requestHeaders : requestHeaders // ignore: cast_nullable_to_non_nullable
+as List<Source>,audios: freezed == audios ? _self._audios : audios // ignore: cast_nullable_to_non_nullable
+as List<Source>?,requestHeaders: freezed == requestHeaders ? _self._requestHeaders : requestHeaders // ignore: cast_nullable_to_non_nullable
 as Map<String, String>?,
   ));
 }

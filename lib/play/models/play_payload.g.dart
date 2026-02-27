@@ -6,16 +6,34 @@ part of 'play_payload.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
+_Source _$SourceFromJson(Map<String, dynamic> json) =>
+    $checkedCreate('_Source', json, ($checkedConvert) {
+      final val = _Source(
+        name: $checkedConvert('name', (v) => v as String?),
+        url: $checkedConvert('url', (v) => v as String),
+      );
+      return val;
+    });
+
+Map<String, dynamic> _$SourceToJson(_Source instance) => <String, dynamic>{
+  'name': instance.name,
+  'url': instance.url,
+};
+
 _VideoSources _$VideoSourcesFromJson(Map<String, dynamic> json) =>
     $checkedCreate('_VideoSources', json, ($checkedConvert) {
       final val = _VideoSources(
         videos: $checkedConvert(
           'videos',
-          (v) => (v as List<dynamic>).map((e) => e as String).toList(),
+          (v) => (v as List<dynamic>)
+              .map((e) => Source.fromJson(e as Map<String, dynamic>))
+              .toList(),
         ),
         audios: $checkedConvert(
           'audios',
-          (v) => (v as List<dynamic>?)?.map((e) => e as String).toList(),
+          (v) => (v as List<dynamic>?)
+              ?.map((e) => Source.fromJson(e as Map<String, dynamic>))
+              .toList(),
         ),
         requestHeaders: $checkedConvert(
           'request_headers',
@@ -29,8 +47,8 @@ _VideoSources _$VideoSourcesFromJson(Map<String, dynamic> json) =>
 
 Map<String, dynamic> _$VideoSourcesToJson(_VideoSources instance) =>
     <String, dynamic>{
-      'videos': instance.videos,
-      'audios': instance.audios,
+      'videos': instance.videos.map((e) => e.toJson()).toList(),
+      'audios': instance.audios?.map((e) => e.toJson()).toList(),
       'request_headers': instance.requestHeaders,
     };
 

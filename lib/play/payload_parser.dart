@@ -345,14 +345,23 @@ class _BiliParser implements _Parser {
       final videoUrls = dashData['video'][0];
       final audioUrls = dashData['audio'][0];
       return VideoSources(
-        videos: [videoUrls['base_url'], ...videoUrls['backup_url'] ?? []],
-        audios: [audioUrls['base_url'], ...audioUrls['backup_url'] ?? []],
+        videos: [
+          videoUrls['base_url'],
+          ...videoUrls['backup_url'] ?? [],
+        ].map((e) => Source(url: e)).toList(),
+        audios: [
+          audioUrls['base_url'],
+          ...audioUrls['backup_url'] ?? [],
+        ].map((e) => Source(url: e)).toList(),
         requestHeaders: _biliHeaders,
       );
     } else if (data['durl'] != null) {
       final durlData = data['durl'][0];
       return VideoSources(
-        videos: [durlData['url'], ...durlData['backup_url'] ?? []],
+        videos: [
+          durlData['url'],
+          ...durlData['backup_url'] ?? [],
+        ].map((e) => Source(url: e)).toList(),
         requestHeaders: _biliHeaders,
       );
     } else {
@@ -665,7 +674,9 @@ class _GalleryParser extends _Parser {
     final sources = await gallery.sources(context, linkerId, mediaKey, epId);
     return PlayPayload(
       record: record,
-      sources: VideoSources(videos: sources.map((e) => e.url).toList()),
+      sources: VideoSources(
+        videos: sources.map((e) => Source(url: e.url, name: e.title)).toList(),
+      ),
     );
   }
 

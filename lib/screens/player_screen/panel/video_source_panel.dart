@@ -45,12 +45,25 @@ class _VideoSourcePanelState extends State<VideoSourcePanel> {
       child: Consumer<PlayPayload>(
         builder: (context, payload, child) => [
           payload.sources.videos.indexed
-              .map((entry) => entry.$1)
-              .map((index) {
+              .map((entry) {
+                final (index, source) = entry;
+
                 final info = _sourceInfo[index];
+
+                late final String title;
+                if (source.name == null) {
+                  title = info?.location ?? '未知';
+                } else {
+                  final location = info?.location;
+                  if (location == null) {
+                    title = source.name!;
+                  } else {
+                    title = '${source.name} ($location)';
+                  }
+                }
                 return RadioListTile(
                   key: ValueKey('Source $index'),
-                  title: Text(info?.location ?? '未知'),
+                  title: Text(title),
                   subtitle: Text(
                     info == null
                         ? '正在测速……'
@@ -94,7 +107,7 @@ class _VideoSourcePanelState extends State<VideoSourcePanel> {
     final headers = sources.requestHeaders;
     for (final (index, source) in urls.indexed) {
       network
-          .sourceInfo(source, headers)
+          .sourceInfo(source.url, headers)
           .then((result) {
             if (mounted) {
               setState(() => _sourceInfo[index] = result);

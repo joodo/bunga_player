@@ -7,19 +7,31 @@ part 'play_payload.freezed.dart';
 part 'play_payload.g.dart';
 
 @freezed
+abstract class Source with _$Source {
+  const Source._();
+
+  const factory Source({String? name, required String url}) = _Source;
+
+  factory Source.fromJson(Map<String, dynamic> json) => _$SourceFromJson(json);
+}
+
+@freezed
 abstract class VideoSources with _$VideoSources {
   const VideoSources._();
 
   const factory VideoSources({
-    required List<String> videos,
-    List<String>? audios,
+    required List<Source> videos,
+    List<Source>? audios,
     Map<String, String>? requestHeaders,
   }) = _VideoSources;
 
   factory VideoSources.single(
     String url, {
     Map<String, String>? requestHeaders,
-  }) => VideoSources(videos: [url], requestHeaders: requestHeaders);
+  }) => VideoSources(
+    videos: [Source(url: url)],
+    requestHeaders: requestHeaders,
+  );
 
   factory VideoSources.fromJson(Map<String, dynamic> json) =>
       _$VideoSourcesFromJson(json);

@@ -174,7 +174,7 @@ class AgoraMediaPlayer extends MediaPlayer {
     }
 
     // Headers
-    String url = payload.sources.videos[payload.videoSourceIndex];
+    String url = payload.sources.videos[payload.videoSourceIndex].url;
     final headers = payload.sources.requestHeaders;
     if (headers != null) {
       _videoProxy = _LocalVideoProxy();
