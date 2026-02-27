@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'dart:ui' as ui;
 
+import 'package:bunga_player/danmaku/business.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
@@ -51,6 +52,8 @@ class _SparkLayerState extends State<SparkLayer>
 
     _ticker = createTicker(_onTick);
     _ticker.start();
+
+    _cacheEmoji();
   }
 
   @override
@@ -151,6 +154,15 @@ class _SparkLayerState extends State<SparkLayer>
     final image = await EmojiData.createImage(emoji, 45.0);
     _emojiImageCache[emoji] = image;
     return image;
+  }
+
+  Future<void> _cacheEmoji() async {
+    if (_emojiImageCache.isNotEmpty) return;
+
+    for (final emoji in sparkOptions) {
+      final image = await EmojiData.createImage(emoji, 45.0);
+      _emojiImageCache[emoji] = image;
+    }
   }
 }
 
