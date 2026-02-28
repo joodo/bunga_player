@@ -272,16 +272,26 @@ class _ResultPageState extends State<_ResultPage> {
       return Skeleton.leaf(child: tile);
     }
 
-    final grid = SliverGrid.builder(
-      itemCount: _data.length,
-      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 240,
-        mainAxisSpacing: 24.0,
-        crossAxisSpacing: 20.0,
-        childAspectRatio: 0.7,
-      ),
-      itemBuilder: tileBuilder,
-    );
+    final content = _data.isEmpty
+        ? SliverFillRemaining(
+            hasScrollBody: false,
+            child: Text(
+              '没有搜索到任何影片',
+              style: Theme.of(
+                context,
+              ).textTheme.displaySmall?.copyWith(color: Colors.white60),
+            ).center(),
+          )
+        : SliverGrid.builder(
+            itemCount: _data.length,
+            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 240,
+              mainAxisSpacing: 24.0,
+              crossAxisSpacing: 20.0,
+              childAspectRatio: 0.7,
+            ),
+            itemBuilder: tileBuilder,
+          );
 
     final scrollView = CustomScrollView(
       slivers: [
@@ -294,20 +304,16 @@ class _ResultPageState extends State<_ResultPage> {
           expandedHeight: 80.0,
           leading: const SizedBox.shrink(),
           flexibleSpace: FlexibleSpaceBar(
-            background: Container(
-              alignment: Alignment.center,
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: searchBar
-                  .hero(tag: "search-bar")
-                  .constrained(maxWidth: 500.0)
-                  .padding(horizontal: 16.0)
-                  .center(),
-            ),
+            background: searchBar
+                .hero(tag: "search-bar")
+                .constrained(maxWidth: 500.0)
+                .padding(horizontal: 16.0)
+                .center(),
           ),
         ),
         SliverPadding(
           padding: EdgeInsets.all(16),
-          sliver: Skeletonizer.sliver(enabled: _isBusy, child: grid),
+          sliver: Skeletonizer.sliver(enabled: _isBusy, child: content),
         ),
       ],
     );
