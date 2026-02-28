@@ -5,6 +5,7 @@ import 'package:bunga_player/play/models/play_payload.dart';
 import 'package:bunga_player/play/payload_parser.dart';
 import 'package:bunga_player/play_sync/business.dart';
 import 'package:bunga_player/screens/player_screen/business.dart';
+import 'package:bunga_player/utils/business/run_after_build.dart';
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -23,23 +24,18 @@ class PlaylistPanel extends StatefulWidget implements Panel {
 }
 
 class _PlaylistPanelState extends State<PlaylistPanel> {
-  final _scrollController = ScrollController();
-
   @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+
+    runAfterBuild(_scrollToCurrent);
   }
 
   @override
   Widget build(BuildContext context) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _scrollToCurrent();
-    });
-
     final dirInfo = context.read<DirInfo?>();
     return PanelWidget(
-      title: dirInfo?.name ?? '',
+      title: Text(dirInfo?.name ?? ''),
       actions: [
         Consumer<PlayPayload?>(
           builder: (context, value, child) => IconButton(
@@ -62,10 +58,12 @@ class _PlaylistPanelState extends State<PlaylistPanel> {
         ),
       ],
       child: dirInfo == null
-          ? const Text('没有其他视频').center()
+          ? SliverFillRemaining(
+              hasScrollBody: false,
+              child: const Text('没有其他视频').center(),
+            )
           : ListView.separated(
-              controller: _scrollController,
-              padding: const EdgeInsets.only(bottom: 24.0),
+              controller: PrimaryScrollController.of(context),
               itemBuilder: (context, index) {
                 final epInfo = dirInfo.info[index];
                 // Move consumer inside ListTile to avoid rebuild all list
@@ -107,11 +105,9 @@ class _PlaylistPanelState extends State<PlaylistPanel> {
     if (currentIndex == null) return;
 
     final offset = currentIndex * (48.0 + 16.0);
-    final maxScroll = _scrollController.position.maxScrollExtent;
-    _scrollController.animateTo(
-      min(offset, maxScroll),
-      duration: const Duration(milliseconds: 350),
-      curve: Curves.easeOutCubic,
-    );
+
+    final controller = PrimaryScrollController.of(context);
+    final maxScroll = controller.position.maxScrollExtent;
+    controller.jumpTo(min(offset, maxScroll));
   }
 }

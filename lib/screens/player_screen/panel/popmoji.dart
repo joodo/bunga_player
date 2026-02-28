@@ -89,32 +89,24 @@ class _PopmojiPanelState extends State<PopmojiPanel> {
   Widget build(BuildContext context) {
     const buttonSize = 56.0;
 
-    final actions = [
-      TextEditingShortcutWrapper(
-        child: TextField(
-          autofocus: kIsDesktop,
-          decoration: const InputDecoration(
-            hintText: '搜索表情',
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(36)),
-            ),
-            contentPadding: EdgeInsets.symmetric(horizontal: 24),
-          ),
-          onChanged: (value) {
-            if (value.isEmpty) {
-              setState(() {
-                _data = _categories;
-              });
-              return;
-            }
-
+    final title = TextEditingShortcutWrapper(
+      child: TextField(
+        autofocus: kIsDesktop,
+        decoration: const InputDecoration(hintText: '搜索表情'),
+        onChanged: (value) {
+          if (value.isEmpty) {
             setState(() {
-              _data = _emojisByTag(value);
+              _data = _categories;
             });
-          },
-        ),
-      ).padding(left: 8.0).flexible(),
-    ];
+            return;
+          }
+
+          setState(() {
+            _data = _emojisByTag(value);
+          });
+        },
+      ),
+    );
 
     return Consumer<SplitPlacement>(
       builder: (context, placement, child) {
@@ -124,11 +116,12 @@ class _PopmojiPanelState extends State<PopmojiPanel> {
         if (items.isEmpty) items = ['无结果'];
 
         return PanelWidget(
-          actions: actions,
+          title: title,
           child: ListView.builder(
             padding: const EdgeInsets.only(bottom: 24, left: 8.0, right: 8.0),
             itemCount: items.length,
             prototypeItem: const SizedBox(height: buttonSize),
+            controller: PrimaryScrollController.of(context),
             itemBuilder: (context, index) {
               if (items[index] is String) {
                 return [

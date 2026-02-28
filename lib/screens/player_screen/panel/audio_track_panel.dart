@@ -21,7 +21,7 @@ class AudioTrackPanel extends StatelessWidget implements Panel {
       builder: (context, tracks, child) => ValueListenableBuilder(
         valueListenable: player.audioTrackNotifier,
         builder: (context, currentTrack, child) => PanelWidget(
-          title: '音轨',
+          title: const Text('音轨'),
           child: tracks
               .map(
                 (e) => RadioListTile(
@@ -32,7 +32,6 @@ class AudioTrackPanel extends StatelessWidget implements Panel {
               )
               .toList()
               .toColumn()
-              .scrollable(padding: EdgeInsets.only(bottom: 16.0))
               .radioGroup(
                 groupValue: currentTrack,
                 onChanged: (AudioTrack? value) {
@@ -40,6 +39,10 @@ class AudioTrackPanel extends StatelessWidget implements Panel {
                     player.audioTrackNotifier.value = value;
                   }
                 },
+              )
+              .scrollable(
+                controller: PrimaryScrollController.of(context),
+                padding: EdgeInsets.only(bottom: 16.0),
               ),
         ),
       ),

@@ -153,7 +153,7 @@ class _SubtitlePanelState extends State<SubtitlePanel> {
     final body = [tracksSection, tuneSection].toColumn();
 
     return PanelWidget(
-      title: '字幕',
+      title: const Text('字幕'),
       actions: [
         IconButton(
           onPressed: _openSubtitle,
@@ -161,7 +161,10 @@ class _SubtitlePanelState extends State<SubtitlePanel> {
           tooltip: '打开外部字幕',
         ),
       ],
-      child: body.scrollable(padding: const EdgeInsets.only(bottom: 16.0)),
+      child: body.scrollable(
+        controller: PrimaryScrollController.of(context),
+        padding: const EdgeInsets.only(bottom: 16.0),
+      ),
     );
   }
 

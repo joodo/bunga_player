@@ -18,7 +18,7 @@ class CallingSettingsPanel extends StatelessWidget implements Panel {
   @override
   Widget build(BuildContext context) {
     return PanelWidget(
-      title: '语音设置',
+      title: const Text('语音设置'),
       child: Consumer<VoiceCallClient>(
         builder: (context, client, child) {
           client as AgoraClient;
@@ -33,23 +33,21 @@ class CallingSettingsPanel extends StatelessWidget implements Panel {
                 final devices = snapshot.data!;
                 return ValueListenableBuilder(
                   valueListenable: client.inputDeviceNotifier,
-                  builder: (context, currentId, child) => [
-                    const Text('设备')
-                        .textStyle(Theme.of(context).textTheme.labelMedium!)
-                        .padding(horizontal: 16.0, top: 8.0, bottom: 8.0),
-                    ...devices.map(
-                      (e) => RadioListTile(
-                        title: Text(e.deviceName ?? '未知设备'),
-                        subtitle: Text(e.deviceTypeName ?? ''),
-                        value: e.deviceId,
-                        // FIXME: use RadioGroup cause child not recognize it
+                  builder: (context, currentId, child) =>
+                      [
+                        ...devices.map(
+                          (e) => RadioListTile(
+                            title: Text(e.deviceName ?? '未知设备'),
+                            subtitle: Text(e.deviceTypeName ?? ''),
+                            value: e.deviceId,
+                          ),
+                        ),
+                      ].toColumn().radioGroup<String?>(
                         groupValue: currentId,
                         onChanged: (value) {
                           client.inputDeviceNotifier.value = value!;
                         },
                       ),
-                    ),
-                  ].toColumn(),
                 );
               },
             ),
@@ -71,7 +69,10 @@ class CallingSettingsPanel extends StatelessWidget implements Panel {
                     },
                   ),
             ),
-          ].toColumn().scrollable(padding: EdgeInsets.only(bottom: 16.0));
+          ].toColumn().scrollable(
+            controller: PrimaryScrollController.of(context),
+            padding: EdgeInsets.only(bottom: 16.0),
+          );
         },
       ),
     );

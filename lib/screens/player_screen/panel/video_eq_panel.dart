@@ -47,7 +47,7 @@ class VideoEqPanel extends StatelessWidget implements Panel {
   @override
   Widget build(BuildContext context) {
     return PanelWidget(
-      title: '画面均衡',
+      title: const Text('画面均衡'),
       child:
           [
                 Consumer<PlayEqPresetNotifier>(
@@ -98,7 +98,10 @@ class VideoEqPanel extends StatelessWidget implements Panel {
               ]
               .toColumn(crossAxisAlignment: .start)
               .padding(horizontal: 16.0)
-              .scrollable(padding: EdgeInsets.only(bottom: 16.0)),
+              .scrollable(
+                controller: PrimaryScrollController.of(context),
+                padding: EdgeInsets.only(bottom: 16.0),
+              ),
     );
   }
 }

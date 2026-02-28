@@ -34,7 +34,7 @@ class _VideoSourcePanelState extends State<VideoSourcePanel> {
   Widget build(BuildContext context) {
     final proxy = getIt<MediaPlayer>().proxyNotifier.value;
     return PanelWidget(
-      title: '片源选择',
+      title: const Text('片源选择'),
       actions: [
         IconButton.filledTonal(
           icon: const Icon(Icons.refresh),
@@ -94,7 +94,7 @@ class _VideoSourcePanelState extends State<VideoSourcePanel> {
                 .textStyle(Theme.of(context).textTheme.bodySmall!)
                 .padding(horizontal: 8.0, vertical: 20.0),
         ].toColumn(crossAxisAlignment: .start),
-      ),
+      ).scrollable(controller: PrimaryScrollController.of(context)),
     );
   }
 
