@@ -6,8 +6,8 @@ import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
 import 'package:bunga_player/chat/global_business.dart';
-import 'package:bunga_player/danmaku/models/models.dart';
-import 'package:bunga_player/danmaku/business.dart';
+import 'package:bunga_player/reaction/models/models.dart';
+import 'package:bunga_player/reaction/business.dart';
 import 'package:bunga_player/screens/widgets/text_editing_shortcut_wrapper.dart';
 import 'package:bunga_player/utils/business/platform.dart';
 import 'package:bunga_player/utils/extensions/extensions.dart';

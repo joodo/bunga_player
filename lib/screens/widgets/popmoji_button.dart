@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:styled_widget/styled_widget.dart';
 
-import 'package:bunga_player/danmaku/models/emoji_data.dart';
+import 'package:bunga_player/reaction/models/emoji_data.dart';
 import 'package:bunga_player/screens/player_screen/player_screen.dart';
 
 class PopmojiButton extends StatelessWidget {

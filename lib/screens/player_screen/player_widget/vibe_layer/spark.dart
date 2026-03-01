@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'dart:ui' as ui;
 
-import 'package:bunga_player/danmaku/business.dart';
+import 'package:bunga_player/reaction/business.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
@@ -12,7 +12,7 @@ import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/chat/client/client.dart';
 import 'package:bunga_player/chat/models/user.dart';
-import 'package:bunga_player/danmaku/models/models.dart';
+import 'package:bunga_player/reaction/models/models.dart';
 import 'package:bunga_player/utils/business/value_listenable.dart';
 import 'package:bunga_player/ui/global_business.dart';
 

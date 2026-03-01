@@ -2,7 +2,7 @@ import 'package:bunga_player/alist/business.dart';
 import 'package:bunga_player/bunga_server/global_business.dart';
 import 'package:bunga_player/chat/global_business.dart';
 import 'package:bunga_player/client_info/global_business.dart';
-import 'package:bunga_player/danmaku/business.dart';
+import 'package:bunga_player/reaction/business.dart';
 import 'package:bunga_player/network/global_business.dart';
 import 'package:bunga_player/play/global_business.dart';
 import 'package:bunga_player/restart/global_business.dart';
@@ -21,7 +21,7 @@ class GlobalBusiness extends SingleChildStatelessWidget {
       children: [
         const RestartGlobalBusiness(),
         const UIGlobalBusiness(),
-        const PopmojiGlobalBusiness(),
+        const ReactionGlobalBusiness(),
         const NetworkGlobalBusiness(),
         const PlayGlobalBusiness(),
         const ClientInfoGlobalBusiness(),

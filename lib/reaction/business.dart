@@ -62,14 +62,14 @@ class SendDanmakuAction extends ContextAction<SendDanmakuIntent> {
 
 // Wrapper
 
-class DanmakuBusiness extends SingleChildStatefulWidget {
-  const DanmakuBusiness({super.key, super.child});
+class ReactionBusiness extends SingleChildStatefulWidget {
+  const ReactionBusiness({super.key, super.child});
 
   @override
-  State<DanmakuBusiness> createState() => _DanmakuBusinessState();
+  State<ReactionBusiness> createState() => _ReactionBusinessState();
 }
 
-class _DanmakuBusinessState extends SingleChildState<DanmakuBusiness> {
+class _ReactionBusinessState extends SingleChildState<ReactionBusiness> {
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
     return MultiProvider(
@@ -88,11 +88,11 @@ class _DanmakuBusinessState extends SingleChildState<DanmakuBusiness> {
 }
 
 extension WrapDanmakuBusiness on Widget {
-  Widget danmakuBusiness() => DanmakuBusiness(child: this);
+  Widget reactionBusiness() => ReactionBusiness(child: this);
 }
 
-class PopmojiGlobalBusiness extends SingleChildStatelessWidget {
-  const PopmojiGlobalBusiness({super.key, super.child});
+class ReactionGlobalBusiness extends SingleChildStatelessWidget {
+  const ReactionGlobalBusiness({super.key, super.child});
 
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {

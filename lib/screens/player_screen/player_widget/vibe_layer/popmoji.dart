@@ -9,7 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
 import 'package:bunga_player/chat/models/models.dart';
-import 'package:bunga_player/danmaku/models/models.dart';
+import 'package:bunga_player/reaction/models/models.dart';
 import 'package:bunga_player/ui/global_business.dart';
 import 'package:bunga_player/utils/business/platform.dart';
 
