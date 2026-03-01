@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
 import 'package:bunga_player/utils/business/drag_business.dart';
+import 'package:bunga_player/utils/extensions/extensions.dart';
 
 typedef SplitPlacement = ({AxisDirection direction, double size});
 
@@ -12,11 +13,13 @@ class SplitView extends SingleChildStatefulWidget {
   final double minSize, size, maxSize;
   final AxisDirection direction;
   final Widget? split;
+  final bool resizable;
 
   const SplitView({
     super.key,
     super.child,
     this.split,
+    this.resizable = true,
     required this.minSize,
     required this.size,
     required this.maxSize,
@@ -28,7 +31,7 @@ class SplitView extends SingleChildStatefulWidget {
 }
 
 class _SplitViewState extends SingleChildState<SplitView> {
-  static const double _handleSize = 12.0;
+  static const _handleSize = Size(12.0, 120.0);
   late final _sizeNotifier = ValueNotifier(widget.size);
 
   DragBusiness? _dragBusiness;
@@ -61,11 +64,9 @@ class _SplitViewState extends SingleChildState<SplitView> {
 
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
-    final isReverse = widget.direction == .right || widget.direction == .down;
-
     // Pre-build static components.
     final Widget memoizedHandle = _createHandle();
-    final Widget memoizedChild = RepaintBoundary(child: child!).flexible();
+    final Widget memoizedChild = RepaintBoundary(child: child!);
     final Widget? memoizedSplit = widget.split != null
         ? ValueListenableProvider.value(
             value: _placementNotifier,
@@ -81,16 +82,39 @@ class _SplitViewState extends SingleChildState<SplitView> {
           Axis.vertical => memoizedSplit?.constrained(height: size),
         };
 
-        final list = [
-          if (split != null) KeyedSubtree.wrap(split, 1),
-          if (split != null) KeyedSubtree.wrap(memoizedHandle, 2),
-          KeyedSubtree.wrap(child!, 3),
-        ];
-
-        return Flex(
-          direction: _axis,
-          children: isReverse ? list.reversed.toList() : list,
-        );
+        return [
+          if (split != null)
+            KeyedSubtree(
+              key: Key('split'),
+              child: split.positioned(
+                left: widget.direction != .right ? 0 : null,
+                right: widget.direction != .left ? 0 : null,
+                top: widget.direction != .down ? 0 : null,
+                bottom: widget.direction != .up ? 0 : null,
+                width: _axis == .horizontal ? size : null,
+                height: _axis == .vertical ? size : null,
+              ),
+            ),
+          KeyedSubtree(
+            key: Key('child'),
+            child: child!.positioned(
+              left: widget.direction != .left || split == null ? 0 : size,
+              right: widget.direction != .right || split == null ? 0 : size,
+              top: widget.direction != .up || split == null ? 0 : size,
+              bottom: widget.direction != .down || split == null ? 0 : size,
+            ),
+          ),
+          if (split != null && widget.resizable)
+            KeyedSubtree(
+              key: Key('handle'),
+              child: memoizedHandle.positioned(
+                left: widget.direction == .left ? size : null,
+                right: widget.direction == .right ? size : null,
+                top: widget.direction == .up ? size : null,
+                bottom: widget.direction == .down ? size : null,
+              ),
+            ),
+        ].toStack(alignment: .center);
       },
       child: memoizedChild,
     );
@@ -116,8 +140,14 @@ class _SplitViewState extends SingleChildState<SplitView> {
       ),
     );
     final constrainedInkWell = switch (_axis) {
-      Axis.horizontal => inkWell.constrained(width: _handleSize),
-      Axis.vertical => inkWell.constrained(height: _handleSize),
+      Axis.horizontal => inkWell.constrained(
+        width: _handleSize.width,
+        height: _handleSize.height,
+      ),
+      Axis.vertical => inkWell.constrained(
+        height: _handleSize.width,
+        width: _handleSize.height,
+      ),
     };
 
     final gestureDetector = GestureDetector(
@@ -182,10 +212,10 @@ class _SplitViewState extends SingleChildState<SplitView> {
       child: constrainedInkWell,
     );
 
-    return Ink(
-      key: key,
-      color: Theme.of(context).colorScheme.surfaceContainer,
-      child: gestureDetector,
+    return Ink(key: key, child: gestureDetector).material(
+      color: Theme.of(context).colorScheme.surfaceContainer.withAlpha(200),
+      borderRadius: BorderRadius.all(Radius.circular(_handleSize.width)),
+      clipBehavior: .hardEdge,
     );
   }
 }
