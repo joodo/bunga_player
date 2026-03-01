@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
@@ -50,21 +51,24 @@ class _PopmojiPanelState extends State<PopmojiPanel> {
                   MediaQuery.of(context).padding.bottom;
 
               final label = context.read<EmojiData>().tags[emoji]?.first;
-              return [
-                    Lottie.asset(EmojiData.lottiePath(emoji), repeat: true),
-                    if (label != null)
-                      Text(label)
-                          .textStyle(Theme.of(context).textTheme.labelLarge!)
-                          .padding(top: 8.0),
-                  ]
-                  .toColumn()
-                  .padding(all: 12.0)
-                  .card(color: Colors.grey[700]!.withAlpha(150))
-                  .positioned(
-                    right: _panelWidth - 24.0,
-                    top: min(_overlayY, appHeight - size - 36.0),
-                    width: size,
-                  );
+              final preview =
+                  [
+                        Lottie.asset(EmojiData.lottiePath(emoji), repeat: true),
+                        if (label != null)
+                          Text(label)
+                              .textStyle(
+                                Theme.of(context).textTheme.labelLarge!,
+                              )
+                              .padding(top: 8.0),
+                      ]
+                      .toColumn()
+                      .padding(all: 12.0)
+                      .card(color: Colors.grey[700]!.withAlpha(150));
+              return preview.positioned(
+                right: _panelWidth,
+                top: min(_overlayY, appHeight - size - 36.0),
+                width: size,
+              );
             },
           );
         },
@@ -108,67 +112,87 @@ class _PopmojiPanelState extends State<PopmojiPanel> {
       ),
     );
 
+    Widget categoryBuilder(EmojiCategory category) {
+      Widget emojiBuilder(BuildContext context, int index) {
+        return Builder(
+          builder: (context) {
+            final emoji = category.emojis[index];
+            return PopmojiButton(
+              emoji,
+              size: buttonSize,
+              onPressed: () {
+                Actions.invoke(context, SendPopmojiIntent(emoji));
+                _addToRecent(emoji);
+              },
+              onHover: (isHovered) {
+                if (!isHovered) {
+                  _currentHoveredEmoji.value = null;
+                  return;
+                }
+
+                final renderbox = context.findRenderObject() as RenderBox?;
+                final y = renderbox!.localToGlobal(Offset.zero).dy;
+
+                _overlayY = y;
+                _currentHoveredEmoji.value = emoji;
+              },
+            );
+          },
+        );
+      }
+
+      final categoryLabel = SliverAppBar(
+        title: Text(
+          category.name,
+          style: Theme.of(
+            context,
+          ).textTheme.labelLarge?.copyWith(color: Colors.white54),
+        ),
+        toolbarHeight: 36.0,
+        pinned: true,
+        leading: const SizedBox.shrink(),
+        leadingWidth: 0,
+      );
+
+      return SliverMainAxisGroup(
+        slivers: [
+          categoryLabel,
+          SliverRepaintBoundary(
+            child: SliverGrid.builder(
+              itemCount: category.emojis.length,
+              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                maxCrossAxisExtent: 64.0,
+                mainAxisExtent: 64.0,
+                mainAxisSpacing: 0,
+                crossAxisSpacing: 0,
+              ),
+              itemBuilder: emojiBuilder,
+            ),
+          ),
+        ],
+      );
+    }
+
+    final body = CustomScrollView(
+      controller: PrimaryScrollController.of(context),
+      slivers: [
+        SliverMainAxisGroup(slivers: _data.map(categoryBuilder).toList()),
+      ],
+    );
+
     return Consumer<SplitPlacement>(
       builder: (context, placement, child) {
         _panelWidth = placement.size;
-        final lineCount = _panelWidth ~/ buttonSize;
-        var items = _sliceItems(_data, lineCount);
-        if (items.isEmpty) items = ['无结果'];
 
         return PanelWidget(
           title: title,
-          child: ListView.builder(
-            padding: const EdgeInsets.only(bottom: 24, left: 8.0, right: 8.0),
-            itemCount: items.length,
-            prototypeItem: const SizedBox(height: buttonSize),
-            controller: PrimaryScrollController.of(context),
-            itemBuilder: (context, index) {
-              if (items[index] is String) {
-                return [
-                  const Spacer(),
-                  Text(
-                    items[index],
-                  ).textStyle(Theme.of(context).textTheme.labelLarge!),
-                  const Divider(),
-                ].toColumn().alignment(.bottomCenter).padding(horizontal: 8.0);
-              }
-
-              final emojiRow = (items[index] as List)
-                  .map(
-                    (emoji) => Builder(
-                      builder: (context) {
-                        return PopmojiButton(
-                          emoji,
-                          size: buttonSize,
-                          onPressed: () {
-                            Actions.invoke(context, SendPopmojiIntent(emoji));
-                            _addToRecent(emoji);
-                          },
-                          onHover: (isHovered) {
-                            if (!isHovered) {
-                              _currentHoveredEmoji.value = null;
-                              return;
-                            }
-
-                            final renderbox =
-                                context.findRenderObject() as RenderBox?;
-                            final y = renderbox!.localToGlobal(Offset.zero).dy;
-
-                            _overlayY = y;
-                            _currentHoveredEmoji.value = emoji;
-                          },
-                        );
-                      },
-                    ),
-                  )
-                  .toList()
-                  .toRow(mainAxisAlignment: MainAxisAlignment.center);
-
-              return RepaintBoundary(child: emojiRow);
-            },
-          ).overflow(minWidth: placement.size, alignment: .topLeft),
+          child: child!
+              .constrained(width: _panelWidth)
+              .overflow(maxWidth: _panelWidth, minWidth: _panelWidth)
+              .clipRect(),
         );
       },
+      child: body,
     );
   }
 
@@ -179,23 +203,6 @@ class _PopmojiPanelState extends State<PopmojiPanel> {
       ..remove(emoji)
       ..insert(0, emoji);
     notifier.value = [...emojis];
-  }
-
-  List _sliceItems(List<EmojiCategory> categories, int count) {
-    final items = [];
-
-    for (var category in categories) {
-      items.add(category.name);
-
-      var remain = category.emojis;
-      while (remain.length > count) {
-        items.add(remain.sublist(0, count));
-        remain = remain.sublist(count);
-      }
-      if (remain.isNotEmpty) items.add(remain);
-    }
-
-    return items;
   }
 
   List<EmojiCategory> _emojisByTag(String keyword) {
@@ -220,4 +227,18 @@ class _PopmojiPanelState extends State<PopmojiPanel> {
     }
     return false;
   }
+}
+
+class SliverRepaintBoundary extends SingleChildRenderObjectWidget {
+  const SliverRepaintBoundary({super.key, super.child});
+
+  @override
+  RenderObject createRenderObject(BuildContext context) {
+    return RenderSliverRepaintBoundary();
+  }
+}
+
+class RenderSliverRepaintBoundary extends RenderProxySliver {
+  @override
+  bool get isRepaintBoundary => true;
 }
