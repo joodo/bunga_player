@@ -1,11 +1,9 @@
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
 import 'package:bunga_player/chat/business.dart';
 import 'package:bunga_player/play_sync/business.dart';
-import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:bunga_player/voice_call/business.dart';
 import 'package:bunga_player/screens/player_screen/business.dart';
 import 'package:bunga_player/chat/models/user.dart';
@@ -31,8 +29,6 @@ class Header extends StatelessWidget {
       );
     }
 
-    final syncNotifier = context.read<WatcherBufferingStatusNotifier>();
-
     return [
       [
             Text(payload.record.title, maxLines: 1, overflow: .ellipsis)
@@ -44,22 +40,6 @@ class Header extends StatelessWidget {
                   '当前观众：',
                 ).textColor(Theme.of(context).colorScheme.onSurface),
                 ...users.map((user) => _WatcherLabel(user)),
-                ListenableBuilder(
-                  listenable: syncNotifier,
-                  builder: (context, child) {
-                    final bufferingIds = syncNotifier.bufferingUserIds;
-                    if (bufferingIds.isEmpty) return const SizedBox.shrink();
-
-                    String bufferingUserName = '多个人';
-                    if (bufferingIds.length == 1) {
-                      final user = users.firstWhereOrNull(
-                        (u) => u.id == bufferingIds.first,
-                      );
-                      bufferingUserName = user?.name ?? '神秘人';
-                    }
-                    return Text('等待$bufferingUserName缓冲中……').breath();
-                  },
-                ),
               ].toRow(),
             ),
           ]

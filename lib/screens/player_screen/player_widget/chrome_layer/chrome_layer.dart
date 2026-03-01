@@ -37,24 +37,11 @@ class ChromeLayer extends StatelessWidget {
       ),
     ].toStack(fit: StackFit.expand);
 
-    final circlularIndicator = CircularProgressIndicator(
-      strokeCap: StrokeCap.round,
-    ).constrained(height: 24.0, width: 24.0);
-
     return Consumer<ShouldShowHUDNotifier>(
       builder: (context, showNotfier, child) => ValueListenableBuilder(
         valueListenable: showNotfier,
         builder: (context, show, child) =>
             [
-                  Consumer<BusyStateNotifier>(
-                    builder: (context, busyState, child) => circlularIndicator
-                        .opacity(
-                          !show && busyState.isBusy ? 1.0 : 0.0,
-                          animate: true,
-                        )
-                        .padding(all: 16.0)
-                        .alignment(Alignment.bottomLeft),
-                  ),
                   TickerMode(
                     enabled: show,
                     child: chrome,
