@@ -62,35 +62,46 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
 
   @override
   Widget build(BuildContext context) {
-    final play = getIt<MediaPlayer>();
-
-    final indicatorEvent = context.read<AdjustIndicatorEvent>();
-
     final lockedNotifier = context.watch<ScreenLockedNotifier>();
     final lockButton = ValueListenableBuilder(
       valueListenable: _lockButtonVisibleNotifier,
       builder: (context, visible, child) => Visibility(
         visible: visible,
-        child: IconButton.outlined(
-          onPressed: () {
-            if (lockedNotifier.value) {
-              lockedNotifier.value = false;
-              _showHUDNotifier.mark();
-            } else {
-              lockedNotifier.value = true;
-              _showHUDNotifier.reset();
-            }
-            indicatorEvent.fire(.lockScreen);
-          },
-          isSelected: lockedNotifier.value,
-          icon: Icon(lockedNotifier.value ? Icons.lock : Icons.lock_open),
-        ),
+        child: lockedNotifier.value
+            ? IconButton.filled(
+                onPressed: () {
+                  lockedNotifier.value = false;
+                  _showHUDNotifier.mark();
+                  context.read<AdjustIndicatorEvent>().fire(.lockScreen);
+                },
+                icon: const Icon(Icons.lock),
+              )
+            : IconButton.outlined(
+                onPressed: () {
+                  lockedNotifier.value = true;
+                  _showHUDNotifier.reset();
+                  context.read<AdjustIndicatorEvent>().fire(.lockScreen);
+                },
+                icon: Icon(Icons.lock_open),
+              ),
       ).padding(right: 18.0).alignment(.centerRight),
     );
     if (lockedNotifier.value) {
-      return GestureDetector(
+      return _GestureDetector(
         behavior: .translucent,
+
         onTap: _lockButtonVisibleNotifier.mark,
+
+        onDoubleTapDragStart: (details) {
+          _sparkController.start(details.localPosition);
+        },
+        onDoubleTapDragUpdated: (details) {
+          _sparkController.updateOffset(details.localPosition);
+        },
+        onDoubleTapDragEnd: (details) {
+          _sparkController.stop();
+        },
+
         child: lockButton,
       );
     }
@@ -104,68 +115,17 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
       },
       onDoubleTap: Actions.handler(context, SetPlaybackIntent.toggle()),
 
-      onHorizentalDragStart: (details) {
-        _showHUDNotifier.lockUp('drag');
-
-        _dragBusiness = DragBusiness(
-          startPosition: details.localPosition,
-          orientation: .horizontal,
-          startValue: play.positionNotifier.value,
-          onUpdate: (startValue, distance) {
-            final delta = Duration(milliseconds: (distance * 200).round());
-            return play.seek(startValue + delta);
-          },
-        );
-
-        Actions.maybeInvoke(context, SeekStartIntent());
-
-        _isPlayingBeforeDrag = play.playStatusNotifier.value.isPlaying;
-        play.pause();
-      },
-      onHorizontalDragUpdate: (details) {
-        _dragBusiness!.updatePosition(details.localPosition);
-      },
-      onHorizontalDragEnd: (details) {
-        final action =
-            _dragBusiness!.updatePosition(details.localPosition) as Future;
-        action.then((_) {
-          if (_isPlayingBeforeDrag) play.play();
-          if (context.mounted) Actions.maybeInvoke(context, SeekEndIntent());
-        });
-
-        _dragBusiness = null;
-        context.read<ShouldShowHUDNotifier>().unlock('drag');
-      },
+      onHorizentalDragStart: _startSlideSeeking,
+      onHorizontalDragUpdate: _updateDragBusiness,
+      onHorizontalDragEnd: _finishSlideSeeking,
 
       onVerticalDragStart: (details) {
-        final startPosition = details.localPosition;
-
-        _isDraggingLeftSide = _isLeftScreen(startPosition);
-
-        _dragBusiness = DragBusiness(
-          startPosition: startPosition,
-          orientation: .vertical,
-          startValue: _isDraggingLeftSide
-              ? context.read<ScreenBrightnessNotifier>().value
-              : context.read<MediaVolumeNotifier>().value.level,
-          onUpdate: _isDraggingLeftSide
-              ? (startValue, distance) {
-                  final delta = distance * _verticalFactor;
-                  final target = (startValue + delta).clamp(0, 1.0);
-                  context.read<ScreenBrightnessNotifier>().value = target
-                      .toDouble();
-                  indicatorEvent.fire(.brightness);
-                }
-              : (startValue, distance) {
-                  final delta = distance * _verticalFactor;
-                  final newVolume = Volume(level: startValue + delta);
-                  Actions.invoke(context, UpdateVolumeIntent(newVolume));
-                  indicatorEvent.fire(.volume);
-                },
-        );
+        _isDraggingLeftSide = _isLeftScreen(details.localPosition);
+        _isDraggingLeftSide
+            ? _startAdjustBrightness(details)
+            : _startAdjustVolume(details);
       },
-      onVerticalDragUpdate: (details) =>
-          _dragBusiness!.updatePosition(details.localPosition),
+      onVerticalDragUpdate: _updateDragBusiness,
       onVerticalDragEnd: (details) {
         _dragBusiness = null;
         if (!_isDraggingLeftSide) {
@@ -174,6 +134,7 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
       },
 
       onVerticalMultiFingerDragStart: (details) {
+        // Check if voice volume changable
         final action =
             Actions.maybeFind<UpdateVoiceVolumeIntent>(context)
                 as UpdateVoiceVolumeAction?;
@@ -185,32 +146,12 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
           return;
         }
 
-        final startPosition = details.localPosition;
-        _isDraggingLeftSide = _isLeftScreen(startPosition);
-        final mediaVolumeNotifer = getIt<MediaPlayer>().volumeNotifier;
-        _dragBusiness = DragBusiness(
-          startPosition: startPosition,
-          orientation: .vertical,
-          startValue: _isDraggingLeftSide
-              ? mediaVolumeNotifer.value.level
-              : context.read<VoiceCallClient>().volumeNotifier.value.level,
-          onUpdate: _isDraggingLeftSide
-              ? (startValue, distance) {
-                  final delta = distance * _verticalFactor;
-                  final newValue = Volume(level: startValue + delta);
-                  mediaVolumeNotifer.value = newValue;
-                  indicatorEvent.fire(.mediaVolume);
-                }
-              : (startValue, distance) {
-                  final delta = distance * _verticalFactor;
-                  final newValue = Volume(level: startValue + delta);
-                  Actions.invoke(context, UpdateVoiceVolumeIntent(newValue));
-                  indicatorEvent.fire(.voiceVolume);
-                },
-        );
+        _isDraggingLeftSide = _isLeftScreen(details.localPosition);
+        _isDraggingLeftSide
+            ? _startAdjustMediaVolume(details)
+            : _startAdjustVoiceVolume(details);
       },
-      onVerticalMultiFingerDragUpdate: (details) =>
-          _dragBusiness?.updatePosition(details.localPosition),
+      onVerticalMultiFingerDragUpdate: _updateDragBusiness,
       onVerticalMultiFingerDragEnd: (details) {
         if (_dragBusiness != null) {
           _dragBusiness = null;
@@ -247,6 +188,97 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
         _lockButtonVisibleNotifier.reset();
       }
     }
+  }
+
+  void _updateDragBusiness(DragUpdateDetails details) =>
+      _dragBusiness?.updatePosition(details.localPosition);
+
+  void _startSlideSeeking(DragStartDetails details) {
+    context.read<ShouldShowHUDNotifier>().lockUp('slide seeking');
+
+    final play = getIt<MediaPlayer>();
+    _dragBusiness = DragBusiness(
+      startPosition: details.localPosition,
+      orientation: .horizontal,
+      startValue: play.positionNotifier.value,
+      onUpdate: (startValue, distance) {
+        final delta = Duration(milliseconds: (distance * 200).round());
+        return play.seek(startValue + delta);
+      },
+    );
+
+    Actions.maybeInvoke(context, SeekStartIntent());
+
+    _isPlayingBeforeDrag = play.playStatusNotifier.value.isPlaying;
+    play.pause();
+  }
+
+  void _finishSlideSeeking(DragEndDetails details) {
+    final action =
+        _dragBusiness!.updatePosition(details.localPosition) as Future;
+    action.then((_) {
+      if (_isPlayingBeforeDrag) getIt<MediaPlayer>().play();
+      if (mounted) Actions.maybeInvoke(context, SeekEndIntent());
+    });
+
+    _dragBusiness = null;
+    context.read<ShouldShowHUDNotifier>().unlock('slide seeking');
+  }
+
+  void _startAdjustVolume(DragStartDetails details) {
+    _dragBusiness = DragBusiness(
+      startPosition: details.localPosition,
+      orientation: .vertical,
+      startValue: context.read<MediaVolumeNotifier>().value.level,
+      onUpdate: (startValue, distance) {
+        final delta = distance * _verticalFactor;
+        final newVolume = Volume(level: startValue + delta);
+        Actions.invoke(context, UpdateVolumeIntent(newVolume));
+        context.read<AdjustIndicatorEvent>().fire(.volume);
+      },
+    );
+  }
+
+  void _startAdjustBrightness(DragStartDetails details) {
+    _dragBusiness = DragBusiness(
+      startPosition: details.localPosition,
+      orientation: .vertical,
+      startValue: context.read<ScreenBrightnessNotifier>().value,
+      onUpdate: (startValue, distance) {
+        final delta = distance * _verticalFactor;
+        final target = (startValue + delta).clamp(0, 1.0);
+        context.read<ScreenBrightnessNotifier>().value = target.toDouble();
+        context.read<AdjustIndicatorEvent>().fire(.brightness);
+      },
+    );
+  }
+
+  void _startAdjustMediaVolume(DragStartDetails details) {
+    _dragBusiness = DragBusiness(
+      startPosition: details.localPosition,
+      orientation: .vertical,
+      startValue: getIt<MediaPlayer>().volumeNotifier.value.level,
+      onUpdate: (startValue, distance) {
+        final delta = distance * _verticalFactor;
+        final newValue = Volume(level: startValue + delta);
+        getIt<MediaPlayer>().volumeNotifier.value = newValue;
+        context.read<AdjustIndicatorEvent>().fire(.mediaVolume);
+      },
+    );
+  }
+
+  void _startAdjustVoiceVolume(DragStartDetails details) {
+    _dragBusiness = DragBusiness(
+      startPosition: details.localPosition,
+      orientation: .vertical,
+      startValue: context.read<VoiceCallClient>().volumeNotifier.value.level,
+      onUpdate: (startValue, distance) {
+        final delta = distance * _verticalFactor;
+        final newValue = Volume(level: startValue + delta);
+        Actions.invoke(context, UpdateVoiceVolumeIntent(newValue));
+        context.read<AdjustIndicatorEvent>().fire(.voiceVolume);
+      },
+    );
   }
 }
 
