@@ -28,7 +28,7 @@ class SparkingEmoji extends ValueNotifier<String> {
   SparkingEmoji() : super('❤️');
 }
 
-const sparkOptions = ['❤️', '☝️', '🙈', '💩', '💀'];
+const sparkOptions = ['❤️', '💩', '❓', '☝️', '💋'];
 
 // Actions
 

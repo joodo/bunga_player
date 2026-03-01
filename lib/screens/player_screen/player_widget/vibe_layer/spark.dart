@@ -1,20 +1,21 @@
 import 'dart:async';
-import 'dart:math';
 import 'dart:ui' as ui;
 
-import 'package:bunga_player/reaction/business.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
 import 'package:bunga_player/play/service/service.dart';
+import 'package:bunga_player/reaction/business.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/chat/client/client.dart';
 import 'package:bunga_player/chat/models/user.dart';
 import 'package:bunga_player/reaction/models/models.dart';
 import 'package:bunga_player/utils/business/value_listenable.dart';
 import 'package:bunga_player/ui/global_business.dart';
+
+import 'spark_particle.dart';
 
 class SparkLayer extends StatefulWidget {
   const SparkLayer({super.key});
@@ -25,7 +26,7 @@ class SparkLayer extends StatefulWidget {
 
 class _SparkLayerState extends State<SparkLayer>
     with SingleTickerProviderStateMixin {
-  final _particles = <EmojiParticle>[];
+  final _particles = <SparkParticle>[];
 
   late final Ticker _ticker;
   Duration _lastElapsed = Duration.zero;
@@ -135,9 +136,11 @@ class _SparkLayerState extends State<SparkLayer>
 
     final sparkOffset = fraction.alongSize(canvasSize);
 
-    _particles.add(
-      EmojiParticle(image: await _getImage(emoji), start: sparkOffset),
-    );
+    _particles.add(switch (emoji) {
+      '☝️' => PokePartial(image: await _getImage(emoji), start: sparkOffset),
+      '💋' => RipplePartial(image: await _getImage(emoji), start: sparkOffset),
+      _ => GravityPartial(image: await _getImage(emoji), start: sparkOffset),
+    });
 
     if (!_ticker.isActive) {
       _lastElapsed = Duration.zero; // 重置参考时间
@@ -166,54 +169,8 @@ class _SparkLayerState extends State<SparkLayer>
   }
 }
 
-class EmojiParticle {
-  static const gravity = 0.6;
-
-  final ui.Image image;
-
-  double life = 1.0;
-
-  final double scale;
-
-  double x, y;
-  final double vx;
-  double vy; // Velocity
-
-  double opacity = 1.0;
-  final double decay;
-
-  double rotation;
-  final double rotationSpeed;
-
-  static final Random _random = Random();
-  EmojiParticle({required this.image, required Offset start})
-    : scale = _random.nextDouble() * (1 - 25 / 45) + 25 / 45,
-      x = start.dx,
-      y = start.dy,
-      vx = (_random.nextDouble() - 0.5) * 6,
-      vy = _random.nextDouble() * -10 - 5,
-      decay = 0.008 / (_random.nextDouble() * (0.6 - 0.4) + 0.4),
-
-      rotation = _random.nextDouble() * pi * 2,
-      rotationSpeed = (_random.nextDouble() - 0.5) * 0.1;
-
-  void update(double delta) {
-    life -= decay * delta;
-    opacity = life.clamp(0.0, 1.0);
-
-    vy += gravity * delta;
-
-    x += vx * delta;
-    y += vy * delta;
-
-    rotation += rotationSpeed * delta;
-  }
-
-  bool get isAlive => life > 0;
-}
-
 class _SparkPainter extends CustomPainter {
-  final List<EmojiParticle> particles;
+  final List<SparkParticle> particles;
 
   _SparkPainter(this.particles);
 
@@ -222,27 +179,7 @@ class _SparkPainter extends CustomPainter {
     final Paint paint = Paint();
 
     for (final p in particles) {
-      paint.color = Colors.white.withAlpha((p.opacity * 255).toInt());
-
-      canvas.save();
-      canvas.translate(p.x, p.y);
-      canvas.rotate(p.rotation);
-      final scaleSize = p.scale * p.image.width;
-      final offset = -scaleSize / 2;
-
-      canvas.drawImageRect(
-        p.image,
-        Rect.fromLTWH(
-          0,
-          0,
-          p.image.width.toDouble(),
-          p.image.height.toDouble(),
-        ),
-        Rect.fromLTWH(offset, offset, scaleSize, scaleSize),
-        paint,
-      );
-
-      canvas.restore();
+      p.draw(canvas, paint);
     }
   }
 
