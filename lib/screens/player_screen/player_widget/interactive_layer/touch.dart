@@ -14,7 +14,7 @@ import 'package:bunga_player/play/busuness.dart';
 import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/ui/global_business.dart';
-import 'package:bunga_player/screens/player_screen/player_widget/interactive_layer/spark_business.dart';
+import 'package:bunga_player/screens/player_screen/player_widget/interactive_layer/spark_send_controller.dart';
 import 'package:bunga_player/voice_call/client/client.dart';
 
 class TouchInteractiveLayer extends StatefulWidget {
@@ -92,15 +92,9 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
 
         onTap: _lockButtonVisibleNotifier.mark,
 
-        onDoubleTapDragStart: (details) {
-          _sparkController.start(details.localPosition);
-        },
-        onDoubleTapDragUpdated: (details) {
-          _sparkController.updateOffset(details.localPosition);
-        },
-        onDoubleTapDragEnd: (details) {
-          _sparkController.stop();
-        },
+        onDoubleTapDragStart: _startSendSpark,
+        onDoubleTapDragUpdated: _updateSendSpark,
+        onDoubleTapDragEnd: _finishSendSpark,
 
         child: lockButton,
       );
@@ -161,15 +155,9 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
         }
       },
 
-      onDoubleTapDragStart: (details) {
-        _sparkController.start(details.localPosition);
-      },
-      onDoubleTapDragUpdated: (details) {
-        _sparkController.updateOffset(details.localPosition);
-      },
-      onDoubleTapDragEnd: (details) {
-        _sparkController.stop();
-      },
+      onDoubleTapDragStart: _startSendSpark,
+      onDoubleTapDragUpdated: _updateSendSpark,
+      onDoubleTapDragEnd: _finishSendSpark,
 
       child: lockButton,
     );
@@ -279,6 +267,19 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
         context.read<AdjustIndicatorEvent>().fire(.voiceVolume);
       },
     );
+  }
+
+  void _startSendSpark(DragStartDetails details) {
+    _sparkController.start(details.localPosition);
+    _lockButtonVisibleNotifier.reset();
+  }
+
+  void _updateSendSpark(DragUpdateDetails details) {
+    _sparkController.updateOffset(details.localPosition);
+  }
+
+  void _finishSendSpark(DragEndDetails details) {
+    _sparkController.stop();
   }
 }
 

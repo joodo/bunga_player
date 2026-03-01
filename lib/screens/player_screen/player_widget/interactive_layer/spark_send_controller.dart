@@ -1,14 +1,10 @@
 import 'package:async/async.dart';
+import 'package:bunga_player/reaction/business.dart';
 import 'package:flutter/material.dart';
 
 import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/extensions/rect.dart';
-
-class SparkIntent extends Intent {
-  final FractionalOffset offset;
-  const SparkIntent(this.offset);
-}
 
 class SparkSendController {
   final BuildContext _context;
@@ -48,7 +44,7 @@ class SparkSendController {
   void _createSparkTimer() {
     _timer = RestartableTimer(const Duration(milliseconds: 200), () {
       if (_sparkOffset != null) {
-        Actions.maybeInvoke(_context, SparkIntent(_sparkOffset!));
+        Actions.maybeInvoke(_context, SendSparkIntent(_sparkOffset!));
       }
       _timer!.reset();
     });

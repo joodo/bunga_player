@@ -60,6 +60,22 @@ class SendDanmakuAction extends ContextAction<SendDanmakuIntent> {
   }
 }
 
+class SendSparkIntent extends Intent {
+  final FractionalOffset offset;
+  const SendSparkIntent(this.offset);
+}
+
+class SendSparkAction extends ContextAction<SendSparkIntent> {
+  @override
+  void invoke(SendSparkIntent intent, [BuildContext? context]) {
+    final messageData = SparkMessageData(
+      emoji: context!.read<SparkingEmoji>().value,
+      fraction: intent.offset,
+    );
+    context.sendMessage(messageData);
+  }
+}
+
 // Wrapper
 
 class ReactionBusiness extends SingleChildStatefulWidget {
@@ -75,12 +91,13 @@ class _ReactionBusinessState extends SingleChildState<ReactionBusiness> {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => RecentPopmojisNotifier()),
-        Provider.value(value: SparkingEmoji()),
+        ListenableProvider(create: (context) => SparkingEmoji()),
       ],
       child: child!.actions(
         actions: {
           SendPopmojiIntent: SendPopmojiAction(),
           SendDanmakuIntent: SendDanmakuAction(),
+          SendSparkIntent: SendSparkAction(),
         },
       ),
     );

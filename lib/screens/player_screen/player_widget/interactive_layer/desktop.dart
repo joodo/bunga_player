@@ -9,7 +9,7 @@ import 'package:bunga_player/play/busuness.dart';
 
 import '../chrome_layer/chrome_layer.dart';
 import '../chrome_layer/menu_builder.dart';
-import 'spark_business.dart';
+import 'spark_send_controller.dart';
 
 class DesktopInteractiveLayer extends StatefulWidget {
   const DesktopInteractiveLayer({super.key});
@@ -22,6 +22,7 @@ class DesktopInteractiveLayer extends StatefulWidget {
 class _DesktopInteractiveLayerState extends State<DesktopInteractiveLayer> {
   // Sparking
   late final SparkSendController _sparkController;
+  bool _isSparking = false;
 
   @override
   void initState() {
@@ -41,7 +42,7 @@ class _DesktopInteractiveLayerState extends State<DesktopInteractiveLayer> {
     return Consumer<ShouldShowHUDNotifier>(
       builder: (context, shouldShowHUDNotifier, child) => MouseRegion(
         opaque: false,
-        cursor: shouldShowHUDNotifier.value
+        cursor: shouldShowHUDNotifier.value || _isSparking
             ? SystemMouseCursors.basic
             : SystemMouseCursors.none,
         onEnter: (event) => shouldShowHUDNotifier.unlock('interactive'),
@@ -50,7 +51,8 @@ class _DesktopInteractiveLayerState extends State<DesktopInteractiveLayer> {
             shouldShowHUDNotifier.lockUp('interactive');
           } else {
             shouldShowHUDNotifier.unlock('interactive');
-            shouldShowHUDNotifier.mark();
+
+            if (!_isSparking) shouldShowHUDNotifier.mark();
           }
         },
         child: MenuBuilder(
@@ -69,14 +71,15 @@ class _DesktopInteractiveLayerState extends State<DesktopInteractiveLayer> {
 
             onSecondaryLongPressStart: (details) {
               _sparkController.start(details.localPosition);
-              shouldShowHUDNotifier.lockUp('spark');
+              _isSparking = true;
+              shouldShowHUDNotifier.reset();
             },
             onSecondaryLongPressMoveUpdate: (details) {
               _sparkController.updateOffset(details.localPosition);
             },
             onSecondaryLongPressEnd: (details) {
               _sparkController.stop();
-              shouldShowHUDNotifier.unlock('spark');
+              _isSparking = false;
             },
           ),
         ),

@@ -1,14 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 import 'package:bunga_player/utils/business/platform.dart';
-import 'package:bunga_player/chat/global_business.dart';
-import 'package:bunga_player/reaction/business.dart';
-import 'package:bunga_player/reaction/models/models.dart';
-import 'package:bunga_player/utils/extensions/styled_widget.dart';
 
 import 'desktop.dart';
-import 'spark_business.dart';
 import 'touch.dart';
 
 class InteractiveLayer extends StatelessWidget {
@@ -16,25 +10,8 @@ class InteractiveLayer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final layer = kIsDesktop
+    return kIsDesktop
         ? const DesktopInteractiveLayer()
         : const TouchInteractiveLayer();
-    return layer.actions(
-      actions: {
-        SparkIntent: CallbackAction<SparkIntent>(
-          onInvoke: (intent) {
-            return Actions.invoke(
-              context,
-              SendMessageIntent(
-                SparkMessageData(
-                  emoji: context.read<SparkingEmoji>().value,
-                  fraction: intent.offset,
-                ),
-              ),
-            );
-          },
-        ),
-      },
-    );
   }
 }
