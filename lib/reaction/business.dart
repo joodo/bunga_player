@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:bunga_player/utils/business/simple_event.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
@@ -24,8 +25,12 @@ class RecentPopmojisNotifier extends ValueNotifier<List<String>> {
   }
 }
 
-class SparkingEmoji extends ValueNotifier<String> {
-  SparkingEmoji() : super('❤️');
+class SparkingEmojiNotifier extends ValueNotifier<String> {
+  SparkingEmojiNotifier() : super('❤️');
+}
+
+class SparkingStartEvent extends SimpleEvent {
+  SparkingStartEvent();
 }
 
 const sparkOptions = ['❤️', '💩', '❓', '☝️', '💋'];
@@ -69,7 +74,7 @@ class SendSparkAction extends ContextAction<SendSparkIntent> {
   @override
   void invoke(SendSparkIntent intent, [BuildContext? context]) {
     final messageData = SparkMessageData(
-      emoji: context!.read<SparkingEmoji>().value,
+      emoji: context!.read<SparkingEmojiNotifier>().value,
       fraction: intent.offset,
     );
     context.sendMessage(messageData);
@@ -91,7 +96,8 @@ class _ReactionBusinessState extends SingleChildState<ReactionBusiness> {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => RecentPopmojisNotifier()),
-        ListenableProvider(create: (context) => SparkingEmoji()),
+        ListenableProvider(create: (context) => SparkingEmojiNotifier()),
+        ListenableProvider(create: (context) => SparkingStartEvent()),
       ],
       child: child!.actions(
         actions: {
@@ -104,7 +110,7 @@ class _ReactionBusinessState extends SingleChildState<ReactionBusiness> {
   }
 }
 
-extension WrapDanmakuBusiness on Widget {
+extension WrapReactionBusiness on Widget {
   Widget reactionBusiness() => ReactionBusiness(child: this);
 }
 

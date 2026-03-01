@@ -34,6 +34,7 @@ class _PopupWidgetState extends SingleChildState<PopupWidget>
   void initState() {
     super.initState();
     _animationController;
+    _updateShowing();
   }
 
   @override
@@ -70,7 +71,10 @@ class _PopupWidgetState extends SingleChildState<PopupWidget>
     super.didUpdateWidget(oldWidget);
 
     if (oldWidget.showing == widget.showing) return;
+    _updateShowing();
+  }
 
+  void _updateShowing() {
     if (widget.showing) {
       runAfterBuild(() {
         _portalController.show();

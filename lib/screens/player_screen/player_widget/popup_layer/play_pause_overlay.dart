@@ -24,9 +24,9 @@ class _PlayPauseOverlayState extends State<PlayPauseOverlay>
     CurvedAnimation(parent: _animController, curve: Curves.easeOutBack),
   );
   late final _opacityAnimation = TweenSequence<double>([
-    TweenSequenceItem(tween: Tween(begin: 0.0, end: 1.0), weight: 30), // 快速出现
-    TweenSequenceItem(tween: ConstantTween(1.0), weight: 40), // 停留
-    TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.0), weight: 30), // 消失
+    TweenSequenceItem(tween: Tween(begin: 0.0, end: 1.0), weight: 30),
+    TweenSequenceItem(tween: ConstantTween(1.0), weight: 40),
+    TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.0), weight: 30),
   ]).animate(_animController);
 
   final _portalController = OverlayPortalController();

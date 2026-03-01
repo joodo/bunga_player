@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:bunga_player/reaction/business.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
@@ -272,6 +273,7 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
   void _startSendSpark(DragStartDetails details) {
     _sparkController.start(details.localPosition);
     _lockButtonVisibleNotifier.reset();
+    context.read<SparkingStartEvent>().fire();
   }
 
   void _updateSendSpark(DragUpdateDetails details) {

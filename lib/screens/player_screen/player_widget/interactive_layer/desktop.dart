@@ -1,3 +1,4 @@
+import 'package:bunga_player/reaction/business.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -73,6 +74,7 @@ class _DesktopInteractiveLayerState extends State<DesktopInteractiveLayer> {
               _sparkController.start(details.localPosition);
               _isSparking = true;
               shouldShowHUDNotifier.reset();
+              context.read<SparkingStartEvent>().fire();
             },
             onSecondaryLongPressMoveUpdate: (details) {
               _sparkController.updateOffset(details.localPosition);

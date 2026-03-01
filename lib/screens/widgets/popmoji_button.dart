@@ -25,7 +25,7 @@ class PopmojiButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final iconWidget = EmojiData.createIcon(emoji, _iconSize - 8.0);
+    final iconWidget = EmojiData.createIcon(emoji, size: _iconSize - 8.0);
 
     return InkWell(
       onTap: () {

@@ -5,6 +5,7 @@ import 'adjust_indicator.dart';
 import 'play_pause_overlay.dart';
 import 'play_sync_message.dart';
 import 'busy_indicator.dart';
+import 'spark_selection_bar.dart';
 
 class PopupLayer extends StatelessWidget {
   const PopupLayer({super.key});
@@ -16,6 +17,7 @@ class PopupLayer extends StatelessWidget {
       PlaySyncMessage(),
       PlayPauseOverlay(),
       BusyIndicator(),
+      SparkSelectionBar(),
     ].toStack();
   }
 }

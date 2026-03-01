@@ -55,7 +55,7 @@ class EmojiData {
     );
   }
 
-  static Widget createIcon(String emoji, [double? size]) => FittedBox(
+  static Widget createIcon(String emoji, {double? size}) => FittedBox(
     fit: BoxFit.contain,
     child: Text(
       emoji,

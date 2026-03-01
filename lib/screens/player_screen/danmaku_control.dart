@@ -39,7 +39,7 @@ class _DanmakuControlState extends State<DanmakuControl> {
 
   @override
   Widget build(BuildContext context) {
-    final notifier = context.read<SparkingEmoji>();
+    final notifier = context.read<SparkingEmojiNotifier>();
     final spark = MenuAnchor(
       consumeOutsideTap: true,
       alignmentOffset: const Offset(0, 10),
