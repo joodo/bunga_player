@@ -59,7 +59,11 @@ class History extends DelegatingMap<String, VideoSession> {
         .toList();
 
     try {
-      await _file!.writeAsString(jsonEncode(list));
+      final tempFile = File('${_file!.path}.tmp');
+      await tempFile.writeAsString(jsonEncode(list), flush: true);
+      await tempFile.rename(_file!.path);
+
+      await _file!.writeAsString(jsonEncode(list), flush: true);
     } catch (e) {
       logger.w('History: failed to save json file ${_file!.path}: $e');
     }
