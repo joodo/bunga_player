@@ -107,6 +107,7 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
       final payload =
           intent.payload ??
           await parser.parse(url: intent.url, record: intent.record);
+      print(333333);
 
       if (!context.mounted) throw StateError('Context unmounted.');
 
@@ -119,12 +120,14 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
       final subPath = session?.subtitlePath;
 
       _loadDir(payload, parser);
+      print(11111);
       await _loadVideo(
         payload: payload,
         parser: parser,
         subtitlePath: subPath,
         start: intent.start ?? session?.progress?.position,
       );
+      print(22222);
 
       return payload;
     } catch (e) {

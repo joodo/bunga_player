@@ -307,6 +307,10 @@ class _VoiceCallBusinessState extends SingleChildState<VoiceCallBusiness> {
           );
         case ByeMessageData.messageCode:
           _handleTalkStatus(message.sender.id, TalkStatus.end);
+        case HereAreMessageData.messageCode:
+          _talkerIdsNotifier.value = Set.from(
+            HereAreMessageData.fromJson(message.data).talking,
+          );
       }
     });
   }

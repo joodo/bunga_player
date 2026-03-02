@@ -76,6 +76,10 @@ HereAreMessageData _$HereAreMessageDataFromJson(Map<String, dynamic> json) =>
           'buffering',
           (v) => (v as List<dynamic>).map((e) => e as String).toList(),
         ),
+        talking: $checkedConvert(
+          'talking',
+          (v) => (v as List<dynamic>).map((e) => e as String).toList(),
+        ),
       );
       return val;
     });
@@ -85,6 +89,7 @@ Map<String, dynamic> _$HereAreMessageDataToJson(HereAreMessageData instance) =>
       'code': instance.code,
       'watchers': instance.watchers.map((e) => e.toJson()).toList(),
       'buffering': instance.buffering,
+      'talking': instance.talking,
     };
 
 StartProjectionMessageData _$StartProjectionMessageDataFromJson(

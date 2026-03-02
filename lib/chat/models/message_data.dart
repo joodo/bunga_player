@@ -75,8 +75,13 @@ class HereAreMessageData extends MessageData {
 
   final List<User> watchers;
   final List<String> buffering;
+  final List<String> talking;
 
-  HereAreMessageData({required this.watchers, required this.buffering});
+  HereAreMessageData({
+    required this.watchers,
+    required this.buffering,
+    required this.talking,
+  });
 
   factory HereAreMessageData.fromJson(Map<String, dynamic> json) =>
       _$HereAreMessageDataFromJson(json);
