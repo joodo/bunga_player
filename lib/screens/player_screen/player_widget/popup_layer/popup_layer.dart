@@ -1,4 +1,6 @@
+import 'package:bunga_player/screens/player_screen/business.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
 import 'adjust_indicator.dart';
@@ -12,12 +14,13 @@ class PopupLayer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isInChannel = context.read<IsInChannel>().value;
     return [
       AdjustIndicator(),
-      PlaySyncMessage(),
+      if (isInChannel) PlaySyncMessage(),
       PlayPauseOverlay(),
       BusyIndicator(),
-      SparkSelectionBar(),
+      if (isInChannel) SparkSelectionBar(),
     ].toStack();
   }
 }
