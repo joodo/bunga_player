@@ -70,16 +70,16 @@ class _DesktopInteractiveLayerState extends State<DesktopInteractiveLayer> {
             onSecondaryTapUp: (details) =>
                 menuController.open(position: details.localPosition),
 
-            onSecondaryLongPressStart: (details) {
+            onLongPressStart: (details) {
               _sparkController.start(details.localPosition);
               _isSparking = true;
               shouldShowHUDNotifier.reset();
               context.read<SparkingStartEvent>().fire();
             },
-            onSecondaryLongPressMoveUpdate: (details) {
+            onLongPressMoveUpdate: (details) {
               _sparkController.updateOffset(details.localPosition);
             },
-            onSecondaryLongPressEnd: (details) {
+            onLongPressEnd: (details) {
               _sparkController.stop();
               _isSparking = false;
             },
