@@ -87,12 +87,9 @@ class _WidgetBusinessState extends SingleChildState<_WidgetBusiness> {
     );
 
     final popScope = PopScope(
-      canPop: false,
+      canPop: true,
       onPopInvokedWithResult: (didPop, result) {
-        if (didPop) return;
-
-        _resetPlayState();
-        Navigator.pop(context);
+        if (didPop) _resetPlayState();
       },
       child: focusWrap,
     );
