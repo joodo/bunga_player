@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:bunga_player/services/presence_callbacks.dart';
@@ -98,6 +99,7 @@ class _LogViewState extends State<_LogView> with AutomaticKeepAliveClientMixin {
   @override
   void initState() {
     super.initState();
+    _tailLog();
     _subscription;
   }
 
@@ -141,6 +143,11 @@ class _LogViewState extends State<_LogView> with AutomaticKeepAliveClientMixin {
     } catch (e) {
       if (mounted) context.popBar('上传失败: $e');
     }
+  }
+
+  Future<void> _tailLog() async {
+    final tail = await _tailFile(logger.latestPath, 50);
+    _logTextController.text += tail.join('\n');
   }
 }
 
@@ -345,4 +352,39 @@ class _ActionView extends StatelessWidget {
     final index = Random().nextInt(split.length);
     return split[index].trim();
   }
+}
+
+Future<List<String>> _tailFile(String path, int lineCount) async {
+  final file = File(path);
+  final raf = await file.open();
+
+  const chunkSize = 8192;
+  int fileLength = await raf.length();
+  int position = fileLength;
+
+  List<int> buffer = [];
+  int linesFound = 0;
+
+  while (position > 0 && linesFound <= lineCount) {
+    int readSize = position >= chunkSize ? chunkSize : position;
+    position -= readSize;
+
+    await raf.setPosition(position);
+    final chunk = await raf.read(readSize);
+
+    buffer.insertAll(0, chunk);
+
+    linesFound = '\n'
+        .allMatches(utf8.decode(buffer, allowMalformed: true))
+        .length;
+  }
+
+  await raf.close();
+
+  final content = utf8.decode(buffer, allowMalformed: true);
+  final lines = content.split('\n');
+
+  return lines.length <= lineCount
+      ? lines
+      : lines.sublist(lines.length - lineCount);
 }
