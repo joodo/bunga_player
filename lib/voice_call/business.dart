@@ -84,7 +84,7 @@ class FinishUpdateVoiceVolumeAction
 }
 
 class UpdateVoiceVolumeForwardIntent extends Intent {
-  final int offset;
+  final double offset;
   const UpdateVoiceVolumeForwardIntent(this.offset);
 }
 
@@ -326,8 +326,8 @@ class _VoiceCallBusinessState extends SingleChildState<VoiceCallBusiness> {
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
     final shortcuts = child!.applyShortcuts({
-      ShortcutKey.voiceVolumeUp: UpdateVoiceVolumeForwardIntent(10),
-      ShortcutKey.voiceVolumeDown: UpdateVoiceVolumeForwardIntent(-10),
+      ShortcutKey.voiceVolumeUp: UpdateVoiceVolumeForwardIntent(0.1),
+      ShortcutKey.voiceVolumeDown: UpdateVoiceVolumeForwardIntent(-0.1),
       ShortcutKey.muteMic: ToggleMicIntent(),
     });
 
