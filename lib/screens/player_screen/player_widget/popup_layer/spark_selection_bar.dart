@@ -19,19 +19,19 @@ class SparkSelectionBar extends StatefulWidget {
 
 class _SparkSelectionBarState extends State<SparkSelectionBar> {
   final _visibleNotifier = AutoResetNotifier(const Duration(seconds: 2));
-  late final _startEvent = context.read<SparkingStartEvent?>();
+  late final _startEvent = context.read<SparkingStartEvent>();
 
   @override
   void initState() {
     super.initState();
 
-    _startEvent?.addListener(_show);
+    _startEvent.addListener(_show);
     _cacheEmoji();
   }
 
   @override
   void dispose() {
-    _startEvent?.removeListener(_show);
+    _startEvent.removeListener(_show);
     _visibleNotifier.dispose();
     super.dispose();
   }

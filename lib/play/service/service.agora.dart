@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:ui';
 
+import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/utils/business/simple_event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -28,7 +29,7 @@ class AgoraMediaPlayer extends MediaPlayer {
 
   Future<void> registerEngine() async {
     __player = agora.MediaPlayerController(
-      rtcEngine: AgoraMediaPlayer.engine!,
+      rtcEngine: engine!,
       canvas: agora.VideoCanvas(uid: 0, renderMode: .renderModeHidden),
       useFlutterTexture: true,
     );
@@ -52,6 +53,7 @@ class AgoraMediaPlayer extends MediaPlayer {
     playbackRateNotifier.removeListener(_onPlaybackRateChanged);
 
     if (__player != null) {
+      await engine!.destroyMediaPlayer(_player);
       await _player.stop();
       await _player.dispose();
       __player = null;
@@ -82,7 +84,7 @@ class AgoraMediaPlayer extends MediaPlayer {
         _position.value = Duration(milliseconds: positionMs);
       },
       onPlayerSourceStateChanged: (state, reason) async {
-        //logger.i('Player state changed: $state, reason: $reason');
+        logger.i('Player state changed: $state, reason: $reason');
         switch (state) {
           case .playerStatePlaying:
             _playStatus.value = .play;
