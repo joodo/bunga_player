@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:bunga_player/reaction/business.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
@@ -10,6 +9,7 @@ import 'package:styled_widget/styled_widget.dart';
 import 'package:bunga_player/utils/business/value_listenable.dart';
 import 'package:bunga_player/utils/models/volume.dart';
 import 'package:bunga_player/utils/business/drag_business.dart';
+import 'package:bunga_player/reaction/business.dart';
 import 'package:bunga_player/voice_call/business.dart';
 import 'package:bunga_player/play/busuness.dart';
 import 'package:bunga_player/play/service/service.dart';
@@ -332,7 +332,6 @@ class _GestureDetectorState extends SingleChildState<_GestureDetector> {
   // Double Tap
   Timer? _doubleTapTimer;
   bool _isPotentialDoubleTap = false;
-  bool _isPotentialDoubleTapDragging = false;
   bool _isDoubleTapDragging = false;
   bool _isSingleDragging = false;
 
@@ -352,12 +351,11 @@ class _GestureDetectorState extends SingleChildState<_GestureDetector> {
     return Listener(
       behavior: HitTestBehavior.opaque,
       onPointerDown: _handlePointerDown,
-      onPointerMove: _handlePointerMove,
       onPointerUp: _handlePointerUp,
       child: GestureDetector(
         behavior: widget.behavior,
         onTap: () {
-          if (_isPotentialDoubleTapDragging) return;
+          if (_isDoubleTapDragging) return;
           widget.onTap?.call();
         },
         onDoubleTap: () {
@@ -416,6 +414,43 @@ class _GestureDetectorState extends SingleChildState<_GestureDetector> {
           }
         },
 
+        onLongPressStart: (details) {
+          if (!_isPotentialDoubleTap) return;
+
+          _isPotentialDoubleTap = false;
+          _doubleTapTimer?.cancel();
+
+          _isDoubleTapDragging = true;
+          widget.onDoubleTapDragStart?.call(
+            DragStartDetails(
+              globalPosition: details.globalPosition,
+              localPosition: details.localPosition,
+            ),
+          );
+        },
+        onLongPressMoveUpdate: (details) {
+          if (!_isDoubleTapDragging) return;
+
+          widget.onDoubleTapDragUpdated?.call(
+            DragUpdateDetails(
+              globalPosition: details.globalPosition,
+              localPosition: details.localPosition,
+            ),
+          );
+        },
+        onLongPressEnd: (details) {
+          if (!_isDoubleTapDragging) return;
+
+          _isDoubleTapDragging = false;
+          widget.onDoubleTapDragEnd?.call(
+            DragEndDetails(
+              globalPosition: details.globalPosition,
+              localPosition: details.localPosition,
+              velocity: details.velocity,
+            ),
+          );
+        },
+
         child: child,
       ),
     );
@@ -432,44 +467,6 @@ class _GestureDetectorState extends SingleChildState<_GestureDetector> {
       _doubleTapTimer?.cancel();
       return;
     }
-
-    if (_isPotentialDoubleTap) {
-      // Second tap detected!
-      // Now wait: if the user moves before lifting, it's a Double-Tap-Drag.
-      _isPotentialDoubleTapDragging = true;
-      _doubleTapTimer?.cancel();
-      _isPotentialDoubleTap = false;
-    } else {
-      // First tap detected
-      _isPotentialDoubleTap = true;
-      _doubleTapTimer = Timer(kDoubleTapTimeout, () {
-        _isPotentialDoubleTap = false;
-      });
-    }
-  }
-
-  void _handlePointerMove(PointerMoveEvent event) {
-    if (_isPotentialDoubleTapDragging) {
-      _isPotentialDoubleTapDragging = false;
-      _isDoubleTapDragging = true;
-
-      final startDetails = DragStartDetails(
-        sourceTimeStamp: event.timeStamp,
-        globalPosition: event.position,
-        localPosition: event.localPosition,
-        kind: event.kind,
-      );
-      widget.onDoubleTapDragStart?.call(startDetails);
-    }
-    if (_isDoubleTapDragging) {
-      final updateDetails = DragUpdateDetails(
-        sourceTimeStamp: event.timeStamp,
-        delta: event.delta,
-        globalPosition: event.position,
-        localPosition: event.localPosition,
-      );
-      widget.onDoubleTapDragUpdated?.call(updateDetails);
-    }
   }
 
   void _handlePointerUp(PointerUpEvent event) {
@@ -483,11 +480,19 @@ class _GestureDetectorState extends SingleChildState<_GestureDetector> {
       widget.onDoubleTapDragEnd?.call(endDetails);
 
       _isDoubleTapDragging = false;
+      return;
     }
 
     if (_activePointers == 0) {
       _isPotentialMultiFingerDrag = false;
-      _isPotentialDoubleTapDragging = false;
+    }
+
+    if (!_isPotentialDoubleTap) {
+      // First tap detected
+      _isPotentialDoubleTap = true;
+      _doubleTapTimer = Timer(kDoubleTapTimeout + kLongPressTimeout, () {
+        _isPotentialDoubleTap = false;
+      });
     }
   }
 }
