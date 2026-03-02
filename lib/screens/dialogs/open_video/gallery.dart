@@ -41,7 +41,7 @@ class GalleryTab extends StatelessWidget {
                   settings: settings,
                 );
               case 'detail':
-                return MaterialPageRoute<bool>(
+                return MaterialPageRoute(
                   builder: (context) => _DetailPage(),
                   settings: settings,
                 );
@@ -163,8 +163,12 @@ class _SearchPageState extends State<_SearchPage> {
               controller: _carouselController,
               children: [
                 ...historys.map(
-                  (e) => _MediaTile(item: e.item, linkerId: e.linkerId)
-                      .contextMenu(
+                  (e) =>
+                      _MediaTile(
+                        item: e.item,
+                        linkerId: e.linkerId,
+                        willUpdateHistory: false,
+                      ).contextMenu(
                         items: [
                           PopupMenuItem(
                             child: const Text('删除'),
@@ -257,17 +261,7 @@ class _ResultPageState extends State<_ResultPage> {
     Widget? tileBuilder(BuildContext context, int index) {
       final (linkerId: linkerId, item: item) = _data[index];
 
-      final tile = _MediaTile(
-        item: item,
-        linkerId: linkerId,
-        onBack: (value) {
-          if (!value) return;
-
-          // Update history
-          final notifier = context.read<gallery.HistoryNotifier>();
-          runAfterBuild(() => notifier.update(linkerId: linkerId, item: item));
-        },
-      );
+      final tile = _MediaTile(item: item, linkerId: linkerId);
 
       return Skeleton.leaf(child: tile);
     }
@@ -355,13 +349,21 @@ class _ResultPageState extends State<_ResultPage> {
   }
 }
 
-typedef _DetailPageArg = ({String linkerId, MediaSummary summary});
+typedef _DetailPageArg = ({
+  String linkerId,
+  MediaSummary summary,
+  bool willUpdateHistory,
+});
 
 class _MediaTile extends StatelessWidget {
   final MediaSummary item;
   final String linkerId;
-  final ValueSetter<bool>? onBack;
-  const _MediaTile({required this.item, required this.linkerId, this.onBack});
+  final bool willUpdateHistory;
+  const _MediaTile({
+    required this.item,
+    required this.linkerId,
+    this.willUpdateHistory = true,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -372,10 +374,12 @@ class _MediaTile extends StatelessWidget {
       fit: .cover,
       child: InkWell(
         onTap: () {
-          final _DetailPageArg args = (linkerId: linkerId, summary: item);
-          Navigator.of(context)
-              .pushNamed<bool>('detail', arguments: args)
-              .then((value) => onBack?.call(value!));
+          final _DetailPageArg args = (
+            linkerId: linkerId,
+            summary: item,
+            willUpdateHistory: willUpdateHistory,
+          );
+          Navigator.of(context).pushNamed('detail', arguments: args);
         },
       ),
     ).material();
@@ -425,6 +429,17 @@ class _DetailPage extends StatelessWidget {
               runAfterBuild(() => context.popBar('拉取影片信息失败'));
               logger.w(
                 'Fetch media ${args.linkerId}/${args.summary.key} failed: ${snapshot.error}',
+              );
+            }
+
+            if (snapshot.hasData) {
+              // Update history
+              final notifier = context.read<gallery.HistoryNotifier>();
+              runAfterBuild(
+                () => notifier.update(
+                  linkerId: args.linkerId,
+                  item: args.summary,
+                ),
               );
             }
 
