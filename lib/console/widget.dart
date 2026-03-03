@@ -310,6 +310,11 @@ class _ActionView extends StatelessWidget {
         onPressed: getIt<PresenceCallbacks>().doPresence,
         child: const Text('Do Presence'),
       ),
+      FilledButton(
+        // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+        onPressed: WidgetsBinding.instance.handlePopRoute,
+        child: const Text('Go Back'),
+      ),
     ].toColumn(separator: const SizedBox(height: 8));
   }
 

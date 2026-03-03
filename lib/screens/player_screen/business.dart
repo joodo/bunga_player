@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:bunga_player/screens/widgets/back_listener.dart';
 import 'package:bunga_player/voice_call/client/client.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
@@ -126,6 +127,8 @@ class _WidgetBusinessState extends SingleChildState<_WidgetBusiness> {
       },
     );
 
+    final backWrap = actionWrap.onBack(_onBack);
+
     return MultiProvider(
       providers: [
         ValueListenableProvider.value(value: _panelNotifier),
@@ -134,8 +137,19 @@ class _WidgetBusinessState extends SingleChildState<_WidgetBusiness> {
           proxy: (value) => DanmakuVisible(value),
         ),
       ],
-      child: actionWrap,
+      child: backWrap,
     );
+  }
+
+  Future<bool> _onBack() async {
+    if (_panelNotifier.value != null) {
+      ClosePanelAction(
+        widgetNotifier: _panelNotifier,
+      ).invoke(ClosePanelIntent());
+      return true;
+    } else {
+      return false;
+    }
   }
 
   void _resetPlayState() {

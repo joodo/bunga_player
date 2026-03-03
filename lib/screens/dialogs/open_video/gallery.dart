@@ -2,6 +2,7 @@ import 'package:animations/animations.dart';
 import 'package:bunga_player/gallery/models/models.dart';
 import 'package:bunga_player/play/history.dart';
 import 'package:bunga_player/play/payload_parser.dart';
+import 'package:bunga_player/screens/widgets/back_listener.dart';
 import 'package:bunga_player/screens/widgets/widgets.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/utils/business/image.dart';
@@ -29,25 +30,16 @@ class GalleryTab extends StatelessWidget {
           initialRoute: 'search',
           observers: [HeroController()],
           onGenerateRoute: (RouteSettings settings) {
-            switch (settings.name) {
-              case 'search':
-                return MaterialPageRoute(
-                  builder: (context) => _SearchPage(),
-                  settings: settings,
-                );
-              case 'results':
-                return MaterialPageRoute(
-                  builder: (context) => _ResultPage(),
-                  settings: settings,
-                );
-              case 'detail':
-                return MaterialPageRoute(
-                  builder: (context) => _DetailPage(),
-                  settings: settings,
-                );
-              default:
-                throw Exception('Invalid route: ${settings.name}');
-            }
+            final widget = switch (settings.name) {
+              'search' => _SearchPage(),
+              'results' => _ResultPage(),
+              'detail' => _DetailPage(),
+              _ => throw Exception('Invalid route: ${settings.name}'),
+            };
+            return MaterialPageRoute(
+              builder: (context) => widget.onBackPop(),
+              settings: settings,
+            );
           },
         ).theme(
           data: Theme.of(context).copyWith(

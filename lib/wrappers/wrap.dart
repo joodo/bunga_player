@@ -1,12 +1,11 @@
+import 'package:flutter/material.dart';
+import 'package:nested/nested.dart';
+
+import 'package:bunga_player/console/wrapper.dart';
+import 'package:bunga_player/screens/screen.dart';
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/ui/theme.dart';
 import 'package:bunga_player/update/wrapper.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:nested/nested.dart';
-
-import 'package:bunga_player/screens/welcome_screen/welcome_screen.dart';
-import 'package:bunga_player/console/wrapper.dart';
 
 import 'global_business.dart';
 
@@ -18,9 +17,8 @@ class WrappedWidget extends Nested {
           const AppWrapper(),
           const ConsoleWrapper(),
           const UpdateWrapper(),
-          const NavigatorWrapper(), // Keep app in closer navigator
         ],
-        child: const WelcomeScreen(),
+        child: const Screen(),
       );
 }
 
@@ -35,36 +33,6 @@ class AppWrapper extends SingleChildStatelessWidget {
       theme: darkTheme,
       scaffoldMessengerKey: getIt<GlobalKey<ScaffoldMessengerState>>(),
       home: Scaffold(body: child!),
-    );
-  }
-}
-
-final GlobalKey<NavigatorState> _nestedNavKey = GlobalKey<NavigatorState>();
-
-class NavigatorWrapper extends SingleChildStatelessWidget {
-  const NavigatorWrapper({super.key, super.child});
-
-  @override
-  Widget buildWithChild(BuildContext context, Widget? child) {
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) async {
-        if (didPop) return;
-
-        final NavigatorState? nestedNav = _nestedNavKey.currentState;
-        if (nestedNav != null && nestedNav.canPop()) {
-          nestedNav.pop();
-        } else {
-          SystemNavigator.pop();
-        }
-      },
-      child: Scaffold(
-        body: Navigator(
-          key: _nestedNavKey,
-          onGenerateRoute: (settings) =>
-              MaterialPageRoute(builder: (context) => child!),
-        ),
-      ),
     );
   }
 }

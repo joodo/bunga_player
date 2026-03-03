@@ -10,7 +10,6 @@ import 'package:bunga_player/screens/dialogs/open_video/open_video.dart';
 import 'package:bunga_player/bunga_server/global_business.dart';
 import 'package:bunga_player/bunga_server/models/channel_tokens.dart';
 import 'package:bunga_player/chat/models/message.dart';
-import 'package:bunga_player/screens/player_screen/player_screen.dart';
 import 'package:bunga_player/ui/global_business.dart';
 
 import 'arrow.dart';
@@ -118,13 +117,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   }
 
   void _pushRoute(dynamic argument) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const PlayerScreen(),
-        settings: RouteSettings(arguments: argument),
-      ),
-    );
+    Navigator.of(context).pushNamed('player', arguments: argument);
   }
 
   void _cleanProjection() {

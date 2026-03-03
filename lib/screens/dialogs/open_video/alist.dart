@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:bunga_player/play/history.dart';
+import 'package:bunga_player/screens/widgets/back_listener.dart';
 import 'package:bunga_player/screens/widgets/context_menu_region.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -257,7 +258,26 @@ class _AListTabState extends State<AListTab> {
       ),
     );
 
-    return [dialogTitle, dialogContent.padding(top: 8.0).flexible()].toColumn();
+    final content = [
+      dialogTitle,
+      dialogContent.padding(top: 8.0).flexible(),
+    ].toColumn();
+
+    return content.onBack(_onBack);
+  }
+
+  Future<bool> _onBack() async {
+    if (_searchMode == true) {
+      setState(() {
+        _searchMode = false;
+      });
+      return true;
+    } else if (Uri(path: _currentPath).pathSegments.length > 1) {
+      _cd('..');
+      return true;
+    } else {
+      return false;
+    }
   }
 
   late String _lastSuccessPath = _currentPath;

@@ -1,10 +1,10 @@
-import 'package:bunga_player/ui/global_business.dart';
-import 'package:bunga_player/utils/extensions/extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
 import 'package:bunga_player/screens/widgets/split_view.dart';
+import 'package:bunga_player/ui/global_business.dart';
+import 'package:bunga_player/utils/extensions/extensions.dart';
 
 import 'footer/footer.dart';
 import 'header/header.dart';
@@ -22,28 +22,27 @@ class PlayerScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final body = Consumer2<Panel?, DanmakuVisible>(
-      builder: (context, panel, danmakuVisible, child) {
-        return [
-              child!.positioned(
-                top: danmakuVisible.value ? Header.height : 0,
-                left: 0,
-                right: 0,
-                bottom: danmakuVisible.value ? Footer.videoControlHeight : 0,
-                animate: true,
-              ),
-              Header().autoHidden().positioned(top: 0, left: 0, right: 0),
-              Footer().autoHidden().positioned(bottom: 0, left: 0, right: 0),
-            ]
-            .toStack()
-            .splitView(
-              minSize: 260.0,
-              size: 300.0,
-              maxSize: 450.0,
-              direction: .right,
-              split: panel,
-            )
-            .animate(const Duration(milliseconds: 350), Curves.easeOutCubic);
-      },
+      builder: (context, panel, danmakuVisible, child) =>
+          [
+                child!.positioned(
+                  top: danmakuVisible.value ? Header.height : 0,
+                  left: 0,
+                  right: 0,
+                  bottom: danmakuVisible.value ? Footer.videoControlHeight : 0,
+                  animate: true,
+                ),
+                Header().autoHidden().positioned(top: 0, left: 0, right: 0),
+                Footer().autoHidden().positioned(bottom: 0, left: 0, right: 0),
+              ]
+              .toStack()
+              .splitView(
+                minSize: 260.0,
+                size: 300.0,
+                maxSize: 450.0,
+                direction: .right,
+                split: panel,
+              )
+              .animate(const Duration(milliseconds: 350), Curves.easeOutCubic),
       child: PlayerWidget(key: playerKey),
     );
 
