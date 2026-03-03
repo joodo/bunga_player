@@ -6,13 +6,15 @@ import 'package:bunga_player/utils/business/run_after_build.dart';
 
 class PopupWidget extends SingleChildStatefulWidget {
   final bool showing;
-  final Widget Function(BuildContext context, Widget child)? layoutBuilder;
+  final Widget Function(BuildContext context, Widget popup)? layoutBuilder;
+  final WidgetBuilder popupBuilder;
 
   const PopupWidget({
     super.key,
     super.child,
     this.showing = false,
     this.layoutBuilder,
+    required this.popupBuilder,
   });
 
   @override
@@ -61,8 +63,9 @@ class _PopupWidgetState extends SingleChildState<PopupWidget>
             return Center(child: animatedChild);
           }
         },
-        child: child,
+        child: Builder(builder: widget.popupBuilder),
       ),
+      child: child,
     );
   }
 

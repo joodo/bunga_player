@@ -7,7 +7,6 @@ import 'package:bunga_player/services/services.dart';
 
 import 'interactive_layer/interactive_layer.dart';
 import 'vibe_layer/vibe_layer.dart';
-import 'chrome_layer/chrome_layer.dart';
 import 'popup_layer/popup_layer.dart';
 import '../business.dart';
 
@@ -21,7 +20,6 @@ class PlayerWidget extends StatelessWidget {
         child!,
         if (inChannel.value) const VibeLayer(),
         InteractiveLayer(),
-        const ChromeLayer(),
         const PopupLayer(),
       ].toStack(fit: StackFit.expand),
       child: getIt<MediaPlayer>().buildVideoWidget(),

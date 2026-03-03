@@ -78,7 +78,7 @@ class _AdjustIndicatorState extends State<AdjustIndicator>
             showing: visible,
             layoutBuilder: (context, child) =>
                 child.padding(left: 12.0).alignment(Alignment.centerLeft),
-            child:
+            popupBuilder: (context) =>
                 AnimatedSize(
                   duration: const Duration(milliseconds: 150),
                   curve: Curves.easeOutCubic,

@@ -12,10 +12,10 @@ import 'package:bunga_player/screens/widgets/text_editing_shortcut_wrapper.dart'
 import 'package:bunga_player/utils/business/platform.dart';
 import 'package:bunga_player/utils/extensions/extensions.dart';
 
-import '../widgets/popmoji_button.dart';
-import 'actions.dart';
-import 'business.dart';
-import 'panel/popmoji.dart';
+import '../../widgets/popmoji_button.dart';
+import '../actions.dart';
+import '../business.dart';
+import '../panel/popmoji.dart';
 
 class DanmakuControl extends StatefulWidget {
   const DanmakuControl({super.key});
@@ -39,29 +39,6 @@ class _DanmakuControlState extends State<DanmakuControl> {
 
   @override
   Widget build(BuildContext context) {
-    final notifier = context.read<SparkingEmojiNotifier>();
-    final spark = MenuAnchor(
-      consumeOutsideTap: true,
-      alignmentOffset: const Offset(0, 10),
-      menuChildren: [
-        ...sparkOptions.map(
-          (e) => MenuItemButton(
-            onPressed: () => notifier.value = e,
-            child: EmojiData.createIcon(e),
-          ),
-        ),
-        MenuItemButton(child: Text('抒发感觉')),
-      ],
-      builder: (context, controller, child) => ValueListenableBuilder(
-        valueListenable: notifier,
-        builder: (context, emoji, child) => IconButton.outlined(
-          onPressed: controller.open,
-          icon: EmojiData.createIcon(emoji),
-        ),
-        child: child,
-      ),
-    );
-
     final danmakuField = [
       TextEditingShortcutWrapper(
         child: TextField(
@@ -71,14 +48,13 @@ class _DanmakuControlState extends State<DanmakuControl> {
           focusNode: _focusNode,
           onTapOutside: (event) {},
           decoration: InputDecoration(
-            border: OutlineInputBorder(),
-            focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(
-                color: Theme.of(context).colorScheme.secondary,
-                width: 2.0,
-              ),
+            filled: true,
+            fillColor: Theme.of(context).colorScheme.surfaceVariant,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide.none,
             ),
-            hintText: '按换行键发送弹幕',
+            hintText: '按回车键发送弹幕',
             floatingLabelBehavior: FloatingLabelBehavior.never,
           ),
           onSubmitted: (value) {
@@ -87,16 +63,8 @@ class _DanmakuControlState extends State<DanmakuControl> {
             if (kIsDesktop) _focusNode.requestFocus();
           },
         ),
-      ).padding(left: 8.0).flexible(),
+      ).flexible(),
     ].toRow();
-
-    final closeButton = IconButton(
-      icon: const Icon(Icons.keyboard_arrow_down),
-      onPressed: Actions.handler(
-        context,
-        ToggleDanmakuControlIntent(show: false),
-      ),
-    );
 
     final layoutedWidget = LayoutBuilder(
       builder: (context, constraints) {
@@ -105,11 +73,9 @@ class _DanmakuControlState extends State<DanmakuControl> {
         final popmojis = _createPopmojiWidget(math.max(maxPopmojisCount, 1));
 
         return [
-          spark.padding(left: 8.0),
           danmakuField.flexible(),
-          popmojis.padding(horizontal: 8.0),
-          StyledWidget(closeButton).padding(right: 8.0),
-        ].toRow(mainAxisSize: .max);
+          popmojis,
+        ].toRow(separator: const SizedBox(width: 12.0), mainAxisSize: .max);
       },
     );
 
@@ -163,7 +129,7 @@ class _DanmakuControlState extends State<DanmakuControl> {
               context,
               ShowPanelIntent(builder: (context) => const PopmojiPanel()),
             ),
-            icon: Icon(Icons.add_circle_outline),
+            icon: Icon(Icons.add),
           ),
         ].toRow();
       },

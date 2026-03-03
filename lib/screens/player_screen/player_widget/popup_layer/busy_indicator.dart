@@ -59,7 +59,7 @@ class BusyIndicator extends StatelessWidget {
                 showing: text != null,
                 layoutBuilder: (context, child) =>
                     child.padding(all: 24.0).alignment(.bottomLeft),
-                child:
+                popupBuilder: (context) =>
                     [
                           CircularProgressIndicator(
                             strokeCap: StrokeCap.round,

@@ -46,7 +46,7 @@ class _PlaySyncMessageState extends State<PlaySyncMessage> {
         showing: visible,
         layoutBuilder: (context, child) =>
             child.alignment(.bottomLeft).padding(left: 20.0, bottom: 80.0),
-        child: child!,
+        popupBuilder: (context) => child!,
       ),
       child:
           ValueListenableBuilder<String>(

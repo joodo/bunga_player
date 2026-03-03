@@ -1,17 +1,19 @@
+import 'package:bunga_player/ui/global_business.dart';
+import 'package:bunga_player/utils/extensions/extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
 import 'package:bunga_player/screens/widgets/split_view.dart';
 
+import 'footer/footer.dart';
+import 'header/header.dart';
 import 'panel/panel.dart';
 import 'player_widget/player_widget.dart';
-import 'danmaku_control.dart';
 import 'business.dart';
 
 class PlayerScreen extends StatelessWidget {
   static final playerKey = GlobalKey();
-  static const panelWidth = 300.0;
   static const danmakuHeight = 64.0;
 
   const PlayerScreen({super.key});
@@ -21,32 +23,16 @@ class PlayerScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final body = Consumer2<Panel?, DanmakuVisible>(
       builder: (context, panel, danmakuVisible, child) {
-        final playerWidget = child!;
-        final danmakuWidget = Consumer<IsInChannel>(
-          builder: (context, isInChannel, child) => isInChannel.value
-              ? RepaintBoundary(
-                  child: const DanmakuControl().constrained(
-                    key: Key('danmaku'),
-                    height: danmakuHeight,
-                  ),
-                )
-              : const SizedBox.shrink(),
-        );
         return [
-              playerWidget.positioned(
-                top: 0,
+              child!.positioned(
+                top: danmakuVisible.value ? Header.height : 0,
                 left: 0,
                 right: 0,
-                bottom: danmakuVisible.value ? danmakuHeight : 0,
+                bottom: danmakuVisible.value ? Footer.videoControlHeight : 0,
                 animate: true,
               ),
-              danmakuWidget.positioned(
-                left: 0,
-                right: 0,
-                height: danmakuHeight,
-                bottom: danmakuVisible.value ? 0 : -danmakuHeight,
-                animate: true,
-              ),
+              Header().autoHidden().positioned(top: 0, left: 0, right: 0),
+              Footer().autoHidden().positioned(bottom: 0, left: 0, right: 0),
             ]
             .toStack()
             .splitView(
@@ -65,4 +51,25 @@ class PlayerScreen extends StatelessWidget {
       getChildContext: () => playerKey.currentContext!,
     );
   }
+}
+
+extension _AutoHiddenWrap on Widget {
+  Widget autoHidden() => Consumer<ShouldShowHUDNotifier>(
+    builder: (context, showNotfier, child) => ValueListenableBuilder(
+      valueListenable: showNotfier,
+      builder: (context, show, child) =>
+          TickerMode(
+                enabled: show,
+                child: MouseRegion(
+                  opaque: false,
+                  onEnter: (event) => showNotfier.lockUp('enter footer'),
+                  onExit: (event) => showNotfier.unlock('enter footer'),
+                  child: this,
+                ),
+              )
+              .opacity(show ? 1.0 : 0.0, animate: true)
+              .animate(const Duration(milliseconds: 300), Curves.easeOutCubic)
+              .ignorePointer(ignoring: !show),
+    ),
+  );
 }

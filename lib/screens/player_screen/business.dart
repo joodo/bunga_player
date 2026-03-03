@@ -63,7 +63,15 @@ class _WidgetBusinessState extends SingleChildState<_WidgetBusiness> {
 
     _showDanmakuControlNotifier.addListener(() {
       if (!_showDanmakuControlNotifier.value) {
+        // TODO: useless?
         _focusNode.requestFocus();
+      }
+
+      final showHUDNotifier = context.read<ShouldShowHUDNotifier>();
+      if (_showDanmakuControlNotifier.value) {
+        showHUDNotifier.lockUp('danmaku');
+      } else {
+        showHUDNotifier.unlock('danmaku');
       }
     });
   }

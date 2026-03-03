@@ -18,8 +18,8 @@ import 'package:bunga_player/screens/player_screen/panel/video_source_panel.dart
 import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/business/platform.dart';
 
-import '../../actions.dart';
-import '../../business.dart';
+import 'actions.dart';
+import 'business.dart';
 
 class MenuBuilder extends SingleChildStatelessWidget {
   final Widget Function(

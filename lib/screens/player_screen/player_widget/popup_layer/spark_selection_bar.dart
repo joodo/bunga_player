@@ -43,17 +43,6 @@ class _SparkSelectionBarState extends State<SparkSelectionBar> {
     const horiPadding = 12.0;
     const buttonWidth = 48.0, buttonHeight = 54.0;
 
-    final buttons = sparkOptions
-        .map(
-          (e) => IconButton(
-            icon: _cachedImage[e] ?? const SizedBox.shrink(),
-            onPressed: () => currentNotifier.value = e,
-          ).constrained(width: buttonWidth, height: buttonHeight),
-        )
-        .toList()
-        .toRow(mainAxisSize: .min)
-        .padding(horizontal: horiPadding);
-
     final background = ValueListenableBuilder(
       valueListenable: currentNotifier,
       builder: (context, currentEmoji, child) {
@@ -82,7 +71,18 @@ class _SparkSelectionBarState extends State<SparkSelectionBar> {
       },
     );
 
-    final mouse =
+    final buttons = sparkOptions
+        .map(
+          (e) => IconButton(
+            icon: _cachedImage[e] ?? const SizedBox.shrink(),
+            onPressed: () => currentNotifier.value = e,
+          ).constrained(width: buttonWidth, height: buttonHeight),
+        )
+        .toList()
+        .toRow(mainAxisSize: .min)
+        .padding(horizontal: horiPadding);
+
+    final mouseRegion =
         MouseRegion(
           opaque: false,
           onEnter: (event) => _visibleNotifier.lockUp('mouse enter'),
@@ -95,19 +95,32 @@ class _SparkSelectionBarState extends State<SparkSelectionBar> {
           height: buttonHeight,
         );
 
-    final content = [background, buttons, mouse].toStack().blurChip();
+    final content = [background, buttons, mouseRegion].toStack().blurChip();
 
+    final link = LayerLink();
     return ValueListenableBuilder(
       valueListenable: _visibleNotifier,
       builder: (context, visible, child) {
         return PopupWidget(
           showing: visible,
-          layoutBuilder: (context, child) =>
-              child.padding(right: 24.0, bottom: 48.0).alignment(.bottomRight),
+          layoutBuilder: (context, popup) => UnconstrainedBox(
+            child: CompositedTransformFollower(
+              link: link,
+              targetAnchor: .bottomRight,
+              followerAnchor: .bottomRight,
+              offset: Offset(-16.0, -16.0),
+              child: popup,
+            ),
+          ),
+          popupBuilder: (context) => content,
+
           child: child,
         );
       },
-      child: content,
+      child: CompositedTransformTarget(
+        link: link,
+        child: const SizedBox.expand(),
+      ),
     );
   }
 

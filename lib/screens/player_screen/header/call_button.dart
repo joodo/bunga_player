@@ -12,8 +12,8 @@ import 'package:bunga_player/utils/models/volume.dart';
 import 'package:bunga_player/voice_call/business.dart';
 import 'package:bunga_player/screens/widgets/slider_item.dart';
 
-import '../../../actions.dart';
-import '../../../panel/calling_settings.dart';
+import '../actions.dart';
+import '../panel/calling_settings.dart';
 
 class CallButton extends StatefulWidget {
   const CallButton({super.key});

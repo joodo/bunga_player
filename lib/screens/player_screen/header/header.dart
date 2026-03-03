@@ -12,6 +12,7 @@ import 'package:bunga_player/play/models/play_payload.dart';
 import 'call_button.dart';
 
 class Header extends StatelessWidget {
+  static const height = 54.0;
   const Header({super.key});
 
   @override
@@ -29,25 +30,30 @@ class Header extends StatelessWidget {
       );
     }
 
-    return [
-      [
+    return Consumer<Watchers>(
+          builder: (context, users, child) => [
             Text(payload.record.title, maxLines: 1, overflow: .ellipsis)
                 .textStyle(Theme.of(context).textTheme.titleLarge!)
-                .padding(vertical: 8.0),
-            Consumer<Watchers>(
-              builder: (context, users, child) => [
-                const Text(
-                  '当前观众：',
-                ).textColor(Theme.of(context).colorScheme.onSurface),
-                ...users.map((user) => _WatcherLabel(user)),
-              ].toRow(),
-            ),
-          ]
-          .toColumn(crossAxisAlignment: .start, mainAxisSize: .min)
-          .padding(horizontal: 16.0)
-          .flexible(),
-      const CallButton().padding(right: 16.0),
-    ].toRow().padding(vertical: 4.0);
+                .padding(right: 12.0)
+                .expanded(),
+            const Text(
+              '当前观众：',
+            ).textColor(Theme.of(context).colorScheme.onSurface),
+            ...users.map((user) => _WatcherLabel(user)),
+            const SizedBox(width: 12.0),
+            CallButton(),
+          ].toRow(),
+        )
+        .padding(horizontal: 16.0)
+        .backgroundGradient(
+          LinearGradient(
+            begin: .topCenter,
+            end: .bottomCenter,
+            stops: [0.2, 1.0],
+            colors: [Colors.black, Colors.transparent],
+          ),
+        )
+        .constrained(height: height);
   }
 }
 
@@ -71,6 +77,6 @@ class _WatcherLabel extends StatelessWidget {
             ? const Text('⏳')
             : const SizedBox.shrink(),
       ),
-    ].toRow().padding(right: 10.0);
+    ].toRow().padding(right: 8.0);
   }
 }

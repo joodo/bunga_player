@@ -1,6 +1,5 @@
 import 'package:bunga_player/reaction/business.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
@@ -8,8 +7,7 @@ import 'package:bunga_player/ui/global_business.dart';
 import 'package:bunga_player/utils/business/value_listenable.dart';
 import 'package:bunga_player/play/busuness.dart';
 
-import '../chrome_layer/chrome_layer.dart';
-import '../chrome_layer/menu_builder.dart';
+import '../../menu_builder.dart';
 import 'spark_send_controller.dart';
 
 class DesktopInteractiveLayer extends StatefulWidget {
@@ -46,15 +44,8 @@ class _DesktopInteractiveLayerState extends State<DesktopInteractiveLayer> {
         cursor: shouldShowHUDNotifier.value || _isSparking
             ? SystemMouseCursors.basic
             : SystemMouseCursors.none,
-        onEnter: (event) => shouldShowHUDNotifier.unlock('interactive'),
         onHover: (event) {
-          if (_isInUISection(context, event)) {
-            shouldShowHUDNotifier.lockUp('interactive');
-          } else {
-            shouldShowHUDNotifier.unlock('interactive');
-
-            if (!_isSparking) shouldShowHUDNotifier.mark();
-          }
+          if (!_isSparking) shouldShowHUDNotifier.mark();
         },
         child: MenuBuilder(
           builder: (context, menuChildren, child) => MenuAnchor(
@@ -87,21 +78,5 @@ class _DesktopInteractiveLayerState extends State<DesktopInteractiveLayer> {
         ),
       ),
     );
-  }
-
-  bool _isInUISection(BuildContext context, PointerHoverEvent event) {
-    final y = event.localPosition.dy;
-    final widgetHeight = (context.findRenderObject()! as RenderBox).size.height;
-
-    // In channel section
-    if (y < 72.0) return true;
-
-    // In control or progress section
-    if (y > widgetHeight - ChromeLayer.videoControlHeight - 12.0 &&
-        y < widgetHeight) {
-      return true;
-    }
-
-    return false;
   }
 }
