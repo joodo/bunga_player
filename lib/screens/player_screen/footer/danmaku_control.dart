@@ -87,11 +87,12 @@ class _DanmakuControlState extends State<DanmakuControl> {
   }
 
   Widget _createPopmojiWidget(int count) {
-    return Consumer<RecentPopmojisNotifier>(
+    return ValueListenableBuilder(
+      valueListenable: context.read<RecentPopmojisNotifier>(),
       builder: (context, recentPopmojis, child) {
         return [
-          ...recentPopmojis.value
-              .sublist(0, math.min(recentPopmojis.value.length, count))
+          ...recentPopmojis
+              .sublist(0, math.min(recentPopmojis.length, count))
               .map((emoji) {
                 final label = context.read<EmojiData>().tags[emoji]?.first;
                 return Tooltip(

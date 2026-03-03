@@ -202,7 +202,7 @@ class _PopmojiPanelState extends State<PopmojiPanel> {
     emojis
       ..remove(emoji)
       ..insert(0, emoji);
-    notifier.value = [...emojis];
+    notifier.value = emojis.sublist(0, min(10, emojis.length));
   }
 
   List<EmojiCategory> _emojisByTag(String keyword) {

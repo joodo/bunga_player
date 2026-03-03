@@ -19,7 +19,7 @@ class RecentPopmojisNotifier extends ValueNotifier<List<String>> {
     : super(["🎆", "😆", "😭", "😍", "🤤", "🫣", "🤮", "🤡", "🔥"]) {
     bindPreference<List<String>>(
       key: 'recent_popmojis',
-      load: (pref) => value,
+      load: (pref) => pref,
       update: (value) => value,
     );
   }
@@ -95,7 +95,7 @@ class _ReactionBusinessState extends SingleChildState<ReactionBusiness> {
   Widget buildWithChild(BuildContext context, Widget? child) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => RecentPopmojisNotifier()),
+        ListenableProvider(create: (context) => RecentPopmojisNotifier()),
         ListenableProvider(create: (context) => SparkingEmojiNotifier()),
         ListenableProvider(create: (context) => SparkingStartEvent()),
       ],
