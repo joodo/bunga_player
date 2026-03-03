@@ -187,7 +187,7 @@ class _DanmakuLines extends ListBase<Queue<_DanmakuPosition>>
       } else {
         final availableX = _lastAvailablePositions(_currentLine);
 
-        if (availableX > painter.size.width) {
+        if (availableX > widgetWidth) {
           // find next line
           _currentLine++;
         } else {
