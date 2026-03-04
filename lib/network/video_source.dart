@@ -2,11 +2,11 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:bunga_player/play/service/service.dart';
-import 'package:bunga_player/services/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/io_client.dart';
 import 'package:m3u_nullsafe/m3u_nullsafe.dart';
+
+import 'package:bunga_player/play/service/service.dart';
 
 class VideoSource {
   static const testMb = 3;
@@ -162,7 +162,7 @@ class VideoSource {
       ..badCertificateCallback =
           (X509Certificate cert, String host, int port) => true;
 
-    final proxy = getIt<MediaPlayer>().proxyNotifier.value;
+    final proxy = MediaPlayer.i.proxyNotifier.value;
     if (proxy != null) {
       client.findProxy = (uri) {
         return "PROXY $proxy;";

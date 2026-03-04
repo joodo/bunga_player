@@ -13,7 +13,6 @@ import 'package:bunga_player/reaction/business.dart';
 import 'package:bunga_player/voice_call/business.dart';
 import 'package:bunga_player/play/busuness.dart';
 import 'package:bunga_player/play/service/service.dart';
-import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/ui/global_business.dart';
 import 'package:bunga_player/screens/player_screen/player_widget/interactive_layer/spark_send_controller.dart';
 import 'package:bunga_player/voice_call/client/client.dart';
@@ -185,7 +184,7 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
   void _startSlideSeeking(DragStartDetails details) {
     context.read<ShouldShowHUDNotifier>().lockUp('slide seeking');
 
-    final play = getIt<MediaPlayer>();
+    final play = MediaPlayer.i;
     _dragBusiness = DragBusiness(
       startPosition: details.localPosition,
       orientation: .horizontal,
@@ -206,7 +205,7 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
     final action =
         _dragBusiness!.updatePosition(details.localPosition) as Future;
     action.then((_) {
-      if (_isPlayingBeforeDrag) getIt<MediaPlayer>().play();
+      if (_isPlayingBeforeDrag) MediaPlayer.i.play();
       if (mounted) Actions.maybeInvoke(context, SeekEndIntent());
     });
 
@@ -246,11 +245,11 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
     _dragBusiness = DragBusiness(
       startPosition: details.localPosition,
       orientation: .vertical,
-      startValue: getIt<MediaPlayer>().volumeNotifier.value.level,
+      startValue: MediaPlayer.i.volumeNotifier.value.level,
       onUpdate: (startValue, distance) {
         final delta = distance * _verticalFactor;
         final newValue = Volume(level: startValue + delta);
-        getIt<MediaPlayer>().volumeNotifier.value = newValue;
+        MediaPlayer.i.volumeNotifier.value = newValue;
         context.read<AdjustIndicatorEvent>().fire(.mediaVolume);
       },
     );

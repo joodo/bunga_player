@@ -6,7 +6,6 @@ import 'package:styled_widget/styled_widget.dart';
 import 'package:bunga_player/chat/business.dart';
 import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/play_sync/business.dart';
-import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/screens/widgets/popup_widget.dart';
 import 'package:bunga_player/ui/global_business.dart';
 
@@ -30,7 +29,7 @@ class BusyIndicator extends StatelessWidget {
             bufferingStatusNotifier,
             child,
           ) => ValueListenableBuilder(
-            valueListenable: getIt<MediaPlayer>().isBufferingNotifier,
+            valueListenable: MediaPlayer.i.isBufferingNotifier,
             builder: (context, isBuffering, child) {
               String? getText() {
                 if (showHudNotifier.value) return null;

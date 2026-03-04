@@ -89,7 +89,7 @@ class _NetworkGlobalBusinessState
     getIt<NetworkService>().setProxy(
       _enableCommunication.value ? _proxy.value : null,
     );
-    getIt<MediaPlayer>().proxyNotifier.value = _enableMedia.value
+    MediaPlayer.i.proxyNotifier.value = _enableMedia.value
         ? _proxy.value
         : null;
   }

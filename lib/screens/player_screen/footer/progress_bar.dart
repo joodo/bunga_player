@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 
 import 'package:bunga_player/play/busuness.dart';
 import 'package:bunga_player/play/service/service.dart';
-import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/ui/global_business.dart';
 import 'package:bunga_player/utils/business/animation_builder.dart';
 import 'package:bunga_player/utils/business/platform.dart';
@@ -45,7 +44,7 @@ class _VideoProgressBarState extends State<VideoProgressBar> {
     );
 
     final animatedSlider = ValueListenableBuilder(
-      valueListenable: getIt<MediaPlayer>().isBufferingNotifier,
+      valueListenable: MediaPlayer.i.isBufferingNotifier,
       builder: (context, amIBuffering, child) =>
           Selector<WatcherBufferingStatusNotifier?, bool>(
             selector: (context, notifier) => notifier?.hasBuffering ?? false,
@@ -123,7 +122,7 @@ class _ProgressSlider extends StatefulWidget {
 
 class _ProgressSliderState extends State<_ProgressSlider> {
   // Player
-  final _player = getIt<MediaPlayer>();
+  final _player = MediaPlayer.i;
   late final _playerPositionNotifier = _player.positionNotifier;
 
   // Current position

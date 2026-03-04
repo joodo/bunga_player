@@ -15,7 +15,6 @@ import 'package:bunga_player/screens/player_screen/panel/audio_track_panel.dart'
 import 'package:bunga_player/screens/player_screen/panel/subtitle_panel.dart';
 import 'package:bunga_player/screens/player_screen/panel/video_eq_panel.dart';
 import 'package:bunga_player/screens/player_screen/panel/video_source_panel.dart';
-import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/business/platform.dart';
 
 import 'actions.dart';
@@ -56,7 +55,7 @@ class MenuBuilder extends SingleChildStatelessWidget {
                 context,
                 OpenVideoIntent.record(
                   payload!.record,
-                  start: getIt<MediaPlayer>().positionNotifier.value,
+                  start: MediaPlayer.i.positionNotifier.value,
                 ),
               ),
               child: const Text('重新载入'),

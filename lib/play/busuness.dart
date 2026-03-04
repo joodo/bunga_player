@@ -9,7 +9,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
 import 'package:bunga_player/console/service.dart';
-import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/ui/audio_player.dart';
 import 'package:bunga_player/ui/global_business.dart';
 import 'package:bunga_player/ui/shortcuts.dart';
@@ -141,7 +140,7 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
     String? subtitlePath,
     Duration? start,
   }) async {
-    final play = getIt<MediaPlayer>();
+    final play = MediaPlayer.i;
     await play.open(payload, start);
 
     // load history
@@ -167,7 +166,7 @@ class SetSubtitleTrackIntent extends Intent {
 class SetSubtitleTrackAction extends ContextAction<SetSubtitleTrackIntent> {
   @override
   void invoke(SetSubtitleTrackIntent intent, [BuildContext? context]) {
-    final track = getIt<MediaPlayer>().setSubtitleTrack(intent.trackId);
+    final track = MediaPlayer.i.setSubtitleTrack(intent.trackId);
 
     final record = context!.read<PlayPayload>().record;
     final externalSubPath = track.path;
@@ -188,7 +187,7 @@ class ScreenshotAction extends ContextAction<ScreenshotIntent> {
 
   @override
   Future<File> invoke(ScreenshotIntent intent, [BuildContext? context]) async {
-    final positionStr = getIt<MediaPlayer>().positionNotifier.value.toString();
+    final positionStr = MediaPlayer.i.positionNotifier.value.toString();
     final positionStamp = positionStr
         .substring(0, positionStr.length - 4)
         .replaceAll(RegExp(r'[:|.]'), '_');
@@ -196,7 +195,7 @@ class ScreenshotAction extends ContextAction<ScreenshotIntent> {
     final videoName = path_tool.basenameWithoutExtension(videoFileName);
     final fileName = '${videoName}_$positionStamp.jpg';
 
-    final data = await getIt<MediaPlayer>().screenshot();
+    final data = await MediaPlayer.i.screenshot();
     assert(data != null);
 
     final documentDir = await getApplicationDocumentsDirectory();
@@ -240,13 +239,12 @@ class RefreshDirAction extends ContextAction<RefreshDirIntent> {
   }
 }
 
-@immutable
 class SetPlaybackIntent extends Intent {
   final bool showVisualFeedback;
-  final bool? isPlay;
+  final bool isPlay;
   const SetPlaybackIntent(this.isPlay, {this.showVisualFeedback = true});
-  const SetPlaybackIntent.toggle({this.showVisualFeedback = true})
-    : isPlay = null;
+  SetPlaybackIntent.toggle({this.showVisualFeedback = true})
+    : isPlay = !MediaPlayer.i.playStatusNotifier.value.isPlaying;
 }
 
 class SetPlaybackAction extends ContextAction<SetPlaybackIntent> {
@@ -254,10 +252,8 @@ class SetPlaybackAction extends ContextAction<SetPlaybackIntent> {
 
   @override
   Future<void> invoke(SetPlaybackIntent intent, [BuildContext? context]) async {
-    final service = getIt<MediaPlayer>();
+    final service = MediaPlayer.i;
     switch (intent.isPlay) {
-      case null:
-        await service.toggle();
       case true:
         await service.play();
       case false:
@@ -294,7 +290,7 @@ class SeekForwardIntent extends SeekIntent {
   const SeekForwardIntent(this.delta);
   @override
   Duration get position {
-    final player = getIt<MediaPlayer>();
+    final player = MediaPlayer.i;
     final current = player.positionNotifier.value;
     return current + delta;
   }
@@ -303,13 +299,13 @@ class SeekForwardIntent extends SeekIntent {
 class SeekAction extends ContextAction<SeekIntent> {
   @override
   void invoke(SeekIntent intent, [BuildContext? context]) {
-    final service = getIt<MediaPlayer>();
+    final service = MediaPlayer.i;
     service.seek(intent.position);
   }
 
   @override
   bool isEnabled(SeekIntent intent, [BuildContext? context]) {
-    return getIt<MediaPlayer>().playStatusNotifier.value != PlayStatus.stop;
+    return MediaPlayer.i.playStatusNotifier.value != PlayStatus.stop;
   }
 }
 
@@ -321,7 +317,7 @@ class PlayBusiness extends SingleChildStatefulWidget {
 }
 
 class _PlayBusinessState extends SingleChildState<PlayBusiness> {
-  final _player = getIt<MediaPlayer>();
+  final _player = MediaPlayer.i;
   // Play payload
   final _playPayloadNotifier = ValueNotifier<PlayPayload?>(null)
     ..watchInConsole('Play Payload');

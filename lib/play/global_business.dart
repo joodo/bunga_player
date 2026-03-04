@@ -27,7 +27,7 @@ class PlayerBackendNotifier extends ValueNotifier<PlayerBackend> {
   Future<void> switchTo(PlayerBackend target) async {
     if (value == target) return;
 
-    final current = getIt<MediaPlayer>();
+    final current = MediaPlayer.i;
     current.dispose();
     await getIt.unregister<MediaPlayer>();
 

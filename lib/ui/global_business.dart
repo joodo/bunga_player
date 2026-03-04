@@ -11,7 +11,6 @@ import 'package:bunga_player/console/service.dart';
 import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/utils/models/volume.dart';
 import 'package:bunga_player/services/preferences.dart';
-import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/business/platform.dart';
 import 'package:bunga_player/utils/business/simple_event.dart';
 import 'package:bunga_player/utils/business/value_listenable.dart';
@@ -180,7 +179,7 @@ class MediaVolumeNotifier extends VolumeNotifier {
       // Wait for MediaPlayer register
       Future.microtask(() {
         addListener(() {
-          getIt<MediaPlayer>().volumeNotifier.value = value;
+          MediaPlayer.i.volumeNotifier.value = value;
         });
         loadFromPref();
       });

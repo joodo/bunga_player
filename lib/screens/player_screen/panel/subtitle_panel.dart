@@ -13,7 +13,6 @@ import 'package:bunga_player/play_sync/business.dart';
 import 'package:bunga_player/play_sync/models.dart/message_data.dart';
 import 'package:bunga_player/screens/player_screen/business.dart';
 import 'package:bunga_player/screens/widgets/slider_item.dart';
-import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/extensions/extensions.dart';
 
 import 'panel.dart';
@@ -44,7 +43,7 @@ class _SubtitlePanelState extends State<SubtitlePanel> {
     (
       icon: Icons.timer,
       title: '延迟',
-      notifier: getIt<MediaPlayer>().subDelayNotifier,
+      notifier: MediaPlayer.i.subDelayNotifier,
       min: -20.0,
       max: 20.0,
       labelFormatter: (value) => value.toStringAsFixed(1),
@@ -54,7 +53,7 @@ class _SubtitlePanelState extends State<SubtitlePanel> {
     (
       icon: Icons.format_size,
       title: '大小',
-      notifier: getIt<MediaPlayer>().subSizeNotifier,
+      notifier: MediaPlayer.i.subSizeNotifier,
       min: 20.0,
       max: 72.0,
       labelFormatter: (value) => value.toInt().toString(),
@@ -64,7 +63,7 @@ class _SubtitlePanelState extends State<SubtitlePanel> {
     (
       icon: Icons.height,
       title: '高度',
-      notifier: getIt<MediaPlayer>().subPosNotifier,
+      notifier: MediaPlayer.i.subPosNotifier,
       min: -100.0,
       max: 50.0,
       labelFormatter: (value) => value.toInt().toString(),
@@ -75,7 +74,7 @@ class _SubtitlePanelState extends State<SubtitlePanel> {
 
   @override
   Widget build(BuildContext context) {
-    final player = getIt<MediaPlayer>();
+    final player = MediaPlayer.i;
     final theme = Theme.of(context);
 
     final tracksSection = Consumer<IsInChannel>(
@@ -180,7 +179,7 @@ class _SubtitlePanelState extends State<SubtitlePanel> {
     final file = await openFile();
     if (!context.mounted || file == null) return;
 
-    final player = getIt<MediaPlayer>();
+    final player = MediaPlayer.i;
     try {
       final track = await player.loadSubtitleTrack(file.path);
 
@@ -193,7 +192,7 @@ class _SubtitlePanelState extends State<SubtitlePanel> {
 
   void _shareSubtitle(String trackId) async {
     final chatClient = context.read<ChatClient>();
-    final path = getIt<MediaPlayer>().subtitleTrackNotifier.value.path!;
+    final path = MediaPlayer.i.subtitleTrackNotifier.value.path!;
 
     try {
       final job =
@@ -243,7 +242,7 @@ class _ChannelSubtitleRadioTileState extends State<_ChannelSubtitleRadioTile> {
 
   void _loadChannelData() async {
     final busyNotifier = context.read<PanelBusyNotifier>();
-    final playService = getIt<MediaPlayer>();
+    final playService = MediaPlayer.i;
     final subtitleTrackIdOfUrl = context.read<SubtitleTrackIdOfUrl>().value;
     final url = widget.info.url;
     try {

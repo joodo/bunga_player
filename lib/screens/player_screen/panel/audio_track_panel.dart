@@ -1,6 +1,5 @@
 import 'package:bunga_player/play/models/track.dart';
 import 'package:bunga_player/play/service/service.dart';
-import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:styled_widget/styled_widget.dart';
@@ -15,7 +14,7 @@ class AudioTrackPanel extends StatelessWidget implements Panel {
 
   @override
   Widget build(BuildContext context) {
-    final player = getIt<MediaPlayer>();
+    final player = MediaPlayer.i;
     return ValueListenableBuilder(
       valueListenable: player.audioTracksNotifier,
       builder: (context, tracks, child) => ValueListenableBuilder(

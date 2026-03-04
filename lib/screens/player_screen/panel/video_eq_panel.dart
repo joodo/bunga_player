@@ -1,7 +1,6 @@
 import 'package:bunga_player/play/busuness.dart';
 import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/screens/widgets/slider_item.dart';
-import 'package:bunga_player/services/services.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
@@ -20,28 +19,24 @@ class VideoEqPanel extends StatelessWidget implements Panel {
     (
       icon: Icons.brightness_4,
       name: '亮度',
-      notifier: getIt<MediaPlayer>().brightnessNotifier,
+      notifier: MediaPlayer.i.brightnessNotifier,
     ),
     (
       icon: Icons.contrast,
       name: '对比度',
-      notifier: getIt<MediaPlayer>().contrastNotifier,
+      notifier: MediaPlayer.i.contrastNotifier,
     ),
     (
       icon: Icons.opacity,
       name: '饱和度',
-      notifier: getIt<MediaPlayer>().saturationNotifier,
+      notifier: MediaPlayer.i.saturationNotifier,
     ),
     (
       icon: Icons.signal_cellular_0_bar,
       name: '伽玛',
-      notifier: getIt<MediaPlayer>().gammaNotifier,
+      notifier: MediaPlayer.i.gammaNotifier,
     ),
-    (
-      icon: Icons.palette,
-      name: '色相',
-      notifier: getIt<MediaPlayer>().hueNotifier,
-    ),
+    (icon: Icons.palette, name: '色相', notifier: MediaPlayer.i.hueNotifier),
   ];
 
   @override
@@ -68,7 +63,7 @@ class VideoEqPanel extends StatelessWidget implements Panel {
                       onSelected: (preset) {
                         notifier.value = preset;
                         if (preset == null) return;
-                        final player = getIt<MediaPlayer>();
+                        final player = MediaPlayer.i;
                         player.brightnessNotifier.value = preset.value[0];
                         player.contrastNotifier.value = preset.value[1];
                         player.saturationNotifier.value = preset.value[2];

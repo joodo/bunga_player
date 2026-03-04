@@ -1,13 +1,13 @@
-import 'package:bunga_player/play/service/service.dart';
-import 'package:bunga_player/screens/player_screen/business.dart';
-import 'package:bunga_player/screens/player_screen/footer/danmaku_control.dart';
-import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/utils/business/preference_notifier.dart';
-import 'package:bunga_player/utils/business/value_listenable.dart';
-import 'package:bunga_player/utils/extensions/extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
+
+import 'package:bunga_player/play/service/service.dart';
+import 'package:bunga_player/screens/player_screen/business.dart';
+import 'package:bunga_player/screens/player_screen/footer/danmaku_control.dart';
+import 'package:bunga_player/utils/business/preference_notifier.dart';
+import 'package:bunga_player/utils/business/value_listenable.dart';
+import 'package:bunga_player/utils/extensions/extensions.dart';
 
 class CenterSection extends StatefulWidget {
   const CenterSection({super.key});
@@ -52,7 +52,7 @@ class _DurationButtonState extends State<_DurationButton> {
 
   @override
   Widget build(BuildContext context) {
-    final playService = getIt<MediaPlayer>();
+    final playService = MediaPlayer.i;
     return ListenableBuilder(
       listenable: Listenable.merge([
         playService.positionNotifier,

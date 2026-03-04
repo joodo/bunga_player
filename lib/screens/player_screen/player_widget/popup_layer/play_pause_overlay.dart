@@ -1,9 +1,9 @@
-import 'package:bunga_player/play/service/service.dart';
-import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/ui/global_business.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
+
+import 'package:bunga_player/play/service/service.dart';
+import 'package:bunga_player/ui/global_business.dart';
 
 class PlayPauseOverlay extends StatefulWidget {
   const PlayPauseOverlay({super.key});
@@ -68,7 +68,7 @@ class _PlayPauseOverlayState extends State<PlayPauseOverlay>
   }
 
   Widget _buildIcon() {
-    final isPlaying = getIt<MediaPlayer>().playStatusNotifier.value.isPlaying;
+    final isPlaying = MediaPlayer.i.playStatusNotifier.value.isPlaying;
     final colorScheme = Theme.of(context).colorScheme;
     return Icon(
           isPlaying ? Icons.play_arrow_rounded : Icons.pause_rounded,

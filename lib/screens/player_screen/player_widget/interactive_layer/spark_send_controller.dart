@@ -3,7 +3,6 @@ import 'package:bunga_player/reaction/business.dart';
 import 'package:flutter/material.dart';
 
 import 'package:bunga_player/play/service/service.dart';
-import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/extensions/rect.dart';
 
 class SparkSendController {
@@ -18,7 +17,7 @@ class SparkSendController {
 
   Rect? _videoRect;
   void _updateVideoRect() {
-    final videoSize = getIt<MediaPlayer>().videoSizeNotifier.value;
+    final videoSize = MediaPlayer.i.videoSizeNotifier.value;
     if (videoSize == null) {
       _videoRect = null;
       return;

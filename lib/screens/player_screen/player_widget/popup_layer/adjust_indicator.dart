@@ -1,7 +1,5 @@
 import 'dart:async';
 
-import 'package:bunga_player/play/service/service.dart';
-import 'package:bunga_player/services/services.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
@@ -10,6 +8,7 @@ import 'package:styled_widget/styled_widget.dart';
 import 'package:bunga_player/screens/widgets/popup_widget.dart';
 import 'package:bunga_player/ui/global_business.dart';
 import 'package:bunga_player/utils/business/value_listenable.dart';
+import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/voice_call/client/client.dart';
 
 /// Indicator shows when adjusting volume, brightness etc.
@@ -160,7 +159,7 @@ class _AdjustIndicatorState extends State<AdjustIndicator>
   }
 
   Widget? _createMediaVolumeWidget() {
-    final notifier = getIt<MediaPlayer>().volumeNotifier;
+    final notifier = MediaPlayer.i.volumeNotifier;
     return ValueListenableBuilder(
       valueListenable: notifier,
       builder: (context, volume, child) =>

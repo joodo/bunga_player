@@ -5,7 +5,6 @@ import 'package:styled_widget/styled_widget.dart';
 import 'package:bunga_player/play/busuness.dart';
 import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/screens/widgets/divider.dart';
-import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/business/platform.dart';
 import 'package:bunga_player/utils/models/volume.dart';
 import 'package:bunga_player/utils/extensions/extensions.dart';
@@ -132,7 +131,7 @@ class _PlayButtonState extends State<_PlayButton>
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
-      valueListenable: getIt<MediaPlayer>().playStatusNotifier,
+      valueListenable: MediaPlayer.i.playStatusNotifier,
       builder: (context, status, child) {
         status.isPlaying ? controller.forward() : controller.reverse();
         return Selector<BusyStateNotifier, bool>(

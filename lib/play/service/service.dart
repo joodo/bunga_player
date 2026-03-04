@@ -1,6 +1,8 @@
-import 'package:bunga_player/utils/models/volume.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+
+import 'package:bunga_player/services/services.dart';
+import 'package:bunga_player/utils/models/volume.dart';
 
 import '../models/play_payload.dart';
 import '../models/track.dart';
@@ -14,8 +16,7 @@ enum PlayStatus {
 }
 
 abstract class MediaPlayer {
-  static const int maxVolume = 100;
-  static const int minVolume = 0;
+  static MediaPlayer get i => getIt<MediaPlayer>();
 
   ValueNotifier<Volume> get volumeNotifier;
 

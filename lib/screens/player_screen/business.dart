@@ -16,7 +16,6 @@ import 'package:bunga_player/play/payload_parser.dart';
 import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/play_sync/business.dart';
 import 'package:bunga_player/screens/dialogs/open_video/open_video.dart';
-import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/ui/global_business.dart';
 import 'package:bunga_player/ui/shortcuts.dart';
 import 'package:bunga_player/utils/business/provider.dart';
@@ -64,7 +63,6 @@ class _WidgetBusinessState extends SingleChildState<_WidgetBusiness> {
 
     _showDanmakuControlNotifier.addListener(() {
       if (!_showDanmakuControlNotifier.value) {
-        // TODO: useless?
         _focusNode.requestFocus();
       }
 
@@ -157,7 +155,7 @@ class _WidgetBusinessState extends SingleChildState<_WidgetBusiness> {
 
     // Stop playing
     read<WindowTitleNotifier>().reset();
-    getIt<MediaPlayer>().stop();
+    MediaPlayer.i.stop();
 
     // Send bye message
     if (read<IsInChannel>().value) {

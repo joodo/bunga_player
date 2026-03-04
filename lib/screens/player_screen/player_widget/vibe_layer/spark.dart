@@ -8,7 +8,6 @@ import 'package:styled_widget/styled_widget.dart';
 
 import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/reaction/business.dart';
-import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/chat/client/client.dart';
 import 'package:bunga_player/chat/models/user.dart';
 import 'package:bunga_player/reaction/models/models.dart';
@@ -70,7 +69,7 @@ class _SparkLayerState extends State<SparkLayer>
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
-      valueListenable: getIt<MediaPlayer>().videoSizeNotifier,
+      valueListenable: MediaPlayer.i.videoSizeNotifier,
       builder: (context, videoSize, child) {
         if (videoSize == null) {
           return const SizedBox.shrink();

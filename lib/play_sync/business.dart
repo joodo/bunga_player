@@ -16,7 +16,6 @@ import 'package:bunga_player/play/models/models.dart';
 import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/screens/dialogs/open_video/gallery.dart';
 import 'package:bunga_player/screens/dialogs/video_conflict.dart';
-import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/business/value_listenable.dart';
 import 'package:bunga_player/utils/extensions/extensions.dart';
 import 'package:bunga_player/console/service.dart';
@@ -125,7 +124,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
   late final StreamSubscription _streamSubscription;
 
   // Player status
-  final _playerBufferingNotifier = getIt<MediaPlayer>().isBufferingNotifier;
+  final _playerBufferingNotifier = MediaPlayer.i.isBufferingNotifier;
   final _watchersBufferStatusNotifier = WatcherBufferingStatusNotifier()
     ..watchInConsole('Watchers Sync Status');
 
@@ -200,7 +199,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
 
     _playerBufferingNotifier.addListener(_sendBufferingStatus);
 
-    final playService = getIt<MediaPlayer>();
+    final playService = MediaPlayer.i;
     playService.positionNotifier.addListener(_silentCatchUp);
     playService.finishNotifier.addListener(_sendFinishMessage);
   }
@@ -209,7 +208,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
   void dispose() {
     _playerBufferingNotifier.removeListener(_sendBufferingStatus);
 
-    final playService = getIt<MediaPlayer>();
+    final playService = MediaPlayer.i;
     playService.positionNotifier.removeListener(_silentCatchUp);
     playService.finishNotifier.removeListener(_sendFinishMessage);
 
@@ -233,7 +232,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
         OpenVideoIntent: CallbackAction<OpenVideoIntent>(
           onInvoke: (intent) {
             // Send pause request first
-            final playService = getIt<MediaPlayer>();
+            final playService = MediaPlayer.i;
             final messageData = PauseMessageData(
               position: playService.positionNotifier.value,
             );
@@ -246,7 +245,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
           onInvoke: (intent) {
             if (_remoteJustToggledNotifier.value) return;
 
-            final playService = getIt<MediaPlayer>();
+            final playService = MediaPlayer.i;
             final wantPlay = !playService.playStatusNotifier.value.isPlaying;
 
             late final MessageData messageData;
@@ -268,7 +267,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
         ),
         SeekForwardIntent: CallbackAction<SeekForwardIntent>(
           onInvoke: (intent) {
-            final player = getIt<MediaPlayer>();
+            final player = MediaPlayer.i;
             player.seek(intent.position);
 
             final messageData = SeekMessageData(position: intent.position);
@@ -286,7 +285,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
         ),
         SeekEndIntent: CallbackAction<SeekEndIntent>(
           onInvoke: (intent) {
-            final player = getIt<MediaPlayer>();
+            final player = MediaPlayer.i;
             final messageData = SeekMessageData(
               position: player.positionNotifier.value,
             );
@@ -380,7 +379,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
   }
 
   void _handlePlayAt(User sender, bool isPlay, Duration position) async {
-    final playService = getIt<MediaPlayer>();
+    final playService = MediaPlayer.i;
 
     // Toggle play/pause
     final localPlay = playService.playStatusNotifier.value.isPlaying;
@@ -439,7 +438,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
   // Silent Catch-Up
   _CatchUpTarget? _catchUpTarget;
   void _silentCatchUp() {
-    final playService = getIt<MediaPlayer>();
+    final playService = MediaPlayer.i;
 
     if (_catchUpTarget == null) {
       playService.playbackRateNotifier.value = 1.0;

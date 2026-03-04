@@ -1,6 +1,5 @@
 import 'package:bunga_player/play/global_business.dart';
 import 'package:bunga_player/play/service/service.dart';
-import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/utils/business/value_listenable.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -105,8 +104,7 @@ class _PlayerBackedRadiosState extends State<_PlayerBackedRadios> {
             await Future.delayed(const Duration(seconds: 1));
 
             // Init proxy settings for new player instance
-            getIt<MediaPlayer>().proxyNotifier.value =
-                read<ProxyMediaNotifier>().value
+            MediaPlayer.i.proxyNotifier.value = read<ProxyMediaNotifier>().value
                 ? read<NetworkProxyNotifier>().value
                 : null;
 
