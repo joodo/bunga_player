@@ -1,3 +1,5 @@
+import 'package:bunga_player/play/service/service.dart';
+import 'package:bunga_player/utils/business/platform.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
@@ -192,7 +194,7 @@ class _CallButtonState extends State<CallButton> {
       builder: (context, client, child) => ValueListenableBuilder(
         valueListenable: client.volumeNotifier,
         builder: (context, volume, child) => SliderItem(
-          icon: Icons.headphones,
+          icon: Icons.voice_chat,
           title: '语音音量',
           value: volume.level,
           label: '${volume.level.toLevel}%',
@@ -210,6 +212,26 @@ class _CallButtonState extends State<CallButton> {
         ).padding(horizontal: 16.0),
       ),
     ),
+    if (!kIsDesktop)
+      ValueListenableBuilder(
+        valueListenable: MediaPlayer.i.volumeNotifier,
+        builder: (context, volume, child) => SliderItem(
+          icon: Icons.music_note,
+          title: '媒体音量',
+          value: volume.level,
+          label: '${volume.level.toLevel}%',
+          onChangeStart: (value) {
+            context.read<ShouldShowHUDNotifier>().lockUp('media slider');
+          },
+          onChanged: (value) {
+            final newVolume = Volume(level: value);
+            MediaPlayer.i.volumeNotifier.value = newVolume;
+          },
+          onChangeEnd: (value) {
+            context.read<ShouldShowHUDNotifier>().unlock('media slider');
+          },
+        ).padding(horizontal: 16.0),
+      ),
     const Divider(),
     [
           Consumer<VoiceCallClient>(
