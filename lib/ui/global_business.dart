@@ -127,15 +127,7 @@ class BusyStateNotifier extends ChangeNotifier {
   }
 }
 
-class PlaySyncMessageManager {
-  PlaySyncMessageManager();
-
-  final _streamController = StreamController<String>.broadcast();
-  Stream<String> get messageStream => _streamController.stream;
-  void show(String message) {
-    _streamController.add(message);
-  }
-}
+class SyncMessageEvent extends SimpleEventStream<String> {}
 
 class PlayToggleVisualSignal extends SimpleEventStream<bool> {
   PlayToggleVisualSignal();
@@ -217,7 +209,11 @@ class _UIGlobalBusinessState extends SingleChildState<UIGlobalBusiness> {
               BusyStateNotifier()..watchInConsole('Busy State'),
         ),
         Provider.value(value: BungaAudioPlayer()),
-        Provider.value(value: PlaySyncMessageManager()),
+        Provider(
+          create: (context) => SyncMessageEvent(),
+          dispose: (context, value) => value.dispose(),
+          lazy: false,
+        ),
         Provider(
           create: (context) => PlayToggleVisualSignal(),
           dispose: (context, value) => value.dispose(),

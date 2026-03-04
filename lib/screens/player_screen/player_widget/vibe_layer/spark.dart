@@ -119,7 +119,7 @@ class _SparkLayerState extends State<SparkLayer>
 
     final notifier = _syncMessageCooldown[user.id]!;
     if (!notifier.value) {
-      context.read<PlaySyncMessageManager>().show('${user.name} 感到 $emoji');
+      context.read<SyncMessageEvent>().fire('${user.name} 感到 $emoji');
     }
     notifier.mark();
   }

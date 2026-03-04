@@ -297,7 +297,7 @@ class _ActionView extends StatelessWidget {
         child: const Text('Show a snackbar'),
       ),
       FilledButton(
-        onPressed: () => context.read<PlaySyncMessageManager>().show(
+        onPressed: () => context.read<SyncMessageEvent>().fire(
           'New message: ${_randomSentence()}.',
         ),
         child: const Text('Show a sync message'),

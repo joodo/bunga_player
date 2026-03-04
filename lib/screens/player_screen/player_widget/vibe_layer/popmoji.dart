@@ -81,7 +81,7 @@ class _FireworkOverlayState extends State<_FireworkOverlay>
   }
 
   void _startFireworks(User sender) {
-    context.read<PlaySyncMessageManager>().show('${sender.name} 在放大呲花');
+    context.read<SyncMessageEvent>().fire('${sender.name} 在放大呲花');
     _fireworkController.autoLaunchDuration = Duration(
       milliseconds: kIsDesktop ? 100 : 400,
     );

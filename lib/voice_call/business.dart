@@ -277,7 +277,7 @@ class _VoiceCallBusinessState extends SingleChildState<VoiceCallBusiness> {
   late final _requestTimeOutTimer = RestartableTimer(
     const Duration(seconds: 20),
     () {
-      context.read<PlaySyncMessageManager>().show('无人接听');
+      context.read<SyncMessageEvent>().fire('无人接听');
       context.sendMessage(CallMessageData(action: .cancel));
       _callStatusNotifier.value = .none;
     },
@@ -407,7 +407,7 @@ class _VoiceCallBusinessState extends SingleChildState<VoiceCallBusiness> {
       case .reject:
         if (_callStatusNotifier.value == .callOut) {
           _requestTimeOutTimer.cancel();
-          context.read<PlaySyncMessageManager>().show('呼叫已被拒绝');
+          context.read<SyncMessageEvent>().fire('呼叫已被拒绝');
           _callStatusNotifier.value = .none;
         }
     }
@@ -426,7 +426,7 @@ class _VoiceCallBusinessState extends SingleChildState<VoiceCallBusiness> {
 
           if (_talkerIdsNotifier.value.length == 1) {
             // Only me is talking
-            context.read<PlaySyncMessageManager>().show('通话已结束');
+            context.read<SyncMessageEvent>().fire('通话已结束');
 
             final action = HangUpAction(
               callStatusNotifier: _callStatusNotifier,

@@ -25,9 +25,7 @@ class _PlaySyncMessageState extends State<PlaySyncMessage> {
   @override
   void initState() {
     super.initState();
-    _subscription = context.read<PlaySyncMessageManager>().messageStream.listen(
-      _onNewMessage,
-    );
+    _subscription = context.read<SyncMessageEvent>().listen(_onNewMessage);
   }
 
   @override

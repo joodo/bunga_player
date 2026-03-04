@@ -168,27 +168,27 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
         case PlayMessageData.messageCode:
           if (message.sender.id == myId) break;
 
-          final manager = read<PlaySyncMessageManager>();
+          final manager = read<SyncMessageEvent>();
           final name = message.sender.name;
-          manager.show('$name 播放了视频');
+          manager.fire('$name 播放了视频');
           read<PlayToggleVisualSignal>().fire(true);
 
           _remoteJustToggledNotifier.mark();
         case PauseMessageData.messageCode:
           if (message.sender.id == myId) break;
 
-          final manager = read<PlaySyncMessageManager>();
+          final manager = read<SyncMessageEvent>();
           final name = message.sender.name;
-          manager.show('$name 暂停了视频');
+          manager.fire('$name 暂停了视频');
           read<PlayToggleVisualSignal>().fire(false);
 
           _remoteJustToggledNotifier.mark();
         case SeekMessageData.messageCode:
           if (message.sender.id == myId) break;
 
-          final manager = read<PlaySyncMessageManager>();
+          final manager = read<SyncMessageEvent>();
           final name = message.sender.name;
-          manager.show('$name 调整了进度');
+          manager.fire('$name 调整了进度');
         case ShareSubMessageData.messageCode:
           _dealWithSubSharing(
             sharer: message.sender,
@@ -344,7 +344,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
     final currentRecord = context.read<PlayPayload?>()?.record;
 
     if (sender.id != myId && currentRecord != null) {
-      context.read<PlaySyncMessageManager>().show('${sender.name} 分享了视频');
+      context.read<SyncMessageEvent>().fire('${sender.name} 分享了视频');
     }
 
     VideoRecord? newRecord = videoRecord;
@@ -435,7 +435,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
     required User sharer,
     required ShareSubMessageData data,
   }) {
-    context.read<PlaySyncMessageManager>().show('${sharer.name} 分享了字幕');
+    context.read<SyncMessageEvent>().fire('${sharer.name} 分享了字幕');
     _channelSubtitleNotifier.value = (
       title: data.title,
       url: data.url,

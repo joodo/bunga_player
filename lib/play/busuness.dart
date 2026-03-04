@@ -191,7 +191,7 @@ class ScreenshotAction extends ContextAction<ScreenshotIntent> {
     await file.writeAsBytes(data!);
 
     if (context != null && context.mounted) {
-      context.read<PlaySyncMessageManager>().show('已截图 $fileName');
+      context.read<SyncMessageEvent>().fire('已截图 $fileName');
       context.read<BungaAudioPlayer>().playSfx('screenshot');
     }
     return file;
