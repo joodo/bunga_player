@@ -250,9 +250,7 @@ class SetPlaybackIntent extends Intent {
 }
 
 class SetPlaybackAction extends ContextAction<SetPlaybackIntent> {
-  final RestartableTimer saveWatchProgressTimer;
-
-  SetPlaybackAction({required this.saveWatchProgressTimer});
+  SetPlaybackAction();
 
   @override
   Future<void> invoke(SetPlaybackIntent intent, [BuildContext? context]) async {
@@ -264,13 +262,6 @@ class SetPlaybackAction extends ContextAction<SetPlaybackIntent> {
         await service.play();
       case false:
         await service.pause();
-    }
-
-    // Handle progress saving business
-    if (service.playStatusNotifier.value.isPlaying) {
-      saveWatchProgressTimer.reset();
-    } else {
-      saveWatchProgressTimer.cancel();
     }
 
     if (intent.showVisualFeedback) {
@@ -330,6 +321,7 @@ class PlayBusiness extends SingleChildStatefulWidget {
 }
 
 class _PlayBusinessState extends SingleChildState<PlayBusiness> {
+  final _player = getIt<MediaPlayer>();
   // Play payload
   final _playPayloadNotifier = ValueNotifier<PlayPayload?>(null)
     ..watchInConsole('Play Payload');
@@ -350,8 +342,19 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
     super.initState();
 
     // History
+    _player.playStatusNotifier.addListener(_updateHistory);
     _saveWatchProgressTimer;
     _history = context.read<History>();
+  }
+
+  @override
+  void dispose() {
+    _player.playStatusNotifier.removeListener(_updateHistory);
+
+    _playPayloadNotifier.dispose();
+    _saveWatchProgressTimer.cancel();
+
+    super.dispose();
   }
 
   @override
@@ -397,9 +400,7 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
           dirInfoNotifier: _dirInfoNotifier,
           payloadNotifer: _playPayloadNotifier,
         ),
-        SetPlaybackIntent: SetPlaybackAction(
-          saveWatchProgressTimer: _saveWatchProgressTimer,
-        ),
+        SetPlaybackIntent: SetPlaybackAction(),
         SeekForwardIntent: SeekAction(),
         SetSubtitleTrackIntent: SetSubtitleTrackAction(),
         ScreenshotIntent: ScreenshotAction(
@@ -419,25 +420,23 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
     );
   }
 
-  @override
-  void dispose() {
-    _playPayloadNotifier.dispose();
-    _saveWatchProgressTimer.cancel();
-
-    super.dispose();
-  }
-
   void _updateProgress() {
     final currentRecord = _playPayloadNotifier.value?.record;
     if (currentRecord == null) return;
 
-    final play = getIt<MediaPlayer>();
-
     final progress = WatchProgress(
-      position: play.positionNotifier.value,
-      duration: play.durationNotifier.value,
+      position: _player.positionNotifier.value,
+      duration: _player.durationNotifier.value,
     );
     _history.updateProgress(currentRecord, progress);
+  }
+
+  void _updateHistory() {
+    if (_player.playStatusNotifier.value.isPlaying) {
+      _saveWatchProgressTimer.reset();
+    } else {
+      _saveWatchProgressTimer.cancel();
+    }
   }
 }
 
