@@ -224,36 +224,11 @@ class RefreshDirAction extends ContextAction<RefreshDirIntent> {
   }
 }
 
-class SetPlaybackIntent extends Intent {
-  final bool showVisualFeedback;
+class IndirectToggleIntent extends Intent {}
+
+class DirectSetPlaybackIntent extends Intent {
   final bool isPlay;
-  const SetPlaybackIntent(this.isPlay, {this.showVisualFeedback = true});
-  SetPlaybackIntent.toggle({this.showVisualFeedback = true})
-    : isPlay = !MediaPlayer.i.playStatusNotifier.value.isPlaying;
-}
-
-class SetPlaybackAction extends ContextAction<SetPlaybackIntent> {
-  SetPlaybackAction();
-
-  @override
-  Future<void> invoke(SetPlaybackIntent intent, [BuildContext? context]) async {
-    final service = MediaPlayer.i;
-    switch (intent.isPlay) {
-      case true:
-        await service.play();
-      case false:
-        await service.pause();
-    }
-
-    if (intent.showVisualFeedback) {
-      context?.read<PlayToggleVisualSignal?>()?.fire();
-    }
-  }
-
-  @override
-  bool isEnabled(SetPlaybackIntent intent, [BuildContext? context]) {
-    return context != null;
-  }
+  const DirectSetPlaybackIntent(this.isPlay);
 }
 
 abstract class SeekIntent extends Intent {
@@ -348,7 +323,7 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
       ShortcutKey.volumeDown: UpdateVolumeForwardIntent(-0.1),
       ShortcutKey.forward5Sec: SeekForwardIntent(Duration(seconds: 5)),
       ShortcutKey.backward5Sec: SeekForwardIntent(Duration(seconds: -5)),
-      ShortcutKey.togglePlay: SetPlaybackIntent.toggle(),
+      ShortcutKey.togglePlay: IndirectToggleIntent(),
       ShortcutKey.screenshot: ScreenshotIntent(),
     });
 
@@ -381,7 +356,21 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
           },
         ),
         OpenVideoIntent: OpenVideoAction(payloadNotifer: _playPayloadNotifier),
-        SetPlaybackIntent: SetPlaybackAction(),
+        DirectSetPlaybackIntent: CallbackAction<DirectSetPlaybackIntent>(
+          onInvoke: (intent) {
+            return intent.isPlay ? MediaPlayer.i.play() : MediaPlayer.i.pause();
+          },
+        ),
+        IndirectToggleIntent: CallbackAction<IndirectToggleIntent>(
+          onInvoke: (intent) {
+            final player = MediaPlayer.i;
+            final wantPlay = !player.playStatusNotifier.value.isPlaying;
+
+            context.read<PlayToggleVisualSignal>().fire(wantPlay);
+
+            return wantPlay ? MediaPlayer.i.play() : MediaPlayer.i.pause();
+          },
+        ),
         SeekForwardIntent: SeekAction(),
         SetSubtitleTrackIntent: SetSubtitleTrackAction(),
         ScreenshotIntent: ScreenshotAction(

@@ -55,7 +55,7 @@ class _DesktopInteractiveLayerState extends State<DesktopInteractiveLayer> {
             child: child!.center(),
           ),
           child: GestureDetector(
-            onTap: Actions.handler(context, SetPlaybackIntent.toggle()),
+            onTap: Actions.handler(context, IndirectToggleIntent()),
             onDoubleTap: context.read<IsFullScreenNotifier>().toggle,
 
             onSecondaryTapUp: (details) =>

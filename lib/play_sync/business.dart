@@ -171,6 +171,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
           final manager = read<PlaySyncMessageManager>();
           final name = message.sender.name;
           manager.show('$name 播放了视频');
+          read<PlayToggleVisualSignal>().fire(true);
 
           _remoteJustToggledNotifier.mark();
         case PauseMessageData.messageCode:
@@ -179,6 +180,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
           final manager = read<PlaySyncMessageManager>();
           final name = message.sender.name;
           manager.show('$name 暂停了视频');
+          read<PlayToggleVisualSignal>().fire(false);
 
           _remoteJustToggledNotifier.mark();
         case SeekMessageData.messageCode:
@@ -224,7 +226,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
     final shortcuts = child!.applyShortcuts({
       ShortcutKey.forward5Sec: SeekForwardIntent(Duration(seconds: 5)),
       ShortcutKey.backward5Sec: SeekForwardIntent(Duration(seconds: -5)),
-      ShortcutKey.togglePlay: SetPlaybackIntent.toggle(),
+      ShortcutKey.togglePlay: IndirectToggleIntent(),
     });
 
     final actions = shortcuts.actions(
@@ -241,24 +243,46 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
             return Actions.invoke(context, intent);
           },
         ),
-        SetPlaybackIntent: CallbackAction<SetPlaybackIntent>(
+        IndirectToggleIntent: CallbackAction<IndirectToggleIntent>(
           onInvoke: (intent) {
             if (_remoteJustToggledNotifier.value) return;
 
-            final playService = MediaPlayer.i;
-            final wantPlay = !playService.playStatusNotifier.value.isPlaying;
+            final player = MediaPlayer.i;
+
+            final wantPlay = !player.playStatusNotifier.value.isPlaying;
+            context.read<PlayToggleVisualSignal>().fire(wantPlay);
 
             late final MessageData messageData;
             if (wantPlay) {
               messageData = PlayMessageData();
             } else {
               // pause control by myself
-              Actions.invoke(
-                context,
-                SetPlaybackIntent(false, showVisualFeedback: true),
-              );
+              player.pause();
               messageData = PauseMessageData(
-                position: playService.positionNotifier.value,
+                position: player.positionNotifier.value,
+              );
+            }
+            context.sendMessage(messageData);
+            return;
+          },
+        ),
+        DirectSetPlaybackIntent: CallbackAction<DirectSetPlaybackIntent>(
+          onInvoke: (intent) {
+            if (_remoteJustToggledNotifier.value) return;
+
+            final player = MediaPlayer.i;
+            final wantPlay = intent.isPlay;
+
+            late final MessageData messageData;
+            if (wantPlay) {
+              messageData = PlayMessageData();
+              // Only show visual signal when play -- because it's a soft action
+              context.read<PlayToggleVisualSignal>().fire(wantPlay);
+            } else {
+              // pause control by myself
+              player.pause();
+              messageData = PauseMessageData(
+                position: player.positionNotifier.value,
               );
             }
             context.sendMessage(messageData);
@@ -379,23 +403,15 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
   }
 
   void _handlePlayAt(User sender, bool isPlay, Duration position) async {
-    final playService = MediaPlayer.i;
+    final player = MediaPlayer.i;
 
     // Toggle play/pause
-    final localPlay = playService.playStatusNotifier.value.isPlaying;
+    final localPlay = player.playStatusNotifier.value.isPlaying;
     final shouldToggle = isPlay != localPlay;
-    if (shouldToggle) {
-      final act =
-          Actions.invoke(
-                context,
-                SetPlaybackIntent.toggle(showVisualFeedback: false),
-              )
-              as Future;
-      await act;
-    }
+    if (shouldToggle) await player.toggle();
 
     // Seek
-    final localPosition = playService.positionNotifier.value;
+    final localPosition = player.positionNotifier.value;
     final shouldSeek =
         !_seeking &&
         (isPlay
@@ -405,7 +421,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
               )
             : localPosition != position);
     if (shouldSeek) {
-      await playService.seek(position);
+      await player.seek(position);
       _catchUpTarget = null;
     } else {
       if (!_seeking && !localPosition.near(position)) {

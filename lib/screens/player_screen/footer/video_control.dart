@@ -120,41 +120,36 @@ class _PlayButtonState extends State<_PlayButton>
   @override
   void initState() {
     super.initState();
+    MediaPlayer.i.playStatusNotifier.addListener(_updateAnimation);
   }
 
   @override
   void dispose() {
+    MediaPlayer.i.playStatusNotifier.removeListener(_updateAnimation);
     controller.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: MediaPlayer.i.playStatusNotifier,
-      builder: (context, status, child) {
-        status.isPlaying ? controller.forward() : controller.reverse();
-        return Selector<BusyStateNotifier, bool>(
-          selector: (context, notifier) => notifier.isBusy,
-          builder: (context, isBusy, child) => IconButton.filledTonal(
-            icon: AnimatedIcon(
-              icon: AnimatedIcons.play_pause,
-              progress: animation,
-            ),
-            iconSize: 36,
-            onPressed: isBusy
-                ? null
-                : () => Actions.maybeInvoke(
-                    context,
-                    SetPlaybackIntent(
-                      status.isPlaying,
-                      showVisualFeedback: false,
-                    ),
-                  ),
-          ),
-        );
-      },
+    return Selector<BusyStateNotifier, bool>(
+      selector: (context, notifier) => notifier.isBusy,
+      builder: (context, isBusy, child) => IconButton.filledTonal(
+        icon: AnimatedIcon(icon: AnimatedIcons.play_pause, progress: animation),
+        iconSize: 36,
+        onPressed: isBusy
+            ? null
+            : () {
+                final isPlay = MediaPlayer.i.playStatusNotifier.value.isPlaying;
+                Actions.maybeInvoke(context, DirectSetPlaybackIntent(!isPlay));
+              },
+      ),
     );
+  }
+
+  void _updateAnimation() {
+    final isPlay = MediaPlayer.i.playStatusNotifier.value.isPlaying;
+    isPlay ? controller.forward() : controller.reverse();
   }
 }
 

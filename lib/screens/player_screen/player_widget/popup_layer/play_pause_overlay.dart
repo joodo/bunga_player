@@ -1,8 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
-import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/ui/global_business.dart';
 
 class PlayPauseOverlay extends StatefulWidget {
@@ -14,7 +15,10 @@ class PlayPauseOverlay extends StatefulWidget {
 
 class _PlayPauseOverlayState extends State<PlayPauseOverlay>
     with SingleTickerProviderStateMixin {
-  late final _signal = context.read<PlayToggleVisualSignal>();
+  late final StreamSubscription _subscription = context
+      .read<PlayToggleVisualSignal>()
+      .listen(_handleTrigger);
+  bool _isPlay = false;
 
   late final _animController = AnimationController(
     vsync: this,
@@ -35,17 +39,18 @@ class _PlayPauseOverlayState extends State<PlayPauseOverlay>
   void initState() {
     super.initState();
     _animController;
-    _signal.addListener(_handleTrigger);
+    _subscription;
   }
 
   @override
   void dispose() {
-    _signal.removeListener(_handleTrigger);
+    _subscription.cancel();
     _animController.dispose();
     super.dispose();
   }
 
-  void _handleTrigger() {
+  void _handleTrigger(bool isPlay) {
+    _isPlay = isPlay;
     _portalController.show();
     _animController.forward(from: 0.0).then((_) {
       _portalController.hide();
@@ -68,10 +73,9 @@ class _PlayPauseOverlayState extends State<PlayPauseOverlay>
   }
 
   Widget _buildIcon() {
-    final isPlaying = MediaPlayer.i.playStatusNotifier.value.isPlaying;
     final colorScheme = Theme.of(context).colorScheme;
     return Icon(
-          isPlaying ? Icons.play_arrow_rounded : Icons.pause_rounded,
+          _isPlay ? Icons.play_arrow_rounded : Icons.pause_rounded,
           size: 80,
           color: colorScheme.onSurface,
         )

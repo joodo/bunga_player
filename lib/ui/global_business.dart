@@ -137,7 +137,7 @@ class PlaySyncMessageManager {
   }
 }
 
-class PlayToggleVisualSignal extends SimpleEvent {
+class PlayToggleVisualSignal extends SimpleEventStream<bool> {
   PlayToggleVisualSignal();
 }
 
@@ -218,7 +218,10 @@ class _UIGlobalBusinessState extends SingleChildState<UIGlobalBusiness> {
         ),
         Provider.value(value: BungaAudioPlayer()),
         Provider.value(value: PlaySyncMessageManager()),
-        ChangeNotifierProvider(create: (context) => PlayToggleVisualSignal()),
+        Provider(
+          create: (context) => PlayToggleVisualSignal(),
+          dispose: (context, value) => value.dispose(),
+        ),
         Provider(
           create: (context) => AdjustIndicatorEvent(),
           dispose: (context, stream) => stream.dispose(),
