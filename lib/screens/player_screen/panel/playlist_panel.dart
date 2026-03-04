@@ -33,7 +33,7 @@ class _PlaylistPanelState extends State<PlaylistPanel> {
 
   @override
   Widget build(BuildContext context) {
-    final dirInfo = context.read<DirInfo?>();
+    final dirInfo = context.watch<DirInfo?>();
     return PanelWidget(
       title: Text(dirInfo?.name ?? ''),
       actions: [
@@ -58,10 +58,7 @@ class _PlaylistPanelState extends State<PlaylistPanel> {
         ),
       ],
       child: dirInfo == null
-          ? SliverFillRemaining(
-              hasScrollBody: false,
-              child: const Text('没有其他视频').center(),
-            )
+          ? const Text('没有其他视频').center()
           : ListView.separated(
               controller: PrimaryScrollController.of(context),
               itemBuilder: (context, index) {
