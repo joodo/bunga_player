@@ -43,10 +43,6 @@ class PlayEqPresetNotifier extends ValueNotifier<BCSGHPreset?> {
   PlayEqPresetNotifier() : super(presets.first);
 }
 
-class SavedPositionNotifier extends ValueNotifier<Duration?> {
-  SavedPositionNotifier() : super(null);
-}
-
 // Actions
 class UpdateVolumeIntent extends Intent {
   final Volume volume;
@@ -83,12 +79,8 @@ class OpenVideoIntent extends Intent {
 
 class OpenVideoAction extends ContextAction<OpenVideoIntent> {
   final ValueNotifier<PlayPayload?> payloadNotifer;
-  final ValueNotifier<DirInfo?> dirInfoNotifier;
 
-  OpenVideoAction({
-    required this.payloadNotifer,
-    required this.dirInfoNotifier,
-  });
+  OpenVideoAction({required this.payloadNotifer});
 
   @override
   Future<PlayPayload> invoke(
@@ -108,16 +100,15 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
           await parser.parse(url: intent.url, record: intent.record);
 
       if (!context.mounted) throw StateError('Context unmounted.');
+      payloadNotifer.value = payload;
 
       // Window title
-      payloadNotifer.value = payload;
       context.read<WindowTitleNotifier>().value = payload.record.title;
 
       // History
       final session = context.read<History>()[payload.record.id];
       final subPath = session?.subtitlePath;
 
-      _loadDir(payload, parser);
       await _loadVideo(
         payload: payload,
         parser: parser,
@@ -148,12 +139,6 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
       final track = await play.loadSubtitleTrack(subtitlePath);
       play.setSubtitleTrack(track.id);
     }
-  }
-
-  Future<void> _loadDir(PlayPayload payload, PlayPayloadParser parser) {
-    return parser.dirInfo(payload.record).then((info) {
-      dirInfoNotifier.value = info;
-    });
   }
 }
 
@@ -326,7 +311,7 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
   // History
   late final History _history;
   late final RestartableTimer _saveWatchProgressTimer = RestartableTimer(
-    const Duration(seconds: 7),
+    const Duration(seconds: 5),
     () {
       _updateProgress();
       _saveWatchProgressTimer.reset();
@@ -337,6 +322,8 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
   void initState() {
     super.initState();
 
+    _playPayloadNotifier.addListener(_fetchDir);
+
     // History
     _player.playStatusNotifier.addListener(_updateHistory);
     _saveWatchProgressTimer;
@@ -345,6 +332,7 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
 
   @override
   void dispose() {
+    _playPayloadNotifier.removeListener(_fetchDir);
     _player.playStatusNotifier.removeListener(_updateHistory);
 
     _playPayloadNotifier.dispose();
@@ -392,10 +380,7 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
             return null;
           },
         ),
-        OpenVideoIntent: OpenVideoAction(
-          dirInfoNotifier: _dirInfoNotifier,
-          payloadNotifer: _playPayloadNotifier,
-        ),
+        OpenVideoIntent: OpenVideoAction(payloadNotifer: _playPayloadNotifier),
         SetPlaybackIntent: SetPlaybackAction(),
         SeekForwardIntent: SeekAction(),
         SetSubtitleTrackIntent: SetSubtitleTrackAction(),
@@ -433,6 +418,16 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
     } else {
       _saveWatchProgressTimer.cancel();
     }
+  }
+
+  Future<void> _fetchDir() async {
+    final record = _playPayloadNotifier.value?.record;
+    if (record == null) return;
+
+    final parser = PlayPayloadParser(context);
+
+    final dirInfo = await parser.dirInfo(record);
+    _dirInfoNotifier.value = dirInfo;
   }
 }
 
