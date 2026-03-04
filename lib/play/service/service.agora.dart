@@ -42,6 +42,7 @@ class AgoraMediaPlayer extends MediaPlayer {
       _player.adjustPlayoutVolume(_volume.value.level.toLevel);
       _player.mute(_volume.value.mute);
     });
+    _player.adjustPlayoutVolume(_volume.value.level.toLevel);
   }
 
   Future<void> unregisterEngine() async {
