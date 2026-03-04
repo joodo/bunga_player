@@ -150,28 +150,8 @@ enum AdjustIndicatorEventType {
   lockScreen,
 }
 
-class AdjustIndicatorEvent extends Stream<AdjustIndicatorEventType> {
-  final _controller = StreamController<AdjustIndicatorEventType>.broadcast();
-
-  @override
-  StreamSubscription<AdjustIndicatorEventType> listen(
-    void Function(AdjustIndicatorEventType event)? onData, {
-    Function? onError,
-    void Function()? onDone,
-    bool? cancelOnError,
-  }) => _controller.stream.listen(
-    onData,
-    onError: onError,
-    onDone: onDone,
-    cancelOnError: cancelOnError,
-  );
-
-  void fire(AdjustIndicatorEventType eventType) => _controller.add(eventType);
-
-  void dispose() {
-    _controller.close();
-  }
-}
+class AdjustIndicatorEvent
+    extends SimpleEventStream<AdjustIndicatorEventType> {}
 
 class MediaVolumeNotifier extends VolumeNotifier {
   MediaVolumeNotifier() : super(preferenceKey: 'media_volume') {
