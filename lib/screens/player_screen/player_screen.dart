@@ -60,7 +60,6 @@ extension _AutoHiddenWrap on Widget {
           TickerMode(
                 enabled: show,
                 child: MouseRegion(
-                  opaque: false,
                   onEnter: (event) => showNotfier.lockUp('enter footer'),
                   onExit: (event) => showNotfier.unlock('enter footer'),
                   child: this,
