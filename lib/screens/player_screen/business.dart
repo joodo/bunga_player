@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:async/async.dart';
 import 'package:bunga_player/screens/widgets/back_listener.dart';
 import 'package:bunga_player/voice_call/client/client.dart';
 import 'package:flutter/material.dart';
@@ -36,6 +37,77 @@ class DanmakuVisible {
 class IsInChannel {
   final bool value;
   const IsInChannel(this.value);
+}
+
+class PlayProgressSlideBusiness {
+  final BuildContext context;
+
+  PlayProgressSlideBusiness({required this.context});
+
+  void dispose() {
+    _playerPositionNotifier.removeListener(_followPlayerPosition);
+    positionNotifier.dispose();
+    _seekTimer.cancel();
+  }
+
+  final _player = MediaPlayer.i;
+  late final _playerPositionNotifier = _player.positionNotifier;
+
+  final positionNotifier = ValueNotifier<double>(0);
+  void _followPlayerPosition() {
+    positionNotifier.value = _playerPositionNotifier.value.inMilliseconds
+        .toDouble();
+  }
+
+  late final RestartableTimer _seekTimer = RestartableTimer(
+    const Duration(milliseconds: 500),
+    () {
+      if (_player.durationNotifier.value != Duration.zero) {
+        final pos = Duration(milliseconds: positionNotifier.value.toInt());
+        _player.seek(pos);
+      }
+      _seekTimer.reset();
+    },
+  )..cancel();
+
+  bool _isPlayingBeforeSlide = false;
+
+  void startSlide([double? value]) {
+    _playerPositionNotifier.removeListener(_followPlayerPosition);
+
+    Actions.maybeInvoke(context, SeekStartIntent());
+
+    _isPlayingBeforeSlide = _player.playStatusNotifier.value.isPlaying;
+    _player.pause();
+
+    if (value != null) positionNotifier.value = value;
+    _seekTimer.reset();
+
+    final showHUDNotifier = context.read<ShouldShowHUDNotifier>();
+    showHUDNotifier.lockUp('drag');
+  }
+
+  void updateSlide(double value) {
+    positionNotifier.value = value;
+  }
+
+  void finishSlide(double value) {
+    if (_isPlayingBeforeSlide) _player.play();
+
+    final pos = Duration(milliseconds: value.toInt());
+    _player.seek(pos).then((_) {
+      if (!context.mounted) return;
+      Actions.maybeInvoke(context, SeekEndIntent());
+    });
+
+    _seekTimer.cancel();
+
+    positionNotifier.value = value;
+    _playerPositionNotifier.addListener(_followPlayerPosition);
+
+    final showHUDNotifier = context.read<ShouldShowHUDNotifier>();
+    showHUDNotifier.unlock('drag');
+  }
 }
 
 class _WidgetBusiness extends SingleChildStatefulWidget {
@@ -133,6 +205,10 @@ class _WidgetBusinessState extends SingleChildState<_WidgetBusiness> {
         ValueListenableProxyProvider(
           valueListenable: _showDanmakuControlNotifier,
           proxy: (value) => DanmakuVisible(value),
+        ),
+        Provider(
+          create: (context) => PlayProgressSlideBusiness(context: context),
+          dispose: (context, value) => value.dispose(),
         ),
       ],
       child: backWrap,

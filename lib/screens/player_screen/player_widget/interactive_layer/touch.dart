@@ -14,8 +14,10 @@ import 'package:bunga_player/voice_call/business.dart';
 import 'package:bunga_player/play/busuness.dart';
 import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/ui/global_business.dart';
-import 'package:bunga_player/screens/player_screen/player_widget/interactive_layer/spark_send_controller.dart';
+import 'package:bunga_player/screens/player_screen/business.dart';
 import 'package:bunga_player/voice_call/client/client.dart';
+
+import 'spark_send_controller.dart';
 
 class TouchInteractiveLayer extends StatefulWidget {
   const TouchInteractiveLayer({super.key});
@@ -29,9 +31,6 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
 
   // Dragging
   DragBusiness? _dragBusiness;
-
-  // Horizontal drag
-  bool _isPlayingBeforeDrag = false;
 
   // Vertical drag
   bool _isDraggingLeftSide = false;
@@ -112,6 +111,7 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
       onHorizentalDragStart: _startSlideSeeking,
       onHorizontalDragUpdate: _updateDragBusiness,
       onHorizontalDragEnd: _finishSlideSeeking,
+      onHorizontalDragCancel: _cancelDragBusiness,
 
       onVerticalDragStart: (details) {
         _isDraggingLeftSide = _isLeftScreen(details.localPosition);
@@ -181,36 +181,30 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
   void _updateDragBusiness(DragUpdateDetails details) =>
       _dragBusiness?.updatePosition(details.localPosition);
 
-  void _startSlideSeeking(DragStartDetails details) {
-    context.read<ShouldShowHUDNotifier>().lockUp('slide seeking');
+  void _cancelDragBusiness() => _dragBusiness?.cancel();
 
+  void _startSlideSeeking(DragStartDetails details) {
+    final business = context.read<PlayProgressSlideBusiness>();
+    business.startSlide();
     final play = MediaPlayer.i;
     _dragBusiness = DragBusiness(
       startPosition: details.localPosition,
       orientation: .horizontal,
-      startValue: play.positionNotifier.value,
+      startValue: play.positionNotifier.value.inMilliseconds,
       onUpdate: (startValue, distance) {
-        final delta = Duration(milliseconds: (distance * 200).round());
-        return play.seek(startValue + delta);
+        final delta = distance * 200;
+        return business.updateSlide(startValue + delta);
+      },
+      onEnd: (startValue, distance) {
+        final delta = distance * 200;
+        return business.finishSlide(startValue + delta);
       },
     );
-
-    Actions.maybeInvoke(context, SeekStartIntent());
-
-    _isPlayingBeforeDrag = play.playStatusNotifier.value.isPlaying;
-    play.pause();
   }
 
   void _finishSlideSeeking(DragEndDetails details) {
-    final action =
-        _dragBusiness!.updatePosition(details.localPosition) as Future;
-    action.then((_) {
-      if (_isPlayingBeforeDrag) MediaPlayer.i.play();
-      if (mounted) Actions.maybeInvoke(context, SeekEndIntent());
-    });
-
+    _dragBusiness!.end(details.localPosition);
     _dragBusiness = null;
-    context.read<ShouldShowHUDNotifier>().unlock('slide seeking');
   }
 
   void _startAdjustVolume(DragStartDetails details) {

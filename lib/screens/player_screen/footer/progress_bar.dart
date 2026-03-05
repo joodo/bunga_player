@@ -1,16 +1,15 @@
-import 'package:async/async.dart';
-import 'package:bunga_player/play_sync/business.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:styled_widget/styled_widget.dart';
 
-import 'package:bunga_player/play/busuness.dart';
 import 'package:bunga_player/play/service/service.dart';
+import 'package:bunga_player/play_sync/business.dart';
+import 'package:bunga_player/screens/player_screen/business.dart';
 import 'package:bunga_player/ui/global_business.dart';
 import 'package:bunga_player/utils/business/animation_builder.dart';
 import 'package:bunga_player/utils/business/platform.dart';
 import 'package:bunga_player/utils/extensions/extensions.dart';
 import 'package:bunga_player/screens/widgets/slider_dense_track_shape.dart';
-import 'package:styled_widget/styled_widget.dart';
 
 class VideoProgressBar extends StatefulWidget {
   const VideoProgressBar({super.key});
@@ -22,8 +21,6 @@ class VideoProgressBar extends StatefulWidget {
 class _VideoProgressBarState extends State<VideoProgressBar> {
   bool _isHovered = false;
   bool _isDragging = false;
-
-  final _sliderKey = GlobalKey();
 
   @override
   void initState() {
@@ -39,7 +36,6 @@ class _VideoProgressBarState extends State<VideoProgressBar> {
     if (isBusy) return const LinearProgressIndicator().center();
 
     final slider = _ProgressSlider(
-      key: _sliderKey,
       onDragStart: () => _isDragging = true,
       onDragEnd: () => _isDragging = false,
     );
@@ -113,55 +109,26 @@ class _VideoProgressBarState extends State<VideoProgressBar> {
   }
 }
 
-class _ProgressSlider extends StatefulWidget {
+class _ProgressSlider extends StatelessWidget {
   final VoidCallback? onDragStart, onDragEnd;
-  const _ProgressSlider({super.key, this.onDragStart, this.onDragEnd});
-
-  @override
-  State<_ProgressSlider> createState() => _ProgressSliderState();
-}
-
-class _ProgressSliderState extends State<_ProgressSlider> {
-  // Player
-  final _player = MediaPlayer.i;
-  late final _playerPositionNotifier = _player.positionNotifier;
-
-  // Current position
-  final _positionNotifier = ValueNotifier<double>(0);
-  void _followPlayerPosition() {
-    _positionNotifier.value = _playerPositionNotifier.value.inMilliseconds
-        .toDouble();
-  }
-
-  // Drag business
-  bool _isPlayingBeforeDraggingSlider = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _playerPositionNotifier.addListener(_followPlayerPosition);
-    _followPlayerPosition();
-  }
-
-  @override
-  void dispose() {
-    _playerPositionNotifier.removeListener(_followPlayerPosition);
-    super.dispose();
-  }
+  const _ProgressSlider({this.onDragStart, this.onDragEnd});
 
   @override
   Widget build(BuildContext context) {
+    final player = MediaPlayer.i;
+    final business = context.read<PlayProgressSlideBusiness>();
+
     return ListenableBuilder(
       listenable: Listenable.merge([
-        _player.durationNotifier,
-        _player.bufferNotifier,
-        _positionNotifier,
+        player.durationNotifier,
+        player.bufferNotifier,
+        business.positionNotifier,
       ]),
       builder: (context, child) {
-        final duration = _player.durationNotifier.value.inMilliseconds
+        final duration = player.durationNotifier.value.inMilliseconds
             .toDouble();
-        final buffer = _player.bufferNotifier.value.inMilliseconds.toDouble();
-        final position = _positionNotifier.value;
+        final buffer = player.bufferNotifier.value.inMilliseconds.toDouble();
+        final position = business.positionNotifier.value;
 
         return Slider(
           value: position.clamp(0, duration),
@@ -170,64 +137,18 @@ class _ProgressSliderState extends State<_ProgressSlider> {
           // avoid control by left / right key
           focusNode: FocusNode(skipTraversal: true, canRequestFocus: false),
           label: Duration(milliseconds: position.toInt()).hhmmss,
-          onChangeStart: _onChangeStart,
-          onChanged: _onChanged,
-          onChangeEnd: _onChangeEnd,
+          onChangeStart: (value) {
+            business.startSlide(value);
+            onDragStart?.call();
+          },
+          onChanged: business.updateSlide,
+          onChangeEnd: (value) {
+            business.finishSlide(value);
+            onDragEnd?.call();
+          },
         );
       },
     );
-  }
-
-  late final RestartableTimer _seekTimer = RestartableTimer(
-    const Duration(milliseconds: 500),
-    () {
-      if (_player.durationNotifier.value != Duration.zero) {
-        final pos = Duration(milliseconds: _positionNotifier.value.toInt());
-        _player.seek(pos);
-      }
-      _seekTimer.reset();
-    },
-  )..cancel();
-
-  void _onChangeStart(double value) {
-    _playerPositionNotifier.removeListener(_followPlayerPosition);
-
-    Actions.maybeInvoke(context, SeekStartIntent());
-
-    _isPlayingBeforeDraggingSlider = _player.playStatusNotifier.value.isPlaying;
-    _player.pause();
-
-    _positionNotifier.value = value;
-    _seekTimer.reset();
-
-    widget.onDragStart?.call();
-
-    final showHUDNotifier = context.read<ShouldShowHUDNotifier>();
-    showHUDNotifier.lockUp('drag');
-  }
-
-  void _onChanged(double value) {
-    _positionNotifier.value = value;
-  }
-
-  void _onChangeEnd(double value) {
-    if (_isPlayingBeforeDraggingSlider) _player.play();
-
-    final pos = Duration(milliseconds: value.toInt());
-    _player.seek(pos).then((_) {
-      if (!mounted) return;
-      Actions.maybeInvoke(context, SeekEndIntent());
-    });
-
-    _seekTimer.cancel();
-
-    _positionNotifier.value = value;
-    _playerPositionNotifier.addListener(_followPlayerPosition);
-
-    widget.onDragEnd?.call();
-
-    final showHUDNotifier = context.read<ShouldShowHUDNotifier>();
-    showHUDNotifier.unlock('drag');
   }
 }
 
