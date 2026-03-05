@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:bunga_player/ui/global_business.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
@@ -98,13 +99,13 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
       switch (message.data['code']) {
         case AlohaMessageData.messageCode:
           if (message.sender.id == _myId) break;
-          _dealWithAloha(message.sender);
+          _handleAloha(message.sender);
         case HereAreMessageData.messageCode:
           final watchers = HereAreMessageData.fromJson(message.data).watchers;
-          _dealWithHereAre(watchers);
+          _handleHereAre(watchers);
         case ByeMessageData.messageCode:
           if (message.sender.id == _myId) break;
-          _dealWithBye(message.sender.id);
+          _handleBye(message.sender.id);
       }
     });
   }
@@ -124,15 +125,17 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
     super.dispose();
   }
 
-  void _dealWithAloha(User sender) {
+  void _handleAloha(User sender) {
     _addWatcher(sender);
+    // Server will pause when someone is joining
+    context.read<PlayToggleVisualSignal>().fire(false);
   }
 
-  void _dealWithHereAre(List<User> watchers) {
+  void _handleHereAre(List<User> watchers) {
     _watchersNotifier.set(watchers);
   }
 
-  void _dealWithBye(String userId) {
+  void _handleBye(String userId) {
     _removeWatcher(userId);
   }
 
