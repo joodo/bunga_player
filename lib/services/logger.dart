@@ -13,26 +13,44 @@ Future<void> initializeLogger() async {
   };
 }
 
-class BungaLogger extends Logger {
+class BungaLogger {
   static final streamOutput = StreamOutput();
+  final Stream<List<String>> stream = streamOutput.stream.asBroadcastStream();
 
-  BungaLogger(this.dirPath)
-    : super(
-        output: MultiOutput([
-          streamOutput,
-          AdvancedFileOutput(
-            path: dirPath,
-            maxFileSizeKB: 512,
-            maxRotatedFilesCount: 3,
-          ),
-          ConsoleOutput(),
-        ]),
-        printer: SimplePrinter(colors: false),
-        filter: ProductionFilter(),
-        level: Level.info,
-      );
+  final consoleLogger = Logger(
+    output: MultiOutput([streamOutput, ConsoleOutput()]),
+    printer: SimplePrinter(colors: false),
+    filter: ProductionFilter(),
+    level: Level.info,
+  );
 
   final String dirPath;
   String get latestPath => '${dirPath}latest.log';
-  final Stream<List<String>> stream = streamOutput.stream.asBroadcastStream();
+  late final Logger fileLogger = Logger(
+    output: AdvancedFileOutput(
+      path: dirPath,
+      maxFileSizeKB: 512,
+      maxRotatedFilesCount: 3,
+    ),
+    printer: SimplePrinter(printTime: true, colors: false),
+    filter: ProductionFilter(),
+    level: Level.info,
+  );
+
+  BungaLogger(this.dirPath);
+
+  void i(dynamic message) {
+    consoleLogger.i(message);
+    fileLogger.i(message);
+  }
+
+  void w(dynamic message) {
+    consoleLogger.w(message);
+    fileLogger.w(message);
+  }
+
+  void e(dynamic message) {
+    consoleLogger.e(message);
+    fileLogger.e(message);
+  }
 }
