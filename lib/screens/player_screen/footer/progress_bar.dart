@@ -1,3 +1,4 @@
+import 'package:async/async.dart';
 import 'package:bunga_player/play_sync/business.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -177,6 +178,17 @@ class _ProgressSliderState extends State<_ProgressSlider> {
     );
   }
 
+  late final RestartableTimer _seekTimer = RestartableTimer(
+    const Duration(milliseconds: 500),
+    () {
+      if (_player.durationNotifier.value != Duration.zero) {
+        final pos = Duration(milliseconds: _positionNotifier.value.toInt());
+        _player.seek(pos);
+      }
+      _seekTimer.reset();
+    },
+  )..cancel();
+
   void _onChangeStart(double value) {
     _playerPositionNotifier.removeListener(_followPlayerPosition);
 
@@ -185,10 +197,8 @@ class _ProgressSliderState extends State<_ProgressSlider> {
     _isPlayingBeforeDraggingSlider = _player.playStatusNotifier.value.isPlaying;
     _player.pause();
 
-    final pos = Duration(milliseconds: value.toInt());
-    _player.seek(pos);
-
     _positionNotifier.value = value;
+    _seekTimer.reset();
 
     widget.onDragStart?.call();
 
@@ -197,11 +207,6 @@ class _ProgressSliderState extends State<_ProgressSlider> {
   }
 
   void _onChanged(double value) {
-    if (_player.durationNotifier.value == Duration.zero) return;
-
-    final pos = Duration(milliseconds: value.toInt());
-    _player.seek(pos);
-
     _positionNotifier.value = value;
   }
 
@@ -214,9 +219,10 @@ class _ProgressSliderState extends State<_ProgressSlider> {
       Actions.maybeInvoke(context, SeekEndIntent());
     });
 
-    _playerPositionNotifier.addListener(_followPlayerPosition);
+    _seekTimer.cancel();
 
     _positionNotifier.value = value;
+    _playerPositionNotifier.addListener(_followPlayerPosition);
 
     widget.onDragEnd?.call();
 
