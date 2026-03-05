@@ -22,7 +22,18 @@ String generateUsername(String seed) {
     '沉默的',
     '热情的',
     '神秘的',
-    '快乐的'
+    '快乐的',
+    '软糯的',
+    '咸鱼的',
+    '佛系的',
+    '傲娇的',
+    '治愈系',
+    '努力的',
+    '勇敢的',
+    '冰镇的',
+    '野生',
+    '赛博',
+    '闪光的',
   ];
 
   final vegetables = [
@@ -42,12 +53,24 @@ String generateUsername(String seed) {
     '紫甘蓝',
     '西兰花',
     '香菜',
-    '蒜苗'
+    '蒜苗',
+    '秋葵',
+    '冬瓜',
+    '芦笋',
+    '金针菇',
+    '香菇',
+    '木耳',
+    '杏鲍菇',
+    '牛油果',
+    '柠檬',
+    '蓝莓',
+    '山竹',
+    '藕片',
+    '卷心菜',
   ];
 
   final adj = adjectives[random.nextInt(adjectives.length)];
   final veg = vegetables[random.nextInt(vegetables.length)];
-  final number = random.nextInt(9999).toString().padLeft(4, '0');
 
-  return '$adj$veg$number';
+  return '$adj$veg';
 }
