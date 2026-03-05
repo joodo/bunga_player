@@ -91,6 +91,7 @@ class BungaChatClient extends ChatClient {
       },
       onDone: () async {
         final closeCode = _channel!.closeCode;
+        _channel = null;
         switch (closeCode) {
           case null: // Close by client
             break;
@@ -112,7 +113,6 @@ class BungaChatClient extends ChatClient {
             logger.e(
               'Websocket: connection break, fatal reasion. Code $closeCode',
             );
-            _channel = null;
             getIt<GlobalKey<ScaffoldMessengerState>>().currentState!
                 .showSnackBar(
                   SnackBar(content: const Text(('和服务器沟通失败，部分功能不可用。'))),
