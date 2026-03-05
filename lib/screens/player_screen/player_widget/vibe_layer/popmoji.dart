@@ -11,7 +11,6 @@ import 'package:styled_widget/styled_widget.dart';
 import 'package:bunga_player/chat/models/models.dart';
 import 'package:bunga_player/reaction/models/models.dart';
 import 'package:bunga_player/ui/global_business.dart';
-import 'package:bunga_player/utils/business/platform.dart';
 
 class PopmojiLayer extends StatelessWidget {
   const PopmojiLayer({super.key});
@@ -42,7 +41,7 @@ class _FireworkOverlayState extends State<_FireworkOverlay>
     vsync: this,
     withStars: false,
     withSky: false,
-    explosionParticleCount: kIsDesktop ? 80 : 20,
+    explosionParticleCount: 80,
     rocketSpawnTimeout: Duration.zero,
     autoLaunchDuration: Duration.zero,
   )..start();
@@ -82,9 +81,7 @@ class _FireworkOverlayState extends State<_FireworkOverlay>
 
   void _startFireworks(User sender) {
     context.read<SyncMessageEvent>().fire('${sender.name} 在放大呲花');
-    _fireworkController.autoLaunchDuration = Duration(
-      milliseconds: kIsDesktop ? 100 : 400,
-    );
+    _fireworkController.autoLaunchDuration = Duration(milliseconds: 100);
     _fireworkTimer.reset();
   }
 }
