@@ -170,9 +170,6 @@ class AgoraMediaPlayer extends MediaPlayer {
   @override
   Future<void> open(PlayPayload payload, [Duration? start]) async {
     await _player.stop();
-    if (_openTask?.isCompleted == false) {
-      _openTask!.complete();
-    }
 
     // Headers
     String url = payload.sources.videos[payload.videoSourceIndex].url;
@@ -182,9 +179,15 @@ class AgoraMediaPlayer extends MediaPlayer {
     }
 
     // Open
+    if (_openTask?.isCompleted == false) {
+      _openTask!.complete();
+    }
     _openTask = Completer();
     await _player.open(url: url, startPos: start?.inMilliseconds ?? 0);
-    await _openTask!.future;
+    await Future.any([
+      _openTask!.future,
+      _duration.waitUntil((value) => value > Duration.zero),
+    ]);
   }
 
   // Video size
@@ -234,7 +237,13 @@ class AgoraMediaPlayer extends MediaPlayer {
   }
 
   @override
-  Future<void> stop() => _player.stop();
+  Future<void> stop() {
+    _position.value = Duration.zero;
+    _duration.value = Duration.zero;
+    _playStatus.value = .stop;
+    return _player.stop();
+  }
+
   final _finishNotifier = SimpleEvent();
   @override
   Listenable get finishNotifier => _finishNotifier;
