@@ -7,7 +7,6 @@ import 'package:styled_widget/styled_widget.dart';
 
 import 'package:bunga_player/play/busuness.dart';
 import 'package:bunga_player/play/models/play_payload.dart';
-import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/play_sync/business.dart';
 import 'package:bunga_player/play/global_business.dart';
 import 'package:bunga_player/screens/dialogs/open_video/open_video.dart';
@@ -51,13 +50,7 @@ class MenuBuilder extends SingleChildStatelessWidget {
             // Reload button
             MenuItemButton(
               leadingIcon: const Icon(Icons.refresh),
-              onPressed: Actions.handler(
-                context,
-                OpenVideoIntent.record(
-                  payload!.record,
-                  start: MediaPlayer.i.positionNotifier.value,
-                ),
-              ),
+              onPressed: Actions.handler(context, OpenVideoIntent.reload()),
               child: const Text('重新载入'),
             ),
 
@@ -68,7 +61,7 @@ class MenuBuilder extends SingleChildStatelessWidget {
                 context,
                 ShowPanelIntent(builder: (context) => const VideoSourcePanel()),
               ),
-              child: Text('片源 (${payload.sources.videos.length})'),
+              child: Text('片源 (${payload?.sources.videos.length})'),
             ),
 
             const Divider(),

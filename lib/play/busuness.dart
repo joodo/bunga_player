@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:async/async.dart';
+import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/utils/business/platform.dart';
 import 'package:bunga_player/utils/business/run_after_build.dart';
 import 'package:flutter/foundation.dart';
@@ -67,16 +68,26 @@ class OpenVideoIntent extends Intent {
   final VideoRecord? record;
   final PlayPayload? payload;
   final Duration? start;
+  final bool reload;
 
   const OpenVideoIntent.url(Uri this.url, {this.start})
     : payload = null,
-      record = null;
+      record = null,
+      reload = false;
   const OpenVideoIntent.record(VideoRecord this.record, {this.start})
     : url = null,
-      payload = null;
+      payload = null,
+      reload = false;
   const OpenVideoIntent.payload(PlayPayload this.payload, {this.start})
     : url = null,
-      record = null;
+      record = null,
+      reload = false;
+  const OpenVideoIntent.reload()
+    : reload = true,
+      url = null,
+      record = null,
+      payload = null,
+      start = null;
 }
 
 class OpenVideoAction extends ContextAction<OpenVideoIntent> {
@@ -91,17 +102,21 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
   ]) async {
     assert(context != null);
 
-    final parser = PlayPayloadParser(context!);
-    final busyNotifier = context.read<BusyStateNotifier>();
+    final busyNotifier = context!.read<BusyStateNotifier>();
 
     try {
       busyNotifier.add('open video');
 
-      final payload =
-          intent.payload ??
-          await parser.parse(url: intent.url, record: intent.record);
+      final (payload, start) = await _fetchPayload(context, intent);
 
       if (!context.mounted) throw StateError('Context unmounted.');
+
+      if (!intent.reload &&
+          payloadNotifer.value?.record.id == payload.record.id) {
+        logger.i('Video trying to open is same with current, seek only.');
+        if (start != null) await MediaPlayer.i.seek(intent.start!);
+        return payload;
+      }
       payloadNotifer.value = payload;
 
       // History
@@ -110,9 +125,8 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
 
       await _loadVideo(
         payload: payload,
-        parser: parser,
         subtitlePath: subPath,
-        start: intent.start ?? session?.progress?.position,
+        start: start ?? session?.progress?.position,
       );
 
       return payload;
@@ -125,19 +139,35 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
     }
   }
 
+  Future<(PlayPayload payload, Duration? start)> _fetchPayload(
+    BuildContext context,
+    OpenVideoIntent intent,
+  ) async {
+    if (intent.reload) {
+      final payload = payloadNotifer.value;
+      if (payload == null) throw Exception('Reload failed: no current payload');
+      return (payload, MediaPlayer.i.positionNotifier.value);
+    }
+
+    final parser = PlayPayloadParser(context);
+    final payload =
+        intent.payload ??
+        await parser.parse(url: intent.url, record: intent.record);
+    return (payload, intent.start);
+  }
+
   Future<void> _loadVideo({
     required PlayPayload payload,
-    required PlayPayloadParser parser,
     String? subtitlePath,
     Duration? start,
   }) async {
-    final play = MediaPlayer.i;
-    await play.open(payload, start);
+    final player = MediaPlayer.i;
+    await player.open(payload, start);
 
     // load history
     if (subtitlePath != null) {
-      final track = await play.loadSubtitleTrack(subtitlePath);
-      play.setSubtitleTrack(track.id);
+      final track = await player.loadSubtitleTrack(subtitlePath);
+      player.setSubtitleTrack(track.id);
     }
   }
 }
