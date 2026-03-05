@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import 'package:bunga_player/bunga_server/models/channel_tokens.dart';
@@ -83,7 +85,12 @@ class BungaChatClient extends ChatClient {
         'channel_id': _serverInfo.channel.id,
       },
     );
-    _channel = WebSocketChannel.connect(wsUrl);
+    final ws = await WebSocket.connect(
+      wsUrl.toString(),
+    ).timeout(const Duration(seconds: 5));
+    ws.pingInterval = const Duration(seconds: 5);
+
+    _channel = IOWebSocketChannel(ws);
 
     _channel!.stream.listen(
       (rawData) {
