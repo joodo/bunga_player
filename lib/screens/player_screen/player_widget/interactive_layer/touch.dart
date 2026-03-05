@@ -87,7 +87,7 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
       ).padding(right: 18.0).alignment(.centerRight),
     );
     if (lockedNotifier.value) {
-      return _GestureDetector(
+      return BungaGestureDetector(
         behavior: .translucent,
 
         onTap: _lockButtonVisibleNotifier.mark,
@@ -100,7 +100,7 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
       );
     }
 
-    return _GestureDetector(
+    return BungaGestureDetector(
       behavior: .translucent,
       onTap: () {
         _showHUDNotifier.value
@@ -284,7 +284,7 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
   }
 }
 
-class _GestureDetector extends SingleChildStatefulWidget {
+class BungaGestureDetector extends SingleChildStatefulWidget {
   final GestureTapCallback? onTap, onDoubleTap;
 
   final GestureDragStartCallback? onHorizentalDragStart,
@@ -302,9 +302,14 @@ class _GestureDetector extends SingleChildStatefulWidget {
       onVerticalMultiFingerDragEnd,
       onDoubleTapDragEnd;
 
+  final GestureDragCancelCallback? onHorizontalDragCancel,
+      onVerticalDragCancel,
+      onVerticalMultiFingerDragCancel,
+      onDoubleTapDragCancel;
+
   final HitTestBehavior? behavior;
 
-  const _GestureDetector({
+  const BungaGestureDetector({
     this.onTap,
     this.onDoubleTap,
     this.onHorizentalDragStart,
@@ -320,14 +325,18 @@ class _GestureDetector extends SingleChildStatefulWidget {
     this.onVerticalMultiFingerDragStart,
     this.onVerticalMultiFingerDragUpdate,
     this.onVerticalMultiFingerDragEnd,
+    this.onHorizontalDragCancel,
+    this.onVerticalDragCancel,
+    this.onVerticalMultiFingerDragCancel,
+    this.onDoubleTapDragCancel,
     super.child,
   });
 
   @override
-  State<_GestureDetector> createState() => _GestureDetectorState();
+  State<BungaGestureDetector> createState() => _GestureDetectorState();
 }
 
-class _GestureDetectorState extends SingleChildState<_GestureDetector> {
+class _GestureDetectorState extends SingleChildState<BungaGestureDetector> {
   // Double Tap
   Timer? _doubleTapTimer;
   bool _isPotentialDoubleTap = false;
@@ -351,6 +360,7 @@ class _GestureDetectorState extends SingleChildState<_GestureDetector> {
       behavior: HitTestBehavior.opaque,
       onPointerDown: _handlePointerDown,
       onPointerUp: _handlePointerUp,
+      onPointerCancel: _handlePointerCancel,
       child: GestureDetector(
         behavior: widget.behavior,
         onTap: () {
@@ -377,6 +387,12 @@ class _GestureDetectorState extends SingleChildState<_GestureDetector> {
         onHorizontalDragEnd: (details) {
           if (_isSingleDragging) {
             widget.onHorizontalDragEnd?.call(details);
+            _isSingleDragging = false;
+          }
+        },
+        onHorizontalDragCancel: () {
+          if (_isSingleDragging) {
+            widget.onHorizontalDragCancel?.call();
             _isSingleDragging = false;
           }
         },
@@ -409,6 +425,17 @@ class _GestureDetectorState extends SingleChildState<_GestureDetector> {
 
           if (_isMultiFingerDragging) {
             widget.onVerticalMultiFingerDragEnd?.call(details);
+            _isMultiFingerDragging = false;
+          }
+        },
+        onVerticalDragCancel: () {
+          if (_isSingleDragging) {
+            widget.onVerticalDragCancel?.call();
+            _isSingleDragging = false;
+          }
+
+          if (_isMultiFingerDragging) {
+            widget.onVerticalMultiFingerDragCancel?.call();
             _isMultiFingerDragging = false;
           }
         },
@@ -492,6 +519,20 @@ class _GestureDetectorState extends SingleChildState<_GestureDetector> {
       _doubleTapTimer = Timer(kDoubleTapTimeout + kLongPressTimeout, () {
         _isPotentialDoubleTap = false;
       });
+    }
+  }
+
+  void _handlePointerCancel(PointerCancelEvent event) {
+    _activePointers--;
+
+    if (_isDoubleTapDragging && _activePointers == 0) {
+      widget.onDoubleTapDragCancel?.call();
+      _isDoubleTapDragging = false;
+      return;
+    }
+
+    if (_activePointers == 0) {
+      _isPotentialMultiFingerDrag = false;
     }
   }
 }
