@@ -65,18 +65,12 @@ class BungaChatClient extends ChatClient {
 
   // Connection
   static const _maxRetryDelayMSec = 10_000;
-  Future<void> _reconnect() {
-    late int retryDelayMSec;
-
-    Future<void> doReconnect() async {
-      retryDelayMSec = min(retryDelayMSec * 2, _maxRetryDelayMSec);
-      logger.w('Websocket: wait ${retryDelayMSec / 1000}s and try again');
-      await Future.delayed(Duration(milliseconds: retryDelayMSec));
-      return _connect();
-    }
-
-    retryDelayMSec = 500;
-    return doReconnect();
+  int retryDelayMSec = 500;
+  Future<void> _reconnect({bool backoff = true}) async {
+    if (backoff) retryDelayMSec = min(retryDelayMSec * 2, _maxRetryDelayMSec);
+    logger.w('Websocket: wait ${retryDelayMSec / 1000}s and try again');
+    await Future.delayed(Duration(milliseconds: retryDelayMSec));
+    return _connect();
   }
 
   Future<void> _connect() async {
@@ -102,10 +96,13 @@ class BungaChatClient extends ChatClient {
             break;
 
           case 1005 || 1006 || 1015: // Network unstable
-          case 1002: // Client unstable
           case 1001 || 1011 || 1012 || 1013: // Server problem
             logger.w('Websocket: connection break. Code $closeCode');
             return _reconnect();
+
+          case 1002: // Client unstable
+            logger.w('Websocket: connection break. Code $closeCode');
+            return _reconnect(backoff: false);
 
           case 4002: // Token expired
             await _serverInfo.refreshToken();
@@ -127,6 +124,7 @@ class BungaChatClient extends ChatClient {
     try {
       await _channel!.ready;
       logger.i('Websocket: connect success');
+      retryDelayMSec = 500;
 
       for (final rawData in _messageRawBuffer) {
         _channel!.sink.add(rawData);
