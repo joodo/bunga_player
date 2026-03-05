@@ -42,7 +42,9 @@ class IsInChannel {
 class PlayProgressSlideBusiness {
   final BuildContext context;
 
-  PlayProgressSlideBusiness({required this.context});
+  PlayProgressSlideBusiness({required this.context}) {
+    _playerPositionNotifier.addListener(_followPlayerPosition);
+  }
 
   void dispose() {
     _playerPositionNotifier.removeListener(_followPlayerPosition);
