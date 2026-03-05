@@ -10,7 +10,6 @@ import 'package:bunga_player/client_info/models/client_account.dart';
 import 'package:bunga_player/console/service.dart';
 import 'package:bunga_player/ui/audio_player.dart';
 
-import 'global_business.dart';
 import 'models/message.dart';
 import 'models/message_data.dart';
 import 'models/user.dart';
@@ -97,8 +96,6 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
 
     _streamSubscription = messageStream.listen((message) {
       switch (message.data['code']) {
-        case RemindMeMessageData.messageCode:
-          _handleRemindMe();
         case AlohaMessageData.messageCode:
           if (message.sender.id == _myId) break;
           _dealWithAloha(message.sender);
@@ -129,11 +126,6 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
 
   void _dealWithAloha(User sender) {
     _addWatcher(sender);
-  }
-
-  void _handleRemindMe() {
-    final data = IAmMessageData(User.of(context));
-    context.sendMessage(data);
   }
 
   void _dealWithHereAre(List<User> watchers) {

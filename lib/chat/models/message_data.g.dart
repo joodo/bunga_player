@@ -149,27 +149,3 @@ ByeMessageData _$ByeMessageDataFromJson(Map<String, dynamic> json) =>
 
 Map<String, dynamic> _$ByeMessageDataToJson(ByeMessageData instance) =>
     <String, dynamic>{'code': instance.code};
-
-RemindMeMessageData _$RemindMeMessageDataFromJson(Map<String, dynamic> json) =>
-    $checkedCreate('RemindMeMessageData', json, ($checkedConvert) {
-      final val = RemindMeMessageData();
-      return val;
-    });
-
-Map<String, dynamic> _$RemindMeMessageDataToJson(
-  RemindMeMessageData instance,
-) => <String, dynamic>{'code': instance.code};
-
-IAmMessageData _$IAmMessageDataFromJson(Map<String, dynamic> json) =>
-    $checkedCreate('IAmMessageData', json, ($checkedConvert) {
-      final val = IAmMessageData(
-        $checkedConvert(
-          'info',
-          (v) => User.fromJson(v as Map<String, dynamic>),
-        ),
-      );
-      return val;
-    });
-
-Map<String, dynamic> _$IAmMessageDataToJson(IAmMessageData instance) =>
-    <String, dynamic>{'code': instance.code, 'info': instance.info.toJson()};

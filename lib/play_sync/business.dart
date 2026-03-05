@@ -8,9 +8,9 @@ import 'package:path/path.dart' as path_tool;
 import 'package:provider/provider.dart';
 
 import 'package:bunga_player/chat/global_business.dart';
+import 'package:bunga_player/utils/business/platform.dart';
 import 'package:bunga_player/chat/models/models.dart';
 import 'package:bunga_player/chat/client/client.dart';
-import 'package:bunga_player/client_info/models/client_account.dart';
 import 'package:bunga_player/play/busuness.dart';
 import 'package:bunga_player/play/models/models.dart';
 import 'package:bunga_player/play/service/service.dart';
@@ -124,7 +124,6 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
   late final StreamSubscription _streamSubscription;
 
   // Player status
-  final _playerBufferingNotifier = MediaPlayer.i.isBufferingNotifier;
   final _watchersBufferStatusNotifier = WatcherBufferingStatusNotifier()
     ..watchInConsole('Watchers Sync Status');
 
@@ -139,84 +138,31 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
   void initState() {
     super.initState();
 
-    final read = context.read;
+    _streamSubscription = context.read<Stream<Message>>().listen(
+      _handleMessage,
+    );
 
-    final myId = read<ClientAccount>().id;
+    final player = MediaPlayer.i;
+    player.isBufferingNotifier.addListener(_sendBufferingStatus);
+    player.positionNotifier.addListener(_silentCatchUp);
+    player.finishNotifier.addListener(_sendFinishMessage);
 
-    final messageStream = read<Stream<Message>>();
-    _streamSubscription = messageStream.listen((message) {
-      switch (message.data['code']) {
-        case StartProjectionMessageData.messageCode:
-          final data = StartProjectionMessageData.fromJson(message.data);
-          _handleProjection(
-            message.sender,
-            data.videoRecord,
-            data.position,
-            myId,
-          );
-        case HereAreMessageData.messageCode:
-          final data = HereAreMessageData.fromJson(message.data);
-          _handleHereAre(data.buffering);
-        case BufferStateChangedMessageData.messageCode:
-          final isBuffering = BufferStateChangedMessageData.fromJson(
-            message.data,
-          ).isBuffering;
-          _handleSyncStatus(message.sender, isBuffering);
-        case PlayAtMessageData.messageCode:
-          final data = PlayAtMessageData.fromJson(message.data);
-          _handlePlayAt(message.sender, data.isPlay, data.position);
-        case PlayMessageData.messageCode:
-          if (message.sender.id == myId) break;
-
-          final manager = read<SyncMessageEvent>();
-          final name = message.sender.name;
-          manager.fire('$name 播放了视频');
-          read<PlayToggleVisualSignal>().fire(true);
-
-          _remoteJustToggledNotifier.mark();
-        case PauseMessageData.messageCode:
-          if (message.sender.id == myId) break;
-
-          final manager = read<SyncMessageEvent>();
-          final name = message.sender.name;
-          manager.fire('$name 暂停了视频');
-          read<PlayToggleVisualSignal>().fire(false);
-
-          _remoteJustToggledNotifier.mark();
-        case SeekMessageData.messageCode:
-          if (message.sender.id == myId) break;
-
-          final manager = read<SyncMessageEvent>();
-          final name = message.sender.name;
-          manager.fire('$name 调整了进度');
-        case ShareSubMessageData.messageCode:
-          _dealWithSubSharing(
-            sharer: message.sender,
-            data: ShareSubMessageData.fromJson(message.data),
-          );
-        case ResetMessageData.messageCode:
-          if (mounted) Navigator.of(context).pop();
-      }
-    });
-
-    _playerBufferingNotifier.addListener(_sendBufferingStatus);
-
-    final playService = MediaPlayer.i;
-    playService.positionNotifier.addListener(_silentCatchUp);
-    playService.finishNotifier.addListener(_sendFinishMessage);
+    if (!kIsDesktop) _appLifecycleListener;
   }
 
   @override
   void dispose() {
-    _playerBufferingNotifier.removeListener(_sendBufferingStatus);
-
-    final playService = MediaPlayer.i;
-    playService.positionNotifier.removeListener(_silentCatchUp);
-    playService.finishNotifier.removeListener(_sendFinishMessage);
+    final player = MediaPlayer.i;
+    player.isBufferingNotifier.removeListener(_sendBufferingStatus);
+    player.positionNotifier.removeListener(_silentCatchUp);
+    player.finishNotifier.removeListener(_sendFinishMessage);
 
     _remoteJustToggledNotifier.dispose();
     _channelSubtitleNotifier.dispose();
     _streamSubscription.cancel();
+
+    if (!kIsDesktop) _appLifecycleListener.dispose();
+
     super.dispose();
   }
 
@@ -335,15 +281,66 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
     );
   }
 
+  void _handleMessage(Message message) {
+    final read = context.read;
+
+    switch (message.data['code']) {
+      case StartProjectionMessageData.messageCode:
+        final data = StartProjectionMessageData.fromJson(message.data);
+        _handleProjection(message.sender, data.videoRecord, data.position);
+      case HereAreMessageData.messageCode:
+        final data = HereAreMessageData.fromJson(message.data);
+        _handleHereAre(data.buffering);
+      case BufferStateChangedMessageData.messageCode:
+        final isBuffering = BufferStateChangedMessageData.fromJson(
+          message.data,
+        ).isBuffering;
+        _handleSyncStatus(message.sender, isBuffering);
+      case PlayAtMessageData.messageCode:
+        final data = PlayAtMessageData.fromJson(message.data);
+        _handlePlayAt(message.sender, data.isPlay, data.position);
+      case PlayMessageData.messageCode:
+        if (message.sender.isCurrent(context)) break;
+
+        final manager = read<SyncMessageEvent>();
+        final name = message.sender.name;
+        manager.fire('$name 播放了视频');
+        read<PlayToggleVisualSignal>().fire(true);
+
+        _remoteJustToggledNotifier.mark();
+      case PauseMessageData.messageCode:
+        if (message.sender.isCurrent(context)) break;
+
+        final manager = read<SyncMessageEvent>();
+        final name = message.sender.name;
+        manager.fire('$name 暂停了视频');
+        read<PlayToggleVisualSignal>().fire(false);
+
+        _remoteJustToggledNotifier.mark();
+      case SeekMessageData.messageCode:
+        if (message.sender.isCurrent(context)) break;
+
+        final manager = read<SyncMessageEvent>();
+        final name = message.sender.name;
+        manager.fire('$name 调整了进度');
+      case ShareSubMessageData.messageCode:
+        _dealWithSubSharing(
+          sharer: message.sender,
+          data: ShareSubMessageData.fromJson(message.data),
+        );
+      case ResetMessageData.messageCode:
+        if (mounted) Navigator.of(context).pop();
+    }
+  }
+
   void _handleProjection(
     User sender,
     VideoRecord videoRecord,
     Duration start,
-    String myId,
   ) async {
     final currentRecord = context.read<PlayPayload?>()?.record;
 
-    if (sender.id != myId && currentRecord != null) {
+    if (!sender.isCurrent(context) && !sender.isServer) {
       context.read<SyncMessageEvent>().fire('${sender.name} 分享了视频');
     }
 
@@ -446,7 +443,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
   void _sendBufferingStatus() {
     if (_seeking) return;
 
-    final buffering = _playerBufferingNotifier.value;
+    final buffering = MediaPlayer.i.isBufferingNotifier.value;
     final data = BufferStateChangedMessageData(buffering);
     context.sendMessage(data);
   }
@@ -477,6 +474,13 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
   void _sendFinishMessage() {
     context.sendMessage(PlayFinishedMessageData());
   }
+
+  // App lifecycle state
+  late final _appLifecycleListener = AppLifecycleListener(
+    onResume: () {
+      context.sendMessage(JoinInMessageData(user: User.of(context)));
+    },
+  );
 }
 
 class _CatchUpTarget {
