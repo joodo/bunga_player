@@ -154,7 +154,6 @@ class _WidgetBusinessState extends SingleChildState<_WidgetBusiness> {
     final read = context.read;
 
     // Stop playing
-    read<WindowTitleNotifier>().reset();
     MediaPlayer.i.stop();
 
     // Send bye message

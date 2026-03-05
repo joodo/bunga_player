@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:async/async.dart';
+import 'package:bunga_player/utils/business/platform.dart';
+import 'package:bunga_player/utils/business/run_after_build.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
@@ -102,9 +104,6 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
       if (!context.mounted) throw StateError('Context unmounted.');
       payloadNotifer.value = payload;
 
-      // Window title
-      context.read<WindowTitleNotifier>().value = payload.record.title;
-
       // History
       final session = context.read<History>()[payload.record.id];
       final subPath = session?.subtitlePath;
@@ -119,6 +118,7 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
       return payload;
     } catch (e) {
       if (context.mounted) context.popBar('载入视频失败');
+      payloadNotifer.value = null;
       rethrow;
     } finally {
       busyNotifier.remove('open video');
@@ -298,6 +298,7 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
     super.initState();
 
     _playPayloadNotifier.addListener(_fetchDir);
+    if (kIsDesktop) _playPayloadNotifier.addListener(_updateWindowTitle);
 
     // History
     _player.playStatusNotifier.addListener(_updateHistory);
@@ -308,6 +309,10 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
   @override
   void dispose() {
     _playPayloadNotifier.removeListener(_fetchDir);
+    if (kIsDesktop) {
+      runAfterBuild(_windowTitleNotifier.reset);
+      _playPayloadNotifier.removeListener(_updateWindowTitle);
+    }
     _player.playStatusNotifier.removeListener(_updateHistory);
 
     _playPayloadNotifier.dispose();
@@ -417,6 +422,16 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
 
     final dirInfo = await parser.dirInfo(record);
     _dirInfoNotifier.value = dirInfo;
+  }
+
+  late final _windowTitleNotifier = context.read<WindowTitleNotifier>();
+  void _updateWindowTitle() {
+    final title = _playPayloadNotifier.value?.record.title;
+    if (title == null) {
+      _windowTitleNotifier.reset();
+    } else {
+      _windowTitleNotifier.value = title;
+    }
   }
 }
 
