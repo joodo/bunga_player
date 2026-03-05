@@ -147,6 +147,7 @@ class MenuBuilder extends SingleChildStatelessWidget {
   VoidCallback _changeVideo(BuildContext context, bool isCurrentSharing) {
     return () async {
       final result = await showModal<OpenVideoDialogResult>(
+        useRootNavigator: false,
         context: context,
         builder: (BuildContext context) => Dialog.fullscreen(
           child: OpenVideoDialog(

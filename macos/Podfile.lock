@@ -146,7 +146,7 @@ SPEC CHECKSUMS:
   AgoraInfra_macOS: 9bc9cea2486446c87d3ee3e69325cdb45ecf99c2
   AgoraIrisRTC_macOS: 66c134edf52e1dd9863b00494207345e2140b286
   AgoraRtcEngine_macOS: ca423379ffb023c12a267e9ce6234f90a431f4d2
-  audioplayers_darwin: 4f9ca89d92d3d21cec7ec580e78ca888e5fb68bd
+  audioplayers_darwin: 835ced6edd4c9fc8ebb0a7cc9e294a91d99917d5
   file_selector_macos: 9e9e068e90ebee155097d00e89ae91edb2374db7
   flutter_volume_controller: ae08bf0838e4901f299781c3ab5056dfab0c2f74
   FlutterMacOS: d0db08ddef1a9af05a5ec4b724367152bb0500b1
