@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:bunga_player/ui/global_business.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
@@ -9,6 +8,8 @@ import 'package:provider/provider.dart';
 
 import 'package:bunga_player/client_info/models/client_account.dart';
 import 'package:bunga_player/console/service.dart';
+import 'package:bunga_player/play/service/service.dart';
+import 'package:bunga_player/ui/global_business.dart';
 import 'package:bunga_player/ui/audio_player.dart';
 
 import 'models/message.dart';
@@ -128,7 +129,10 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
   void _handleAloha(User sender) {
     _addWatcher(sender);
     // Server will pause when someone is joining
-    context.read<PlayToggleVisualSignal>().fire(false);
+
+    if (MediaPlayer.i.playStatusNotifier.value.isPlaying) {
+      context.read<PlayToggleVisualSignal>().fire(false);
+    }
   }
 
   void _handleHereAre(List<User> watchers) {
