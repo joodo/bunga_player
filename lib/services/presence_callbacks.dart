@@ -1,6 +1,8 @@
-import 'package:bunga_player/services/logger.dart';
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 
+import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/utils/business/platform.dart';
 
 typedef PresenceCallback = Future<void> Function();
@@ -9,7 +11,7 @@ class PresenceCallbacks {
   late final AppLifecycleListener listener;
   PresenceCallbacks() {
     listener = !kIsDesktop
-        ? AppLifecycleListener(onHide: doPresence)
+        ? AppLifecycleListener(onPause: doPresence)
         : AppLifecycleListener(
             onExitRequested: () async {
               await doPresence();
@@ -18,8 +20,14 @@ class PresenceCallbacks {
           );
   }
 
-  Future<void> doPresence() {
-    return Future.any([_runAll(), _shutter()]);
+  Future<void> doPresence() async {
+    try {
+      await _runAll().timeout(const Duration(milliseconds: 1500));
+    } on TimeoutException catch (_) {
+      logger.w('Too long, force shut down.');
+    } catch (e) {
+      logger.w('Presence failed: $e');
+    }
   }
 
   final _callbacks = <PresenceCallback>[];
@@ -30,10 +38,5 @@ class PresenceCallbacks {
       await callback();
     }
     logger.i('Finish presence callbacks.');
-  }
-
-  Future<void> _shutter() async {
-    await Future.delayed(const Duration(milliseconds: 1500));
-    logger.w('Too long, force shut down.');
   }
 }
