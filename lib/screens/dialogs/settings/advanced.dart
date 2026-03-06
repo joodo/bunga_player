@@ -122,7 +122,7 @@ class _PlayerBackedRadiosState extends State<_PlayerBackedRadios> {
             ),
             RadioListTile<PlayerBackend>(
               title: Text('Agora Media Player（不稳定）'),
-              subtitle: Text('在语音通话时，有效减少外放带来的回音。同时，耗费系统资源少，对老旧设备更友好。'),
+              subtitle: Text('在语音通话时，有效减少外放带来的回音。'),
               value: .agoraMediaPlayer,
               enabled: !_isBusy,
             ),
