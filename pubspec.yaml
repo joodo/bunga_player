@@ -20,7 +20,8 @@ dependencies:
   ffi: ^2.2.0
 
   # Communication
-  agora_rtc_engine: ^6.5.3
+  agora_rtc_engine:
+    git: https://github.com/joodo/Agora-Flutter-SDK
   web_socket_channel: ^3.0.3
 
   # Update
