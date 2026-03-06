@@ -43,6 +43,15 @@ class AgoraMediaPlayer extends MediaPlayer {
       _player.mute(_volume.value.mute);
     });
     _player.adjustPlayoutVolume(_volume.value.level.toLevel);
+
+    await _player.setPlayerOptionInInt(
+      key: "min_buffer_duration",
+      value: 3_000,
+    );
+    await _player.setPlayerOptionInInt(
+      key: "max_buffer_duration",
+      value: 60_000,
+    );
   }
 
   Future<void> unregisterEngine() async {
@@ -183,7 +192,14 @@ class AgoraMediaPlayer extends MediaPlayer {
       _openTask!.complete();
     }
     _openTask = Completer();
-    await _player.open(url: url, startPos: start?.inMilliseconds ?? 0);
+    await _player.openWithMediaSource(
+      agora.MediaSource(
+        autoPlay: false,
+        url: url,
+        startPos: start?.inMilliseconds ?? 0,
+        enableCache: true,
+      ),
+    );
     await Future.any([
       _openTask!.future,
       _duration.waitUntil((value) => value > Duration.zero),
