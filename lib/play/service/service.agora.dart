@@ -75,20 +75,6 @@ class AgoraMediaPlayer extends MediaPlayer {
       onPlayBufferUpdated: (playCachedBuffer) {
         final buffer = Duration(milliseconds: playCachedBuffer);
         _buffer.value = _position.value + buffer;
-
-        final almostFinished = _position.value.near(
-          _duration.value,
-          tolerance: _bufferThreshold,
-        );
-        if (_isBuffering.value) {
-          if (buffer > _bufferThreshold || almostFinished) {
-            _isBuffering.value = false;
-          }
-        } else {
-          if (buffer <= const Duration(milliseconds: 100) && !almostFinished) {
-            _isBuffering.value = true;
-          }
-        }
       },
       onPositionChanged: (positionMs, timestampMs) {
         _position.value = Duration(milliseconds: positionMs);
@@ -106,9 +92,8 @@ class AgoraMediaPlayer extends MediaPlayer {
             _openTask?.complete();
           case .playerStatePaused:
             _playStatus.value = .pause;
-          case .playerStatePlaybackAllLoopsCompleted:
-            _playStatus.value = .pause;
-            _finishNotifier.fire();
+          /*case .playerStatePlaybackAllLoopsCompleted:
+              _finishNotifier.fire();*/
           case .playerStateFailed:
             _playStatus.value = .stop;
             _openTask?.completeError(reason);
@@ -116,13 +101,25 @@ class AgoraMediaPlayer extends MediaPlayer {
             _playStatus.value = .stop;
         }
       },
-      onPlayerEvent: (eventCode, elapsedTime, message) {
-        //logger.i('Player event: $eventCode, message: $message');
+      onPlayerEvent: (eventCode, elapsedTime, message) async {
+        // logger.i('Player event: $eventCode, message: $message');
         switch (eventCode) {
-          /*case .playerEventBufferLow:
-            _isBuffering.value = true;
+          case .playerEventBufferLow:
+            final almostFinish = _position.value.near(
+              _duration.value,
+              tolerance: const Duration(seconds: 1),
+            );
+            if (!almostFinish) {
+              _isBuffering.value = true;
+            } else {
+              // Cache when almost finish, treat as finished
+              if (_playStatus.value.isPlaying) {
+                await pause();
+                _finishNotifier.fire();
+              }
+            }
           case .playerEventBufferRecover:
-            _isBuffering.value = false;*/
+            _isBuffering.value = false;
           default:
             {}
         }
@@ -217,7 +214,6 @@ class AgoraMediaPlayer extends MediaPlayer {
   ValueListenable<Duration> get durationNotifier => _duration;
 
   // Buffer
-  static const _bufferThreshold = Duration(seconds: 2);
   final _buffer = ValueNotifier(Duration.zero);
   @override
   ValueListenable<Duration> get bufferNotifier => _buffer;
