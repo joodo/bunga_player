@@ -64,7 +64,7 @@ class MediaKitMediaPlayer extends MediaPlayer {
     playStatusNotifier;
     bufferNotifier;
     durationNotifier;
-    isBufferingNotifier;
+    _isBufferingFromStream;
     positionNotifier;
     proxyNotifier;
     videoSizeNotifier;
@@ -86,7 +86,8 @@ class MediaKitMediaPlayer extends MediaPlayer {
     (durationNotifier as _StreamListenable).dispose();
     (positionNotifier as _StreamListenable).dispose();
     (playStatusNotifier as _StreamListenable).dispose();
-    (isBufferingNotifier as _StreamListenable).dispose();
+    _isBufferingFromStream.dispose();
+    _isBufferingNotifier.dispose();
     playbackRateNotifier.dispose();
     audioTrackNotifier.dispose();
     audioTracksNotifier.dispose();
@@ -180,6 +181,8 @@ class MediaKitMediaPlayer extends MediaPlayer {
   Future<void> open(PlayPayload payload, [Duration? start]) async {
     assert(payload.sources.videos.length > payload.videoSourceIndex);
 
+    _isBufferingNotifier.value = true;
+
     // open video
     String videoUrl = payload.sources.videos[payload.videoSourceIndex].url;
     final httpHeaders = payload.sources.requestHeaders;
@@ -231,11 +234,16 @@ class MediaKitMediaPlayer extends MediaPlayer {
   @override
   Listenable get finishNotifier => _finishNotifier;
 
+  late final _StreamListenable<bool> _isBufferingFromStream =
+      _StreamListenable(
+        _bufferingStream(_player.stream.position, _player.stream.buffer),
+        true,
+      )..addListener(
+        () => _isBufferingNotifier.value = _isBufferingFromStream.value,
+      );
+  final _isBufferingNotifier = ValueNotifier<bool>(true);
   @override
-  late final isBufferingNotifier = _StreamListenable(
-    _bufferingStream(_player.stream.position, _player.stream.buffer),
-    true,
-  );
+  ValueListenable<bool> get isBufferingNotifier => _isBufferingNotifier;
 
   // Screenshot
   @override

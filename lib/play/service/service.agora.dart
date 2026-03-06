@@ -102,7 +102,7 @@ class AgoraMediaPlayer extends MediaPlayer {
         }
       },
       onPlayerEvent: (eventCode, elapsedTime, message) async {
-        // logger.i('Player event: $eventCode, message: $message');
+        logger.i('Player event: $eventCode, message: $message');
         switch (eventCode) {
           case .playerEventBufferLow:
             final almostFinish = _position.value.near(
@@ -118,8 +118,13 @@ class AgoraMediaPlayer extends MediaPlayer {
                 _finishNotifier.fire();
               }
             }
+
           case .playerEventBufferRecover:
+          // Agora does not trigger BufferLow/BufferRecover events during initial video load.
+          // isBuffering is set to true on start, so we reset it to false here.
+          case .playerEventFirstDisplayed:
             _isBuffering.value = false;
+
           default:
             {}
         }
@@ -175,6 +180,8 @@ class AgoraMediaPlayer extends MediaPlayer {
   Completer? _openTask;
   @override
   Future<void> open(PlayPayload payload, [Duration? start]) async {
+    _isBuffering.value = true;
+
     await _player.stop();
 
     // Headers
