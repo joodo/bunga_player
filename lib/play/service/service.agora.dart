@@ -89,7 +89,9 @@ class AgoraMediaPlayer extends MediaPlayer {
               milliseconds: await _player.getDuration(),
             );
             _playStatus.value = .pause;
-            _openTask?.complete();
+            if (_openTask?.isCompleted == false) {
+              _openTask!.complete();
+            }
           case .playerStatePaused:
             _playStatus.value = .pause;
           /*case .playerStatePlaybackAllLoopsCompleted:
@@ -120,9 +122,13 @@ class AgoraMediaPlayer extends MediaPlayer {
             }
 
           case .playerEventBufferRecover:
-          // Agora does not trigger BufferLow/BufferRecover events during initial video load.
-          // isBuffering is set to true on start, so we reset it to false here.
+            _isBuffering.value = false;
           case .playerEventFirstDisplayed:
+            if (_openTask?.isCompleted == false) {
+              _openTask!.complete();
+            }
+            // Agora does not trigger BufferLow/BufferRecover events during initial video load.
+            // isBuffering is set to true on start, so we reset it to false here.
             _isBuffering.value = false;
 
           default:
@@ -204,10 +210,7 @@ class AgoraMediaPlayer extends MediaPlayer {
         enableCache: true,
       ),
     );
-    await Future.any([
-      _openTask!.future,
-      _duration.waitUntil((value) => value > Duration.zero),
-    ]);
+    await _openTask!.future;
   }
 
   // Video size
