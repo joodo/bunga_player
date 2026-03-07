@@ -112,7 +112,8 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
       if (!context.mounted) throw StateError('Context unmounted.');
 
       if (!intent.reload &&
-          payloadNotifer.value?.record.id == payload.record.id) {
+          payloadNotifer.value?.record.id == payload.record.id &&
+          payloadNotifer.value?.videoSourceIndex == payload.videoSourceIndex) {
         logger.i('Video trying to open is same with current, seek only.');
         if (start != null) await MediaPlayer.i.seek(intent.start!);
         return payload;
