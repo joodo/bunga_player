@@ -46,29 +46,36 @@ Future<Map<String, LinkerSearchResult>> search(
 final _detailCache = <(String linkerId, String key), AsyncCache<Media>>{};
 
 Future<Media> detail(BuildContext context, String linkerId, String key) async {
-  final cache = _detailCache.putIfAbsent((
-    linkerId,
-    key,
-  ), () => AsyncCache<Media>(const Duration(minutes: 5)));
+  final cacheKey = (linkerId, key);
+  final cache = _detailCache.putIfAbsent(
+    cacheKey,
+    () => AsyncCache<Media>(const Duration(minutes: 5)),
+  );
 
-  return cache.fetch(() async {
-    final response =
-        Actions.invoke(
-              context,
-              DoServerRequestIntent(
-                reqFunc: (origin, headers) {
-                  final url = origin.replace(
-                    pathSegments: ['api', 'gallery', key, ''],
-                    queryParameters: {'linker': linkerId},
-                  );
-                  return http.get(url, headers: headers);
-                },
-              ),
-            )
-            as Future<JsonMap>;
-    final data = await response;
-    return Media.fromJson(data);
-  });
+  try {
+    return cache.fetch(() async {
+      final response =
+          Actions.invoke(
+                context,
+                DoServerRequestIntent(
+                  reqFunc: (origin, headers) {
+                    final url = origin.replace(
+                      pathSegments: ['api', 'gallery', key, ''],
+                      queryParameters: {'linker': linkerId},
+                    );
+                    return http.get(url, headers: headers);
+                  },
+                ),
+              )
+              as Future<JsonMap>;
+      final data = await response;
+      return Media.fromJson(data);
+    });
+  } catch (_) {
+    cache.invalidate();
+    _detailCache.remove(cacheKey);
+    rethrow;
+  }
 }
 
 Future<Iterable<Source>> sources(
