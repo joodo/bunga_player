@@ -80,13 +80,7 @@ class _VideoSourcePanelState extends State<VideoSourcePanel> {
                 groupValue: payload.videoSourceIndex,
                 onChanged: (int? value) {
                   assert(value != null);
-                  Actions.invoke(
-                    context,
-                    OpenVideoIntent.payload(
-                      payload.copyWith(videoSourceIndex: value!),
-                      start: MediaPlayer.i.positionNotifier.value,
-                    ),
-                  );
+                  Actions.invoke(context, OpenVideoIntent.switchIndex(value!));
                 },
               ),
           if (proxy != null)

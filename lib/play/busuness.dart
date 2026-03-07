@@ -69,20 +69,31 @@ class OpenVideoIntent extends Intent {
   final PlayPayload? payload;
   final Duration? start;
   final bool reload;
+  final int? index;
 
   const OpenVideoIntent.url(Uri this.url, {this.start})
     : payload = null,
       record = null,
+      index = null,
       reload = false;
   const OpenVideoIntent.record(VideoRecord this.record, {this.start})
     : url = null,
       payload = null,
+      index = null,
       reload = false;
   const OpenVideoIntent.payload(PlayPayload this.payload, {this.start})
     : url = null,
       record = null,
+      index = null,
       reload = false;
   const OpenVideoIntent.reload()
+    : reload = true,
+      url = null,
+      record = null,
+      payload = null,
+      index = null,
+      start = null;
+  const OpenVideoIntent.switchIndex(int this.index)
     : reload = true,
       url = null,
       record = null,
@@ -112,8 +123,7 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
       if (!context.mounted) throw StateError('Context unmounted.');
 
       if (!intent.reload &&
-          payloadNotifer.value?.record.id == payload.record.id &&
-          payloadNotifer.value?.videoSourceIndex == payload.videoSourceIndex) {
+          payloadNotifer.value?.record.id == payload.record.id) {
         logger.i('Video trying to open is same with current, seek only.');
         if (start != null) await MediaPlayer.i.seek(intent.start!);
         return payload;
@@ -145,8 +155,11 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
     OpenVideoIntent intent,
   ) async {
     if (intent.reload) {
-      final payload = payloadNotifer.value;
+      var payload = payloadNotifer.value;
       if (payload == null) throw Exception('Reload failed: no current payload');
+      if (intent.index != null) {
+        payload = payload.copyWith(videoSourceIndex: intent.index!);
+      }
       return (payload, MediaPlayer.i.positionNotifier.value);
     }
 
