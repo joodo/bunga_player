@@ -27,6 +27,7 @@ class _PanelWidgetState extends SingleChildState<PanelWidget> {
         onPressed: Actions.handler(context, ClosePanelIntent()),
       ),
       title: widget.title,
+      titleTextStyle: Theme.of(context).textTheme.titleSmall,
       actions: widget.actions,
       bottom: PreferredSize(
         preferredSize: Size.fromHeight(2.0),
@@ -36,6 +37,7 @@ class _PanelWidgetState extends SingleChildState<PanelWidget> {
               busy ? const LinearProgressIndicator() : const SizedBox.shrink(),
         ),
       ),
+      actionsPadding: const EdgeInsets.only(right: 8.0),
     );
 
     final panel = Scaffold(appBar: appBar, body: child);
