@@ -143,7 +143,6 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
       return payload;
     } catch (e) {
       if (context.mounted) context.popBar('载入视频失败');
-      payloadNotifer.value = null;
       rethrow;
     } finally {
       busyNotifier.remove('open video');
