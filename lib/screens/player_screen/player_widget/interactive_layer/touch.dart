@@ -111,7 +111,7 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
       onHorizentalDragStart: _startSlideSeeking,
       onHorizontalDragUpdate: _updateDragBusiness,
       onHorizontalDragEnd: _finishSlideSeeking,
-      onHorizontalDragCancel: _cancelDragBusiness,
+      onHorizontalDragCancel: _cancelSlideSeeking,
 
       onVerticalDragStart: (details) {
         _isDraggingLeftSide = _isLeftScreen(details.localPosition);
@@ -181,16 +181,14 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
   void _updateDragBusiness(DragUpdateDetails details) =>
       _dragBusiness?.updatePosition(details.localPosition);
 
-  void _cancelDragBusiness() => _dragBusiness?.cancel();
-
   void _startSlideSeeking(DragStartDetails details) {
     final business = context.read<PlayProgressSlideBusiness>();
-    business.startSlide();
     final play = MediaPlayer.i;
-    _dragBusiness = DragBusiness(
+    final startPosition = play.positionNotifier.value;
+    _dragBusiness = DragBusiness<int>(
       startPosition: details.localPosition,
       orientation: .horizontal,
-      startValue: play.positionNotifier.value.inMilliseconds,
+      startValue: startPosition.inMilliseconds,
       onUpdate: (startValue, distance) {
         final delta = distance * 200;
         return business.updateSlide(startValue + delta);
@@ -199,11 +197,19 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
         final delta = distance * 200;
         return business.finishSlide(startValue + delta);
       },
+      onCancel: business.cancelSlide,
     );
+
+    business.startSlide(startPosition.inMilliseconds.toDouble());
   }
 
   void _finishSlideSeeking(DragEndDetails details) {
     _dragBusiness!.end(details.localPosition);
+    _dragBusiness = null;
+  }
+
+  void _cancelSlideSeeking() {
+    _dragBusiness?.cancel();
     _dragBusiness = null;
   }
 

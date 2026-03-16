@@ -1,3 +1,4 @@
+import 'package:bunga_player/utils/business/drag_business.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
@@ -22,12 +23,16 @@ class _VideoProgressBarState extends State<VideoProgressBar> {
   bool _isHovered = false;
   bool _isDragging = false;
 
+  DragBusiness? _dragBusiness;
+
   @override
   void initState() {
     super.initState();
 
-    // always show max size when not desktop
-    if (!kIsDesktop) _isHovered = true;
+    if (!kIsDesktop) {
+      // always show max size when not desktop
+      _isHovered = true;
+    }
   }
 
   @override
@@ -95,7 +100,58 @@ class _VideoProgressBarState extends State<VideoProgressBar> {
     );
 
     if (!kIsDesktop) {
-      return animatedSlider;
+      final player = MediaPlayer.i;
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          double getDelta(double distance) {
+            final width = constraints.maxWidth;
+            final duration = player.durationNotifier.value;
+            final deltaD = duration * (distance / width);
+            return deltaD.inMilliseconds.toDouble();
+          }
+
+          final slideSeekingBusiness = context
+              .read<PlayProgressSlideBusiness>();
+
+          return GestureDetector(
+            behavior: .opaque,
+            onHorizontalDragStart: (details) {
+              final initValue = player.positionNotifier.value.inMilliseconds
+                  .toDouble();
+
+              _dragBusiness = DragBusiness<double>(
+                startPosition: details.localPosition,
+                orientation: .horizontal,
+                startValue: initValue,
+                onUpdate: (startValue, distance) {
+                  final delta = getDelta(distance);
+                  final newPosition = startValue + delta;
+                  slideSeekingBusiness.updateSlide(newPosition);
+                },
+                onEnd: (startValue, distance) {
+                  final delta = getDelta(distance);
+                  final newPosition = startValue + delta;
+                  slideSeekingBusiness.finishSlide(newPosition);
+                },
+                onCancel: slideSeekingBusiness.cancelSlide,
+              );
+
+              slideSeekingBusiness.startSlide(initValue);
+            },
+            onHorizontalDragUpdate: (details) =>
+                _dragBusiness!.updatePosition(details.localPosition),
+            onHorizontalDragEnd: (details) {
+              _dragBusiness!.end(details.localPosition);
+              _dragBusiness = null;
+            },
+            onHorizontalDragCancel: () {
+              _dragBusiness!.cancel();
+              _dragBusiness = null;
+            },
+            child: IgnorePointer(child: animatedSlider),
+          );
+        },
+      );
     } else {
       return MouseRegion(
         onEnter: (event) => setState(() {

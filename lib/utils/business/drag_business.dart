@@ -6,6 +6,7 @@ class DragBusiness<T> {
   final T startValue;
   final dynamic Function(T startValue, double distance) onUpdate;
   final dynamic Function(T startValue, double distance)? onEnd;
+  final dynamic Function()? onCancel;
 
   DragBusiness({
     required this.startPosition,
@@ -13,6 +14,7 @@ class DragBusiness<T> {
     required this.startValue,
     required this.onUpdate,
     this.onEnd,
+    this.onCancel,
   });
 
   dynamic updatePosition(Offset currentPosition) {
@@ -31,5 +33,7 @@ class DragBusiness<T> {
     return onEnd?.call(startValue, distance);
   }
 
-  dynamic cancel() => onUpdate(startValue, 0);
+  dynamic cancel() {
+    return onCancel?.call();
+  }
 }

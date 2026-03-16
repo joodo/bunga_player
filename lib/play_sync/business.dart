@@ -132,6 +132,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
   // Seeking business
   final _isChannelSeeking = AutoResetNotifier(5.seconds);
   bool _isSlideSeeking = false;
+  Timer? _resetSlideSeekingTimer;
 
   // Subtitle sharing
   final _channelSubtitleNotifier = ValueNotifier<ChannelSubtitle?>(null)
@@ -164,6 +165,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
     _streamSubscription.cancel();
 
     _statusSyncTimer.cancel();
+    _resetSlideSeekingTimer?.cancel();
 
     _chatClient.isConnectedNotifier.removeListener(_rejoinIfConnected);
 
@@ -251,6 +253,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
         ),
         SeekStartIntent: CallbackAction<SeekStartIntent>(
           onInvoke: (intent) {
+            _resetSlideSeekingTimer?.cancel();
             _isSlideSeeking = true;
             return;
           },
@@ -263,7 +266,11 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
             );
             context.sendMessage(messageData);
 
-            _isSlideSeeking = false;
+            _resetSlideSeekingTimer = Timer(
+              1.seconds,
+              () => _isSlideSeeking = false,
+            );
+
             return;
           },
         ),

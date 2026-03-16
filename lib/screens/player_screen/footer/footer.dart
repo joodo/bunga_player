@@ -12,13 +12,20 @@ class Footer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return [
-      const VideoControl(),
-      const VideoProgressBar().positioned(
-        height: 16.0,
-        top: -8.0,
-        left: 0,
-        right: 0,
-      ),
-    ].toStack(clipBehavior: .none).constrained(height: videoControlHeight);
+          const VideoControl().positioned(
+            height: videoControlHeight,
+            left: 0,
+            right: 0,
+            bottom: 0,
+          ),
+          const VideoProgressBar().positioned(
+            height: 32.0,
+            top: 0,
+            left: 0,
+            right: 0,
+          ),
+        ]
+        .toStack(clipBehavior: .none)
+        .constrained(height: videoControlHeight + 16.0);
   }
 }

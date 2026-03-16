@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:async/async.dart';
 import 'package:bunga_player/screens/widgets/back_listener.dart';
 import 'package:bunga_player/voice_call/client/client.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
@@ -48,16 +49,18 @@ class PlayProgressSlideBusiness {
 
   void dispose() {
     _playerPositionNotifier.removeListener(_followPlayerPosition);
-    positionNotifier.dispose();
+    _positionNotifier.dispose();
     _seekTimer.cancel();
   }
 
   final _player = MediaPlayer.i;
   late final _playerPositionNotifier = _player.positionNotifier;
 
-  final positionNotifier = ValueNotifier<double>(0);
+  final _positionNotifier = ValueNotifier<double>(0);
+  ValueListenable get positionNotifier => _positionNotifier;
+
   void _followPlayerPosition() {
-    positionNotifier.value = _playerPositionNotifier.value.inMilliseconds
+    _positionNotifier.value = _playerPositionNotifier.value.inMilliseconds
         .toDouble();
   }
 
@@ -65,7 +68,7 @@ class PlayProgressSlideBusiness {
     const Duration(milliseconds: 500),
     () {
       if (_player.durationNotifier.value != Duration.zero) {
-        final pos = Duration(milliseconds: positionNotifier.value.toInt());
+        final pos = Duration(milliseconds: _positionNotifier.value.toInt());
         _player.seek(pos);
       }
       _seekTimer.reset();
@@ -73,8 +76,9 @@ class PlayProgressSlideBusiness {
   )..cancel();
 
   bool _isPlayingBeforeSlide = false;
+  double _startValue = 0;
 
-  void startSlide([double? value]) {
+  void startSlide(double value) {
     _playerPositionNotifier.removeListener(_followPlayerPosition);
 
     Actions.maybeInvoke(context, SeekStartIntent());
@@ -82,33 +86,48 @@ class PlayProgressSlideBusiness {
     _isPlayingBeforeSlide = _player.playStatusNotifier.value.isPlaying;
     _player.pause();
 
-    if (value != null) positionNotifier.value = value;
+    _positionNotifier.value = value;
+    _startValue = value;
     _seekTimer.reset();
 
     final showHUDNotifier = context.read<ShouldShowHUDNotifier>();
-    showHUDNotifier.lockUp('drag');
+    showHUDNotifier.lockUp('position drag');
   }
 
   void updateSlide(double value) {
-    positionNotifier.value = value;
+    _positionNotifier.value = value;
   }
 
-  void finishSlide(double value) {
-    if (_isPlayingBeforeSlide) _player.play();
-
-    final pos = Duration(milliseconds: value.toInt());
-    _player.seek(pos).then((_) {
-      if (!context.mounted) return;
-      Actions.maybeInvoke(context, SeekEndIntent());
-    });
-
+  void finishSlide(double value) async {
     _seekTimer.cancel();
 
-    positionNotifier.value = value;
+    final showHUDNotifier = context.read<ShouldShowHUDNotifier>();
+    showHUDNotifier.unlock('position drag');
+
+    final pos = Duration(milliseconds: value.toInt());
+    await _player.seek(pos);
+
+    if (_isPlayingBeforeSlide) await _player.play();
+
+    _positionNotifier.value = value;
     _playerPositionNotifier.addListener(_followPlayerPosition);
 
+    if (!context.mounted) return;
+    Actions.maybeInvoke(context, SeekEndIntent());
+  }
+
+  void cancelSlide() async {
+    _seekTimer.cancel();
+
     final showHUDNotifier = context.read<ShouldShowHUDNotifier>();
-    showHUDNotifier.unlock('drag');
+    showHUDNotifier.unlock('position drag');
+
+    final pos = Duration(milliseconds: _startValue.toInt());
+    await _player.seek(pos);
+    if (_isPlayingBeforeSlide) await _player.play();
+
+    _positionNotifier.value = _startValue;
+    _playerPositionNotifier.addListener(_followPlayerPosition);
   }
 }
 
