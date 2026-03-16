@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/foundation.dart';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart' as agora;
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:styled_widget/styled_widget.dart';
 
 import 'package:bunga_player/utils/models/volume.dart';
@@ -188,7 +189,7 @@ class AgoraMediaPlayer extends MediaPlayer {
   Future<void> open(PlayPayload payload, [Duration? start]) async {
     _isBuffering.value = true;
 
-    await _player.stop();
+    await stop();
 
     // Headers
     String url = payload.sources.videos[payload.videoSourceIndex].url;
@@ -238,9 +239,13 @@ class AgoraMediaPlayer extends MediaPlayer {
   ValueListenable<Duration> get positionNotifier => _position;
   @override
   Future<void> seek(Duration position) async {
+    if (_samePosition(position, _position.value)) return;
     await _player.seek(position.inMilliseconds);
-    await _position.waitUntil((value) => position == value);
+    await _position.waitUntil((value) => _samePosition(position, value));
   }
+
+  bool _samePosition(Duration a, Duration b) =>
+      a.near(b, tolerance: 10.milliseconds);
 
   // Playback
   final _playStatus = ValueNotifier<PlayStatus>(.stop);

@@ -431,6 +431,9 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
     if (_isChannelSeeking.value) return;
 
     final player = MediaPlayer.i;
+    // Not loaded yet
+    if (player.durationNotifier.value == Duration.zero) return;
+
     final localPosition = player.positionNotifier.value;
 
     if (!channelPlayStatus.isPlaying) {
