@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'dart:math';
 
+import 'package:async/async.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
@@ -38,14 +40,16 @@ class BungaChatClient extends ChatClient {
     return Message(data: json, sender: User.fromJson(json['sender']));
   });
 
-  final _messageRawBuffer = <String>[];
-  static const _ignoreLoggingCodes = {'spark'};
+  static const _ignoreLoggingCodes = {
+    'spark',
+    'client-status',
+    'channel-status',
+  };
   @override
   Future<Message?> sendMessage(Map<String, dynamic> data) async {
     final rawData = jsonEncode(data);
 
     if (_channel == null) {
-      _messageRawBuffer.add(rawData);
       logger.w('Chat: websocket not ready, send message later.');
       return null;
     }
@@ -58,6 +62,8 @@ class BungaChatClient extends ChatClient {
   }
 
   void onDataReceived(String rawData) {
+    _heartbeatTimeoutTimer.reset();
+
     final json = jsonDecode(rawData);
     if (!_ignoreLoggingCodes.contains(json['code'])) {
       logger.i('Chat: message received: $rawData');
@@ -75,6 +81,10 @@ class BungaChatClient extends ChatClient {
     return _connect();
   }
 
+  final _isConnectedNotifier = ValueNotifier<bool>(false);
+  @override
+  ValueListenable<bool> get isConnectedNotifier => _isConnectedNotifier;
+
   Future<void> _connect() async {
     final origin = _serverInfo.origin;
     final wsUrl = origin.replace(
@@ -85,18 +95,18 @@ class BungaChatClient extends ChatClient {
         'channel_id': _serverInfo.channel.id,
       },
     );
-    final ws = await WebSocket.connect(
+    _channel = IOWebSocketChannel.connect(
       wsUrl.toString(),
-    ).timeout(const Duration(seconds: 5));
-    ws.pingInterval = const Duration(seconds: 5);
-
-    _channel = IOWebSocketChannel(ws);
+      connectTimeout: 5.seconds,
+    );
 
     _channel!.stream.listen(
       (rawData) {
         onDataReceived(rawData);
       },
       onDone: () async {
+        _isConnectedNotifier.value = false;
+
         final closeCode = _channel!.closeCode;
         _channel = null;
         switch (closeCode) {
@@ -109,6 +119,7 @@ class BungaChatClient extends ChatClient {
             return _reconnect();
 
           case 1002: // Client unstable
+          case 3000: // Break by timer
             logger.w('Websocket: connection break. Code $closeCode');
             return _reconnect(backoff: false);
 
@@ -132,12 +143,8 @@ class BungaChatClient extends ChatClient {
       await _channel!.ready;
       logger.i('Websocket: connect success');
       retryDelayMSec = 500;
-
-      for (final rawData in _messageRawBuffer) {
-        _channel!.sink.add(rawData);
-        logger.i('Chat: send delayed message: $rawData');
-      }
-      _messageRawBuffer.clear();
+      _isConnectedNotifier.value = true;
+      _heartbeatTimeoutTimer.reset();
     } on WebSocketChannelException catch (e) {
       logger.w('Websocket: $e');
       _channel = null;
@@ -145,10 +152,19 @@ class BungaChatClient extends ChatClient {
     }
   }
 
+  late final _heartbeatTimeoutTimer = RestartableTimer(3.seconds, () {
+    // Already disconnected, _reconnect should be invoked
+    if (!_isConnectedNotifier.value) return;
+
+    logger.w('Websocket: heartbeat timeout, break connection.');
+    _channel?.sink.close(3000);
+  })..cancel();
+
   @override
   void dispose() {
     _channel?.sink.close(1000);
     _streamController.close();
+    _isConnectedNotifier.dispose();
     super.dispose();
   }
 }

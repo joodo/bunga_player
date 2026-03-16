@@ -304,6 +304,7 @@ class BungaGestureDetector extends SingleChildStatefulWidget {
   final HitTestBehavior? behavior;
 
   const BungaGestureDetector({
+    super.key,
     this.onTap,
     this.onDoubleTap,
     this.onHorizentalDragStart,

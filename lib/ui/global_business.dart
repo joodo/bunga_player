@@ -129,7 +129,9 @@ class BusyStateNotifier extends ChangeNotifier {
 
 class SyncMessageEvent extends SimpleEventStream<String> {}
 
-class PlayToggleVisualSignal extends SimpleEventStream<bool> {
+enum PlayPauseOverlayStatus { pause, pendingPlaying, playing }
+
+class PlayToggleVisualSignal extends SimpleEventStream<PlayPauseOverlayStatus> {
   PlayToggleVisualSignal();
 }
 

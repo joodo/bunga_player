@@ -88,7 +88,7 @@ class MediaKitMediaPlayer extends MediaPlayer {
     (playStatusNotifier as _StreamListenable).dispose();
     _isBufferingFromStream.dispose();
     _isBufferingNotifier.dispose();
-    playbackRateNotifier.dispose();
+    rateNotifier.dispose();
     audioTrackNotifier.dispose();
     audioTracksNotifier.dispose();
     subtitleTrackNotifier.dispose();
@@ -169,7 +169,7 @@ class MediaKitMediaPlayer extends MediaPlayer {
 
   // Playback rate
   @override
-  late final playbackRateNotifier = _StreamValueNotifier<double>(
+  late final rateNotifier = _StreamValueNotifier<double>(
     stream: _player.stream.rate,
     setter: _player.setRate,
     initValue: 1.0,

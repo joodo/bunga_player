@@ -6,25 +6,66 @@ part of 'message_data.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-BufferStateChangedMessageData _$BufferStateChangedMessageDataFromJson(
+ClientStatusMessageData _$ClientStatusMessageDataFromJson(
+  Map<String, dynamic> json,
+) => $checkedCreate('ClientStatusMessageData', json, ($checkedConvert) {
+  final val = ClientStatusMessageData(
+    $checkedConvert('is_pending', (v) => v as bool),
+  );
+  return val;
+}, fieldKeyMap: const {'isPending': 'is_pending'});
+
+Map<String, dynamic> _$ClientStatusMessageDataToJson(
+  ClientStatusMessageData instance,
+) => <String, dynamic>{'code': instance.code, 'is_pending': instance.isPending};
+
+ChannelStatusMessageData _$ChannelStatusMessageDataFromJson(
   Map<String, dynamic> json,
 ) => $checkedCreate(
-  'BufferStateChangedMessageData',
+  'ChannelStatusMessageData',
   json,
   ($checkedConvert) {
-    final val = BufferStateChangedMessageData(
-      $checkedConvert('is_buffering', (v) => v as bool),
+    final val = ChannelStatusMessageData(
+      watcherIds: $checkedConvert(
+        'watcher_ids',
+        (v) => (v as List<dynamic>).map((e) => e as String).toList(),
+      ),
+      readyIds: $checkedConvert(
+        'ready_ids',
+        (v) => (v as List<dynamic>).map((e) => e as String).toList(),
+      ),
+      position: $checkedConvert(
+        'position',
+        (v) => Duration(microseconds: (v as num).toInt()),
+      ),
+      playStatus: $checkedConvert(
+        'play_status',
+        (v) => $enumDecode(_$ChannelPlayStatusEnumMap, v),
+      ),
     );
     return val;
   },
-  fieldKeyMap: const {'isBuffering': 'is_buffering'},
+  fieldKeyMap: const {
+    'watcherIds': 'watcher_ids',
+    'readyIds': 'ready_ids',
+    'playStatus': 'play_status',
+  },
 );
 
-Map<String, dynamic> _$BufferStateChangedMessageDataToJson(
-  BufferStateChangedMessageData instance,
+Map<String, dynamic> _$ChannelStatusMessageDataToJson(
+  ChannelStatusMessageData instance,
 ) => <String, dynamic>{
   'code': instance.code,
-  'is_buffering': instance.isBuffering,
+  'watcher_ids': instance.watcherIds,
+  'ready_ids': instance.readyIds,
+  'position': instance.position.inMicroseconds,
+  'play_status': _$ChannelPlayStatusEnumMap[instance.playStatus]!,
+};
+
+const _$ChannelPlayStatusEnumMap = {
+  ChannelPlayStatus.paused: 'paused',
+  ChannelPlayStatus.pending: 'pending',
+  ChannelPlayStatus.playing: 'playing',
 };
 
 PlayMessageData _$PlayMessageDataFromJson(Map<String, dynamic> json) =>
@@ -80,25 +121,6 @@ PlayFinishedMessageData _$PlayFinishedMessageDataFromJson(
 Map<String, dynamic> _$PlayFinishedMessageDataToJson(
   PlayFinishedMessageData instance,
 ) => <String, dynamic>{'code': instance.code};
-
-PlayAtMessageData _$PlayAtMessageDataFromJson(Map<String, dynamic> json) =>
-    $checkedCreate('PlayAtMessageData', json, ($checkedConvert) {
-      final val = PlayAtMessageData(
-        position: $checkedConvert(
-          'position',
-          (v) => Duration(microseconds: (v as num).toInt()),
-        ),
-        isPlay: $checkedConvert('is_play', (v) => v as bool),
-      );
-      return val;
-    }, fieldKeyMap: const {'isPlay': 'is_play'});
-
-Map<String, dynamic> _$PlayAtMessageDataToJson(PlayAtMessageData instance) =>
-    <String, dynamic>{
-      'code': instance.code,
-      'position': instance.position.inMicroseconds,
-      'is_play': instance.isPlay,
-    };
 
 ShareSubMessageData _$ShareSubMessageDataFromJson(Map<String, dynamic> json) =>
     $checkedCreate('ShareSubMessageData', json, ($checkedConvert) {

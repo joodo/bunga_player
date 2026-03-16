@@ -158,3 +158,18 @@ class ByeMessageData extends MessageData {
   @override
   Map<String, dynamic> toJson() => _$ByeMessageDataToJson(this);
 }
+
+@JsonSerializable()
+class WhoAreYouMessageData extends MessageData {
+  static const messageCode = 'who-are-you';
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: true)
+  final code = messageCode;
+
+  WhoAreYouMessageData();
+
+  factory WhoAreYouMessageData.fromJson(Map<String, dynamic> json) =>
+      _$WhoAreYouMessageDataFromJson(json);
+  @override
+  Map<String, dynamic> toJson() => _$WhoAreYouMessageDataToJson(this);
+}

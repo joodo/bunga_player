@@ -63,7 +63,7 @@ class _WatcherLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bufferingNotifier = context.read<WatcherBufferingStatusNotifier>();
+    final idsNotifier = context.read<WatcherPendingIdsNotifier>();
     return [
       Selector<List<TalkerId>, bool>(
         selector: (context, value) => value.any((e) => e.value == user.id),
@@ -71,11 +71,10 @@ class _WatcherLabel extends StatelessWidget {
             isTalking ? Text('🎤') : const SizedBox.shrink(),
       ),
       Text(user.name).textColor(user.getColor(brightness: 0.95)),
-      ListenableBuilder(
-        listenable: bufferingNotifier,
-        builder: (context, child) => bufferingNotifier.isBuffering(user.id)
-            ? const Text('⏳')
-            : const SizedBox.shrink(),
+      ValueListenableBuilder(
+        valueListenable: idsNotifier,
+        builder: (context, ids, child) =>
+            ids.contains(user.id) ? const Text('⏳') : const SizedBox.shrink(),
       ),
     ].toRow().padding(right: 8.0);
   }

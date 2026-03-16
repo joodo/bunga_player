@@ -26,7 +26,7 @@ abstract class MediaPlayer {
   ValueListenable<Duration> get bufferNotifier;
   ValueListenable<bool> get isBufferingNotifier;
   ValueListenable<Duration> get positionNotifier;
-  ValueNotifier<double> get playbackRateNotifier;
+  ValueNotifier<double> get rateNotifier;
   Future<void> seek(Duration position);
 
   ValueListenable<PlayStatus> get playStatusNotifier;

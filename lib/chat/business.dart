@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:bunga_player/play_sync/models.dart/message_data.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
@@ -33,44 +34,51 @@ class WatchersNotifier extends ChangeNotifier
     implements ValueListenable<Watchers> {
   final User myself;
   WatchersNotifier({required this.myself}) {
-    upsert(myself);
+    upsertInfo(myself);
   }
 
-  final Map<String, User> _data = {};
+  final Map<String, User> _infos = {};
 
-  void set(Iterable<User> users) {
-    _data.clear();
-    _data[myself.id] = myself;
+  void setInfos(Iterable<User> users) {
+    _infos.clear();
+    _infos[myself.id] = myself;
     for (var u in users) {
-      _data[u.id] = u;
+      _infos[u.id] = u;
     }
     notifyListeners();
   }
 
-  bool upsert(User user) {
-    if (_data[user.id] != user) {
-      _data[user.id] = user;
+  bool upsertInfo(User user) {
+    if (_infos[user.id] != user) {
+      _infos[user.id] = user;
       notifyListeners();
       return true;
     }
     return false;
+  }
+
+  final List<String> _ids = [];
+
+  void setIds(List<String> ids) {
+    if (listEquals(ids, _ids)) return;
+
+    _ids.clear();
+    _ids.addAll(ids);
+    notifyListeners();
   }
 
   bool removeId(String id) {
-    final removed = _data.remove(id);
-    if (removed != null) {
+    if (_ids.remove(id)) {
       notifyListeners();
       return true;
+    } else {
+      return false;
     }
-    return false;
-  }
-
-  bool containsId(String id) {
-    return _data.containsKey(id);
   }
 
   @override
-  Watchers get value => Watchers(_data.values);
+  Watchers get value =>
+      Watchers(_infos.values.where((u) => _ids.contains(u.id)));
 }
 
 class ChannelBusiness extends SingleChildStatefulWidget {
@@ -107,6 +115,11 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
         case ByeMessageData.messageCode:
           if (message.sender.id == _myId) break;
           _handleBye(message.sender.id);
+        case ChannelStatusMessageData.messageCode:
+          final ids = ChannelStatusMessageData.fromJson(
+            message.data,
+          ).watcherIds;
+          _watchersNotifier.setIds(ids);
       }
     });
   }
@@ -128,15 +141,17 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
 
   void _handleAloha(User sender) {
     _addWatcher(sender);
-    // Server will pause when someone is joining
 
+    // Server will pause when someone is joining
     if (MediaPlayer.i.playStatusNotifier.value.isPlaying) {
-      context.read<PlayToggleVisualSignal>().fire(false);
+      context.read<PlayToggleVisualSignal>().fire(
+        PlayPauseOverlayStatus.pause,
+      );
     }
   }
 
   void _handleHereAre(List<User> watchers) {
-    _watchersNotifier.set(watchers);
+    _watchersNotifier.setInfos(watchers);
   }
 
   void _handleBye(String userId) {
@@ -144,7 +159,7 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
   }
 
   void _addWatcher(User user) {
-    if (_watchersNotifier.upsert(user)) {
+    if (_watchersNotifier.upsertInfo(user)) {
       context.read<BungaAudioPlayer>().playSfx('user_join');
     }
   }

@@ -149,3 +149,14 @@ ByeMessageData _$ByeMessageDataFromJson(Map<String, dynamic> json) =>
 
 Map<String, dynamic> _$ByeMessageDataToJson(ByeMessageData instance) =>
     <String, dynamic>{'code': instance.code};
+
+WhoAreYouMessageData _$WhoAreYouMessageDataFromJson(
+  Map<String, dynamic> json,
+) => $checkedCreate('WhoAreYouMessageData', json, ($checkedConvert) {
+  final val = WhoAreYouMessageData();
+  return val;
+});
+
+Map<String, dynamic> _$WhoAreYouMessageDataToJson(
+  WhoAreYouMessageData instance,
+) => <String, dynamic>{'code': instance.code};

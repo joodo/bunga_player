@@ -15,12 +15,15 @@ class PopupLayer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isInChannel = context.read<IsInChannel>().value;
-    return [
+    final content = [
       AdjustIndicator(),
       if (isInChannel) PlaySyncMessage(),
       PlayPauseOverlay(),
       BusyIndicator(),
       if (isInChannel) SparkSelectionBar(),
     ].toStack();
+    return Overlay(
+      initialEntries: [OverlayEntry(builder: (context) => content)],
+    );
   }
 }

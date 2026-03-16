@@ -37,7 +37,7 @@ class AgoraMediaPlayer extends MediaPlayer {
 
     _player.registerPlayerSourceObserver(_createObserver());
 
-    playbackRateNotifier.addListener(_onPlaybackRateChanged);
+    rateNotifier.addListener(_onPlaybackRateChanged);
     _volume.addListener(() {
       _player.adjustPlayoutVolume(_volume.value.level.toLevel);
       _player.mute(_volume.value.mute);
@@ -60,7 +60,7 @@ class AgoraMediaPlayer extends MediaPlayer {
   }
 
   Future<void> _disposePlayer() async {
-    playbackRateNotifier.removeListener(_onPlaybackRateChanged);
+    rateNotifier.removeListener(_onPlaybackRateChanged);
 
     if (__player != null) {
       await engine!.destroyMediaPlayer(_player);
@@ -152,7 +152,7 @@ class AgoraMediaPlayer extends MediaPlayer {
   }
 
   void _onPlaybackRateChanged() {
-    _player.setPlaybackSpeed((100.0 * playbackRateNotifier.value).toInt());
+    _player.setPlaybackSpeed((100.0 * rateNotifier.value).toInt());
   }
 
   @override
@@ -163,7 +163,7 @@ class AgoraMediaPlayer extends MediaPlayer {
 
     await _disposePlayer();
 
-    playbackRateNotifier.dispose();
+    rateNotifier.dispose();
     _volume.dispose();
     _duration.dispose();
     _buffer.dispose();
@@ -247,15 +247,17 @@ class AgoraMediaPlayer extends MediaPlayer {
   @override
   ValueListenable<PlayStatus> get playStatusNotifier => _playStatus;
   @override
-  Future<void> pause() {
+  Future<void> pause() async {
+    if (!_playStatus.value.isPlaying) return;
     _player.pause();
-    return _playStatus.waitUntil((status) => !status.isPlaying);
+    await _playStatus.waitUntil((status) => !status.isPlaying);
   }
 
   @override
-  Future<void> play() {
+  Future<void> play() async {
+    if (_playStatus.value.isPlaying) return;
     _player.play();
-    return _playStatus.waitUntil((status) => status.isPlaying);
+    await _playStatus.waitUntil((status) => status.isPlaying);
   }
 
   @override
@@ -272,7 +274,7 @@ class AgoraMediaPlayer extends MediaPlayer {
 
   // Playback rate
   @override
-  final playbackRateNotifier = ValueNotifier(1.0);
+  final rateNotifier = ValueNotifier(1.0);
 
   // Utils
 

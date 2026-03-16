@@ -2,13 +2,14 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:animations/animations.dart';
+import 'package:async/async.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:nested/nested.dart';
 import 'package:path/path.dart' as path_tool;
 import 'package:provider/provider.dart';
 
 import 'package:bunga_player/chat/global_business.dart';
-import 'package:bunga_player/utils/business/platform.dart';
 import 'package:bunga_player/chat/models/models.dart';
 import 'package:bunga_player/chat/client/client.dart';
 import 'package:bunga_player/play/busuness.dart';
@@ -38,28 +39,8 @@ class SubtitleTrackIdOfUrl {
   final value = <String, String>{};
 }
 
-class WatcherBufferingStatusNotifier extends ChangeNotifier {
-  final Set<String> _bufferingIds = {};
-  void setBuffering(String userId, bool isBuffering) {
-    if (isBuffering && _bufferingIds.add(userId) ||
-        !isBuffering && _bufferingIds.remove(userId)) {
-      notifyListeners();
-    }
-  }
-
-  Iterable<String> get bufferingUserIds => _bufferingIds;
-  set bufferingUserIds(Iterable<String> values) {
-    _bufferingIds.clear();
-    _bufferingIds.addAll(values);
-    notifyListeners();
-  }
-
-  bool get hasBuffering => _bufferingIds.isNotEmpty;
-
-  bool isBuffering(String userId) => _bufferingIds.contains(userId);
-
-  @override
-  String toString() => bufferingUserIds.toString();
+class WatcherPendingIdsNotifier extends ValueNotifier<List<String>> {
+  WatcherPendingIdsNotifier() : super([]);
 }
 
 // Actions
@@ -105,6 +86,15 @@ class ShareVideoAction extends ContextAction<ShareVideoIntent> {
   }
 }
 
+enum _Tolerances {
+  treatAsSync(Duration(milliseconds: 400)),
+  silenceCatchUp(Duration(seconds: 3)),
+  waitForOthers(Duration(seconds: 7));
+
+  final Duration duration;
+  const _Tolerances(this.duration);
+}
+
 // Wrapper
 
 class PlaySyncBusiness extends SingleChildStatefulWidget {
@@ -121,14 +111,27 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
   );
 
   // Chat
+  late final _chatClient = context.read<ChatClient>();
   late final StreamSubscription _streamSubscription;
 
   // Player status
-  final _watchersBufferStatusNotifier = WatcherBufferingStatusNotifier()
-    ..watchInConsole('Watchers Sync Status');
+  final _watchersPendingIdsNotifier = WatcherPendingIdsNotifier()
+    ..watchInConsole('Watchers Pending Ids');
+
+  // My status
+  static const _statusSendInterval = Duration(seconds: 1);
+  late final _statusSyncTimer = RestartableTimer(
+    _statusSendInterval,
+    _sendPendingStatus,
+  );
+  late final _playbackOverlay = _PlaybackOverlayManager(
+    context: context,
+    pendingPlayShowDelay: _statusSendInterval,
+  );
 
   // Seeking business
-  bool _seeking = false;
+  final _isChannelSeeking = AutoResetNotifier(5.seconds);
+  bool _isSlideSeeking = false;
 
   // Subtitle sharing
   final _channelSubtitleNotifier = ValueNotifier<ChannelSubtitle?>(null)
@@ -143,25 +146,26 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
     );
 
     final player = MediaPlayer.i;
-    player.isBufferingNotifier.addListener(_sendBufferingStatus);
-    player.positionNotifier.addListener(_silentCatchUp);
     player.finishNotifier.addListener(_sendFinishMessage);
 
-    if (!kIsDesktop) _appLifecycleListener;
+    _statusSyncTimer.reset();
+
+    _chatClient.isConnectedNotifier.addListener(_rejoinIfConnected);
   }
 
   @override
   void dispose() {
     final player = MediaPlayer.i;
-    player.isBufferingNotifier.removeListener(_sendBufferingStatus);
-    player.positionNotifier.removeListener(_silentCatchUp);
     player.finishNotifier.removeListener(_sendFinishMessage);
 
     _remoteJustToggledNotifier.dispose();
     _channelSubtitleNotifier.dispose();
+    _isChannelSeeking.dispose();
     _streamSubscription.cancel();
 
-    if (!kIsDesktop) _appLifecycleListener.dispose();
+    _statusSyncTimer.cancel();
+
+    _chatClient.isConnectedNotifier.removeListener(_rejoinIfConnected);
 
     super.dispose();
   }
@@ -196,7 +200,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
             final player = MediaPlayer.i;
 
             final wantPlay = !player.playStatusNotifier.value.isPlaying;
-            context.read<PlayToggleVisualSignal>().fire(wantPlay);
+            _playbackOverlay.show(wantPlay ? .pendingPlaying : .pause);
 
             late final MessageData messageData;
             if (wantPlay) {
@@ -222,8 +226,8 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
             late final MessageData messageData;
             if (wantPlay) {
               messageData = PlayMessageData();
-              // Only show visual signal when play -- because it's a soft action
-              context.read<PlayToggleVisualSignal>().fire(wantPlay);
+              // Show pending until channel status confirms real playback.
+              _playbackOverlay.show(.pendingPlaying);
             } else {
               // pause control by myself
               player.pause();
@@ -247,9 +251,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
         ),
         SeekStartIntent: CallbackAction<SeekStartIntent>(
           onInvoke: (intent) {
-            // Don't wait me...
-            context.sendMessage(BufferStateChangedMessageData(false));
-            _seeking = true;
+            _isSlideSeeking = true;
             return;
           },
         ),
@@ -261,8 +263,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
             );
             context.sendMessage(messageData);
 
-            _seeking = false;
-            _sendBufferingStatus();
+            _isSlideSeeking = false;
             return;
           },
         ),
@@ -274,7 +275,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
     return MultiProvider(
       providers: [
         ValueListenableProvider.value(value: _channelSubtitleNotifier),
-        ListenableProvider.value(value: _watchersBufferStatusNotifier),
+        ListenableProvider.value(value: _watchersPendingIdsNotifier),
         Provider(create: (context) => SubtitleTrackIdOfUrl()),
       ],
       child: actions,
@@ -290,31 +291,42 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
         _handleProjection(message.sender, data.videoRecord, data.position);
       case HereAreMessageData.messageCode:
         final data = HereAreMessageData.fromJson(message.data);
-        _handleHereAre(data.buffering);
-      case BufferStateChangedMessageData.messageCode:
-        final isBuffering = BufferStateChangedMessageData.fromJson(
-          message.data,
-        ).isBuffering;
-        _handleSyncStatus(message.sender, isBuffering);
-      case PlayAtMessageData.messageCode:
-        final data = PlayAtMessageData.fromJson(message.data);
-        _handlePlayAt(message.sender, data.isPlay, data.position);
+        _updatePendingIds(data.buffering);
+      case ChannelStatusMessageData.messageCode:
+        final data = ChannelStatusMessageData.fromJson(message.data);
+
+        _handleChannelStatus(message.sender, data.playStatus, data.position);
+
+        final (all, readys) = (data.watcherIds, data.readyIds);
+        final pendings = all.toSet().difference(readys.toSet()).toList();
+        _updatePendingIds(pendings);
       case PlayMessageData.messageCode:
         if (message.sender.isCurrent(context)) break;
 
         final manager = read<SyncMessageEvent>();
         final name = message.sender.name;
         manager.fire('$name 播放了视频');
-        read<PlayToggleVisualSignal>().fire(true);
+        _playbackOverlay.show(.pendingPlaying);
 
         _remoteJustToggledNotifier.mark();
       case PauseMessageData.messageCode:
         if (message.sender.isCurrent(context)) break;
 
+        // Paused by user, not by waiting pending
+        // So pause immediately and seek, do not wait for channel status message
+        final position = PauseMessageData.fromJson(message.data).position;
+        MediaPlayer.i.pause();
+        if (MediaPlayer.i.positionNotifier.value.near(
+          position,
+          tolerance: _Tolerances.treatAsSync.duration,
+        )) {
+          MediaPlayer.i.seek(position);
+        }
+
         final manager = read<SyncMessageEvent>();
         final name = message.sender.name;
         manager.fire('$name 暂停了视频');
-        read<PlayToggleVisualSignal>().fire(false);
+        _playbackOverlay.show(.pause);
 
         _remoteJustToggledNotifier.mark();
       case SeekMessageData.messageCode:
@@ -323,6 +335,12 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
         final manager = read<SyncMessageEvent>();
         final name = message.sender.name;
         manager.fire('$name 调整了进度');
+
+        // Seek immediately, do not wait for channel status message
+        final position = SeekMessageData.fromJson(message.data).position;
+        MediaPlayer.i.seek(position);
+
+        _isChannelSeeking.mark();
       case ShareSubMessageData.messageCode:
         _dealWithSubSharing(
           sharer: message.sender,
@@ -330,6 +348,8 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
         );
       case ResetMessageData.messageCode:
         if (mounted) Navigator.of(context).pop();
+      case WhoAreYouMessageData.messageCode:
+        _rejoinIfConnected();
     }
   }
 
@@ -391,39 +411,54 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
     Actions.invoke(context, OpenVideoIntent.record(newRecord, start: start));
   }
 
-  void _handleHereAre(List<String> buffering) {
-    _watchersBufferStatusNotifier.bufferingUserIds = buffering;
+  void _updatePendingIds(List<String> ids) {
+    _watchersPendingIdsNotifier.value = ids;
   }
 
-  void _handleSyncStatus(User sender, bool status) {
-    _watchersBufferStatusNotifier.setBuffering(sender.id, status);
-  }
+  void _handleChannelStatus(
+    User sender,
+    ChannelPlayStatus channelPlayStatus,
+    Duration position,
+  ) async {
+    // do not sync channel status when seeking
+    if (_isChannelSeeking.value) return;
 
-  void _handlePlayAt(User sender, bool isPlay, Duration position) async {
     final player = MediaPlayer.i;
-
-    // Toggle play/pause
-    final localPlay = player.playStatusNotifier.value.isPlaying;
-    final shouldToggle = isPlay != localPlay;
-    if (shouldToggle) await player.toggle();
-
-    // Seek
     final localPosition = player.positionNotifier.value;
-    final shouldSeek =
-        !_seeking &&
-        (isPlay
-            ? !localPosition.near(
-                position,
-                tolerance: const Duration(seconds: 4),
-              )
-            : localPosition != position);
-    if (shouldSeek) {
-      await player.seek(position);
-      _catchUpTarget = null;
+
+    if (!channelPlayStatus.isPlaying) {
+      await player.pause();
+
+      if (localPosition.near(
+        position,
+        tolerance: _Tolerances.silenceCatchUp.duration,
+      )) {
+        return;
+      } else {
+        await player.seek(position);
+      }
     } else {
-      if (!_seeking && !localPosition.near(position)) {
-        // Not "near" enough, change playback rate instead of seeking to avoid jarring
-        _catchUpTarget = _CatchUpTarget(position);
+      if (localPosition.near(
+        position,
+        tolerance: _Tolerances.treatAsSync.duration,
+      )) {
+        player.rateNotifier.value = 1.0;
+        _playbackOverlay.show(.playing);
+        await player.play();
+      } else if (localPosition.near(
+        position,
+        tolerance: _Tolerances.silenceCatchUp.duration,
+      )) {
+        player.rateNotifier.value = localPosition > position ? 0.95 : 1.05;
+        _playbackOverlay.show(.playing);
+        await player.play();
+      } else if (localPosition > position &&
+          localPosition - position < _Tolerances.waitForOthers.duration) {
+        await player.pause();
+      } else {
+        _playbackOverlay.show(.playing);
+        await player.play();
+        await player.seek(position);
       }
     }
   }
@@ -440,34 +475,24 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
     );
   }
 
-  void _sendBufferingStatus() {
-    if (_seeking) return;
+  void _sendPendingStatus() {
+    // Don't wait me when I'm sliding the progress bar
+    if (_isSlideSeeking) {
+      context.sendMessage(ClientStatusMessageData(false));
+    } else {
+      final duration = MediaPlayer.i.durationNotifier.value;
+      final isLoaded = duration > Duration.zero;
 
-    final buffering = MediaPlayer.i.isBufferingNotifier.value;
-    final data = BufferStateChangedMessageData(buffering);
-    context.sendMessage(data);
-  }
+      final buffer = MediaPlayer.i.bufferNotifier.value;
+      final position = MediaPlayer.i.positionNotifier.value;
+      final isBuffering = (buffer - position) < Duration(seconds: 1);
 
-  // Silent Catch-Up
-  _CatchUpTarget? _catchUpTarget;
-  void _silentCatchUp() {
-    final playService = MediaPlayer.i;
-
-    if (_catchUpTarget == null) {
-      playService.playbackRateNotifier.value = 1.0;
-      return;
+      final isPending = !isLoaded || isBuffering;
+      final data = ClientStatusMessageData(isPending);
+      context.sendMessage(data);
     }
 
-    final position = playService.positionNotifier.value;
-    final comparison = _catchUpTarget!.compareTo(position);
-    switch (comparison) {
-      case < 0:
-        playService.playbackRateNotifier.value = 0.95;
-      case 0:
-        _catchUpTarget = null;
-      case > 0:
-        playService.playbackRateNotifier.value = 1.05;
-    }
+    _statusSyncTimer.reset();
   }
 
   // Finish
@@ -475,31 +500,47 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
     context.sendMessage(PlayFinishedMessageData());
   }
 
-  // App lifecycle state
-  late final _appLifecycleListener = AppLifecycleListener(
-    onResume: () {
+  // Rejoin
+  void _rejoinIfConnected() {
+    if (_chatClient.isConnectedNotifier.value) {
       context.sendMessage(JoinInMessageData(user: User.of(context)));
-    },
-  );
-}
-
-class _CatchUpTarget {
-  final _createdAt = DateTime.now();
-  final Duration _target;
-
-  _CatchUpTarget(this._target);
-
-  int compareTo(Duration other) {
-    final now = DateTime.now();
-    final elapsed = now.difference(_createdAt);
-    final currentTarget = _target + elapsed;
-
-    if (currentTarget.near(other)) return 0;
-    return currentTarget.compareTo(other);
+    }
   }
 }
 
 extension WrapPlaySyncBusiness on Widget {
   Widget playSyncBusiness({Key? key}) =>
       PlaySyncBusiness(key: key, child: this);
+}
+
+class _PlaybackOverlayManager {
+  final Duration pendingPlayShowDelay;
+  final BuildContext context;
+
+  _PlaybackOverlayManager({
+    required this.pendingPlayShowDelay,
+    required this.context,
+  });
+
+  bool _isPending = false;
+
+  void show(PlayPauseOverlayStatus status) {
+    if (!context.mounted) return;
+
+    final signal = context.read<PlayToggleVisualSignal>();
+
+    switch (status) {
+      case .pause:
+        _isPending = false;
+        signal.fire(.pause);
+      case .playing:
+        signal.fire(.playing);
+      case .pendingPlaying:
+        _isPending = true;
+        Future.delayed(pendingPlayShowDelay, () {
+          if (!context.mounted) return;
+          if (_isPending) signal.fire(.pendingPlaying);
+        });
+    }
+  }
 }

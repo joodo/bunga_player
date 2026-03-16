@@ -4,22 +4,57 @@ import 'package:bunga_player/chat/models/message_data.dart';
 
 part 'message_data.g.dart';
 
-/// Send/receive when buffer status changed
+/// Send status as heartbeat
 @JsonSerializable()
-class BufferStateChangedMessageData extends MessageData {
-  static const messageCode = 'buffer-state-changed';
+class ClientStatusMessageData extends MessageData {
+  static const messageCode = 'client-status';
   @override
   @JsonKey(includeFromJson: false, includeToJson: true)
   final code = messageCode;
 
-  final bool isBuffering;
+  final bool isPending;
 
-  BufferStateChangedMessageData(this.isBuffering);
+  ClientStatusMessageData(this.isPending);
 
-  factory BufferStateChangedMessageData.fromJson(Map<String, dynamic> json) =>
-      _$BufferStateChangedMessageDataFromJson(json);
+  factory ClientStatusMessageData.fromJson(Map<String, dynamic> json) =>
+      _$ClientStatusMessageDataFromJson(json);
   @override
-  Map<String, dynamic> toJson() => _$BufferStateChangedMessageDataToJson(this);
+  Map<String, dynamic> toJson() => _$ClientStatusMessageDataToJson(this);
+}
+
+/// Receive channel status as heartbeat
+
+enum ChannelPlayStatus {
+  paused,
+  pending,
+  playing;
+
+  bool get isPlaying => this == playing;
+}
+
+@JsonSerializable()
+class ChannelStatusMessageData extends MessageData {
+  static const messageCode = 'channel-status';
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: true)
+  final code = messageCode;
+
+  final List<String> watcherIds;
+  final List<String> readyIds;
+  final Duration position;
+  final ChannelPlayStatus playStatus;
+
+  ChannelStatusMessageData({
+    required this.watcherIds,
+    required this.readyIds,
+    required this.position,
+    required this.playStatus,
+  });
+
+  factory ChannelStatusMessageData.fromJson(Map<String, dynamic> json) =>
+      _$ChannelStatusMessageDataFromJson(json);
+  @override
+  Map<String, dynamic> toJson() => _$ChannelStatusMessageDataToJson(this);
 }
 
 /// Send/Receive when start play
@@ -88,25 +123,6 @@ class PlayFinishedMessageData extends MessageData {
       _$PlayFinishedMessageDataFromJson(json);
   @override
   Map<String, dynamic> toJson() => _$PlayFinishedMessageDataToJson(this);
-}
-
-/// Receive when someone change play status
-@JsonSerializable()
-class PlayAtMessageData extends MessageData {
-  static const messageCode = 'play-at';
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: true)
-  final code = messageCode;
-
-  final Duration position;
-  final bool isPlay;
-
-  PlayAtMessageData({required this.position, required this.isPlay});
-
-  factory PlayAtMessageData.fromJson(Map<String, dynamic> json) =>
-      _$PlayAtMessageDataFromJson(json);
-  @override
-  Map<String, dynamic> toJson() => _$PlayAtMessageDataToJson(this);
 }
 
 /// Send when sharing subtitle

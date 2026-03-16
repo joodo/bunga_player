@@ -43,10 +43,11 @@ class _VideoProgressBarState extends State<VideoProgressBar> {
     final animatedSlider = ValueListenableBuilder(
       valueListenable: MediaPlayer.i.isBufferingNotifier,
       builder: (context, amIBuffering, child) =>
-          Selector<WatcherBufferingStatusNotifier?, bool>(
-            selector: (context, notifier) => notifier?.hasBuffering ?? false,
-            builder: (context, hasBuffering, child) {
-              final showBuffering = amIBuffering || hasBuffering;
+          Selector<WatcherPendingIdsNotifier?, bool>(
+            selector: (context, notifier) =>
+                notifier?.value.isNotEmpty ?? false,
+            builder: (context, hasPending, child) {
+              final showBuffering = amIBuffering || hasPending;
 
               return TweenAnimationBuilder(
                 tween: Tween<double>(
