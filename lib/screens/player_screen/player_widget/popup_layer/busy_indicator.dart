@@ -1,3 +1,4 @@
+import 'package:bunga_player/utils/extensions/extensions.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -7,8 +8,6 @@ import 'package:bunga_player/chat/business.dart';
 import 'package:bunga_player/play_sync/business.dart';
 import 'package:bunga_player/screens/widgets/popup_widget.dart';
 import 'package:bunga_player/ui/global_business.dart';
-
-import 'blur_chip.dart';
 
 class BusyIndicator extends StatelessWidget {
   const BusyIndicator({super.key});
@@ -57,15 +56,17 @@ class BusyIndicator extends StatelessWidget {
                         CircularProgressIndicator(
                           strokeCap: StrokeCap.round,
                           strokeWidth: 2.0,
+                          color: Theme.of(context).colorScheme.onPrimary,
                         ).constrained(height: 12.0, width: 12.0),
-                        Text(text ?? ''),
+                        Text(text ?? '').textColor(Colors.black),
                       ]
                       .toRow(
-                        separator: const SizedBox(width: 8.0),
+                        separator: const SizedBox(width: 12.0),
                         mainAxisSize: .min,
                       )
-                      .padding(vertical: 8.0, left: 12.0, right: 16.0)
-                      .blurChip(),
+                      .padding(vertical: 8.0, left: 20.0, right: 24.0)
+                      .backgroundColor(Colors.white70)
+                      .clipRRect(all: 100.0),
             );
           },
     );
