@@ -65,7 +65,7 @@ class _DesktopInteractiveLayerState extends State<DesktopInteractiveLayer> {
               _sparkController.start(details.localPosition);
               _isSparking = true;
               shouldShowHUDNotifier.reset();
-              context.read<SparkingStartEvent>().fire();
+              context.read<SparkBarVisibilityNotifier>().lockUp('sending');
             },
             onLongPressMoveUpdate: (details) {
               _sparkController.updateOffset(details.localPosition);
@@ -73,6 +73,7 @@ class _DesktopInteractiveLayerState extends State<DesktopInteractiveLayer> {
             onLongPressEnd: (details) {
               _sparkController.stop();
               _isSparking = false;
+              context.read<SparkBarVisibilityNotifier>().unlock('sending');
             },
           ),
         ),

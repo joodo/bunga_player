@@ -9,6 +9,8 @@ import 'package:bunga_player/play_sync/business.dart';
 import 'package:bunga_player/screens/widgets/popup_widget.dart';
 import 'package:bunga_player/ui/global_business.dart';
 
+import 'blur_chip.dart';
+
 class BusyIndicator extends StatelessWidget {
   const BusyIndicator({super.key});
 
@@ -65,8 +67,7 @@ class BusyIndicator extends StatelessWidget {
                         mainAxisSize: .min,
                       )
                       .padding(vertical: 8.0, left: 20.0, right: 24.0)
-                      .backgroundColor(Colors.white70)
-                      .clipRRect(all: 100.0),
+                      .blurToast(),
             );
           },
     );

@@ -170,11 +170,6 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
       _lockButtonVisibleNotifier.lockUp('hud');
     } else {
       _lockButtonVisibleNotifier.unlock('hud');
-      // If hide HUD isn't caused by lock button, hide button immediately
-      // else keep showing lock button for a while
-      if (!context.read<ScreenLockedNotifier>().value) {
-        _lockButtonVisibleNotifier.reset();
-      }
     }
   }
 
@@ -272,7 +267,7 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
   void _startSendSpark(DragStartDetails details) {
     _sparkController.start(details.localPosition);
     _lockButtonVisibleNotifier.reset();
-    context.read<SparkingStartEvent>().fire();
+    context.read<SparkBarVisibilityNotifier>().lockUp('sending');
   }
 
   void _updateSendSpark(DragUpdateDetails details) {
@@ -281,6 +276,8 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
 
   void _finishSendSpark(DragEndDetails details) {
     _sparkController.stop();
+
+    context.read<SparkBarVisibilityNotifier>().unlock('sending');
   }
 }
 

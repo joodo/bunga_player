@@ -5,7 +5,6 @@ import 'package:styled_widget/styled_widget.dart';
 import 'package:bunga_player/reaction/business.dart';
 import 'package:bunga_player/reaction/models/emoji_data.dart';
 import 'package:bunga_player/screens/widgets/widgets.dart';
-import 'package:bunga_player/utils/business/value_listenable.dart';
 import 'package:bunga_player/utils/extensions/extensions.dart';
 
 import 'blur_chip.dart';
@@ -18,21 +17,16 @@ class SparkSelectionBar extends StatefulWidget {
 }
 
 class _SparkSelectionBarState extends State<SparkSelectionBar> {
-  final _visibleNotifier = AutoResetNotifier(const Duration(seconds: 2));
-  late final _startEvent = context.read<SparkingStartEvent>();
+  late final _visibleNotifier = context.read<SparkBarVisibilityNotifier>();
 
   @override
   void initState() {
     super.initState();
-
-    _startEvent.addListener(_show);
     _cacheEmoji();
   }
 
   @override
   void dispose() {
-    _startEvent.removeListener(_show);
-    _visibleNotifier.dispose();
     super.dispose();
   }
 
@@ -41,7 +35,7 @@ class _SparkSelectionBarState extends State<SparkSelectionBar> {
     final currentNotifier = context.read<SparkingEmojiNotifier>();
 
     const horiPadding = 12.0;
-    const buttonWidth = 48.0, buttonHeight = 54.0;
+    const buttonSize = 54.0;
 
     final background = ValueListenableBuilder(
       valueListenable: currentNotifier,
@@ -49,11 +43,11 @@ class _SparkSelectionBarState extends State<SparkSelectionBar> {
         final currentIndex = sparkOptions.indexWhere((e) => e == currentEmoji);
         return [
               if (currentIndex >= 0)
-                Container(color: Colors.white30)
-                    .clipRRect(all: buttonWidth)
+                Container(color: Colors.black26)
+                    .clipRRect(all: buttonSize)
                     .positioned(
-                      width: buttonWidth,
-                      left: horiPadding + currentIndex * buttonWidth,
+                      width: buttonSize,
+                      left: horiPadding + currentIndex * buttonSize,
                       top: 0,
                       bottom: 0,
                       animate: true,
@@ -65,8 +59,8 @@ class _SparkSelectionBarState extends State<SparkSelectionBar> {
               Curves.easeInOutCubicEmphasized,
             )
             .constrained(
-              width: 2 * horiPadding + sparkOptions.length * buttonWidth,
-              height: buttonHeight,
+              width: 2 * horiPadding + sparkOptions.length * buttonSize,
+              height: buttonSize,
             );
       },
     );
@@ -76,7 +70,7 @@ class _SparkSelectionBarState extends State<SparkSelectionBar> {
           (e) => IconButton(
             icon: _cachedImage[e] ?? const SizedBox.shrink(),
             onPressed: () => currentNotifier.value = e,
-          ).constrained(width: buttonWidth, height: buttonHeight),
+          ).constrained(width: buttonSize, height: buttonSize),
         )
         .toList()
         .toRow(mainAxisSize: .min)
@@ -88,14 +82,13 @@ class _SparkSelectionBarState extends State<SparkSelectionBar> {
           onEnter: (event) => _visibleNotifier.lockUp('mouse enter'),
           onExit: (event) {
             _visibleNotifier.unlock('mouse enter');
-            _visibleNotifier.mark();
           },
         ).constrained(
-          width: 2 * horiPadding + sparkOptions.length * buttonWidth,
-          height: buttonHeight,
+          width: 2 * horiPadding + sparkOptions.length * buttonSize,
+          height: buttonSize,
         );
 
-    final content = [background, buttons, mouseRegion].toStack().blurChip();
+    final content = [background, buttons, mouseRegion].toStack().blurToast();
 
     final link = LayerLink();
     return ValueListenableBuilder(
@@ -108,7 +101,7 @@ class _SparkSelectionBarState extends State<SparkSelectionBar> {
               link: link,
               targetAnchor: .bottomRight,
               followerAnchor: .bottomRight,
-              offset: Offset(-16.0, -16.0),
+              offset: Offset(-16.0, -80.0),
               child: popup,
             ),
           ),
@@ -123,8 +116,6 @@ class _SparkSelectionBarState extends State<SparkSelectionBar> {
       ),
     );
   }
-
-  void _show() => _visibleNotifier.mark();
 
   static final _cachedImage = <String, RawImage>{};
   Future<void> _cacheEmoji() async {

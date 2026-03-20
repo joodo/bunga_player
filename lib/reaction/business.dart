@@ -1,13 +1,14 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 
 import 'package:bunga_player/chat/models/message_data.dart';
 import 'package:bunga_player/chat/global_business.dart';
-import 'package:bunga_player/utils/business/simple_event.dart';
 import 'package:bunga_player/utils/extensions/extensions.dart';
+import 'package:bunga_player/utils/business/value_listenable.dart';
 import 'package:bunga_player/services/preferences.dart';
 
 import 'models/emoji_data.dart';
@@ -29,8 +30,8 @@ class SparkingEmojiNotifier extends ValueNotifier<String> {
   SparkingEmojiNotifier() : super('❤️');
 }
 
-class SparkingStartEvent extends SimpleEvent {
-  SparkingStartEvent();
+class SparkBarVisibilityNotifier extends AutoResetNotifier {
+  SparkBarVisibilityNotifier() : super(2.seconds);
 }
 
 const sparkOptions = ['❤️', '💩', '❓', '☝️', '💋'];
@@ -97,7 +98,7 @@ class _ReactionBusinessState extends SingleChildState<ReactionBusiness> {
       providers: [
         ListenableProvider(create: (context) => RecentPopmojisNotifier()),
         ListenableProvider(create: (context) => SparkingEmojiNotifier()),
-        ListenableProvider(create: (context) => SparkingStartEvent()),
+        ListenableProvider(create: (context) => SparkBarVisibilityNotifier()),
       ],
       child: child!.actions(
         actions: {
