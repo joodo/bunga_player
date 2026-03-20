@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:bunga_player/chat/models/models.dart';
-import 'package:bunga_player/reaction/models/models.dart';
 
 class DanmakuTextPainter {
   static const textStyle = TextStyle(fontSize: 40, letterSpacing: 2);
@@ -72,13 +71,10 @@ class _DanmakuLayerState extends State<DanmakuLayer>
     super.initState();
     _subscription = context
         .read<Stream<Message>>()
-        .where(
-          (message) => message.data['code'] == DanmakuMessageData.messageCode,
-        )
+        .where((message) => message.data is DanmakuMessageData)
         .map((message) {
-          final data = DanmakuMessageData.fromJson(message.data);
           return DanmakuTextPainter(
-            message: data.message,
+            message: (message.data as DanmakuMessageData).message,
             hue: message.sender.colorHue,
           );
         })

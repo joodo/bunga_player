@@ -1,14 +1,14 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'message.dart';
+part of 'json_message.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-Message _$MessageFromJson(Map<String, dynamic> json) =>
-    $checkedCreate('Message', json, ($checkedConvert) {
-      final val = Message(
+JsonMessage _$JsonMessageFromJson(Map<String, dynamic> json) =>
+    $checkedCreate('JsonMessage', json, ($checkedConvert) {
+      final val = JsonMessage(
         data: $checkedConvert('data', (v) => v as Map<String, dynamic>),
         sender: $checkedConvert(
           'sender',
@@ -18,7 +18,8 @@ Message _$MessageFromJson(Map<String, dynamic> json) =>
       return val;
     });
 
-Map<String, dynamic> _$MessageToJson(Message instance) => <String, dynamic>{
-  'data': instance.data,
-  'sender': instance.sender.toJson(),
-};
+Map<String, dynamic> _$JsonMessageToJson(JsonMessage instance) =>
+    <String, dynamic>{
+      'data': instance.data,
+      'sender': instance.sender.toJson(),
+    };

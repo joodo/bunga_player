@@ -1,16 +1,16 @@
 import 'dart:convert';
 
-import 'package:bunga_player/utils/business/simple_event.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 
+import 'package:bunga_player/chat/models/message_data.dart';
 import 'package:bunga_player/chat/global_business.dart';
-import 'package:bunga_player/utils/extensions/styled_widget.dart';
+import 'package:bunga_player/utils/business/simple_event.dart';
+import 'package:bunga_player/utils/extensions/extensions.dart';
 import 'package:bunga_player/services/preferences.dart';
 
 import 'models/emoji_data.dart';
-import 'models/message_data.dart';
 
 // Data types
 

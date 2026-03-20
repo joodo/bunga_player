@@ -9,7 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
 import 'package:bunga_player/chat/models/models.dart';
-import 'package:bunga_player/reaction/models/models.dart';
+import 'package:bunga_player/reaction/models/emoji_data.dart';
 import 'package:bunga_player/ui/global_business.dart';
 
 class PopmojiLayer extends StatelessWidget {
@@ -58,11 +58,12 @@ class _FireworkOverlayState extends State<_FireworkOverlay>
     super.initState();
     _subscription = context
         .read<Stream<Message>>()
-        .where(
-          (message) =>
-              message.data['code'] == PopmojiMessageData.messageCode &&
-              message.data['popmoji_code'] == '🎆',
-        )
+        .where((message) {
+          final data = message.data;
+          if (data is! PopmojiMessageData) return false;
+
+          return data.popmojiCode == '🎆';
+        })
         .map((message) => message.sender)
         .listen(_startFireworks);
   }
@@ -106,13 +107,14 @@ class _PopmojiOverlayState extends State<_PopmojiOverlay> {
     super.initState();
     _subscription = context
         .read<Stream<Message>>()
-        .where(
-          (message) =>
-              message.data['code'] == PopmojiMessageData.messageCode &&
-              message.data['popmoji_code'] != '🎆',
-        )
+        .where((message) {
+          final data = message.data;
+          if (data is! PopmojiMessageData) return false;
+
+          return data.popmojiCode != '🎆';
+        })
         .map((message) {
-          final data = PopmojiMessageData.fromJson(message.data);
+          final data = message.data as PopmojiMessageData;
           return (message.sender, data.popmojiCode);
         })
         .listen(_showPopmoji);

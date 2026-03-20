@@ -9,8 +9,7 @@ import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 
 import 'client/client.dart';
-import 'models/message_data.dart';
-import 'models/message.dart';
+import 'models/models.dart';
 
 class SendMessageIntent extends Intent {
   final MessageData data;
@@ -19,15 +18,18 @@ class SendMessageIntent extends Intent {
 }
 
 extension SendMessage on BuildContext {
-  Future<Message?> sendMessage(MessageData data) =>
-      Actions.invoke(this, SendMessageIntent(data)) as Future<Message?>;
+  Future<JsonMessage?> sendMessage(MessageData data) =>
+      Actions.invoke(this, SendMessageIntent(data)) as Future<JsonMessage?>;
 }
 
 class SendMessageAction extends ContextAction<SendMessageIntent> {
   SendMessageAction();
 
   @override
-  Future<Message?> invoke(SendMessageIntent intent, [BuildContext? context]) {
+  Future<JsonMessage?> invoke(
+    SendMessageIntent intent, [
+    BuildContext? context,
+  ]) {
     final client = context!.read<ChatClient>();
     return client.sendMessage(intent.data.toJson());
   }
@@ -66,7 +68,7 @@ class _ChannelActionsState extends SingleChildState<ChatGlobalBusiness> {
       if (client != null) {
         // bind stream
         _clientSubscription = client.messageStream.listen(
-          _messageStreamController.add,
+          (message) => _messageStreamController.add(Message.fromJson(message)),
         );
 
         // Wait in case the playback service has not finished initializing after automatically entering the channel

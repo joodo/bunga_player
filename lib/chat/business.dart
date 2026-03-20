@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:bunga_player/play_sync/models.dart/message_data.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
@@ -13,9 +12,7 @@ import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/ui/global_business.dart';
 import 'package:bunga_player/ui/audio_player.dart';
 
-import 'models/message.dart';
-import 'models/message_data.dart';
-import 'models/user.dart';
+import 'models/models.dart';
 
 // Data types
 
@@ -105,21 +102,19 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
     final messageStream = context.read<Stream<Message>>();
 
     _streamSubscription = messageStream.listen((message) {
-      switch (message.data['code']) {
-        case AlohaMessageData.messageCode:
+      switch (message.data) {
+        case AlohaMessageData():
           if (message.sender.id == _myId) break;
           _handleAloha(message.sender);
-        case HereAreMessageData.messageCode:
-          final watchers = HereAreMessageData.fromJson(message.data).watchers;
+        case HereAreMessageData(:final watchers):
           _handleHereAre(watchers);
-        case ByeMessageData.messageCode:
+        case ByeMessageData():
           if (message.sender.id == _myId) break;
           _handleBye(message.sender.id);
-        case ChannelStatusMessageData.messageCode:
-          final ids = ChannelStatusMessageData.fromJson(
-            message.data,
-          ).watcherIds;
-          _watchersNotifier.setIds(ids);
+        case ChannelStatusMessageData(:final watcherIds):
+          _watchersNotifier.setIds(watcherIds);
+        default:
+          {}
       }
     });
   }
@@ -144,9 +139,7 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
 
     // Server will pause when someone is joining
     if (MediaPlayer.i.playStatusNotifier.value.isPlaying) {
-      context.read<PlayToggleVisualSignal>().fire(
-        PlayPauseOverlayStatus.pause,
-      );
+      context.read<PlayToggleVisualSignal>().fire(PlayPauseOverlayStatus.pause);
     }
   }
 

@@ -14,8 +14,7 @@ import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/logger.dart';
 
 import 'client.dart';
-import '../models/message.dart';
-import '../models/user.dart';
+import '../models/models.dart';
 
 class BungaChatClient extends ChatClient {
   final ChannelTokens _serverInfo;
@@ -36,8 +35,8 @@ class BungaChatClient extends ChatClient {
   late final _jsonStream = _streamController.stream.asBroadcastStream();
 
   @override
-  Stream<Message> get messageStream => _jsonStream.map((json) {
-    return Message(data: json, sender: User.fromJson(json['sender']));
+  Stream<JsonMessage> get messageStream => _jsonStream.map((json) {
+    return JsonMessage(data: json, sender: User.fromJson(json['sender']));
   });
 
   static const _ignoreLoggingCodes = {
@@ -46,7 +45,7 @@ class BungaChatClient extends ChatClient {
     'channel-status',
   };
   @override
-  Future<Message?> sendMessage(Map<String, dynamic> data) async {
+  Future<JsonMessage?> sendMessage(Map<String, dynamic> data) async {
     final rawData = jsonEncode(data);
 
     if (_channel == null) {

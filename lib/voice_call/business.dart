@@ -1,31 +1,29 @@
 import 'dart:async';
 
 import 'package:async/async.dart';
-import 'package:bunga_player/chat/models/message_data.dart';
-import 'package:bunga_player/play/service/service.dart';
-import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/utils/business/platform.dart';
 import 'package:flutter/widgets.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 
 import 'package:bunga_player/bunga_server/models/channel_tokens.dart';
-import 'package:bunga_player/chat/global_business.dart';
 import 'package:bunga_player/client_info/models/client_account.dart';
-import 'package:bunga_player/chat/models/message.dart';
-import 'package:bunga_player/services/permissions.dart';
-import 'package:bunga_player/services/preferences.dart';
+import 'package:bunga_player/chat/global_business.dart';
+import 'package:bunga_player/chat/models/models.dart';
+import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/ui/audio_player.dart';
 import 'package:bunga_player/ui/global_business.dart';
 import 'package:bunga_player/ui/shortcuts.dart';
 import 'package:bunga_player/utils/business/provider.dart';
+import 'package:bunga_player/utils/business/platform.dart';
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:bunga_player/utils/models/volume.dart';
 import 'package:bunga_player/console/service.dart';
+import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/services.dart';
+import 'package:bunga_player/services/permissions.dart';
+import 'package:bunga_player/services/preferences.dart';
 
 import 'client/client.dart';
-import 'models/message_data.dart';
 import 'client/client.agora.dart';
 
 // Data
@@ -293,24 +291,18 @@ class _VoiceCallBusinessState extends SingleChildState<VoiceCallBusiness> {
 
     final myId = context.read<ClientAccount>().id;
     _messageSubscription = context.read<Stream<Message>>().listen((message) {
-      switch (message.data['code']) {
-        case CallMessageData.messageCode:
+      switch (message.data) {
+        case CallMessageData(:final action):
           if (message.sender.id == myId) break;
-          _handleCallAction(
-            senderId: message.sender.id,
-            action: CallMessageData.fromJson(message.data).action,
-          );
-        case TalkStatusMessageData.messageCode:
-          _handleTalkStatus(
-            message.sender.id,
-            TalkStatusMessageData.fromJson(message.data).status,
-          );
-        case ByeMessageData.messageCode:
+          _handleCallAction(senderId: message.sender.id, action: action);
+        case TalkStatusMessageData(:final status):
+          _handleTalkStatus(message.sender.id, status);
+        case ByeMessageData():
           _handleTalkStatus(message.sender.id, TalkStatus.end);
-        case HereAreMessageData.messageCode:
-          _talkerIdsNotifier.value = Set.from(
-            HereAreMessageData.fromJson(message.data).talking,
-          );
+        case HereAreMessageData(:final talking):
+          _talkerIdsNotifier.value = Set.from(talking);
+        default:
+          {}
       }
     });
   }

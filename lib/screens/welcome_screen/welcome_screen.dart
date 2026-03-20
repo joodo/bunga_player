@@ -1,15 +1,13 @@
-import 'package:bunga_player/chat/models/user.dart';
-import 'package:bunga_player/play/models/video_record.dart';
-import 'package:bunga_player/ui/audio_player.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
-import 'package:bunga_player/chat/models/message_data.dart';
 import 'package:bunga_player/screens/dialogs/open_video/open_video.dart';
 import 'package:bunga_player/bunga_server/global_business.dart';
 import 'package:bunga_player/bunga_server/models/channel_tokens.dart';
-import 'package:bunga_player/chat/models/message.dart';
+import 'package:bunga_player/chat/models/models.dart';
+import 'package:bunga_player/play/models/video_record.dart';
+import 'package:bunga_player/ui/audio_player.dart';
 import 'package:bunga_player/ui/global_business.dart';
 
 import 'arrow.dart';
@@ -30,15 +28,15 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   late final _messageSubscription = context.read<Stream<Message>>().listen((
     message,
   ) {
-    switch (message.data['code']) {
-      case StartProjectionMessageData.messageCode:
-        final data = StartProjectionMessageData.fromJson(message.data);
+    switch (message.data) {
+      case StartProjectionMessageData data:
         _dealWithProjection(message.sender, data);
-      case NowPlayingMessageData.messageCode:
-        final data = NowPlayingMessageData.fromJson(message.data);
-        _dealWithNowPlaying(data.sharer, data.record);
-      case ResetMessageData.messageCode:
+      case NowPlayingMessageData(:final sharer, :final record):
+        _dealWithNowPlaying(sharer, record);
+      case ResetMessageData():
         _cleanProjection();
+      default:
+        {}
     }
   });
 

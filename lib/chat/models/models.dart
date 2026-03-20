@@ -1,3 +1,4 @@
 export 'user.dart';
-export 'message.dart';
+export 'json_message.dart';
 export 'message_data.dart';
+export 'message.dart';

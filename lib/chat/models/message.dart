@@ -1,17 +1,14 @@
-import 'package:bunga_player/chat/models/user.dart';
-import 'package:freezed_annotation/freezed_annotation.dart';
+import 'user.dart';
+import 'json_message.dart';
+import 'message_data.dart';
 
-part 'message.g.dart';
-
-@JsonSerializable(explicitToJson: true)
 class Message {
-  final Map<String, dynamic> data;
+  final MessageData data;
   final User sender;
 
   Message({required this.data, required this.sender});
 
-  factory Message.fromJson(Map<String, dynamic> json) =>
-      _$MessageFromJson(json);
-
-  Map<String, dynamic> toJson() => _$MessageToJson(this);
+  Message.fromJson(JsonMessage message)
+    : sender = message.sender,
+      data = MessageData.fromJson(message.data);
 }

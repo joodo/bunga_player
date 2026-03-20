@@ -24,8 +24,6 @@ import 'package:bunga_player/play/payload_parser.dart';
 import 'package:bunga_player/ui/global_business.dart';
 import 'package:bunga_player/ui/shortcuts.dart';
 
-import 'models.dart/message_data.dart';
-
 // Data types
 
 class RemoteJustToggled {
@@ -292,22 +290,25 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
   void _handleMessage(Message message) {
     final read = context.read;
 
-    switch (message.data['code']) {
-      case StartProjectionMessageData.messageCode:
-        final data = StartProjectionMessageData.fromJson(message.data);
-        _handleProjection(message.sender, data.videoRecord, data.position);
-      case HereAreMessageData.messageCode:
-        final data = HereAreMessageData.fromJson(message.data);
-        _updatePendingIds(data.buffering);
-      case ChannelStatusMessageData.messageCode:
-        final data = ChannelStatusMessageData.fromJson(message.data);
+    switch (message.data) {
+      case StartProjectionMessageData(:final videoRecord, :final position):
+        _handleProjection(message.sender, videoRecord, position);
+      case HereAreMessageData(:final buffering):
+        _updatePendingIds(buffering);
+      case ChannelStatusMessageData(
+        :final playStatus,
+        :final position,
+        :final watcherIds,
+        :final readyIds,
+      ):
+        _handleChannelStatus(message.sender, playStatus, position);
 
-        _handleChannelStatus(message.sender, data.playStatus, data.position);
-
-        final (all, readys) = (data.watcherIds, data.readyIds);
-        final pendings = all.toSet().difference(readys.toSet()).toList();
+        final pendings = watcherIds
+            .toSet()
+            .difference(readyIds.toSet())
+            .toList();
         _updatePendingIds(pendings);
-      case PlayMessageData.messageCode:
+      case PlayMessageData():
         if (message.sender.isCurrent(context)) break;
 
         final manager = read<SyncMessageEvent>();
@@ -316,12 +317,11 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
         _playbackOverlay.show(.pendingPlaying);
 
         _remoteJustToggledNotifier.mark();
-      case PauseMessageData.messageCode:
+      case PauseMessageData(:final position):
         if (message.sender.isCurrent(context)) break;
 
         // Paused by user, not by waiting pending
         // So pause immediately and seek, do not wait for channel status message
-        final position = PauseMessageData.fromJson(message.data).position;
         MediaPlayer.i.pause();
         if (MediaPlayer.i.positionNotifier.value.near(
           position,
@@ -336,7 +336,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
         _playbackOverlay.show(.pause);
 
         _remoteJustToggledNotifier.mark();
-      case SeekMessageData.messageCode:
+      case SeekMessageData(:final position):
         if (message.sender.isCurrent(context)) break;
 
         final manager = read<SyncMessageEvent>();
@@ -344,19 +344,17 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
         manager.fire('$name 调整了进度');
 
         // Seek immediately, do not wait for channel status message
-        final position = SeekMessageData.fromJson(message.data).position;
         MediaPlayer.i.seek(position);
 
         _isChannelSeeking.mark();
-      case ShareSubMessageData.messageCode:
-        _dealWithSubSharing(
-          sharer: message.sender,
-          data: ShareSubMessageData.fromJson(message.data),
-        );
-      case ResetMessageData.messageCode:
+      case ShareSubMessageData(:final title, :final url):
+        _dealWithSubSharing(sharer: message.sender, title: title, url: url);
+      case ResetMessageData():
         if (mounted) Navigator.of(context).pop();
-      case WhoAreYouMessageData.messageCode:
+      case WhoAreYouMessageData():
         _rejoinIfConnected();
+      default:
+        {}
     }
   }
 
@@ -475,20 +473,17 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
 
   void _dealWithSubSharing({
     required User sharer,
-    required ShareSubMessageData data,
+    required String title,
+    required String url,
   }) {
     context.read<SyncMessageEvent>().fire('${sharer.name} 分享了字幕');
-    _channelSubtitleNotifier.value = (
-      title: data.title,
-      url: data.url,
-      sharer: sharer,
-    );
+    _channelSubtitleNotifier.value = (title: title, url: url, sharer: sharer);
   }
 
   void _sendPendingStatus() {
     // Don't wait me when I'm sliding the progress bar
     if (_isSlideSeeking) {
-      context.sendMessage(ClientStatusMessageData(false));
+      context.sendMessage(ClientStatusMessageData(isPending: false));
     } else {
       final duration = MediaPlayer.i.durationNotifier.value;
       final isLoaded = duration > Duration.zero;
@@ -498,7 +493,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
       final isBuffering = (buffer - position) < Duration(seconds: 1);
 
       final isPending = !isLoaded || isBuffering;
-      final data = ClientStatusMessageData(isPending);
+      final data = ClientStatusMessageData(isPending: isPending);
       context.sendMessage(data);
     }
 
