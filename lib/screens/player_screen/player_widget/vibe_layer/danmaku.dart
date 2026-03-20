@@ -71,10 +71,10 @@ class _DanmakuLayerState extends State<DanmakuLayer>
     super.initState();
     _subscription = context
         .read<Stream<Message>>()
-        .where((message) => message.data is DanmakuMessageData)
+        .whereDataType<DanmakuMessageData>()
         .map((message) {
           return DanmakuTextPainter(
-            message: (message.data as DanmakuMessageData).message,
+            message: message.data.message,
             hue: message.sender.colorHue,
           );
         })

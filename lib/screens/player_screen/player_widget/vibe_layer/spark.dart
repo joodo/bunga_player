@@ -41,11 +41,10 @@ class _SparkLayerState extends State<SparkLayer>
 
     _subscription = context
         .read<Stream<Message>>()
-        .where((message) => message.data is SparkMessageData)
+        .whereDataType<SparkMessageData>()
         .listen((message) {
-          final data = message.data as SparkMessageData;
-          _handleToast(message.sender, data.emoji);
-          _addSpark(emoji: data.emoji, fraction: data.fraction);
+          _handleToast(message.sender, message.data.emoji);
+          _addSpark(emoji: message.data.emoji, fraction: message.data.fraction);
         });
 
     _ticker = createTicker(_onTick);

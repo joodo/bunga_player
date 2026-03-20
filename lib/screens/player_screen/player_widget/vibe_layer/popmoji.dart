@@ -58,12 +58,8 @@ class _FireworkOverlayState extends State<_FireworkOverlay>
     super.initState();
     _subscription = context
         .read<Stream<Message>>()
-        .where((message) {
-          final data = message.data;
-          if (data is! PopmojiMessageData) return false;
-
-          return data.popmojiCode == '🎆';
-        })
+        .whereDataType<PopmojiMessageData>()
+        .where((message) => message.data.popmojiCode == '🎆')
         .map((message) => message.sender)
         .listen(_startFireworks);
   }
@@ -107,16 +103,9 @@ class _PopmojiOverlayState extends State<_PopmojiOverlay> {
     super.initState();
     _subscription = context
         .read<Stream<Message>>()
-        .where((message) {
-          final data = message.data;
-          if (data is! PopmojiMessageData) return false;
-
-          return data.popmojiCode != '🎆';
-        })
-        .map((message) {
-          final data = message.data as PopmojiMessageData;
-          return (message.sender, data.popmojiCode);
-        })
+        .whereDataType<PopmojiMessageData>()
+        .where((message) => message.data.popmojiCode != '🎆')
+        .map((message) => (message.sender, message.data.popmojiCode))
         .listen(_showPopmoji);
   }
 
