@@ -140,7 +140,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
 
     final actions = shortcuts.actions(
       actions: {
-        OpenVideoIntent: OpenVideoBeforeShareAction(),
+        OpenVideoIntent: OpenVideoBeforeShareAction(parentContext: context),
         IndirectToggleIntent: IndirectToggleAction(
           remoteJustToggled: _remoteJustToggledNotifier,
           playbackOverlay: _playbackOverlay,
