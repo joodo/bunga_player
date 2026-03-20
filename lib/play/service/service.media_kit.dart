@@ -112,8 +112,6 @@ class MediaKitMediaPlayer extends MediaPlayer {
 
     // Clear local caches if necessary
     _externalSubPaths.clear();
-
-    super.dispose();
   }
 
   late final _player = media_kit.Player(

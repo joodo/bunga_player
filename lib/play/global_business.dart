@@ -27,20 +27,20 @@ class PlayerBackendNotifier extends ValueNotifier<PlayerBackend> {
   Future<void> switchTo(PlayerBackend target) async {
     if (value == target) return;
 
-    final current = MediaPlayer.i;
-    current.dispose();
     await getIt.unregister<MediaPlayer>();
-
     _register(target);
     value = target;
   }
 
   void _register(PlayerBackend target) {
     final instance = switch (target) {
-      PlayerBackend.mediaKit => MediaKitMediaPlayer(),
-      PlayerBackend.agoraMediaPlayer => AgoraMediaPlayer(),
+      .mediaKit => MediaKitMediaPlayer(),
+      .agoraMediaPlayer => AgoraMediaPlayer(),
     };
-    getIt.registerSingleton<MediaPlayer>(instance);
+    getIt.registerSingleton<MediaPlayer>(
+      instance,
+      dispose: (instance) => instance.dispose(),
+    );
   }
 }
 

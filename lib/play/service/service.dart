@@ -64,5 +64,5 @@ abstract class MediaPlayer {
 
   Widget buildVideoWidget();
 
-  void dispose() {}
+  Future<void> dispose();
 }

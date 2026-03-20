@@ -65,8 +65,6 @@ class AgoraMediaPlayer extends MediaPlayer {
 
     if (__player != null) {
       await engine!.destroyMediaPlayer(_player);
-      await _player.stop();
-      await _player.dispose();
       __player = null;
     }
   }
@@ -173,8 +171,6 @@ class AgoraMediaPlayer extends MediaPlayer {
     _playStatus.dispose();
 
     await _videoProxy.stop();
-
-    super.dispose();
   }
 
   // Volume
