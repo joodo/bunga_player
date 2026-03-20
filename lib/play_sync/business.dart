@@ -377,12 +377,14 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
       final duration = MediaPlayer.i.durationNotifier.value;
       final isLoaded = duration > Duration.zero;
 
-      final buffer = MediaPlayer.i.bufferNotifier.value;
       final position = MediaPlayer.i.positionNotifier.value;
-      final isBuffering = (buffer - position) < Duration(seconds: 1);
+      final almostFinished = duration - position < 1.seconds;
 
-      final isPending = !isLoaded || isBuffering;
-      final data = ClientStatusMessageData(isPending: isPending);
+      final buffer = MediaPlayer.i.bufferNotifier.value;
+      final bufferLow = (buffer - position) < Duration(seconds: 1);
+
+      final isReady = almostFinished || isLoaded && !bufferLow;
+      final data = ClientStatusMessageData(isPending: !isReady);
       context.sendMessage(data);
     }
 
