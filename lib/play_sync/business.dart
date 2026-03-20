@@ -20,9 +20,11 @@ import 'package:bunga_player/screens/dialogs/video_conflict.dart';
 import 'package:bunga_player/utils/business/value_listenable.dart';
 import 'package:bunga_player/utils/extensions/extensions.dart';
 import 'package:bunga_player/console/service.dart';
-import 'package:bunga_player/play/payload_parser.dart';
 import 'package:bunga_player/ui/global_business.dart';
 import 'package:bunga_player/ui/shortcuts.dart';
+
+import 'overlay_manager.dart';
+import 'actions.dart';
 
 // Data types
 
@@ -39,49 +41,6 @@ class SubtitleTrackIdOfUrl {
 
 class WatcherPendingIdsNotifier extends ValueNotifier<List<String>> {
   WatcherPendingIdsNotifier() : super([]);
-}
-
-// Actions
-
-class JoinInIntent extends Intent {
-  final VideoRecord? myRecord;
-
-  const JoinInIntent({this.myRecord});
-}
-
-class JoinInAction extends ContextAction<JoinInIntent> {
-  @override
-  void invoke(JoinInIntent intent, [BuildContext? context]) {
-    final projection = intent.myRecord == null
-        ? null
-        : StartProjectionMessageData(videoRecord: intent.myRecord!);
-    final data = JoinInMessageData(
-      user: User.of(context!),
-      myShare: projection,
-    );
-    context.sendMessage(data);
-  }
-}
-
-class ShareVideoIntent extends Intent {
-  final VideoRecord? record;
-  final Uri? url;
-  const ShareVideoIntent(this.record) : url = null;
-  const ShareVideoIntent.url(this.url) : record = null;
-}
-
-class ShareVideoAction extends ContextAction<ShareVideoIntent> {
-  ShareVideoAction();
-
-  @override
-  Future<void> invoke(ShareVideoIntent intent, [BuildContext? context]) async {
-    final client = context!.read<ChatClient?>();
-    final record =
-        intent.record ?? await PlayPayloadParser(context).parseUrl(intent.url!);
-
-    final data = StartProjectionMessageData(videoRecord: record);
-    client!.sendMessage(data.toJson());
-  }
 }
 
 enum _Tolerances {
@@ -122,7 +81,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
     _statusSendInterval,
     _sendPendingStatus,
   );
-  late final _playbackOverlay = _PlaybackOverlayManager(
+  late final _playbackOverlay = PlaybackOverlayManager(
     context: context,
     pendingPlayShowDelay: _statusSendInterval,
   );
@@ -181,97 +140,18 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
 
     final actions = shortcuts.actions(
       actions: {
-        OpenVideoIntent: CallbackAction<OpenVideoIntent>(
-          onInvoke: (intent) {
-            // Send pause request first
-            final playService = MediaPlayer.i;
-            final messageData = PauseMessageData(
-              position: playService.positionNotifier.value,
-            );
-            context.sendMessage(messageData);
-
-            return Actions.invoke(context, intent);
-          },
+        OpenVideoIntent: OpenVideoBeforeShareAction(),
+        IndirectToggleIntent: IndirectToggleAction(
+          remoteJustToggled: _remoteJustToggledNotifier,
+          playbackOverlay: _playbackOverlay,
         ),
-        IndirectToggleIntent: CallbackAction<IndirectToggleIntent>(
-          onInvoke: (intent) {
-            if (_remoteJustToggledNotifier.value) return;
-
-            final player = MediaPlayer.i;
-
-            final wantPlay = !player.playStatusNotifier.value.isPlaying;
-            _playbackOverlay.show(wantPlay ? .pendingPlaying : .pause);
-
-            late final MessageData messageData;
-            if (wantPlay) {
-              messageData = PlayMessageData();
-            } else {
-              // pause control by myself
-              player.pause();
-              messageData = PauseMessageData(
-                position: player.positionNotifier.value,
-              );
-            }
-            context.sendMessage(messageData);
-            return;
-          },
+        DirectSetPlaybackIntent: DirectSetPlaybackAction(
+          remoteJustToggled: _remoteJustToggledNotifier,
+          playbackOverlay: _playbackOverlay,
         ),
-        DirectSetPlaybackIntent: CallbackAction<DirectSetPlaybackIntent>(
-          onInvoke: (intent) {
-            if (_remoteJustToggledNotifier.value) return;
-
-            final player = MediaPlayer.i;
-            final wantPlay = intent.isPlay;
-
-            late final MessageData messageData;
-            if (wantPlay) {
-              messageData = PlayMessageData();
-              // Show pending until channel status confirms real playback.
-              _playbackOverlay.show(.pendingPlaying);
-            } else {
-              // pause control by myself
-              player.pause();
-              messageData = PauseMessageData(
-                position: player.positionNotifier.value,
-              );
-            }
-            context.sendMessage(messageData);
-            return;
-          },
-        ),
-        SeekForwardIntent: CallbackAction<SeekForwardIntent>(
-          onInvoke: (intent) {
-            final player = MediaPlayer.i;
-            player.seek(intent.position);
-
-            final messageData = SeekMessageData(position: intent.position);
-            context.sendMessage(messageData);
-            return null;
-          },
-        ),
-        SeekStartIntent: CallbackAction<SeekStartIntent>(
-          onInvoke: (intent) {
-            _resetSlideSeekingTimer?.cancel();
-            _isSlideSeeking = true;
-            return;
-          },
-        ),
-        SeekEndIntent: CallbackAction<SeekEndIntent>(
-          onInvoke: (intent) {
-            final player = MediaPlayer.i;
-            final messageData = SeekMessageData(
-              position: player.positionNotifier.value,
-            );
-            context.sendMessage(messageData);
-
-            _resetSlideSeekingTimer = Timer(
-              1.seconds,
-              () => _isSlideSeeking = false,
-            );
-
-            return;
-          },
-        ),
+        SeekForwardIntent: SyncSeekForwardAction(),
+        SeekStartIntent: SyncSeekStartAction(onSeekStart: _startSlideSeeking),
+        SeekEndIntent: SyncSeekEndAction(onSeekEnd: _endSlideSeeking),
         ShareVideoIntent: ShareVideoAction(),
         JoinInIntent: JoinInAction(),
       },
@@ -348,7 +228,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
 
         _isChannelSeeking.mark();
       case ShareSubMessageData(:final title, :final url):
-        _dealWithSubSharing(sharer: message.sender, title: title, url: url);
+        _handleSubSharing(sharer: message.sender, title: title, url: url);
       case ResetMessageData():
         if (mounted) Navigator.of(context).pop();
       case WhoAreYouMessageData():
@@ -471,13 +351,22 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
     }
   }
 
-  void _dealWithSubSharing({
+  void _handleSubSharing({
     required User sharer,
     required String title,
     required String url,
   }) {
     context.read<SyncMessageEvent>().fire('${sharer.name} 分享了字幕');
     _channelSubtitleNotifier.value = (title: title, url: url, sharer: sharer);
+  }
+
+  void _startSlideSeeking() {
+    _resetSlideSeekingTimer?.cancel();
+    _isSlideSeeking = true;
+  }
+
+  void _endSlideSeeking() {
+    _resetSlideSeekingTimer = Timer(1.seconds, () => _isSlideSeeking = false);
   }
 
   void _sendPendingStatus() {
@@ -500,12 +389,10 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
     _statusSyncTimer.reset();
   }
 
-  // Finish
   void _sendFinishMessage() {
     context.sendMessage(PlayFinishedMessageData());
   }
 
-  // Rejoin
   void _rejoinIfConnected() {
     if (_chatClient.isConnectedNotifier.value) {
       context.sendMessage(JoinInMessageData(user: User.of(context)));
@@ -516,36 +403,4 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
 extension WrapPlaySyncBusiness on Widget {
   Widget playSyncBusiness({Key? key}) =>
       PlaySyncBusiness(key: key, child: this);
-}
-
-class _PlaybackOverlayManager {
-  final Duration pendingPlayShowDelay;
-  final BuildContext context;
-
-  _PlaybackOverlayManager({
-    required this.pendingPlayShowDelay,
-    required this.context,
-  });
-
-  bool _isPending = false;
-
-  void show(PlayPauseOverlayStatus status) {
-    if (!context.mounted) return;
-
-    final signal = context.read<PlayToggleVisualSignal>();
-
-    switch (status) {
-      case .pause:
-        _isPending = false;
-        signal.fire(.pause);
-      case .playing:
-        signal.fire(.playing);
-      case .pendingPlaying:
-        _isPending = true;
-        Future.delayed(pendingPlayShowDelay, () {
-          if (!context.mounted) return;
-          if (_isPending) signal.fire(.pendingPlaying);
-        });
-    }
-  }
 }

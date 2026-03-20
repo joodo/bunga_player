@@ -1,15 +1,16 @@
 import 'dart:math';
 
-import 'package:bunga_player/play/busuness.dart';
-import 'package:bunga_player/play/models/play_payload.dart';
-import 'package:bunga_player/play/payload_parser.dart';
-import 'package:bunga_player/play_sync/business.dart';
-import 'package:bunga_player/screens/player_screen/business.dart';
-import 'package:bunga_player/utils/business/run_after_build.dart';
-import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
+
+import 'package:bunga_player/play/busuness.dart';
+import 'package:bunga_player/play/models/play_payload.dart';
+import 'package:bunga_player/play/payload_parser.dart';
+import 'package:bunga_player/play_sync/actions.dart';
+import 'package:bunga_player/screens/player_screen/business.dart';
+import 'package:bunga_player/utils/business/run_after_build.dart';
+import 'package:bunga_player/utils/extensions/styled_widget.dart';
 
 import 'panel.dart';
 
