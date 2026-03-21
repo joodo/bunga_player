@@ -307,6 +307,8 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
   ) async {
     // do not sync channel status when seeking
     if (_isChannelSeeking.value) return;
+    // do not sync channel when I'm slide seeking
+    if (_isSlideSeeking) return;
 
     final player = MediaPlayer.i;
     // Not loaded yet

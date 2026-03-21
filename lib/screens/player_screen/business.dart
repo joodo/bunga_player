@@ -1,7 +1,5 @@
 import 'dart:async';
 
-import 'package:async/async.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
@@ -27,6 +25,7 @@ import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:bunga_player/voice_call/business.dart';
 
 import 'actions.dart';
+import 'play_progress_slide_business.dart';
 import 'panel/panel.dart';
 
 @immutable
@@ -41,110 +40,8 @@ class IsInChannel {
   const IsInChannel(this.value);
 }
 
-class PlayProgressSlideBusiness {
-  final BuildContext context;
-
-  final _player = MediaPlayer.i;
-  late final _playerPositionNotifier = _player.positionNotifier;
-
-  final _positionNotifier = ValueNotifier<double>(0);
-  ValueListenable<double> get positionNotifier => _positionNotifier;
-
-  final _isSeekingNotifier = ValueNotifier<bool>(false);
-  ValueListenable<bool> get isSeekingNotifier => _isSeekingNotifier;
-
-  void dispose() {
-    _playerPositionNotifier.removeListener(_followPlayerPosition);
-    _positionNotifier.dispose();
-    _isSeekingNotifier.dispose();
-    _seekTimer.cancel();
-  }
-
-  PlayProgressSlideBusiness({required this.context}) {
-    _playerPositionNotifier.addListener(_followPlayerPosition);
-  }
-
-  void _followPlayerPosition() {
-    _positionNotifier.value = _playerPositionNotifier.value.inMilliseconds
-        .toDouble();
-  }
-
-  late final RestartableTimer _seekTimer = RestartableTimer(
-    const Duration(milliseconds: 500),
-    () {
-      if (_player.durationNotifier.value != Duration.zero) {
-        final pos = Duration(milliseconds: _positionNotifier.value.toInt());
-        _player.seek(pos);
-      }
-      _seekTimer.reset();
-    },
-  )..cancel();
-
-  bool _isPlayingBeforeSlide = false;
-  double _startValue = 0;
-
-  void startSlide(double value) {
-    _playerPositionNotifier.removeListener(_followPlayerPosition);
-
-    Actions.maybeInvoke(context, SeekStartIntent());
-
-    _isPlayingBeforeSlide = _player.playStatusNotifier.value.isPlaying;
-    _player.pause();
-
-    _positionNotifier.value = value;
-    _startValue = value;
-    _seekTimer.reset();
-
-    final showHUDNotifier = context.read<ShouldShowHUDNotifier>();
-    showHUDNotifier.lockUp('position drag');
-
-    _isSeekingNotifier.value = true;
-  }
-
-  void updateSlide(double value) {
-    _positionNotifier.value = value;
-  }
-
-  void finishSlide(double value) async {
-    _isSeekingNotifier.value = false;
-
-    _seekTimer.cancel();
-
-    final showHUDNotifier = context.read<ShouldShowHUDNotifier>();
-    showHUDNotifier.unlock('position drag');
-
-    final pos = Duration(milliseconds: value.toInt());
-    await _player.seek(pos);
-
-    if (_isPlayingBeforeSlide) await _player.play();
-
-    _positionNotifier.value = value;
-    _playerPositionNotifier.addListener(_followPlayerPosition);
-
-    if (!context.mounted) return;
-    Actions.maybeInvoke(context, SeekEndIntent());
-  }
-
-  void cancelSlide() async {
-    _isSeekingNotifier.value = false;
-
-    _seekTimer.cancel();
-
-    final showHUDNotifier = context.read<ShouldShowHUDNotifier>();
-    showHUDNotifier.unlock('position drag');
-
-    final pos = Duration(milliseconds: _startValue.toInt());
-    await _player.seek(pos);
-    if (_isPlayingBeforeSlide) await _player.play();
-
-    _positionNotifier.value = _startValue;
-    _playerPositionNotifier.addListener(_followPlayerPosition);
-  }
-}
-
 class _WidgetBusiness extends SingleChildStatefulWidget {
-  // ignore: unused_element_parameter
-  const _WidgetBusiness({super.key, super.child});
+  const _WidgetBusiness({super.child});
 
   @override
   State<_WidgetBusiness> createState() => _WidgetBusinessState();

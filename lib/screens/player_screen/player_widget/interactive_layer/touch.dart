@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
@@ -14,7 +15,7 @@ import 'package:bunga_player/voice_call/business.dart';
 import 'package:bunga_player/play/busuness.dart';
 import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/ui/global_business.dart';
-import 'package:bunga_player/screens/player_screen/business.dart';
+import 'package:bunga_player/screens/player_screen/play_progress_slide_business.dart';
 import 'package:bunga_player/voice_call/client/client.dart';
 
 import 'spark_send_controller.dart';
@@ -185,17 +186,17 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
       orientation: .horizontal,
       startValue: startPosition.inMilliseconds,
       onUpdate: (startValue, distance) {
-        final delta = distance * 200;
-        return business.updateSlide(startValue + delta);
+        final newValue = startValue + distance * 200;
+        return business.updateSlide(newValue.milliseconds);
       },
       onEnd: (startValue, distance) {
-        final delta = distance * 200;
-        return business.finishSlide(startValue + delta);
+        final newValue = startValue + distance * 200;
+        return business.finishSlide(newValue.milliseconds);
       },
       onCancel: business.cancelSlide,
     );
 
-    business.startSlide(startPosition.inMilliseconds.toDouble());
+    business.startSlide(startPosition);
   }
 
   void _finishSlideSeeking(DragEndDetails details) {

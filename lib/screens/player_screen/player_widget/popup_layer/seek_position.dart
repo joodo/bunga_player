@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
 import 'package:bunga_player/screens/widgets/popup_widget.dart';
-import 'package:bunga_player/screens/player_screen/business.dart';
+import 'package:bunga_player/screens/player_screen/play_progress_slide_business.dart';
 import 'package:bunga_player/utils/extensions/extensions.dart';
 
 import 'blur_chip.dart';
@@ -18,7 +18,7 @@ class SeekPosition extends StatelessWidget {
     final content = ValueListenableBuilder(
       valueListenable: business.positionNotifier,
       builder: (context, position, child) => Text(
-        Duration(milliseconds: position.toInt()).hhmmss,
+        position.hhmmss,
         style: Theme.of(context).textTheme.headlineMedium,
       ),
     ).padding(horizontal: 24.0, vertical: 12.0).blurToast();

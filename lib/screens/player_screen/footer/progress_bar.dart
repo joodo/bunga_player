@@ -1,11 +1,12 @@
 import 'package:bunga_player/utils/business/drag_business.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
 import 'package:bunga_player/play/service/service.dart';
 import 'package:bunga_player/play_sync/business.dart';
-import 'package:bunga_player/screens/player_screen/business.dart';
+import 'package:bunga_player/screens/player_screen/play_progress_slide_business.dart';
 import 'package:bunga_player/ui/global_business.dart';
 import 'package:bunga_player/utils/business/animation_builder.dart';
 import 'package:bunga_player/utils/business/platform.dart';
@@ -59,37 +60,28 @@ class _VideoProgressBarState extends State<VideoProgressBar> {
                 ),
                 duration: const Duration(milliseconds: 100),
                 curve: Curves.easeInCubic,
-                builder: (context, hoveredValue, child) {
-                  final sliderThemeData = SliderThemeData(
-                    thumbColor: Theme.of(context).colorScheme.primary,
-                    thumbShape: RoundSliderThumbShape(
-                      enabledThumbRadius: 8 * hoveredValue,
-                    ),
-                    trackHeight: 2 + 2 * hoveredValue,
-                    trackShape: SliderDenseTrackShape(),
-                    overlayShape: SliderComponentShape.noOverlay,
-                    showValueIndicator: .onDrag,
-                  );
-
-                  if (!showBuffering) {
-                    return SliderTheme(data: sliderThemeData, child: child!);
-                  } else {
-                    return InfiniteAnimationBuilder(
+                builder: (context, hoveredValue, child) =>
+                    InfiniteAnimationBuilder(
+                      enabled: showBuffering,
                       duration: const Duration(milliseconds: 1000),
-                      builder: (context, pulseValue, child) => SliderTheme(
-                        data: sliderThemeData.copyWith(
+                      builder: (context, pulseValue, child) {
+                        final sliderThemeData = SliderThemeData(
                           thumbShape: _PulseThumbShape(
                             thumbRadius: 8.0 * hoveredValue,
                             isBuffering: true,
                             pulseSizeFactor: pulseValue,
                           ),
-                        ),
-                        child: child!,
-                      ),
+                          trackHeight: 2 + 2 * hoveredValue,
+                          trackShape: SliderDenseTrackShape(),
+                          overlayShape: SliderComponentShape.noOverlay,
+                        );
+                        return SliderTheme(
+                          data: sliderThemeData,
+                          child: child!,
+                        );
+                      },
                       child: child,
-                    );
-                  }
-                },
+                    ),
                 child: child,
               );
             },
@@ -125,17 +117,17 @@ class _VideoProgressBarState extends State<VideoProgressBar> {
                 onUpdate: (startValue, distance) {
                   final delta = getDelta(distance);
                   final newPosition = startValue + delta;
-                  slideSeekingBusiness.updateSlide(newPosition);
+                  slideSeekingBusiness.updateSlide(newPosition.milliseconds);
                 },
                 onEnd: (startValue, distance) {
                   final delta = getDelta(distance);
                   final newPosition = startValue + delta;
-                  slideSeekingBusiness.finishSlide(newPosition);
+                  slideSeekingBusiness.finishSlide(newPosition.milliseconds);
                 },
                 onCancel: slideSeekingBusiness.cancelSlide,
               );
 
-              slideSeekingBusiness.startSlide(initValue);
+              slideSeekingBusiness.startSlide(initValue.milliseconds);
             },
             onHorizontalDragUpdate: (details) =>
                 _dragBusiness!.updatePosition(details.localPosition),
@@ -184,21 +176,24 @@ class _ProgressSlider extends StatelessWidget {
         final duration = player.durationNotifier.value.inMilliseconds
             .toDouble();
         final buffer = player.bufferNotifier.value.inMilliseconds.toDouble();
-        final position = business.positionNotifier.value;
+        final position = business.positionNotifier.value.inMilliseconds
+            .toDouble();
 
         return Slider(
           value: position.clamp(0, duration),
-          secondaryTrackValue: buffer.clamp(0, duration).toDouble(),
+          secondaryTrackValue: buffer.clamp(0, duration),
           max: duration.toDouble(),
           // avoid control by left / right key
           focusNode: FocusNode(skipTraversal: true, canRequestFocus: false),
           onChangeStart: (value) {
-            business.startSlide(value);
+            business.startSlide(value.milliseconds);
             onDragStart?.call();
           },
-          onChanged: business.updateSlide,
+          onChanged: (value) {
+            business.updateSlide(value.milliseconds);
+          },
           onChangeEnd: (value) {
-            business.finishSlide(value);
+            business.finishSlide(value.milliseconds);
             onDragEnd?.call();
           },
         );
