@@ -7,6 +7,7 @@ import 'adjust_indicator.dart';
 import 'play_pause_overlay.dart';
 import 'play_sync_message.dart';
 import 'busy_indicator.dart';
+import 'seek_position.dart';
 import 'spark_selection_bar.dart';
 
 class PopupLayer extends StatelessWidget {
@@ -17,9 +18,10 @@ class PopupLayer extends StatelessWidget {
     final isInChannel = context.read<IsInChannel>().value;
     final content = [
       AdjustIndicator(),
-      if (isInChannel) PlaySyncMessage(),
       PlayPauseOverlay(),
       BusyIndicator(),
+      SeekPosition(),
+      if (isInChannel) PlaySyncMessage(),
       if (isInChannel) SparkSelectionBar(),
     ].toStack();
     return Overlay(

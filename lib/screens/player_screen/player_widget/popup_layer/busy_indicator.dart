@@ -60,7 +60,7 @@ class BusyIndicator extends StatelessWidget {
                           strokeWidth: 2.0,
                           color: Theme.of(context).colorScheme.onPrimary,
                         ).constrained(height: 12.0, width: 12.0),
-                        Text(text ?? '').textColor(Colors.black),
+                        Text(text ?? ''),
                       ]
                       .toRow(
                         separator: const SizedBox(width: 12.0),

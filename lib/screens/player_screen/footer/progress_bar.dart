@@ -9,7 +9,6 @@ import 'package:bunga_player/screens/player_screen/business.dart';
 import 'package:bunga_player/ui/global_business.dart';
 import 'package:bunga_player/utils/business/animation_builder.dart';
 import 'package:bunga_player/utils/business/platform.dart';
-import 'package:bunga_player/utils/extensions/extensions.dart';
 import 'package:bunga_player/screens/widgets/slider_dense_track_shape.dart';
 
 class VideoProgressBar extends StatefulWidget {
@@ -193,7 +192,6 @@ class _ProgressSlider extends StatelessWidget {
           max: duration.toDouble(),
           // avoid control by left / right key
           focusNode: FocusNode(skipTraversal: true, canRequestFocus: false),
-          label: Duration(milliseconds: position.toInt()).hhmmss,
           onChangeStart: (value) {
             business.startSlide(value);
             onDragStart?.call();

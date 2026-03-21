@@ -44,21 +44,25 @@ class IsInChannel {
 class PlayProgressSlideBusiness {
   final BuildContext context;
 
-  PlayProgressSlideBusiness({required this.context}) {
-    _playerPositionNotifier.addListener(_followPlayerPosition);
-  }
-
-  void dispose() {
-    _playerPositionNotifier.removeListener(_followPlayerPosition);
-    _positionNotifier.dispose();
-    _seekTimer.cancel();
-  }
-
   final _player = MediaPlayer.i;
   late final _playerPositionNotifier = _player.positionNotifier;
 
   final _positionNotifier = ValueNotifier<double>(0);
-  ValueListenable get positionNotifier => _positionNotifier;
+  ValueListenable<double> get positionNotifier => _positionNotifier;
+
+  final _isSeekingNotifier = ValueNotifier<bool>(false);
+  ValueListenable<bool> get isSeekingNotifier => _isSeekingNotifier;
+
+  void dispose() {
+    _playerPositionNotifier.removeListener(_followPlayerPosition);
+    _positionNotifier.dispose();
+    _isSeekingNotifier.dispose();
+    _seekTimer.cancel();
+  }
+
+  PlayProgressSlideBusiness({required this.context}) {
+    _playerPositionNotifier.addListener(_followPlayerPosition);
+  }
 
   void _followPlayerPosition() {
     _positionNotifier.value = _playerPositionNotifier.value.inMilliseconds
@@ -93,6 +97,8 @@ class PlayProgressSlideBusiness {
 
     final showHUDNotifier = context.read<ShouldShowHUDNotifier>();
     showHUDNotifier.lockUp('position drag');
+
+    _isSeekingNotifier.value = true;
   }
 
   void updateSlide(double value) {
@@ -100,6 +106,8 @@ class PlayProgressSlideBusiness {
   }
 
   void finishSlide(double value) async {
+    _isSeekingNotifier.value = false;
+
     _seekTimer.cancel();
 
     final showHUDNotifier = context.read<ShouldShowHUDNotifier>();
@@ -118,6 +126,8 @@ class PlayProgressSlideBusiness {
   }
 
   void cancelSlide() async {
+    _isSeekingNotifier.value = false;
+
     _seekTimer.cancel();
 
     final showHUDNotifier = context.read<ShouldShowHUDNotifier>();
