@@ -454,12 +454,6 @@ class _DetailPage extends StatelessWidget {
                           child: SizedBox(width: 100),
                         ),
                   IconButton(
-                    icon: Icon(Icons.star_border),
-                    selectedIcon: Icon(Icons.star),
-                    tooltip: '收藏',
-                    onPressed: () {},
-                  ),
-                  IconButton(
                     icon: Icon(Icons.open_in_new),
                     tooltip: '浏览器中打开',
                     onPressed: snapshot.hasData
