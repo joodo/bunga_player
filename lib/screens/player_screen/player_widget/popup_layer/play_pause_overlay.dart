@@ -22,6 +22,7 @@ class _PlayPauseOverlayState extends State<PlayPauseOverlay>
       .read<PlayToggleVisualSignal>()
       .listen(_handleTrigger);
   bool _showPlayIcon = false;
+  PlayPauseOverlayStatus _lastStatus = .pause;
   _OverlayPhase _phase = _OverlayPhase.hidden;
   double? _frozenScaleOnExit;
   int _transitionId = 0;
@@ -56,29 +57,44 @@ class _PlayPauseOverlayState extends State<PlayPauseOverlay>
 
   void _handleTrigger(PlayPauseOverlayStatus status) async {
     final transitionId = ++_transitionId;
+    final previousStatus = _lastStatus;
+    _lastStatus = status;
 
     switch (status) {
-      case PlayPauseOverlayStatus.pause:
+      case .pause:
         _showPlayIcon = false;
 
         _showOverlay();
         await _animateIn(transitionId, from: 0.0);
-        if (_isStale(transitionId)) return;
+        if (_isStale(transitionId)) break;
 
         await Future<void>.delayed(const Duration(milliseconds: 120));
-        if (_isStale(transitionId)) return;
+        if (_isStale(transitionId)) break;
 
         await _animateOut(transitionId, from: 1.0);
 
-      case PlayPauseOverlayStatus.pendingPlaying:
+      case .pendingPlaying:
         _showPlayIcon = true;
 
         _showOverlay();
         await _animateIn(transitionId, from: 0.0);
 
-      case PlayPauseOverlayStatus.playing:
+      case .playing:
         _showPlayIcon = true;
-        if (_phase == _OverlayPhase.hidden) return;
+
+        if (previousStatus == .pause) {
+          _showOverlay();
+          await _animateIn(transitionId, from: 0.0);
+          if (_isStale(transitionId)) break;
+
+          await Future<void>.delayed(const Duration(milliseconds: 120));
+          if (_isStale(transitionId)) break;
+
+          await _animateOut(transitionId, from: 1.0);
+          break;
+        }
+
+        if (_phase == _OverlayPhase.hidden) break;
 
         await _animateOut(
           transitionId,

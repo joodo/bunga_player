@@ -414,7 +414,9 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
             final player = MediaPlayer.i;
             final wantPlay = !player.playStatusNotifier.value.isPlaying;
 
-            context.read<PlayToggleVisualSignal>().fire(.pendingPlaying);
+            context.read<PlayToggleVisualSignal>().fire(
+              wantPlay ? .playing : .pause,
+            );
 
             return wantPlay ? MediaPlayer.i.play() : MediaPlayer.i.pause();
           },
