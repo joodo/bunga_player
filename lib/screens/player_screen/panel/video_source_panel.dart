@@ -63,7 +63,7 @@ class _VideoSourcePanelState extends State<VideoSourcePanel> {
                 }
                 return RadioListTile(
                   key: ValueKey('Source $index'),
-                  title: Text(title),
+                  title: Text('[${index + 1}] $title'),
                   subtitle: Text(
                     info == null
                         ? '正在测速……'
