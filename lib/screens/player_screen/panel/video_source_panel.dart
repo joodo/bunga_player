@@ -24,6 +24,8 @@ class VideoSourcePanel extends StatefulWidget implements Panel {
 class _VideoSourcePanelState extends State<VideoSourcePanel> {
   final _sourceInfo = <int, SourceInfo>{};
 
+  final _openFailed = <int>{};
+
   @override
   void initState() {
     super.initState();
@@ -65,7 +67,9 @@ class _VideoSourcePanelState extends State<VideoSourcePanel> {
                   key: ValueKey('Source $index'),
                   title: Text('[${index + 1}] $title'),
                   subtitle: Text(
-                    info == null
+                    _openFailed.contains(index)
+                        ? '打开失败'
+                        : info == null
                         ? '正在测速……'
                         : info.bps < 0
                         ? '测速失败'
@@ -78,9 +82,21 @@ class _VideoSourcePanelState extends State<VideoSourcePanel> {
               .toColumn()
               .radioGroup(
                 groupValue: payload.videoSourceIndex,
-                onChanged: (int? value) {
+                onChanged: (int? value) async {
                   assert(value != null);
-                  Actions.invoke(context, OpenVideoIntent.switchIndex(value!));
+                  try {
+                    final act =
+                        Actions.invoke(
+                              context,
+                              OpenVideoIntent.switchIndex(value!),
+                            )
+                            as Future;
+                    await act;
+                  } catch (_) {
+                    setState(() {
+                      _openFailed.add(value!);
+                    });
+                  }
                 },
               ),
           if (proxy != null)
