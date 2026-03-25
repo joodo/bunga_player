@@ -24,7 +24,6 @@ import 'package:bunga_player/console/service.dart';
 import 'package:bunga_player/ui/global_business.dart';
 import 'package:bunga_player/ui/shortcuts.dart';
 
-import 'overlay_manager.dart';
 import 'actions.dart';
 
 // Data types
@@ -72,10 +71,6 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
   late final _statusSyncTimer = RestartableTimer(
     _statusSendInterval,
     _sendPendingStatus,
-  );
-  late final _playbackOverlay = PlaybackOverlayManager(
-    context: context,
-    pendingPlayShowDelay: _statusSendInterval,
   );
 
   // Seeking business
@@ -135,11 +130,9 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
         OpenVideoIntent: PauseBeforeOpenVideoAction(parentContext: context),
         IndirectToggleIntent: IndirectToggleAction(
           remoteJustToggled: _remoteJustToggledNotifier,
-          playbackOverlay: _playbackOverlay,
         ),
         DirectSetPlaybackIntent: DirectSetPlaybackAction(
           remoteJustToggled: _remoteJustToggledNotifier,
-          playbackOverlay: _playbackOverlay,
         ),
         SeekForwardIntent: SyncSeekForwardAction(),
         SeekStartIntent: SyncSeekStartAction(onSeekStart: _startSlideSeeking),
@@ -186,7 +179,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
         final manager = read<SyncMessageEvent>();
         final name = message.sender.name;
         manager.fire('$name 播放了视频');
-        _playbackOverlay.show(.pendingPlaying);
+        read<PlayToggleVisualSignal>().fire(true);
 
         _remoteJustToggledNotifier.mark();
       case PauseMessageData(:final position):
@@ -204,7 +197,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
         final manager = read<SyncMessageEvent>();
         final name = message.sender.name;
         manager.fire('$name 暂停了视频');
-        _playbackOverlay.show(.pause);
+        read<PlayToggleVisualSignal>().fire(false);
 
         _remoteJustToggledNotifier.mark();
       case SeekMessageData(:final position):
@@ -316,16 +309,13 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
     } else {
       if (_SyncChecker.isSync(player.position, position)) {
         player.rateNotifier.value = 1.0;
-        _playbackOverlay.show(.playing);
         await player.play();
       } else if (_SyncChecker.isNear(player.position, position)) {
         player.rateNotifier.value = player.position > position ? 0.95 : 1.05;
-        _playbackOverlay.show(.playing);
         await player.play();
       } else if (_SyncChecker.couldWait(player.position, position)) {
         await player.pause();
       } else {
-        _playbackOverlay.show(.playing);
         logger.i('Seek: $position, reason: handle ChannelStatus, when playing');
         await player.seek(position);
         await player.play();

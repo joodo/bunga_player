@@ -11,8 +11,6 @@ import 'package:bunga_player/play/models/video_record.dart';
 import 'package:bunga_player/play/payload_parser.dart';
 import 'package:bunga_player/play/service/service.dart';
 
-import 'overlay_manager.dart';
-
 class JoinInIntent extends Intent {
   final VideoRecord? myRecord;
 
@@ -68,18 +66,14 @@ class PauseBeforeOpenVideoAction extends ContextAction<OpenVideoIntent> {
 
 class IndirectToggleAction extends ContextAction<IndirectToggleIntent> {
   final ValueListenable<bool> remoteJustToggled;
-  final PlaybackOverlayManager playbackOverlay;
 
-  IndirectToggleAction({
-    required this.remoteJustToggled,
-    required this.playbackOverlay,
-  });
+  IndirectToggleAction({required this.remoteJustToggled});
 
   @override
   void invoke(IndirectToggleIntent intent, [BuildContext? context]) {
     final player = MediaPlayer.i;
     final wantPlay = !player.playStatusNotifier.value.isPlaying;
-    playbackOverlay.show(wantPlay ? .pendingPlaying : .pause);
+    context!.read<PlayToggleVisualSignal>().fire(wantPlay);
 
     late final MessageData messageData;
     if (wantPlay) {
@@ -89,7 +83,7 @@ class IndirectToggleAction extends ContextAction<IndirectToggleIntent> {
       player.pause();
       messageData = PauseMessageData(position: player.positionNotifier.value);
     }
-    context!.sendMessage(messageData);
+    context.sendMessage(messageData);
   }
 
   @override
@@ -100,12 +94,8 @@ class IndirectToggleAction extends ContextAction<IndirectToggleIntent> {
 
 class DirectSetPlaybackAction extends ContextAction<DirectSetPlaybackIntent> {
   final ValueListenable<bool> remoteJustToggled;
-  final PlaybackOverlayManager playbackOverlay;
 
-  DirectSetPlaybackAction({
-    required this.remoteJustToggled,
-    required this.playbackOverlay,
-  });
+  DirectSetPlaybackAction({required this.remoteJustToggled});
 
   @override
   void invoke(DirectSetPlaybackIntent intent, [BuildContext? context]) {
@@ -115,8 +105,6 @@ class DirectSetPlaybackAction extends ContextAction<DirectSetPlaybackIntent> {
     late final MessageData messageData;
     if (wantPlay) {
       messageData = PlayMessageData();
-      // Show pending until channel status confirms real playback.
-      playbackOverlay.show(.pendingPlaying);
     } else {
       // pause control by myself
       player.pause();

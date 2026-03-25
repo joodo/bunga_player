@@ -1,13 +1,11 @@
 import 'dart:async';
 
-import 'package:bunga_player/utils/extensions/extensions.dart';
+import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
-import 'package:bunga_player/ui/global_business.dart';
-
-enum _OverlayPhase { hidden, entering, visible, exiting }
+import 'package:bunga_player/play/busuness.dart';
 
 class PlayPauseOverlay extends StatefulWidget {
   const PlayPauseOverlay({super.key});
@@ -22,19 +20,12 @@ class _PlayPauseOverlayState extends State<PlayPauseOverlay>
       .read<PlayToggleVisualSignal>()
       .listen(_handleTrigger);
   bool _showPlayIcon = false;
-  PlayPauseOverlayStatus _lastStatus = .pause;
-  _OverlayPhase _phase = _OverlayPhase.hidden;
-  double? _frozenScaleOnExit;
-  int _transitionId = 0;
 
   late final _animController = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 280),
   );
-  late final _scaleAnimation = Tween<double>(begin: 0.6, end: 1.1).animate(
-    CurvedAnimation(parent: _animController, curve: Curves.easeOutBack),
-  );
-  late final _opacityAnimation = CurvedAnimation(
+  late final _transitionAnimation = CurvedAnimation(
     parent: _animController,
     curve: Curves.easeOut,
   );
@@ -55,92 +46,13 @@ class _PlayPauseOverlayState extends State<PlayPauseOverlay>
     super.dispose();
   }
 
-  void _handleTrigger(PlayPauseOverlayStatus status) async {
-    final transitionId = ++_transitionId;
-    final previousStatus = _lastStatus;
-    _lastStatus = status;
-
-    switch (status) {
-      case .pause:
-        _showPlayIcon = false;
-
-        _showOverlay();
-        await _animateIn(transitionId, from: 0.0);
-        if (_isStale(transitionId)) break;
-
-        await Future<void>.delayed(const Duration(milliseconds: 120));
-        if (_isStale(transitionId)) break;
-
-        await _animateOut(transitionId, from: 1.0);
-
-      case .pendingPlaying:
-        _showPlayIcon = true;
-
-        _showOverlay();
-        await _animateIn(transitionId, from: 0.0);
-
-      case .playing:
-        _showPlayIcon = true;
-
-        if (previousStatus == .pause) {
-          _showOverlay();
-          await _animateIn(transitionId, from: 0.0);
-          if (_isStale(transitionId)) break;
-
-          await Future<void>.delayed(const Duration(milliseconds: 120));
-          if (_isStale(transitionId)) break;
-
-          await _animateOut(transitionId, from: 1.0);
-          break;
-        }
-
-        if (_phase == _OverlayPhase.hidden) break;
-
-        await _animateOut(
-          transitionId,
-          from: _animController.value == 0.0 ? 1.0 : _animController.value,
-        );
-    }
-  }
-
-  bool _isStale(int transitionId) => !mounted || transitionId != _transitionId;
-
-  void _showOverlay() {
-    if (_phase != _OverlayPhase.hidden) return;
+  void _handleTrigger(bool isPlaying) async {
+    _showPlayIcon = isPlaying;
 
     _portalController.show();
-    _phase = _OverlayPhase.entering;
-  }
-
-  void _hideOverlay() {
-    if (_phase == _OverlayPhase.hidden) return;
-
+    await _animController.forward(from: 0.0);
+    await _animController.reverse(from: 1.0);
     _portalController.hide();
-    _phase = _OverlayPhase.hidden;
-    _frozenScaleOnExit = null;
-  }
-
-  Future<void> _animateIn(int transitionId, {required double from}) async {
-    _frozenScaleOnExit = null;
-    _phase = _OverlayPhase.entering;
-    await _animController.forward(from: from);
-    if (_isStale(transitionId)) return;
-
-    _phase = _OverlayPhase.visible;
-  }
-
-  Future<void> _animateOut(int transitionId, {required double from}) async {
-    _freezeScaleForExit();
-    _phase = _OverlayPhase.exiting;
-
-    await _animController.reverse(from: from);
-    if (_isStale(transitionId)) return;
-
-    _hideOverlay();
-  }
-
-  void _freezeScaleForExit() {
-    _frozenScaleOnExit = _scaleAnimation.value;
   }
 
   @override
@@ -148,11 +60,9 @@ class _PlayPauseOverlayState extends State<PlayPauseOverlay>
     return OverlayPortal(
       controller: _portalController,
       overlayChildBuilder: (context) {
-        return AnimatedBuilder(
-          animation: _animController,
-          builder: (context, child) => _buildIcon()
-              .scale(all: _frozenScaleOnExit ?? _scaleAnimation.value)
-              .opacity(_opacityAnimation.value),
+        return FadeScaleTransition(
+          animation: _transitionAnimation,
+          child: _buildIcon(),
         ).center();
       },
     );
@@ -169,7 +79,6 @@ class _PlayPauseOverlayState extends State<PlayPauseOverlay>
         .decorated(
           color: colorScheme.scrim.withAlpha(120),
           shape: BoxShape.circle,
-        )
-        .breath();
+        );
   }
 }

@@ -4,6 +4,7 @@ import 'package:async/async.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/utils/business/platform.dart';
 import 'package:bunga_player/utils/business/run_after_build.dart';
+import 'package:bunga_player/utils/business/simple_event.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
@@ -316,6 +317,10 @@ class SeekAction extends ContextAction<SeekIntent> {
   }
 }
 
+class PlayToggleVisualSignal extends SimpleEventStream<bool> {
+  PlayToggleVisualSignal();
+}
+
 class PlayBusiness extends SingleChildStatefulWidget {
   const PlayBusiness({super.key, super.child});
 
@@ -379,59 +384,63 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
       ShortcutKey.screenshot: ScreenshotIntent(),
     });
 
-    final actions = shortcuts.actions(
-      actions: {
-        UpdateVolumeIntent: CallbackAction<UpdateVolumeIntent>(
-          onInvoke: (intent) {
-            final notifier = context.read<MediaVolumeNotifier>();
-            notifier.value = intent.volume;
-            if (intent.save) notifier.saveToPref();
-            return null;
-          },
-        ),
-        FinishUpdateVolumeIntent: CallbackAction<FinishUpdateVolumeIntent>(
-          onInvoke: (intent) {
-            final notifier = context.read<MediaVolumeNotifier>();
-            notifier.saveToPref();
-            return null;
-          },
-        ),
-        UpdateVolumeForwardIntent: CallbackAction<UpdateVolumeForwardIntent>(
-          onInvoke: (intent) {
-            final notifier = context.read<MediaVolumeNotifier>();
-            notifier.forward(intent.offset);
-            notifier.saveToPref();
+    final actions = Builder(
+      builder: (context) => shortcuts.actions(
+        actions: {
+          UpdateVolumeIntent: CallbackAction<UpdateVolumeIntent>(
+            onInvoke: (intent) {
+              final notifier = context.read<MediaVolumeNotifier>();
+              notifier.value = intent.volume;
+              if (intent.save) notifier.saveToPref();
+              return null;
+            },
+          ),
+          FinishUpdateVolumeIntent: CallbackAction<FinishUpdateVolumeIntent>(
+            onInvoke: (intent) {
+              final notifier = context.read<MediaVolumeNotifier>();
+              notifier.saveToPref();
+              return null;
+            },
+          ),
+          UpdateVolumeForwardIntent: CallbackAction<UpdateVolumeForwardIntent>(
+            onInvoke: (intent) {
+              final notifier = context.read<MediaVolumeNotifier>();
+              notifier.forward(intent.offset);
+              notifier.saveToPref();
 
-            context.read<AdjustIndicatorEvent>().fire(.volume);
+              context.read<AdjustIndicatorEvent>().fire(.volume);
 
-            return null;
-          },
-        ),
-        OpenVideoIntent: OpenVideoAction(payloadNotifer: _playPayloadNotifier),
-        DirectSetPlaybackIntent: CallbackAction<DirectSetPlaybackIntent>(
-          onInvoke: (intent) {
-            return intent.isPlay ? MediaPlayer.i.play() : MediaPlayer.i.pause();
-          },
-        ),
-        IndirectToggleIntent: CallbackAction<IndirectToggleIntent>(
-          onInvoke: (intent) {
-            final player = MediaPlayer.i;
-            final wantPlay = !player.playStatusNotifier.value.isPlaying;
+              return null;
+            },
+          ),
+          OpenVideoIntent: OpenVideoAction(
+            payloadNotifer: _playPayloadNotifier,
+          ),
+          DirectSetPlaybackIntent: CallbackAction<DirectSetPlaybackIntent>(
+            onInvoke: (intent) {
+              return intent.isPlay
+                  ? MediaPlayer.i.play()
+                  : MediaPlayer.i.pause();
+            },
+          ),
+          IndirectToggleIntent: CallbackAction<IndirectToggleIntent>(
+            onInvoke: (intent) {
+              final player = MediaPlayer.i;
+              final wantPlay = !player.playStatusNotifier.value.isPlaying;
 
-            context.read<PlayToggleVisualSignal>().fire(
-              wantPlay ? .playing : .pause,
-            );
+              context.read<PlayToggleVisualSignal>().fire(wantPlay);
 
-            return wantPlay ? MediaPlayer.i.play() : MediaPlayer.i.pause();
-          },
-        ),
-        SeekForwardIntent: SeekAction(),
-        SetSubtitleTrackIntent: SetSubtitleTrackAction(),
-        ScreenshotIntent: ScreenshotAction(
-          playPayloadNotifier: _playPayloadNotifier,
-        ),
-        RefreshDirIntent: RefreshDirAction(dirInfoNotifier: _dirInfoNotifier),
-      },
+              return wantPlay ? MediaPlayer.i.play() : MediaPlayer.i.pause();
+            },
+          ),
+          SeekForwardIntent: SeekAction(),
+          SetSubtitleTrackIntent: SetSubtitleTrackAction(),
+          ScreenshotIntent: ScreenshotAction(
+            playPayloadNotifier: _playPayloadNotifier,
+          ),
+          RefreshDirIntent: RefreshDirAction(dirInfoNotifier: _dirInfoNotifier),
+        },
+      ),
     );
 
     return MultiProvider(
@@ -439,6 +448,10 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
         ValueListenableProvider.value(value: _playPayloadNotifier),
         ValueListenableProvider.value(value: _dirInfoNotifier),
         ChangeNotifierProvider(create: (context) => PlayEqPresetNotifier()),
+        Provider(
+          create: (context) => PlayToggleVisualSignal(),
+          dispose: (context, value) => value.dispose(),
+        ),
       ],
       child: actions,
     );

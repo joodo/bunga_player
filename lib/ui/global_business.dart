@@ -129,12 +129,6 @@ class BusyStateNotifier extends ChangeNotifier {
 
 class SyncMessageEvent extends SimpleEventStream<String> {}
 
-enum PlayPauseOverlayStatus { pause, pendingPlaying, playing }
-
-class PlayToggleVisualSignal extends SimpleEventStream<PlayPauseOverlayStatus> {
-  PlayToggleVisualSignal();
-}
-
 enum AdjustIndicatorEventType {
   brightness,
   volume,
@@ -215,10 +209,6 @@ class _UIGlobalBusinessState extends SingleChildState<UIGlobalBusiness> {
           create: (context) => SyncMessageEvent(),
           dispose: (context, value) => value.dispose(),
           lazy: false,
-        ),
-        Provider(
-          create: (context) => PlayToggleVisualSignal(),
-          dispose: (context, value) => value.dispose(),
         ),
         Provider(
           create: (context) => AdjustIndicatorEvent(),

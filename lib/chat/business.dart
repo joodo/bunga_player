@@ -8,8 +8,8 @@ import 'package:provider/provider.dart';
 
 import 'package:bunga_player/client_info/models/client_account.dart';
 import 'package:bunga_player/console/service.dart';
+import 'package:bunga_player/play/busuness.dart';
 import 'package:bunga_player/play/service/service.dart';
-import 'package:bunga_player/ui/global_business.dart';
 import 'package:bunga_player/ui/audio_player.dart';
 
 import 'models/models.dart';
@@ -139,7 +139,7 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
 
     // Server will pause when someone is joining
     if (MediaPlayer.i.playStatusNotifier.value.isPlaying) {
-      context.read<PlayToggleVisualSignal>().fire(PlayPauseOverlayStatus.pause);
+      context.read<PlayToggleVisualSignal>().fire(false);
     }
   }
 
