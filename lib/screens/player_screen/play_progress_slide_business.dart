@@ -1,6 +1,7 @@
 import 'package:async/async.dart';
 import 'package:bunga_player/play/busuness.dart';
 import 'package:bunga_player/play/service/service.dart';
+import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/ui/global_business.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -37,7 +38,11 @@ class PlayProgressSlideBusiness {
     const Duration(milliseconds: 5000),
     () {
       if (_player.durationNotifier.value != Duration.zero) {
-        _player.seek(_positionNotifier.value);
+        final position = _positionNotifier.value;
+        logger.i(
+          'Seek: $position, reason: PlayProgressSlideBusiness, the seek timer',
+        );
+        _player.seek(position);
       }
       _seekTimer.reset();
     },
@@ -76,6 +81,10 @@ class PlayProgressSlideBusiness {
     final showHUDNotifier = context.read<ShouldShowHUDNotifier>();
     showHUDNotifier.unlock('position drag');
 
+    final position = _positionNotifier.value;
+    logger.i(
+      'Seek: $position, reason: PlayProgressSlideBusiness, when finish slide',
+    );
     await _player.seek(value);
 
     if (_isPlayingBeforeSlide) await _player.play();
@@ -95,6 +104,10 @@ class PlayProgressSlideBusiness {
     final showHUDNotifier = context.read<ShouldShowHUDNotifier>();
     showHUDNotifier.unlock('position drag');
 
+    final position = _positionNotifier.value;
+    logger.i(
+      'Seek: $position, reason: PlayProgressSlideBusiness, when cancel slide',
+    );
     await _player.seek(_startValue);
     if (_isPlayingBeforeSlide) await _player.play();
 

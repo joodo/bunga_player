@@ -125,7 +125,11 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
       if (!intent.reload &&
           payloadNotifer.value?.record.id == payload.record.id) {
         logger.i('Video trying to open is same with current, seek only.');
-        if (start != null) await MediaPlayer.i.seek(intent.start!);
+        if (start != null) {
+          final p = intent.start!;
+          logger.i('Seek: $p, reason: reload');
+          await MediaPlayer.i.seek(p);
+        }
         return payload;
       }
       payloadNotifer.value = payload;
@@ -302,8 +306,8 @@ class SeekForwardIntent extends SeekIntent {
 class SeekAction extends ContextAction<SeekIntent> {
   @override
   void invoke(SeekIntent intent, [BuildContext? context]) {
-    final service = MediaPlayer.i;
-    service.seek(intent.position);
+    logger.i('Seek: ${intent.position}, reason: SeekAction');
+    MediaPlayer.i.seek(intent.position);
   }
 
   @override

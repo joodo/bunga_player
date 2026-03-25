@@ -1,3 +1,4 @@
+import 'package:bunga_player/services/logger.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
@@ -138,8 +139,8 @@ class DirectSetPlaybackAction extends ContextAction<DirectSetPlaybackIntent> {
 class SyncSeekForwardAction extends ContextAction<SeekForwardIntent> {
   @override
   void invoke(SeekForwardIntent intent, [BuildContext? context]) {
-    final player = MediaPlayer.i;
-    player.seek(intent.position);
+    logger.i('Seek: ${intent.position}, reason: SyncSeekForwardAction');
+    MediaPlayer.i.seek(intent.position);
 
     final messageData = SeekMessageData(position: intent.position);
     context!.sendMessage(messageData);

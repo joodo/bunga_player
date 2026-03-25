@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:animations/animations.dart';
 import 'package:async/async.dart';
+import 'package:bunga_player/services/logger.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:nested/nested.dart';
@@ -195,6 +196,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
         // So pause immediately and seek, do not wait for channel status message
         MediaPlayer.i.pause();
         if (!_SyncChecker.isSync(MediaPlayer.i.position, position)) {
+          logger.i('Seek: $position, reason: handle PauseMessageData');
           MediaPlayer.i.seek(position);
         }
 
@@ -212,6 +214,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
         manager.fire('$name 调整了进度');
 
         // Seek immediately, do not wait for channel status message
+        logger.i('Seek: $position, reason: handle SeekMessageData');
         MediaPlayer.i.seek(position);
 
         _isChannelSeeking.mark();
@@ -306,6 +309,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
       await player.pause();
 
       if (!_SyncChecker.isNear(player.position, position)) {
+        logger.i('Seek: $position, reason: handle ChannelStatus, when paused');
         await player.seek(position);
       }
     } else {
@@ -321,6 +325,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
         await player.pause();
       } else {
         _playbackOverlay.show(.playing);
+        logger.i('Seek: $position, reason: handle ChannelStatus, when playing');
         await player.seek(position);
         await player.play();
       }
