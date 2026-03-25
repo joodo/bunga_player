@@ -8,7 +8,7 @@ import 'package:bunga_player/bunga_server/global_business.dart';
 import 'package:bunga_player/chat/models/message_data.dart';
 import 'package:bunga_player/chat/client/client.dart';
 import 'package:bunga_player/play/play.dart';
-import 'package:bunga_player/play_sync/business.dart';
+import 'package:bunga_player/play_sync/play_sync.dart';
 import 'package:bunga_player/screens/player_screen/business.dart';
 import 'package:bunga_player/screens/widgets/slider_item.dart';
 import 'package:bunga_player/utils/extensions/extensions.dart';

@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
 import 'package:bunga_player/play/service/service.dart';
-import 'package:bunga_player/play_sync/business.dart';
+import 'package:bunga_player/play_sync/play_sync.dart';
 import 'package:bunga_player/screens/player_screen/play_progress_slide_business.dart';
 import 'package:bunga_player/ui/global_business.dart';
 import 'package:bunga_player/utils/business/animation_builder.dart';
@@ -48,9 +48,8 @@ class _VideoProgressBarState extends State<VideoProgressBar> {
     final animatedSlider = ValueListenableBuilder(
       valueListenable: MediaPlayer.i.isBufferingNotifier,
       builder: (context, amIBuffering, child) =>
-          Selector<WatcherPendingIdsNotifier?, bool>(
-            selector: (context, notifier) =>
-                notifier?.value.isNotEmpty ?? false,
+          Selector<PendingWatcherIds?, bool>(
+            selector: (context, notifier) => notifier?.isNotEmpty ?? false,
             builder: (context, hasPending, child) {
               final showBuffering = amIBuffering || hasPending;
 

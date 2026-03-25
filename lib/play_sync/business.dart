@@ -18,50 +18,49 @@ import 'package:bunga_player/screens/dialogs/open_video/gallery.dart';
 import 'package:bunga_player/screens/dialogs/video_conflict.dart';
 import 'package:bunga_player/utils/business/value_listenable.dart';
 import 'package:bunga_player/utils/extensions/extensions.dart';
-import 'package:bunga_player/console/service.dart';
-import 'package:bunga_player/ui/shortcuts.dart';
 
-import 'actions.dart';
+import 'providers.dart';
 
-// Data types
+class BusinessPayload {
+  // Toggle
+  final remoteJustToggledNotifier = AutoResetNotifier(
+    const Duration(seconds: 1),
+  );
 
-class RemoteJustToggled {
-  final bool value;
-  const RemoteJustToggled(this.value);
+  // Seeking
+  final isChannelSeeking = AutoResetNotifier(5.seconds);
+  bool isSlideSeeking = false;
+  Timer? resetSlideSeekingTimer;
+
+  void dispose() {
+    remoteJustToggledNotifier.dispose();
+    isChannelSeeking.dispose();
+    resetSlideSeekingTimer?.cancel();
+  }
 }
-
-typedef ChannelSubtitle = ({String title, String url, User sharer});
-
-class SubtitleTrackIdOfUrl {
-  final value = <String, String>{};
-}
-
-class WatcherPendingIdsNotifier extends ValueNotifier<List<String>> {
-  WatcherPendingIdsNotifier() : super([]);
-}
-
-// Wrapper
 
 class PlaySyncBusiness extends SingleChildStatefulWidget {
-  const PlaySyncBusiness({super.key, super.child});
+  const PlaySyncBusiness({
+    super.key,
+    super.child,
+    required this.business,
+    required this.pendingWatcherIdsNotifier,
+    required this.channelSubtitleNotifier,
+  });
+
+  final BusinessPayload business;
+
+  final ValueNotifier<PendingWatcherIds> pendingWatcherIdsNotifier;
+  final ValueNotifier<ChannelSubtitle?> channelSubtitleNotifier;
 
   @override
   State<PlaySyncBusiness> createState() => _PlaySyncBusinessState();
 }
 
 class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
-  // Anti-spam for remote toggle
-  final _remoteJustToggledNotifier = AutoResetNotifier(
-    const Duration(seconds: 1),
-  );
-
   // Chat
   late final _chatClient = context.read<ChatClient>();
   late final StreamSubscription _streamSubscription;
-
-  // Player status
-  final _watchersPendingIdsNotifier = WatcherPendingIdsNotifier()
-    ..watchInConsole('Watchers Pending Ids');
 
   // My status
   static const _statusSendInterval = Duration(seconds: 1);
@@ -70,14 +69,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
     _sendPendingStatus,
   );
 
-  // Seeking business
-  final _isChannelSeeking = AutoResetNotifier(5.seconds);
-  bool _isSlideSeeking = false;
-  Timer? _resetSlideSeekingTimer;
-
   // Subtitle sharing
-  final _channelSubtitleNotifier = ValueNotifier<ChannelSubtitle?>(null)
-    ..watchInConsole('Channel Subtitle');
 
   @override
   void initState() {
@@ -100,13 +92,9 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
     final player = MediaPlayer.i;
     player.finishNotifier.removeListener(_sendFinishMessage);
 
-    _remoteJustToggledNotifier.dispose();
-    _channelSubtitleNotifier.dispose();
-    _isChannelSeeking.dispose();
     _streamSubscription.cancel();
 
     _statusSyncTimer.cancel();
-    _resetSlideSeekingTimer?.cancel();
 
     _chatClient.isConnectedNotifier.removeListener(_rejoinIfConnected);
 
@@ -115,38 +103,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
 
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
-    // Capture shortcuts before play business
-    final shortcuts = child!.applyShortcuts({
-      ShortcutKey.forward5Sec: SeekForwardIntent(Duration(seconds: 5)),
-      ShortcutKey.backward5Sec: SeekForwardIntent(Duration(seconds: -5)),
-      ShortcutKey.togglePlay: IndirectToggleIntent(),
-    });
-
-    final actions = shortcuts.actions(
-      actions: {
-        OpenVideoIntent: PauseBeforeOpenVideoAction(parentContext: context),
-        IndirectToggleIntent: IndirectToggleAction(
-          remoteJustToggled: _remoteJustToggledNotifier,
-        ),
-        DirectSetPlaybackIntent: DirectSetPlaybackAction(
-          remoteJustToggled: _remoteJustToggledNotifier,
-        ),
-        SeekForwardIntent: SyncSeekForwardAction(),
-        SeekStartIntent: SyncSeekStartAction(onSeekStart: _startSlideSeeking),
-        SeekEndIntent: SyncSeekEndAction(onSeekEnd: _endSlideSeeking),
-        ShareVideoIntent: ShareVideoAction(),
-        JoinInIntent: JoinInAction(),
-      },
-    );
-
-    return MultiProvider(
-      providers: [
-        ValueListenableProvider.value(value: _channelSubtitleNotifier),
-        ListenableProvider.value(value: _watchersPendingIdsNotifier),
-        Provider(create: (context) => SubtitleTrackIdOfUrl()),
-      ],
-      child: actions,
-    );
+    return child!;
   }
 
   void _handleMessage(Message message) {
@@ -178,7 +135,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
         manager.fire('$name 播放了视频');
         read<PlayToggleVisualSignal>().fire(true);
 
-        _remoteJustToggledNotifier.mark();
+        widget.business.remoteJustToggledNotifier.mark();
       case PauseMessageData(:final position):
         if (message.sender.isCurrent(context)) break;
 
@@ -196,7 +153,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
         manager.fire('$name 暂停了视频');
         read<PlayToggleVisualSignal>().fire(false);
 
-        _remoteJustToggledNotifier.mark();
+        widget.business.remoteJustToggledNotifier.mark();
       case SeekMessageData(:final position):
         if (message.sender.isCurrent(context)) break;
 
@@ -208,7 +165,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
         logger.i('Seek: $position, reason: handle SeekMessageData');
         MediaPlayer.i.seek(position);
 
-        _isChannelSeeking.mark();
+        widget.business.isChannelSeeking.mark();
       case ShareSubMessageData(:final title, :final url):
         _handleSubSharing(sharer: message.sender, title: title, url: url);
       case ResetMessageData():
@@ -279,7 +236,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
   }
 
   void _updatePendingIds(List<String> ids) {
-    _watchersPendingIdsNotifier.value = ids;
+    widget.pendingWatcherIdsNotifier.value = PendingWatcherIds(ids);
   }
 
   void _handleChannelStatus(
@@ -288,9 +245,9 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
     Duration position,
   ) async {
     // do not sync channel status when seeking
-    if (_isChannelSeeking.value) return;
+    if (widget.business.isChannelSeeking.value) return;
     // do not sync channel when I'm slide seeking
-    if (_isSlideSeeking) return;
+    if (widget.business.isSlideSeeking) return;
 
     final player = MediaPlayer.i;
     // Not loaded yet
@@ -326,21 +283,16 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
     required String url,
   }) {
     context.read<PlayMessageEvent>().fire('${sharer.name} 分享了字幕');
-    _channelSubtitleNotifier.value = (title: title, url: url, sharer: sharer);
-  }
-
-  void _startSlideSeeking() {
-    _resetSlideSeekingTimer?.cancel();
-    _isSlideSeeking = true;
-  }
-
-  void _endSlideSeeking() {
-    _resetSlideSeekingTimer = Timer(1.seconds, () => _isSlideSeeking = false);
+    widget.channelSubtitleNotifier.value = (
+      title: title,
+      url: url,
+      sharer: sharer,
+    );
   }
 
   void _sendPendingStatus() {
     // Don't wait me when I'm sliding the progress bar
-    if (_isSlideSeeking) {
+    if (widget.business.isSlideSeeking) {
       context.sendMessage(ClientStatusMessageData(isPending: false));
     } else {
       final duration = MediaPlayer.i.durationNotifier.value;
@@ -372,8 +324,16 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
 }
 
 extension WrapPlaySyncBusiness on Widget {
-  Widget playSyncBusiness({Key? key}) =>
-      PlaySyncBusiness(key: key, child: this);
+  Widget playSyncBusiness({
+    required final ValueNotifier<PendingWatcherIds> pendingWatcherIdsNotifier,
+    required final ValueNotifier<ChannelSubtitle?> channelSubtitleNotifier,
+    required BusinessPayload business,
+  }) => PlaySyncBusiness(
+    pendingWatcherIdsNotifier: pendingWatcherIdsNotifier,
+    channelSubtitleNotifier: channelSubtitleNotifier,
+    business: business,
+    child: this,
+  );
 }
 
 class _SyncChecker {

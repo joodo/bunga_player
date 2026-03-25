@@ -3,8 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
 import 'package:bunga_player/chat/business.dart';
-import 'package:bunga_player/play_sync/business.dart';
-import 'package:bunga_player/play_sync/actions.dart';
+import 'package:bunga_player/play_sync/play_sync.dart';
 import 'package:bunga_player/voice_call/business.dart';
 import 'package:bunga_player/screens/player_screen/business.dart';
 import 'package:bunga_player/chat/models/user.dart';
@@ -64,7 +63,6 @@ class _WatcherLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final idsNotifier = context.read<WatcherPendingIdsNotifier>();
     return [
       Selector<List<TalkerId>, bool>(
         selector: (context, value) => value.any((e) => e.value == user.id),
@@ -72,8 +70,7 @@ class _WatcherLabel extends StatelessWidget {
             isTalking ? Text('🎤') : const SizedBox.shrink(),
       ),
       Text(user.name).textColor(user.getColor(brightness: 0.95)),
-      ValueListenableBuilder(
-        valueListenable: idsNotifier,
+      Consumer<PendingWatcherIds>(
         builder: (context, ids, child) =>
             ids.contains(user.id) ? const Text('⏳') : const SizedBox.shrink(),
       ),

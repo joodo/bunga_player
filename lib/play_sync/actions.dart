@@ -1,6 +1,12 @@
+import 'dart:async';
+
+import 'package:bunga_player/play_sync/business.dart';
 import 'package:bunga_player/services/logger.dart';
+import 'package:bunga_player/ui/shortcuts.dart';
+import 'package:bunga_player/utils/extensions/extensions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 
 import 'package:bunga_player/chat/client/client.dart';
@@ -128,20 +134,21 @@ class SyncSeekForwardAction extends ContextAction<SeekForwardIntent> {
 }
 
 class SyncSeekStartAction extends ContextAction<SeekStartIntent> {
-  final VoidCallback onSeekStart;
+  final BusinessPayload business;
 
-  SyncSeekStartAction({required this.onSeekStart});
+  SyncSeekStartAction({required this.business});
 
   @override
   void invoke(SeekStartIntent intent, [BuildContext? context]) {
-    onSeekStart();
+    business.resetSlideSeekingTimer?.cancel();
+    business.isSlideSeeking = true;
   }
 }
 
 class SyncSeekEndAction extends ContextAction<SeekEndIntent> {
-  final VoidCallback onSeekEnd;
+  final BusinessPayload business;
 
-  SyncSeekEndAction({required this.onSeekEnd});
+  SyncSeekEndAction({required this.business});
 
   @override
   void invoke(SeekEndIntent intent, [BuildContext? context]) {
@@ -151,6 +158,42 @@ class SyncSeekEndAction extends ContextAction<SeekEndIntent> {
     );
     context!.sendMessage(messageData);
 
-    onSeekEnd();
+    business.resetSlideSeekingTimer = Timer(
+      1.seconds,
+      () => business.isSlideSeeking = false,
+    );
+  }
+}
+
+extension PlaySyncActionsExtension on Widget {
+  Widget playSyncActions({required BusinessPayload business}) {
+    final shortcuts = applyShortcuts({
+      ShortcutKey.forward5Sec: SeekForwardIntent(Duration(seconds: 5)),
+      ShortcutKey.backward5Sec: SeekForwardIntent(Duration(seconds: -5)),
+      ShortcutKey.togglePlay: IndirectToggleIntent(),
+    });
+
+    final actions = Builder(
+      builder: (context) {
+        return shortcuts.actions(
+          actions: {
+            OpenVideoIntent: PauseBeforeOpenVideoAction(parentContext: context),
+            IndirectToggleIntent: IndirectToggleAction(
+              remoteJustToggled: business.remoteJustToggledNotifier,
+            ),
+            DirectSetPlaybackIntent: DirectSetPlaybackAction(
+              remoteJustToggled: business.remoteJustToggledNotifier,
+            ),
+            SeekForwardIntent: SyncSeekForwardAction(),
+            SeekStartIntent: SyncSeekStartAction(business: business),
+            SeekEndIntent: SyncSeekEndAction(business: business),
+            ShareVideoIntent: ShareVideoAction(),
+            JoinInIntent: JoinInAction(),
+          },
+        );
+      },
+    );
+
+    return actions;
   }
 }
