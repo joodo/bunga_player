@@ -9,7 +9,11 @@ Future<void> initializeLogger() async {
   logger = BungaLogger(logPath);
 
   FlutterError.onError = (FlutterErrorDetails details) {
-    logger.e(details.toString());
+    logger.e(details.exceptionAsString(), stack: details.stack);
+  };
+  PlatformDispatcher.instance.onError = (error, stack) {
+    logger.e(error.toString(), stack: stack);
+    return true;
   };
 }
 
@@ -49,8 +53,8 @@ class BungaLogger {
     fileLogger.w(message);
   }
 
-  void e(dynamic message) {
-    consoleLogger.e(message);
-    fileLogger.e(message);
+  void e(dynamic message, {StackTrace? stack}) {
+    consoleLogger.e(message, stackTrace: stack);
+    fileLogger.e(message, stackTrace: stack);
   }
 }
