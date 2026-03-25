@@ -132,7 +132,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
 
     final actions = shortcuts.actions(
       actions: {
-        OpenVideoIntent: OpenVideoBeforeShareAction(parentContext: context),
+        OpenVideoIntent: PauseBeforeOpenVideoAction(parentContext: context),
         IndirectToggleIntent: IndirectToggleAction(
           remoteJustToggled: _remoteJustToggledNotifier,
           playbackOverlay: _playbackOverlay,
@@ -195,7 +195,8 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
         // Paused by user, not by waiting pending
         // So pause immediately and seek, do not wait for channel status message
         MediaPlayer.i.pause();
-        if (!_SyncChecker.isSync(MediaPlayer.i.position, position)) {
+        if (position != null &&
+            !_SyncChecker.isSync(MediaPlayer.i.position, position)) {
           logger.i('Seek: $position, reason: handle PauseMessageData');
           MediaPlayer.i.seek(position);
         }

@@ -278,7 +278,7 @@ return unknown(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  whatsOn,TResult Function( VideoRecord record,  User sharer)?  nowPlaying,TResult Function( User user,  StartProjectionMessageData? myShare)?  joinIn,TResult Function( List<User> watchers,  List<String> buffering,  List<String> talking)?  hereAre,TResult Function( VideoRecord videoRecord,  Duration position)?  startProjection,TResult Function()?  reset,TResult Function()?  aloha,TResult Function()?  bye,TResult Function()?  whoAreYou,TResult Function( bool isPending)?  clientStatus,TResult Function( List<String> watcherIds,  List<String> readyIds,  Duration position,  ChannelPlayStatus playStatus)?  channelStatus,TResult Function()?  play,TResult Function( Duration position)?  pause,TResult Function( Duration position)?  seek,TResult Function()?  playFinished,TResult Function( String url,  String title)?  shareSub,TResult Function( CallAction action)?  call,TResult Function( TalkStatus status)?  talkStatus,TResult Function( String popmojiCode)?  popmoji,TResult Function( String message)?  danmaku,TResult Function( String emoji, @JsonKey(fromJson: _fractionalOffsetFromJson, toJson: _fractionalOffsetToJson)  FractionalOffset fraction)?  spark,TResult Function()?  unknown,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  whatsOn,TResult Function( VideoRecord record,  User sharer)?  nowPlaying,TResult Function( User user,  StartProjectionMessageData? myShare)?  joinIn,TResult Function( List<User> watchers,  List<String> buffering,  List<String> talking)?  hereAre,TResult Function( VideoRecord videoRecord,  Duration position)?  startProjection,TResult Function()?  reset,TResult Function()?  aloha,TResult Function()?  bye,TResult Function()?  whoAreYou,TResult Function( bool isPending)?  clientStatus,TResult Function( List<String> watcherIds,  List<String> readyIds,  Duration position,  ChannelPlayStatus playStatus)?  channelStatus,TResult Function()?  play,TResult Function( Duration? position)?  pause,TResult Function( Duration position)?  seek,TResult Function()?  playFinished,TResult Function( String url,  String title)?  shareSub,TResult Function( CallAction action)?  call,TResult Function( TalkStatus status)?  talkStatus,TResult Function( String popmojiCode)?  popmoji,TResult Function( String message)?  danmaku,TResult Function( String emoji, @JsonKey(fromJson: _fractionalOffsetFromJson, toJson: _fractionalOffsetToJson)  FractionalOffset fraction)?  spark,TResult Function()?  unknown,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case WhatsOnMessageData() when whatsOn != null:
 return whatsOn();case NowPlayingMessageData() when nowPlaying != null:
@@ -320,7 +320,7 @@ return unknown();case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  whatsOn,required TResult Function( VideoRecord record,  User sharer)  nowPlaying,required TResult Function( User user,  StartProjectionMessageData? myShare)  joinIn,required TResult Function( List<User> watchers,  List<String> buffering,  List<String> talking)  hereAre,required TResult Function( VideoRecord videoRecord,  Duration position)  startProjection,required TResult Function()  reset,required TResult Function()  aloha,required TResult Function()  bye,required TResult Function()  whoAreYou,required TResult Function( bool isPending)  clientStatus,required TResult Function( List<String> watcherIds,  List<String> readyIds,  Duration position,  ChannelPlayStatus playStatus)  channelStatus,required TResult Function()  play,required TResult Function( Duration position)  pause,required TResult Function( Duration position)  seek,required TResult Function()  playFinished,required TResult Function( String url,  String title)  shareSub,required TResult Function( CallAction action)  call,required TResult Function( TalkStatus status)  talkStatus,required TResult Function( String popmojiCode)  popmoji,required TResult Function( String message)  danmaku,required TResult Function( String emoji, @JsonKey(fromJson: _fractionalOffsetFromJson, toJson: _fractionalOffsetToJson)  FractionalOffset fraction)  spark,required TResult Function()  unknown,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  whatsOn,required TResult Function( VideoRecord record,  User sharer)  nowPlaying,required TResult Function( User user,  StartProjectionMessageData? myShare)  joinIn,required TResult Function( List<User> watchers,  List<String> buffering,  List<String> talking)  hereAre,required TResult Function( VideoRecord videoRecord,  Duration position)  startProjection,required TResult Function()  reset,required TResult Function()  aloha,required TResult Function()  bye,required TResult Function()  whoAreYou,required TResult Function( bool isPending)  clientStatus,required TResult Function( List<String> watcherIds,  List<String> readyIds,  Duration position,  ChannelPlayStatus playStatus)  channelStatus,required TResult Function()  play,required TResult Function( Duration? position)  pause,required TResult Function( Duration position)  seek,required TResult Function()  playFinished,required TResult Function( String url,  String title)  shareSub,required TResult Function( CallAction action)  call,required TResult Function( TalkStatus status)  talkStatus,required TResult Function( String popmojiCode)  popmoji,required TResult Function( String message)  danmaku,required TResult Function( String emoji, @JsonKey(fromJson: _fractionalOffsetFromJson, toJson: _fractionalOffsetToJson)  FractionalOffset fraction)  spark,required TResult Function()  unknown,}) {final _that = this;
 switch (_that) {
 case WhatsOnMessageData():
 return whatsOn();case NowPlayingMessageData():
@@ -358,7 +358,7 @@ return unknown();}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  whatsOn,TResult? Function( VideoRecord record,  User sharer)?  nowPlaying,TResult? Function( User user,  StartProjectionMessageData? myShare)?  joinIn,TResult? Function( List<User> watchers,  List<String> buffering,  List<String> talking)?  hereAre,TResult? Function( VideoRecord videoRecord,  Duration position)?  startProjection,TResult? Function()?  reset,TResult? Function()?  aloha,TResult? Function()?  bye,TResult? Function()?  whoAreYou,TResult? Function( bool isPending)?  clientStatus,TResult? Function( List<String> watcherIds,  List<String> readyIds,  Duration position,  ChannelPlayStatus playStatus)?  channelStatus,TResult? Function()?  play,TResult? Function( Duration position)?  pause,TResult? Function( Duration position)?  seek,TResult? Function()?  playFinished,TResult? Function( String url,  String title)?  shareSub,TResult? Function( CallAction action)?  call,TResult? Function( TalkStatus status)?  talkStatus,TResult? Function( String popmojiCode)?  popmoji,TResult? Function( String message)?  danmaku,TResult? Function( String emoji, @JsonKey(fromJson: _fractionalOffsetFromJson, toJson: _fractionalOffsetToJson)  FractionalOffset fraction)?  spark,TResult? Function()?  unknown,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  whatsOn,TResult? Function( VideoRecord record,  User sharer)?  nowPlaying,TResult? Function( User user,  StartProjectionMessageData? myShare)?  joinIn,TResult? Function( List<User> watchers,  List<String> buffering,  List<String> talking)?  hereAre,TResult? Function( VideoRecord videoRecord,  Duration position)?  startProjection,TResult? Function()?  reset,TResult? Function()?  aloha,TResult? Function()?  bye,TResult? Function()?  whoAreYou,TResult? Function( bool isPending)?  clientStatus,TResult? Function( List<String> watcherIds,  List<String> readyIds,  Duration position,  ChannelPlayStatus playStatus)?  channelStatus,TResult? Function()?  play,TResult? Function( Duration? position)?  pause,TResult? Function( Duration position)?  seek,TResult? Function()?  playFinished,TResult? Function( String url,  String title)?  shareSub,TResult? Function( CallAction action)?  call,TResult? Function( TalkStatus status)?  talkStatus,TResult? Function( String popmojiCode)?  popmoji,TResult? Function( String message)?  danmaku,TResult? Function( String emoji, @JsonKey(fromJson: _fractionalOffsetFromJson, toJson: _fractionalOffsetToJson)  FractionalOffset fraction)?  spark,TResult? Function()?  unknown,}) {final _that = this;
 switch (_that) {
 case WhatsOnMessageData() when whatsOn != null:
 return whatsOn();case NowPlayingMessageData() when nowPlaying != null:
@@ -1130,10 +1130,10 @@ String toString() {
 @JsonSerializable()
 
 class PauseMessageData implements MessageData {
-  const PauseMessageData({required this.position, final  String? $type}): $type = $type ?? 'pause';
+  const PauseMessageData({this.position, final  String? $type}): $type = $type ?? 'pause';
   factory PauseMessageData.fromJson(Map<String, dynamic> json) => _$PauseMessageDataFromJson(json);
 
- final  Duration position;
+ final  Duration? position;
 
 @JsonKey(name: 'code')
 final String $type;
@@ -1172,7 +1172,7 @@ abstract mixin class $PauseMessageDataCopyWith<$Res> implements $MessageDataCopy
   factory $PauseMessageDataCopyWith(PauseMessageData value, $Res Function(PauseMessageData) _then) = _$PauseMessageDataCopyWithImpl;
 @useResult
 $Res call({
- Duration position
+ Duration? position
 });
 
 
@@ -1189,10 +1189,10 @@ class _$PauseMessageDataCopyWithImpl<$Res>
 
 /// Create a copy of MessageData
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? position = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? position = freezed,}) {
   return _then(PauseMessageData(
-position: null == position ? _self.position : position // ignore: cast_nullable_to_non_nullable
-as Duration,
+position: freezed == position ? _self.position : position // ignore: cast_nullable_to_non_nullable
+as Duration?,
   ));
 }
 

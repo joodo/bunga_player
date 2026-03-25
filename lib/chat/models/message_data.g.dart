@@ -271,7 +271,7 @@ PauseMessageData _$PauseMessageDataFromJson(Map<String, dynamic> json) =>
       final val = PauseMessageData(
         position: $checkedConvert(
           'position',
-          (v) => Duration(microseconds: (v as num).toInt()),
+          (v) => v == null ? null : Duration(microseconds: (v as num).toInt()),
         ),
         $type: $checkedConvert('code', (v) => v as String?),
       );
@@ -280,7 +280,7 @@ PauseMessageData _$PauseMessageDataFromJson(Map<String, dynamic> json) =>
 
 Map<String, dynamic> _$PauseMessageDataToJson(PauseMessageData instance) =>
     <String, dynamic>{
-      'position': instance.position.inMicroseconds,
+      'position': instance.position?.inMicroseconds,
       'code': instance.$type,
     };
 

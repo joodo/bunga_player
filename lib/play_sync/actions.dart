@@ -54,19 +54,14 @@ class ShareVideoAction extends ContextAction<ShareVideoIntent> {
   }
 }
 
-class OpenVideoBeforeShareAction extends ContextAction<OpenVideoIntent> {
+class PauseBeforeOpenVideoAction extends ContextAction<OpenVideoIntent> {
   final BuildContext parentContext;
 
-  OpenVideoBeforeShareAction({required this.parentContext});
+  PauseBeforeOpenVideoAction({required this.parentContext});
 
   @override
   Object? invoke(OpenVideoIntent intent, [BuildContext? context]) {
-    final playService = MediaPlayer.i;
-    final messageData = PauseMessageData(
-      position: playService.positionNotifier.value,
-    );
-    context!.sendMessage(messageData);
-
+    context!.sendMessage(PauseMessageData());
     return Actions.invoke(parentContext, intent);
   }
 }

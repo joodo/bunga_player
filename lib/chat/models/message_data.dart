@@ -84,8 +84,7 @@ sealed class MessageData with _$MessageData {
   const factory MessageData.play() = PlayMessageData;
 
   /// Send/Receive when pause
-  const factory MessageData.pause({required Duration position}) =
-      PauseMessageData;
+  const factory MessageData.pause({Duration? position}) = PauseMessageData;
 
   /// Send when seek video
   const factory MessageData.seek({required Duration position}) =
