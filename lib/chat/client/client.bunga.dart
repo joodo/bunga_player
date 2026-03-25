@@ -3,14 +3,12 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:async/async.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import 'package:bunga_player/bunga_server/models/channel_tokens.dart';
-import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/services/logger.dart';
 
 import 'client.dart';
@@ -107,33 +105,23 @@ class BungaChatClient extends ChatClient {
         _isConnectedNotifier.value = false;
 
         final closeCode = _channel!.closeCode;
+        logger.w('Websocket: connection break. Code $closeCode');
+
         _channel = null;
         switch (closeCode) {
-          case null: // Close by client
-            break;
-
-          case 1005 || 1006 || 1015: // Network unstable
-          case 1001 || 1011 || 1012 || 1013: // Server problem
-            logger.w('Websocket: connection break. Code $closeCode');
-            return _reconnect();
-
           case 1002: // Client unstable
           case 3000: // Break by timer
-            logger.w('Websocket: connection break. Code $closeCode');
             return _reconnect(backoff: false);
+
+          case 4001: // Token invalid
+            return;
 
           case 4002: // Token expired
             await _serverInfo.refreshToken();
             return _connect();
 
           default:
-            logger.e(
-              'Websocket: connection break, fatal reasion. Code $closeCode',
-            );
-            getIt<GlobalKey<ScaffoldMessengerState>>().currentState!
-                .showSnackBar(
-                  SnackBar(content: const Text(('和服务器沟通失败，部分功能不可用。'))),
-                );
+            return _reconnect();
         }
       },
     );

@@ -3,7 +3,6 @@ import 'package:nested/nested.dart';
 
 import 'package:bunga_player/console/wrapper.dart';
 import 'package:bunga_player/screens/screen.dart';
-import 'package:bunga_player/services/services.dart';
 import 'package:bunga_player/ui/theme.dart';
 import 'package:bunga_player/update/wrapper.dart';
 
@@ -31,7 +30,6 @@ class AppWrapper extends SingleChildStatelessWidget {
 
     return MaterialApp(
       theme: darkTheme,
-      scaffoldMessengerKey: getIt<GlobalKey<ScaffoldMessengerState>>(),
       home: Scaffold(body: child!),
     );
   }
