@@ -8,9 +8,9 @@ import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
+import 'package:bunga_player/play/play.dart';
 import 'package:bunga_player/chat/models/models.dart';
 import 'package:bunga_player/reaction/models/emoji_data.dart';
-import 'package:bunga_player/ui/global_business.dart';
 
 class PopmojiLayer extends StatelessWidget {
   const PopmojiLayer({super.key});
@@ -77,7 +77,7 @@ class _FireworkOverlayState extends State<_FireworkOverlay>
   }
 
   void _startFireworks(User sender) {
-    context.read<SyncMessageEvent>().fire('${sender.name} 在放大呲花');
+    context.read<PlayMessageEvent>().fire('${sender.name} 在放大呲花');
     _fireworkController.autoLaunchDuration = Duration(milliseconds: 100);
     _fireworkTimer.reset();
   }

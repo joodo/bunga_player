@@ -6,10 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:bunga_player/chat/client/client.dart';
 import 'package:bunga_player/chat/global_business.dart';
 import 'package:bunga_player/chat/models/models.dart';
-import 'package:bunga_player/play/busuness.dart';
-import 'package:bunga_player/play/models/video_record.dart';
-import 'package:bunga_player/play/payload_parser.dart';
-import 'package:bunga_player/play/service/service.dart';
+import 'package:bunga_player/play/play.dart';
 
 class JoinInIntent extends Intent {
   final VideoRecord? myRecord;

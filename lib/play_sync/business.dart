@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:animations/animations.dart';
 import 'package:async/async.dart';
-import 'package:bunga_player/services/logger.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:nested/nested.dart';
@@ -13,15 +12,13 @@ import 'package:provider/provider.dart';
 import 'package:bunga_player/chat/global_business.dart';
 import 'package:bunga_player/chat/models/models.dart';
 import 'package:bunga_player/chat/client/client.dart';
-import 'package:bunga_player/play/busuness.dart';
-import 'package:bunga_player/play/models/models.dart';
-import 'package:bunga_player/play/service/service.dart';
+import 'package:bunga_player/services/logger.dart';
+import 'package:bunga_player/play/play.dart';
 import 'package:bunga_player/screens/dialogs/open_video/gallery.dart';
 import 'package:bunga_player/screens/dialogs/video_conflict.dart';
 import 'package:bunga_player/utils/business/value_listenable.dart';
 import 'package:bunga_player/utils/extensions/extensions.dart';
 import 'package:bunga_player/console/service.dart';
-import 'package:bunga_player/ui/global_business.dart';
 import 'package:bunga_player/ui/shortcuts.dart';
 
 import 'actions.dart';
@@ -176,7 +173,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
       case PlayMessageData():
         if (message.sender.isCurrent(context)) break;
 
-        final manager = read<SyncMessageEvent>();
+        final manager = read<PlayMessageEvent>();
         final name = message.sender.name;
         manager.fire('$name 播放了视频');
         read<PlayToggleVisualSignal>().fire(true);
@@ -194,7 +191,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
           MediaPlayer.i.seek(position);
         }
 
-        final manager = read<SyncMessageEvent>();
+        final manager = read<PlayMessageEvent>();
         final name = message.sender.name;
         manager.fire('$name 暂停了视频');
         read<PlayToggleVisualSignal>().fire(false);
@@ -203,7 +200,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
       case SeekMessageData(:final position):
         if (message.sender.isCurrent(context)) break;
 
-        final manager = read<SyncMessageEvent>();
+        final manager = read<PlayMessageEvent>();
         final name = message.sender.name;
         manager.fire('$name 调整了进度');
 
@@ -231,7 +228,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
     final currentRecord = context.read<PlayPayload?>()?.record;
 
     if (!sender.isCurrent(context) && !sender.isServer) {
-      context.read<SyncMessageEvent>().fire('${sender.name} 分享了视频');
+      context.read<PlayMessageEvent>().fire('${sender.name} 分享了视频');
     }
 
     VideoRecord? newRecord = videoRecord;
@@ -328,7 +325,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
     required String title,
     required String url,
   }) {
-    context.read<SyncMessageEvent>().fire('${sharer.name} 分享了字幕');
+    context.read<PlayMessageEvent>().fire('${sharer.name} 分享了字幕');
     _channelSubtitleNotifier.value = (title: title, url: url, sharer: sharer);
   }
 

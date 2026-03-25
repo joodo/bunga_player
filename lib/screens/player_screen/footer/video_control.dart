@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
-import 'package:bunga_player/play/busuness.dart';
-import 'package:bunga_player/play/service/service.dart';
+import 'package:bunga_player/play/play.dart';
 import 'package:bunga_player/screens/widgets/divider.dart';
 import 'package:bunga_player/utils/business/platform.dart';
 import 'package:bunga_player/utils/models/volume.dart';

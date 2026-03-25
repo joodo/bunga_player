@@ -9,7 +9,7 @@ import 'package:bunga_player/bunga_server/models/channel_tokens.dart';
 import 'package:bunga_player/client_info/models/client_account.dart';
 import 'package:bunga_player/chat/global_business.dart';
 import 'package:bunga_player/chat/models/models.dart';
-import 'package:bunga_player/play/service/service.dart';
+import 'package:bunga_player/play/play.dart';
 import 'package:bunga_player/ui/audio_player.dart';
 import 'package:bunga_player/ui/global_business.dart';
 import 'package:bunga_player/ui/shortcuts.dart';
@@ -275,7 +275,7 @@ class _VoiceCallBusinessState extends SingleChildState<VoiceCallBusiness> {
   late final _requestTimeOutTimer = RestartableTimer(
     const Duration(seconds: 20),
     () {
-      context.read<SyncMessageEvent>().fire('无人接听');
+      context.read<PlayMessageEvent>().fire('无人接听');
       context.sendMessage(CallMessageData(action: .cancel));
       _callStatusNotifier.value = .none;
     },
@@ -399,7 +399,7 @@ class _VoiceCallBusinessState extends SingleChildState<VoiceCallBusiness> {
       case .reject:
         if (_callStatusNotifier.value == .callOut) {
           _requestTimeOutTimer.cancel();
-          context.read<SyncMessageEvent>().fire('呼叫已被拒绝');
+          context.read<PlayMessageEvent>().fire('呼叫已被拒绝');
           _callStatusNotifier.value = .none;
         }
     }
@@ -418,7 +418,7 @@ class _VoiceCallBusinessState extends SingleChildState<VoiceCallBusiness> {
 
           if (_talkerIdsNotifier.value.length == 1) {
             // Only me is talking
-            context.read<SyncMessageEvent>().fire('通话已结束');
+            context.read<PlayMessageEvent>().fire('通话已结束');
 
             final action = HangUpAction(
               callStatusNotifier: _callStatusNotifier,

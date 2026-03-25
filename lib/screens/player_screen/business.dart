@@ -9,9 +9,7 @@ import 'package:bunga_player/chat/business.dart';
 import 'package:bunga_player/chat/global_business.dart';
 import 'package:bunga_player/chat/models/message_data.dart';
 import 'package:bunga_player/reaction/business.dart';
-import 'package:bunga_player/play/busuness.dart';
-import 'package:bunga_player/play/payload_parser.dart';
-import 'package:bunga_player/play/service/service.dart';
+import 'package:bunga_player/play/play.dart';
 import 'package:bunga_player/play_sync/business.dart';
 import 'package:bunga_player/play_sync/actions.dart';
 import 'package:bunga_player/screens/widgets/back_listener.dart';
@@ -206,7 +204,7 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
               .channelBusiness()
               .voiceCallBusiness()
         : _wrapJoinInAction(widget);
-    final businessWrap = channelWrap.playBusiness();
+    final businessWrap = channelWrap.withPlay();
     final provider = Provider.value(
       value: IsInChannel(isInChannel),
       child: businessWrap,

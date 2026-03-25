@@ -127,8 +127,6 @@ class BusyStateNotifier extends ChangeNotifier {
   }
 }
 
-class SyncMessageEvent extends SimpleEventStream<String> {}
-
 enum AdjustIndicatorEventType {
   brightness,
   volume,
@@ -205,11 +203,6 @@ class _UIGlobalBusinessState extends SingleChildState<UIGlobalBusiness> {
               BusyStateNotifier()..watchInConsole('Busy State'),
         ),
         Provider.value(value: BungaAudioPlayer()),
-        Provider(
-          create: (context) => SyncMessageEvent(),
-          dispose: (context, value) => value.dispose(),
-          lazy: false,
-        ),
         Provider(
           create: (context) => AdjustIndicatorEvent(),
           dispose: (context, stream) => stream.dispose(),

@@ -2,9 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
-import 'package:bunga_player/services/presence_callbacks.dart';
-import 'package:bunga_player/ui/global_business.dart';
-import 'package:bunga_player/utils/extensions/extensions.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -18,6 +15,8 @@ import 'package:bunga_player/restart/global_business.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/services/preferences.dart';
 import 'package:bunga_player/services/services.dart';
+import 'package:bunga_player/services/presence_callbacks.dart';
+import 'package:bunga_player/utils/extensions/extensions.dart';
 
 import 'wrapper.dart';
 import 'service.dart';
@@ -295,12 +294,6 @@ class _ActionView extends StatelessWidget {
       FilledButton(
         onPressed: () => context.popBar('New toast: ${_randomSentence()}.'),
         child: const Text('Show a snackbar'),
-      ),
-      FilledButton(
-        onPressed: () => context.read<SyncMessageEvent>().fire(
-          'New message: ${_randomSentence()}.',
-        ),
-        child: const Text('Show a sync message'),
       ),
       FilledButton(
         onPressed: context.read<ChannelTokens>().refreshToken,

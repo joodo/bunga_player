@@ -5,8 +5,7 @@ import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
-import 'package:bunga_player/play/busuness.dart';
-import 'package:bunga_player/play/models/play_payload.dart';
+import 'package:bunga_player/play/play.dart';
 import 'package:bunga_player/play_sync/actions.dart';
 import 'package:bunga_player/play/global_business.dart';
 import 'package:bunga_player/screens/dialogs/open_video/open_video.dart';

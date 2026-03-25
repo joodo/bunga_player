@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
 import 'package:bunga_player/screens/widgets/popup_widget.dart';
-import 'package:bunga_player/ui/global_business.dart';
+import 'package:bunga_player/play/play.dart';
 import 'package:bunga_player/utils/business/value_listenable.dart';
 import 'package:bunga_player/utils/extensions/styled_widget.dart';
 
@@ -25,7 +25,7 @@ class _PlaySyncMessageState extends State<PlaySyncMessage> {
   @override
   void initState() {
     super.initState();
-    _subscription = context.read<SyncMessageEvent>().listen(_onNewMessage);
+    _subscription = context.read<PlayMessageEvent>().listen(_onNewMessage);
   }
 
   @override

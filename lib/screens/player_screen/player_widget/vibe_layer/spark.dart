@@ -6,12 +6,11 @@ import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
-import 'package:bunga_player/play/service/service.dart';
+import 'package:bunga_player/play/play.dart';
 import 'package:bunga_player/reaction/models/emoji_data.dart';
 import 'package:bunga_player/reaction/business.dart';
 import 'package:bunga_player/chat/models/models.dart';
 import 'package:bunga_player/utils/business/value_listenable.dart';
-import 'package:bunga_player/ui/global_business.dart';
 
 import 'spark_particle.dart';
 
@@ -116,7 +115,7 @@ class _SparkLayerState extends State<SparkLayer>
 
     final notifier = _syncMessageCooldown[user.id]!;
     if (!notifier.value) {
-      context.read<SyncMessageEvent>().fire('${user.name} 感到 $emoji');
+      context.read<PlayMessageEvent>().fire('${user.name} 感到 $emoji');
     }
     notifier.mark();
   }

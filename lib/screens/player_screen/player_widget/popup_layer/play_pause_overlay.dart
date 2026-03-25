@@ -1,11 +1,10 @@
 import 'dart:async';
 
 import 'package:animations/animations.dart';
+import 'package:bunga_player/play/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
-
-import 'package:bunga_player/play/busuness.dart';
 
 class PlayPauseOverlay extends StatefulWidget {
   const PlayPauseOverlay({super.key});
