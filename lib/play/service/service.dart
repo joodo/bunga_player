@@ -23,13 +23,19 @@ abstract class MediaPlayer {
   Future<void> open(PlayPayload payload, [Duration? start]);
 
   ValueListenable<Duration> get durationNotifier;
+  Duration get duration => durationNotifier.value;
   ValueListenable<Duration> get bufferNotifier;
+  Duration get buffer => bufferNotifier.value;
   ValueListenable<bool> get isBufferingNotifier;
+  bool get isBuffering => isBufferingNotifier.value;
   ValueListenable<Duration> get positionNotifier;
+  Duration get position => positionNotifier.value;
   ValueNotifier<double> get rateNotifier;
+  double get rate => rateNotifier.value;
   Future<void> seek(Duration position);
 
   ValueListenable<PlayStatus> get playStatusNotifier;
+  bool get isPlaying => playStatusNotifier.value.isPlaying;
   Future<void> play();
   Future<void> pause();
   Future<void> stop();
