@@ -19,7 +19,7 @@ class BungaLogger {
 
   final consoleLogger = Logger(
     output: MultiOutput([streamOutput, ConsoleOutput()]),
-    printer: SimplePrinter(colors: false),
+    printer: SimplePrinter(colors: false, printTime: true),
     filter: ProductionFilter(),
     level: Level.info,
   );
