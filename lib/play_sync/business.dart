@@ -43,15 +43,6 @@ class WatcherPendingIdsNotifier extends ValueNotifier<List<String>> {
   WatcherPendingIdsNotifier() : super([]);
 }
 
-enum _Tolerances {
-  treatAsSync(Duration(milliseconds: 400)),
-  silenceCatchUp(Duration(seconds: 3)),
-  waitForOthers(Duration(seconds: 7));
-
-  final Duration duration;
-  const _Tolerances(this.duration);
-}
-
 // Wrapper
 
 class PlaySyncBusiness extends SingleChildStatefulWidget {
@@ -203,10 +194,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
         // Paused by user, not by waiting pending
         // So pause immediately and seek, do not wait for channel status message
         MediaPlayer.i.pause();
-        if (MediaPlayer.i.positionNotifier.value.near(
-          position,
-          tolerance: _Tolerances.treatAsSync.duration,
-        )) {
+        if (!_SyncChecker.isSync(MediaPlayer.i.position, position)) {
           MediaPlayer.i.seek(position);
         }
 
@@ -312,43 +300,29 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
 
     final player = MediaPlayer.i;
     // Not loaded yet
-    if (player.durationNotifier.value == Duration.zero) return;
-
-    final localPosition = player.positionNotifier.value;
+    if (player.duration == Duration.zero) return;
 
     if (!channelPlayStatus.isPlaying) {
       await player.pause();
 
-      if (localPosition.near(
-        position,
-        tolerance: _Tolerances.silenceCatchUp.duration,
-      )) {
-        return;
-      } else {
+      if (!_SyncChecker.isNear(player.position, position)) {
         await player.seek(position);
       }
     } else {
-      if (localPosition.near(
-        position,
-        tolerance: _Tolerances.treatAsSync.duration,
-      )) {
+      if (_SyncChecker.isSync(player.position, position)) {
         player.rateNotifier.value = 1.0;
         _playbackOverlay.show(.playing);
         await player.play();
-      } else if (localPosition.near(
-        position,
-        tolerance: _Tolerances.silenceCatchUp.duration,
-      )) {
-        player.rateNotifier.value = localPosition > position ? 0.95 : 1.05;
+      } else if (_SyncChecker.isNear(player.position, position)) {
+        player.rateNotifier.value = player.position > position ? 0.95 : 1.05;
         _playbackOverlay.show(.playing);
         await player.play();
-      } else if (localPosition > position &&
-          localPosition - position < _Tolerances.waitForOthers.duration) {
+      } else if (_SyncChecker.couldWait(player.position, position)) {
         await player.pause();
       } else {
         _playbackOverlay.show(.playing);
-        await player.play();
         await player.seek(position);
+        await player.play();
       }
     }
   }
@@ -407,4 +381,17 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
 extension WrapPlaySyncBusiness on Widget {
   Widget playSyncBusiness({Key? key}) =>
       PlaySyncBusiness(key: key, child: this);
+}
+
+class _SyncChecker {
+  static const treatAsSyncTolerance = Duration(milliseconds: 400);
+  static const silenceCatchUpTolerance = Duration(seconds: 3);
+  static const waitForOthersTolerance = Duration(seconds: 7);
+
+  static bool isSync(Duration local, Duration remote) =>
+      local.near(remote, tolerance: treatAsSyncTolerance);
+  static bool isNear(Duration local, Duration remote) =>
+      local.near(remote, tolerance: silenceCatchUpTolerance);
+  static bool couldWait(Duration local, Duration remote) =>
+      local > remote && local - remote < waitForOthersTolerance;
 }
