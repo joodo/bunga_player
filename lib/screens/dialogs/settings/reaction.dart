@@ -281,8 +281,8 @@ class _ChannelSwitcherState extends State<_ChannelSwitcher> {
       _channelInfos.removeAt(index);
     });
 
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(
+    context.clearBars();
+    context.showSnackBar(
       SnackBar(
         content: Text('已删除 ${deletedItem.name}'),
         persist: false,

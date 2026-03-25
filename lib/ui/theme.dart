@@ -10,12 +10,14 @@ final darkTheme = _getThemeData(Brightness.dark);
 ThemeData _getThemeData(Brightness brightness) {
   return ThemeData(
     useMaterial3: true,
-    pageTransitionsTheme: PageTransitionsTheme(builders: {
-      for (final platform in TargetPlatform.values)
-        platform: const SharedAxisPageTransitionsBuilder(
-          transitionType: SharedAxisTransitionType.horizontal,
-        ),
-    }),
+    pageTransitionsTheme: PageTransitionsTheme(
+      builders: {
+        for (final platform in TargetPlatform.values)
+          platform: const SharedAxisPageTransitionsBuilder(
+            transitionType: SharedAxisTransitionType.horizontal,
+          ),
+      },
+    ),
     colorScheme: ColorScheme.fromSeed(
       seedColor: seedColor,
       brightness: brightness,
@@ -23,6 +25,10 @@ ThemeData _getThemeData(Brightness brightness) {
     sliderTheme: const SliderThemeData(
       showValueIndicator: ShowValueIndicator.onDrag,
       year2023: false,
+    ),
+    snackBarTheme: SnackBarThemeData(
+      insetPadding: EdgeInsets.fromLTRB(15.0, 5.0, 15.0, 72.0),
+      behavior: .floating,
     ),
   ).useSystemChineseFont(brightness);
 }
