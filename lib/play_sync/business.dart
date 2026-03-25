@@ -46,12 +46,14 @@ class PlaySyncBusiness extends SingleChildStatefulWidget {
     required this.business,
     required this.pendingWatcherIdsNotifier,
     required this.channelSubtitleNotifier,
+    required this.isSyncPlaying,
   });
 
   final BusinessPayload business;
 
   final ValueNotifier<PendingWatcherIds> pendingWatcherIdsNotifier;
   final ValueNotifier<ChannelSubtitle?> channelSubtitleNotifier;
+  final ValueNotifier<bool> isSyncPlaying;
 
   @override
   State<PlaySyncBusiness> createState() => _PlaySyncBusinessState();
@@ -134,6 +136,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
         final name = message.sender.name;
         manager.fire('$name 播放了视频');
         read<PlayToggleVisualSignal>().fire(true);
+        widget.isSyncPlaying.value = true;
 
         widget.business.remoteJustToggledNotifier.mark();
       case PauseMessageData(:final position):
@@ -152,6 +155,7 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
         final name = message.sender.name;
         manager.fire('$name 暂停了视频');
         read<PlayToggleVisualSignal>().fire(false);
+        widget.isSyncPlaying.value = false;
 
         widget.business.remoteJustToggledNotifier.mark();
       case SeekMessageData(:final position):
@@ -328,10 +332,12 @@ extension WrapPlaySyncBusiness on Widget {
     required final ValueNotifier<PendingWatcherIds> pendingWatcherIdsNotifier,
     required final ValueNotifier<ChannelSubtitle?> channelSubtitleNotifier,
     required BusinessPayload business,
+    required ValueNotifier<bool> isSyncPlaying,
   }) => PlaySyncBusiness(
     pendingWatcherIdsNotifier: pendingWatcherIdsNotifier,
     channelSubtitleNotifier: channelSubtitleNotifier,
     business: business,
+    isSyncPlaying: isSyncPlaying,
     child: this,
   );
 }

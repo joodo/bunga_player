@@ -1,3 +1,4 @@
+import 'package:bunga_player/play_sync/play_sync.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
@@ -26,7 +27,15 @@ class VideoControl extends StatelessWidget {
       builder: (context, constraints) =>
           [
             // Play button
-            const _PlayButton().padding(horizontal: 8.0),
+            Consumer<IsSyncPlaying?>(
+              builder: (context, isSyncPlaying, child) =>
+                  ValueListenableBuilder(
+                    valueListenable: MediaPlayer.i.playStatusNotifier,
+                    builder: (context, playStatus, child) => _PlayButton(
+                      isPlaying: isSyncPlaying?.value ?? playStatus.isPlaying,
+                    ).padding(horizontal: 8.0),
+                  ),
+            ),
 
             // Volume section
             if (kIsDesktop && constraints.maxWidth > 630) const _VolumeSlider(),
@@ -99,7 +108,9 @@ class VideoControl extends StatelessWidget {
 }
 
 class _PlayButton extends StatefulWidget {
-  const _PlayButton();
+  const _PlayButton({required this.isPlaying});
+
+  final bool isPlaying;
 
   @override
   State<_PlayButton> createState() => _PlayButtonState();
@@ -119,14 +130,20 @@ class _PlayButtonState extends State<_PlayButton>
   @override
   void initState() {
     super.initState();
-    MediaPlayer.i.playStatusNotifier.addListener(_updateAnimation);
+    controller.value = widget.isPlaying ? 1.0 : 0.0;
   }
 
   @override
   void dispose() {
-    MediaPlayer.i.playStatusNotifier.removeListener(_updateAnimation);
     controller.dispose();
     super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(covariant _PlayButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.isPlaying == widget.isPlaying) return;
+    widget.isPlaying ? controller.forward() : controller.reverse();
   }
 
   @override
@@ -144,11 +161,6 @@ class _PlayButtonState extends State<_PlayButton>
               },
       ),
     );
-  }
-
-  void _updateAnimation() {
-    final isPlay = MediaPlayer.i.playStatusNotifier.value.isPlaying;
-    isPlay ? controller.forward() : controller.reverse();
   }
 }
 

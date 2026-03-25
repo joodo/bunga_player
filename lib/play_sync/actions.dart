@@ -69,14 +69,20 @@ class PauseBeforeOpenVideoAction extends ContextAction<OpenVideoIntent> {
 
 class IndirectToggleAction extends ContextAction<IndirectToggleIntent> {
   final ValueListenable<bool> remoteJustToggled;
+  final ValueNotifier<bool> isSyncPlaying;
 
-  IndirectToggleAction({required this.remoteJustToggled});
+  IndirectToggleAction({
+    required this.remoteJustToggled,
+    required this.isSyncPlaying,
+  });
 
   @override
   void invoke(IndirectToggleIntent intent, [BuildContext? context]) {
     final player = MediaPlayer.i;
-    final wantPlay = !player.playStatusNotifier.value.isPlaying;
+
+    final wantPlay = !isSyncPlaying.value;
     context!.read<PlayToggleVisualSignal>().fire(wantPlay);
+    isSyncPlaying.value = wantPlay;
 
     late final MessageData messageData;
     if (wantPlay) {
@@ -97,13 +103,19 @@ class IndirectToggleAction extends ContextAction<IndirectToggleIntent> {
 
 class DirectSetPlaybackAction extends ContextAction<DirectSetPlaybackIntent> {
   final ValueListenable<bool> remoteJustToggled;
+  final ValueNotifier<bool> isSyncPlaying;
 
-  DirectSetPlaybackAction({required this.remoteJustToggled});
+  DirectSetPlaybackAction({
+    required this.remoteJustToggled,
+    required this.isSyncPlaying,
+  });
 
   @override
   void invoke(DirectSetPlaybackIntent intent, [BuildContext? context]) {
     final player = MediaPlayer.i;
+
     final wantPlay = intent.isPlay;
+    isSyncPlaying.value = wantPlay;
 
     late final MessageData messageData;
     if (wantPlay) {
@@ -166,7 +178,10 @@ class SyncSeekEndAction extends ContextAction<SeekEndIntent> {
 }
 
 extension PlaySyncActionsExtension on Widget {
-  Widget playSyncActions({required BusinessPayload business}) {
+  Widget playSyncActions({
+    required BusinessPayload business,
+    required ValueNotifier<bool> isSyncPlaying,
+  }) {
     final shortcuts = applyShortcuts({
       ShortcutKey.forward5Sec: SeekForwardIntent(Duration(seconds: 5)),
       ShortcutKey.backward5Sec: SeekForwardIntent(Duration(seconds: -5)),
@@ -180,9 +195,11 @@ extension PlaySyncActionsExtension on Widget {
             OpenVideoIntent: PauseBeforeOpenVideoAction(parentContext: context),
             IndirectToggleIntent: IndirectToggleAction(
               remoteJustToggled: business.remoteJustToggledNotifier,
+              isSyncPlaying: isSyncPlaying,
             ),
             DirectSetPlaybackIntent: DirectSetPlaybackAction(
               remoteJustToggled: business.remoteJustToggledNotifier,
+              isSyncPlaying: isSyncPlaying,
             ),
             SeekForwardIntent: SyncSeekForwardAction(),
             SeekStartIntent: SyncSeekStartAction(business: business),

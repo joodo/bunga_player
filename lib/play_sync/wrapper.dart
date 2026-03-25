@@ -20,12 +20,14 @@ class _PlaySyncWrapperState extends SingleChildState<PlaySyncWrapper> {
   )..watchInConsole('Watchers Pending Ids');
   final _channelSubtitleNotifier = ValueNotifier<ChannelSubtitle?>(null)
     ..watchInConsole('Channel Subtitle');
+  final _isSyncPlaying = ValueNotifier<bool>(false);
   final _businessPayload = BusinessPayload();
 
   @override
   void dispose() {
     _pendingWatcherIdsNotifier.dispose();
     _businessPayload.dispose();
+    _isSyncPlaying.dispose();
 
     super.dispose();
   }
@@ -36,12 +38,17 @@ class _PlaySyncWrapperState extends SingleChildState<PlaySyncWrapper> {
         .playSyncBusiness(
           pendingWatcherIdsNotifier: _pendingWatcherIdsNotifier,
           channelSubtitleNotifier: _channelSubtitleNotifier,
+          isSyncPlaying: _isSyncPlaying,
           business: _businessPayload,
         )
-        .playSyncActions(business: _businessPayload)
+        .playSyncActions(
+          business: _businessPayload,
+          isSyncPlaying: _isSyncPlaying,
+        )
         .playSyncProviders(
           channelSubtitleNotifier: _channelSubtitleNotifier,
           pendingWatcherIdsNotifier: _pendingWatcherIdsNotifier,
+          isSyncPlaying: _isSyncPlaying,
         );
   }
 }
