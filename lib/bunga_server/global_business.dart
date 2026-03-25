@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:http/http.dart' as http;
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
@@ -55,7 +56,9 @@ class ConnectToHostAction extends ContextAction<ConnectToHostIntent> {
     try {
       fetchingNotifier.value = FetchingChannelTokens(true);
       final registerUrl = Uri.parse(intent.url);
-      response = await http.post(registerUrl, body: account.toJson());
+      response = await http
+          .post(registerUrl, body: account.toJson())
+          .timeout(4.seconds);
       if (!response.isSuccess) {
         throw Exception('Login failed: ${response.body}');
       }
