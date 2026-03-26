@@ -186,7 +186,7 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_situation == .none) _handleRouteArgument();
+    if (_situation == .none) runAfterBuild(_handleRouteArgument);
   }
 
   @override
