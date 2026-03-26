@@ -64,26 +64,28 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
     final lockedNotifier = context.watch<ScreenLockedNotifier>();
     final lockButton = ValueListenableBuilder(
       valueListenable: _lockButtonVisibleNotifier,
-      builder: (context, visible, child) => Visibility(
-        visible: visible,
-        child: lockedNotifier.value
-            ? IconButton.filled(
-                onPressed: () {
-                  lockedNotifier.value = false;
-                  _showHUDNotifier.mark();
-                  context.read<AdjustIndicatorEvent>().fire(.lockScreen);
-                },
-                icon: const Icon(Icons.lock),
+      builder: (context, visible, child) =>
+          Visibility(
+                visible: visible,
+                child: IconButton.outlined(
+                  onPressed: () {
+                    lockedNotifier.toggle();
+                    lockedNotifier.value
+                        ? _showHUDNotifier.reset()
+                        : _showHUDNotifier.mark();
+                    context.read<AdjustIndicatorEvent>().fire(.lockScreen);
+                  },
+                  isSelected: lockedNotifier.value,
+                  icon: Icon(Icons.lock_open),
+                  selectedIcon: Icon(Icons.lock),
+                  iconSize: 32.0,
+                ),
               )
-            : IconButton.outlined(
-                onPressed: () {
-                  lockedNotifier.value = true;
-                  _showHUDNotifier.reset();
-                  context.read<AdjustIndicatorEvent>().fire(.lockScreen);
-                },
-                icon: Icon(Icons.lock_open),
-              ),
-      ).padding(right: 18.0).alignment(.centerRight),
+              .backgroundColor(Colors.black45)
+              .backgroundBlur(5.0)
+              .clipOval()
+              .padding(right: 18.0)
+              .alignment(.centerRight),
     );
     if (lockedNotifier.value) {
       return BungaGestureDetector(
