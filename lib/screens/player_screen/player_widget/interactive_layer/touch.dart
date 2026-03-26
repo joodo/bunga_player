@@ -176,26 +176,44 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
   void _updateDragBusiness(DragUpdateDetails details) =>
       _dragBusiness?.updatePosition(details.localPosition);
 
+  bool _slideAccept = false;
   void _startSlideSeeking(DragStartDetails details) {
     final business = context.read<PlayProgressSlideBusiness>();
     final play = MediaPlayer.i;
     final startPosition = play.positionNotifier.value;
+
+    _slideAccept = false;
     _dragBusiness = DragBusiness<int>(
       startPosition: details.localPosition,
       orientation: .horizontal,
       startValue: startPosition.inMilliseconds,
       onUpdate: (startValue, distance) {
+        if (!_slideAccept) {
+          if (distance.abs() > 24.0) {
+            _slideAccept = true;
+            business.startSlide(startPosition);
+          } else {
+            return;
+          }
+        }
+
         final newValue = startValue + distance * 200;
         return business.updateSlide(newValue.milliseconds);
       },
       onEnd: (startValue, distance) {
+        if (!_slideAccept) {
+          if (distance.abs() > 50.0) {
+            _slideAccept = true;
+          } else {
+            return;
+          }
+        }
+
         final newValue = startValue + distance * 200;
         return business.finishSlide(newValue.milliseconds);
       },
       onCancel: business.cancelSlide,
     );
-
-    business.startSlide(startPosition);
   }
 
   void _finishSlideSeeking(DragEndDetails details) {
