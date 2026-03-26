@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:animations/animations.dart';
 import 'package:async/async.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:nested/nested.dart';
 import 'package:path/path.dart' as path_tool;
 import 'package:provider/provider.dart';
@@ -23,9 +22,7 @@ import 'providers.dart';
 
 class BusinessPayload {
   // Toggle
-  final remoteJustToggledNotifier = AutoResetNotifier(
-    const Duration(seconds: 1),
-  );
+  final remoteJustToggledNotifier = AutoResetNotifier(1.seconds);
 
   // Seeking
   final isChannelSeeking = AutoResetNotifier(5.seconds);
@@ -306,9 +303,9 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
       final almostFinished = duration - position < 1.seconds;
 
       final buffer = MediaPlayer.i.bufferNotifier.value;
-      final bufferLow = (buffer - position) < Duration(seconds: 1);
+      final bufferLow = (buffer - position) < 3.seconds;
 
-      final isReady = almostFinished || isLoaded && !bufferLow;
+      final isReady = isLoaded && (almostFinished || !bufferLow);
       final data = ClientStatusMessageData(isPending: !isReady);
       context.sendMessage(data);
     }
