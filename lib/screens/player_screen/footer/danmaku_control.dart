@@ -5,13 +5,12 @@ import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
-import 'package:bunga_player/chat/models/message_data.dart';
-import 'package:bunga_player/chat/global_business.dart';
-import 'package:bunga_player/reaction/models/emoji_data.dart';
-import 'package:bunga_player/reaction/business.dart';
-import 'package:bunga_player/screens/widgets/text_editing_shortcut_wrapper.dart';
-import 'package:bunga_player/utils/business/platform.dart';
-import 'package:bunga_player/utils/extensions/extensions.dart';
+import '/chat/chat.dart';
+import '/reaction/models/emoji_data.dart';
+import '/reaction/business.dart';
+import '/screens/widgets/text_editing_shortcut_wrapper.dart';
+import '/utils/business/platform.dart';
+import '/utils/extensions/extensions.dart';
 
 import '../../widgets/popmoji_button.dart';
 import '../actions.dart';

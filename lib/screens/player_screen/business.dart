@@ -5,9 +5,7 @@ import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
-import 'package:bunga_player/chat/business.dart';
-import 'package:bunga_player/chat/global_business.dart';
-import 'package:bunga_player/chat/models/message_data.dart';
+import 'package:bunga_player/chat/chat.dart';
 import 'package:bunga_player/reaction/business.dart';
 import 'package:bunga_player/play/play.dart';
 import 'package:bunga_player/play_sync/play_sync.dart';
@@ -200,7 +198,7 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
         ? widget
               .reactionBusiness()
               .withPlaySync()
-              .channelBusiness()
+              .withChat()
               .voiceCallBusiness()
         : _wrapJoinInAction(widget);
     final businessWrap = channelWrap.withPlay();

@@ -7,9 +7,7 @@ import 'package:provider/provider.dart';
 import '/services/logger.dart';
 import '/ui/shortcuts.dart';
 import '/utils/extensions/extensions.dart';
-import '/chat/client/client.dart';
-import '/chat/global_business.dart';
-import '/chat/models/models.dart';
+import '/chat/chat.dart';
 import '/play/play.dart';
 
 import 'business.dart';

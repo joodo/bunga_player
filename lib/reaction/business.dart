@@ -4,11 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 
-import 'package:bunga_player/chat/models/message_data.dart';
-import 'package:bunga_player/chat/global_business.dart';
-import 'package:bunga_player/utils/extensions/extensions.dart';
-import 'package:bunga_player/utils/business/value_listenable.dart';
-import 'package:bunga_player/services/preferences.dart';
+import '/chat/chat.dart';
+import '/utils/extensions/extensions.dart';
+import '/utils/business/value_listenable.dart';
+import '/services/preferences.dart';
 
 import 'models/emoji_data.dart';
 

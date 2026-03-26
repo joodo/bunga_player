@@ -1,98 +1,33 @@
 import 'dart:async';
-import 'dart:convert';
 
-import 'package:bunga_player/play/providers.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 
-import 'package:bunga_player/client_info/models/client_account.dart';
-import 'package:bunga_player/console/service.dart';
-import 'package:bunga_player/play/service/service.dart';
-import 'package:bunga_player/ui/audio_player.dart';
+import '/client_info/models/client_account.dart';
+import '/play/play.dart';
+import '/ui/audio_player.dart';
 
 import 'models/models.dart';
+import 'providers.dart';
 
-// Data types
+class ChatBusiness extends SingleChildStatefulWidget {
+  const ChatBusiness({
+    super.key,
+    required Widget super.child,
+    required this.watchersNotifier,
+  });
 
-class Watchers extends Iterable<User> {
-  final Iterable<User> iterable;
-  const Watchers(this.iterable);
+  final WatchersNotifier watchersNotifier;
 
   @override
-  Iterator<User> get iterator => iterable.iterator;
-
-  @override
-  String toString() => jsonEncode(map((e) => e.toJson()).toList());
+  State<ChatBusiness> createState() => _ChatBusinessState();
 }
 
-class WatchersNotifier extends ChangeNotifier
-    implements ValueListenable<Watchers> {
-  final User myself;
-  WatchersNotifier({required this.myself}) {
-    upsertInfo(myself);
-  }
-
-  final Map<String, User> _infos = {};
-
-  void setInfos(Iterable<User> users) {
-    _infos.clear();
-    _infos[myself.id] = myself;
-    for (var u in users) {
-      _infos[u.id] = u;
-    }
-    notifyListeners();
-  }
-
-  bool upsertInfo(User user) {
-    if (_infos[user.id] != user) {
-      _infos[user.id] = user;
-      notifyListeners();
-      return true;
-    }
-    return false;
-  }
-
-  final List<String> _ids = [];
-
-  void setIds(List<String> ids) {
-    if (listEquals(ids, _ids)) return;
-
-    _ids.clear();
-    _ids.addAll(ids);
-    notifyListeners();
-  }
-
-  bool removeId(String id) {
-    if (_ids.remove(id)) {
-      notifyListeners();
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  @override
-  Watchers get value =>
-      Watchers(_infos.values.where((u) => _ids.contains(u.id)));
-}
-
-class ChannelBusiness extends SingleChildStatefulWidget {
-  const ChannelBusiness({super.key, super.child});
-
-  @override
-  State<ChannelBusiness> createState() => _ChannelBusinessState();
-}
-
-class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
+class _ChatBusinessState extends SingleChildState<ChatBusiness> {
   late final StreamSubscription _streamSubscription;
 
   late final _myId = context.read<ClientAccount>().id;
-
-  // Watchers
-  late final _watchersNotifier = WatchersNotifier(myself: User.of(context))
-    ..watchInConsole('Watchers');
 
   @override
   void initState() {
@@ -112,7 +47,7 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
           if (message.sender.id == _myId) break;
           _handleBye(message.sender.id);
         case ChannelStatusMessageData(:final watcherIds):
-          _watchersNotifier.setIds(watcherIds);
+          widget.watchersNotifier.setIds(watcherIds);
         default:
           {}
       }
@@ -121,15 +56,11 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
 
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
-    return MultiProvider(
-      providers: [ValueListenableProvider.value(value: _watchersNotifier)],
-      child: child,
-    );
+    return child!;
   }
 
   @override
   void dispose() {
-    _watchersNotifier.dispose();
     _streamSubscription.cancel();
     super.dispose();
   }
@@ -144,7 +75,7 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
   }
 
   void _handleHereAre(List<User> watchers) {
-    _watchersNotifier.setInfos(watchers);
+    widget.watchersNotifier.setInfos(watchers);
   }
 
   void _handleBye(String userId) {
@@ -152,18 +83,19 @@ class _ChannelBusinessState extends SingleChildState<ChannelBusiness> {
   }
 
   void _addWatcher(User user) {
-    if (_watchersNotifier.upsertInfo(user)) {
+    if (widget.watchersNotifier.upsertInfo(user)) {
       context.read<BungaAudioPlayer>().playSfx('user_join');
     }
   }
 
   void _removeWatcher(String id) {
-    if (_watchersNotifier.removeId(id)) {
+    if (widget.watchersNotifier.removeId(id)) {
       context.read<BungaAudioPlayer>().playSfx('user_leave');
     }
   }
 }
 
-extension WrapChannelBusiness on Widget {
-  Widget channelBusiness() => ChannelBusiness(child: this);
+extension ChatBusinessExtension on Widget {
+  Widget chatBusiness({required WatchersNotifier watchersNotifier}) =>
+      ChatBusiness(watchersNotifier: watchersNotifier, child: this);
 }

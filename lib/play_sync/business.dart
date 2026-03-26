@@ -8,15 +8,13 @@ import 'package:nested/nested.dart';
 import 'package:path/path.dart' as path_tool;
 import 'package:provider/provider.dart';
 
-import 'package:bunga_player/chat/global_business.dart';
-import 'package:bunga_player/chat/models/models.dart';
-import 'package:bunga_player/chat/client/client.dart';
-import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/play/play.dart';
-import 'package:bunga_player/screens/dialogs/open_video/gallery.dart';
-import 'package:bunga_player/screens/dialogs/video_conflict.dart';
-import 'package:bunga_player/utils/business/value_listenable.dart';
-import 'package:bunga_player/utils/extensions/extensions.dart';
+import '/chat/chat.dart';
+import '/services/logger.dart';
+import '/play/play.dart';
+import '/screens/dialogs/open_video/gallery.dart';
+import '/screens/dialogs/video_conflict.dart';
+import '/utils/business/value_listenable.dart';
+import '/utils/extensions/extensions.dart';
 
 import 'providers.dart';
 

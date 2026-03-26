@@ -5,15 +5,15 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
-import 'package:bunga_player/chat/business.dart';
-import 'package:bunga_player/client_info/models/client_account.dart';
-import 'package:bunga_player/ui/global_business.dart';
-import 'package:bunga_player/utils/extensions/extensions.dart';
-import 'package:bunga_player/utils/models/volume.dart';
-import 'package:bunga_player/voice_call/business.dart';
-import 'package:bunga_player/screens/widgets/widgets.dart';
-import 'package:bunga_player/utils/business/run_after_build.dart';
-import 'package:bunga_player/voice_call/client/client.dart';
+import '/chat/chat.dart';
+import '/client_info/models/client_account.dart';
+import '/ui/global_business.dart';
+import '/utils/extensions/extensions.dart';
+import '/utils/business/run_after_build.dart';
+import '/utils/models/volume.dart';
+import '/voice_call/business.dart';
+import '/screens/widgets/widgets.dart';
+import '/voice_call/client/client.dart';
 
 import '../actions.dart';
 import '../panel/calling_settings.dart';

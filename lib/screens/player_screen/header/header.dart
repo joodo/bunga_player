@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
-import 'package:bunga_player/chat/business.dart';
-import 'package:bunga_player/play_sync/play_sync.dart';
-import 'package:bunga_player/voice_call/business.dart';
-import 'package:bunga_player/screens/player_screen/business.dart';
-import 'package:bunga_player/chat/models/user.dart';
-import 'package:bunga_player/play/models/play_payload.dart';
+import '/chat/chat.dart';
+import '/play_sync/play_sync.dart';
+import '/voice_call/business.dart';
+import '/screens/player_screen/business.dart';
+import '/play/models/play_payload.dart';
 
 import 'call_button.dart';
 
