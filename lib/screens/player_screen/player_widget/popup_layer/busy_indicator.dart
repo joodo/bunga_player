@@ -90,8 +90,8 @@ class BusyIndicator extends StatelessWidget {
                       .padding(horizontal: 24.0, vertical: 12.0)
                       .boxShadow(
                         color: Theme.of(context).colorScheme.shadow,
-                        spreadRadius: 12.0,
-                        blurRadius: 36.0,
+                        spreadRadius: 24.0,
+                        blurRadius: 108.0,
                       )
                       .opacity(shouldCenter ? 1.0 : 0.0, animate: true)
                       .animate(
