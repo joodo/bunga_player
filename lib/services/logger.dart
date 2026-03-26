@@ -36,7 +36,14 @@ class BungaLogger {
       maxFileSizeKB: 512,
       maxRotatedFilesCount: 3,
     ),
-    printer: SimplePrinter(printTime: true, colors: false),
+    printer: PrettyPrinter(
+      methodCount: 2,
+      errorMethodCount: 8,
+      lineLength: 120,
+      colors: false,
+      printEmojis: false,
+      noBoxingByDefault: true,
+    ),
     filter: ProductionFilter(),
     level: Level.info,
   );
