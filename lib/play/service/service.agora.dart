@@ -242,7 +242,7 @@ class AgoraMediaPlayer extends MediaPlayer {
   late final RestartableTimer _positionUpdater = RestartableTimer(
     1.seconds,
     () {
-      _position.value += 1.seconds;
+      _position.value += 1.seconds * rateNotifier.value;
       _positionUpdater.reset();
     },
   )..cancel();
