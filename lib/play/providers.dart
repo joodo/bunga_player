@@ -31,6 +31,10 @@ class PlayEqPresetNotifier extends ValueNotifier<BCSGHPreset?> {
   PlayEqPresetNotifier() : super(presets.first);
 }
 
+class ExpectedPosition {
+  Duration? value;
+}
+
 extension PlayProvidersExtension on Widget {
   Widget playProviders({
     required ValueNotifier<PlayPayload?> playPayloadNotifier,
@@ -49,6 +53,7 @@ extension PlayProvidersExtension on Widget {
         dispose: (context, value) => value.dispose(),
         lazy: false,
       ),
+      Provider.value(value: ExpectedPosition()),
     ],
     child: this,
   );

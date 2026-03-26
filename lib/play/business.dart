@@ -7,6 +7,7 @@ import 'package:bunga_player/utils/business/platform.dart';
 import 'package:bunga_player/utils/business/run_after_build.dart';
 import 'package:bunga_player/ui/global_business.dart';
 
+import 'providers.dart';
 import 'history.dart';
 import 'models/history.dart';
 import 'models/play_payload.dart';
@@ -51,6 +52,8 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
     MediaPlayer.i.playStatusNotifier.addListener(_updateHistory);
     _saveWatchProgressTimer;
     _history = context.read<History>();
+
+    MediaPlayer.i.positionNotifier.addListener(_updateExpectedPosition);
   }
 
   @override
@@ -58,6 +61,7 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
     if (kIsDesktop) runAfterBuild(_windowTitleNotifier.reset);
 
     MediaPlayer.i.playStatusNotifier.removeListener(_updateHistory);
+    MediaPlayer.i.positionNotifier.removeListener(_updateExpectedPosition);
 
     _saveWatchProgressTimer.cancel();
 
@@ -106,6 +110,14 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
     } else {
       _windowTitleNotifier.value = title;
     }
+  }
+
+  void _updateExpectedPosition() {
+    final player = MediaPlayer.i;
+    if (player.duration == Duration.zero) return;
+    if (!player.isPlaying) return;
+
+    context.read<ExpectedPosition>().value = player.position;
   }
 }
 

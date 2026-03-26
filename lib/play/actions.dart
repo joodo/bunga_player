@@ -110,11 +110,16 @@ class OpenVideoAction extends ContextAction<OpenVideoIntent> {
       final session = context.read<History>()[payload.record.id];
       final subPath = session?.subtitlePath;
 
-      await _loadVideo(
-        payload: payload,
-        subtitlePath: subPath,
-        start: start ?? session?.progress?.position,
-      );
+      // Start position
+      Duration? s = start;
+      if (intent.reload) {
+        s ??= context.read<ExpectedPosition>().value;
+      } else {
+        s ??= session?.progress?.position;
+        context.read<ExpectedPosition>().value = s;
+      }
+
+      await _loadVideo(payload: payload, subtitlePath: subPath, start: s);
 
       return payload;
     } catch (e) {

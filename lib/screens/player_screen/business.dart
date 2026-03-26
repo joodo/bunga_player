@@ -234,16 +234,13 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
   Future<void> _handleRouteArgument() async {
     // Play video from route argument
     final argument = ModalRoute.of(context)?.settings.arguments;
+    final childContext = widget.getChildContext();
     if (argument is OpenVideoDialogResult) {
       // Join in by open video from dialog
       if (argument.onlyForMe) {
         _situation = .local;
-
         runAfterBuild(
-          () => Actions.invoke(
-            widget.getChildContext(),
-            OpenVideoIntent.url(argument.url),
-          ),
+          Actions.handler(childContext, OpenVideoIntent.url(argument.url)),
         );
       } else {
         _situation = .channelShare;
@@ -251,19 +248,16 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
           context,
         ).parseUrl(argument.url);
 
-        runAfterBuild(
-          () => Actions.invoke(
-            widget.getChildContext(),
-            JoinInIntent(myRecord: videoRecord),
-          ),
-        );
+        if (childContext.mounted) {
+          runAfterBuild(
+            Actions.handler(childContext, JoinInIntent(myRecord: videoRecord)),
+          );
+        }
       }
     } else if (argument == null) {
       // Join in by "Channel Card" in Welcome screen
       _situation = .channelJoin;
-      runAfterBuild(
-        () => Actions.invoke(widget.getChildContext(), JoinInIntent()),
-      );
+      runAfterBuild(() => Actions.invoke(childContext, JoinInIntent()));
     }
   }
 }

@@ -245,6 +245,8 @@ class _PlaySyncBusinessState extends SingleChildState<PlaySyncBusiness> {
     ChannelPlayStatus channelPlayStatus,
     Duration position,
   ) async {
+    context.read<ExpectedPosition>().value = position;
+
     // do not sync channel status when seeking
     if (widget.business.isChannelSeeking.value) return;
     // do not sync channel when I'm slide seeking
