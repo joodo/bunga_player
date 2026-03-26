@@ -198,9 +198,7 @@ class AgoraMediaPlayer extends MediaPlayer {
     // Headers
     String url = payload.sources.videos[payload.videoSourceIndex].url;
     final headers = payload.sources.requestHeaders;
-    if (headers != null || proxyNotifier.value != null) {
-      url = await _videoProxy.startProxy(url, headers, proxyNotifier.value);
-    }
+    url = await _videoProxy.startProxy(url, headers, proxyNotifier.value);
 
     // Open
     if (_openTask?.isCompleted == false) {

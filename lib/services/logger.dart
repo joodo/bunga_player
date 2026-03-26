@@ -13,7 +13,7 @@ Future<void> initializeLogger() async {
   };
   PlatformDispatcher.instance.onError = (error, stack) {
     logger.e(error.toString(), stack: stack);
-    return true;
+    return false;
   };
 }
 
