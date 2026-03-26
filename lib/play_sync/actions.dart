@@ -1,18 +1,18 @@
 import 'dart:async';
 
-import 'package:bunga_player/play_sync/business.dart';
-import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/ui/shortcuts.dart';
-import 'package:bunga_player/utils/extensions/extensions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 
-import 'package:bunga_player/chat/client/client.dart';
-import 'package:bunga_player/chat/global_business.dart';
-import 'package:bunga_player/chat/models/models.dart';
-import 'package:bunga_player/play/play.dart';
+import '/services/logger.dart';
+import '/ui/shortcuts.dart';
+import '/utils/extensions/extensions.dart';
+import '/chat/client/client.dart';
+import '/chat/global_business.dart';
+import '/chat/models/models.dart';
+import '/play/play.dart';
+
+import 'business.dart';
 
 class JoinInIntent extends Intent {
   final VideoRecord? myRecord;

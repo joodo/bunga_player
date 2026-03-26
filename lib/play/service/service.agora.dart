@@ -1,13 +1,13 @@
 import 'dart:async';
 import 'dart:ui';
 
+import 'package:async/async.dart';
 import 'package:bunga_player/services/logger.dart';
 import 'package:bunga_player/utils/business/simple_event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/foundation.dart';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart' as agora;
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:styled_widget/styled_widget.dart';
 
 import 'package:bunga_player/utils/models/volume.dart';
@@ -45,6 +45,12 @@ class AgoraMediaPlayer extends MediaPlayer {
     });
     _player.adjustPlayoutVolume(_volume.value.level.toLevel);
 
+    _playStatus.addListener(
+      () => _playStatus.value.isPlaying
+          ? _positionUpdater.reset()
+          : _positionUpdater.cancel(),
+    );
+
     await _player.setPlayerOptionInInt(
       key: "min_buffer_duration",
       value: 3_000,
@@ -75,9 +81,10 @@ class AgoraMediaPlayer extends MediaPlayer {
         final buffer = Duration(milliseconds: playCachedBuffer);
         _buffer.value = _position.value + buffer;
       },
+      /* FIXME: Stupid Agora SDK, seek when caching cause position jump forward
       onPositionChanged: (positionMs, timestampMs) {
         _position.value = Duration(milliseconds: positionMs);
-      },
+      },*/
       onPlayerSourceStateChanged: (state, reason) async {
         logger.i('Player state changed: $state, reason: $reason');
         switch (state) {
@@ -168,6 +175,7 @@ class AgoraMediaPlayer extends MediaPlayer {
     _buffer.dispose();
     _isBuffering.dispose();
     _position.dispose();
+    _positionUpdater.cancel();
     _playStatus.dispose();
 
     await _videoProxy.stop();
@@ -231,22 +239,20 @@ class AgoraMediaPlayer extends MediaPlayer {
 
   // Position
   final _position = ValueNotifier(Duration.zero);
-  Completer<void>? _seekCompleter;
+  late final RestartableTimer _positionUpdater = RestartableTimer(
+    1.seconds,
+    () {
+      _position.value += 1.seconds;
+      _positionUpdater.reset();
+    },
+  )..cancel();
   @override
   ValueListenable<Duration> get positionNotifier => _position;
   @override
   Future<void> seek(Duration position) async {
     if (_samePosition(position, _position.value)) return;
-
-    _seekCompleter?.complete();
-    _seekCompleter = Completer();
-
     await _player.seek(position.inMilliseconds);
-
-    await Future.any([
-      _position.waitUntil((value) => _samePosition(position, value)),
-      _seekCompleter!.future,
-    ]);
+    _position.value = position;
   }
 
   bool _samePosition(Duration a, Duration b) =>

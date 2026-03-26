@@ -13,3 +13,8 @@ extension MoreSpan on Duration {
   int get inMonths => inDays ~/ 30;
   int get inYears => inMonths ~/ 12;
 }
+
+extension AsDurationExtension on int {
+  Duration get seconds => Duration(seconds: this);
+  Duration get milliseconds => Duration(milliseconds: this);
+}
