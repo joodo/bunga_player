@@ -92,9 +92,11 @@ class _VideoSourcePanelState extends State<VideoSourcePanel> {
                             as Future;
                     await act;
                   } catch (_) {
-                    setState(() {
-                      _openFailed.add(value!);
-                    });
+                    if (mounted) {
+                      setState(() {
+                        _openFailed.add(value!);
+                      });
+                    }
                   }
                 },
               ),
