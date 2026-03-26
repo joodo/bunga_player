@@ -57,7 +57,7 @@ class AgoraMediaPlayer extends MediaPlayer {
     );
     await _player.setPlayerOptionInInt(
       key: "max_buffer_duration",
-      value: 60_000,
+      value: 5 * 60_000,
     );
   }
 
