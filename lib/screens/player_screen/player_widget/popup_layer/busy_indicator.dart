@@ -53,7 +53,8 @@ class BusyIndicator extends StatelessWidget {
                 text.isNotEmpty &&
                 !showHudNotifier.value &&
                 isSyncPlaying?.value != true;
-            final shouldCenter = text.isNotEmpty && !shouldPop;
+            final shouldCenter =
+                !shouldPop && text.isNotEmpty && isSyncPlaying?.value == true;
             return PopupWidget(
               showing: shouldPop,
               layoutBuilder: (context, popup) =>
