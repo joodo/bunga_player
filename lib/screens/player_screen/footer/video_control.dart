@@ -155,10 +155,10 @@ class _PlayButtonState extends State<_PlayButton>
         iconSize: 36,
         onPressed: isBusy
             ? null
-            : () {
-                final isPlay = MediaPlayer.i.playStatusNotifier.value.isPlaying;
-                Actions.maybeInvoke(context, DirectSetPlaybackIntent(!isPlay));
-              },
+            : Actions.handler(
+                context,
+                DirectSetPlaybackIntent(!widget.isPlaying),
+              ),
       ),
     );
   }
