@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:path_provider/path_provider.dart';
+
 class LocalVideoProxy {
   HttpServer? _server;
   Directory? _cacheDir;
@@ -7,9 +9,6 @@ class LocalVideoProxy {
   final _httpClient = HttpClient()
     ..badCertificateCallback = (X509Certificate cert, String host, int port) =>
         true;
-
-  // To handle relative paths in m3u8, we store the base remote URL
-  String? _baseRemoteUrl;
 
   Future<String> startProxy(
     String remoteUrl,
@@ -20,10 +19,13 @@ class LocalVideoProxy {
 
     await stop();
     _server = await HttpServer.bind('127.0.0.1', 0);
-    _cacheDir = await Directory.systemTemp.createTemp('bunga_proxy_cache_');
+
+    final tempDir = await getApplicationCacheDirectory();
+    _cacheDir = await tempDir.createTemp('bunga_proxy_cache_');
 
     final uri = Uri.parse(remoteUrl);
-    _baseRemoteUrl = uri.resolve('.').toString();
+    // handle relative paths in m3u8
+    String? baseRemoteUrl = uri.resolve('.').toString();
 
     _server!.listen((HttpRequest request) async {
       try {
@@ -32,12 +34,17 @@ class LocalVideoProxy {
           targetUri = Uri.parse(remoteUrl);
         } else {
           // Keep query parameters while resolving relative paths (HLS URLs may carry auth tokens).
-          final relativePath = request.uri.path.substring(1);
+          // if pathSegments more than 1, maybe it's a m3u8 redirect
+          // else it's a ts file
+          final relativePath = request.uri.pathSegments.length > 1
+              ? request.uri.path
+              : request.uri.path.substring(1);
+
           final relativeUri = Uri(
             path: relativePath,
             query: request.uri.hasQuery ? request.uri.query : null,
           );
-          targetUri = Uri.parse(_baseRemoteUrl!).resolveUri(relativeUri);
+          targetUri = Uri.parse(baseRemoteUrl!).resolveUri(relativeUri);
         }
 
         final cacheKey = targetUri.toString();
@@ -58,8 +65,7 @@ class LocalVideoProxy {
           return;
         }
 
-        final clientReq = await _httpClient.getUrl(targetUri);
-
+        final clientReq = await _httpClient.openUrl(request.method, targetUri);
         headers?.forEach((key, value) => clientReq.headers.set(key, value));
 
         // Handle Range requests for MP4 seeking
@@ -67,9 +73,31 @@ class LocalVideoProxy {
         if (range != null) clientReq.headers.set('range', range);
 
         final clientRes = await clientReq.close();
+        request.response.statusCode = clientRes.statusCode;
+
+        if (clientRes.redirects.isNotEmpty) {
+          final newUri = clientRes.redirects.last.location;
+          if (newUri.isAbsolute) {
+            baseRemoteUrl = newUri.resolve('.').toString();
+          }
+        }
+
+        // Bypass m3u8 file
+        final contentType =
+            clientRes.headers.contentType?.value.toLowerCase() ?? '';
+        if (contentType.contains('vnd.apple.mpegurl') ||
+            contentType.contains('x-mpegurl')) {
+          request.response.headers.contentType = ContentType(
+            'application',
+            'vnd.apple.mpegurl',
+          );
+          request.response.headers.set('Access-Control-Allow-Origin', '*');
+          await clientRes.pipe(request.response);
+          return;
+        }
 
         _copyResponseHeaders(clientRes.headers, request.response.headers);
-        _applyProxyHeaders(request.response.headers);
+        //_applyProxyHeaders(request.response.headers);
         request.response.statusCode = clientRes.statusCode;
 
         final shouldAppend = _canAppendToCache(
@@ -118,7 +146,8 @@ class LocalVideoProxy {
       }
     });
 
-    return "http://127.0.0.1:${_server!.port}/proxy_video";
+    final r = "http://127.0.0.1:${_server!.port}/proxy_video";
+    return r;
   }
 
   Future<void> stop() async {
@@ -257,18 +286,23 @@ class LocalVideoProxy {
   void _copyResponseHeaders(HttpHeaders from, HttpHeaders to) {
     from.forEach((name, values) {
       final n = name.toLowerCase();
-      if (n == 'transfer-encoding' ||
-          n == 'content-encoding' ||
-          n == 'connection' ||
-          n == 'content-disposition') {
-        return;
-      }
 
-      if (n == 'etag') {
-        final etag = values.join(',');
-        to.set('etag', etag.startsWith('"') ? etag : '"$etag"');
-      } else {
-        to.set(name, values.join(','));
+      switch (n) {
+        case 'transfer-encoding' ||
+            'content-encoding' ||
+            'connection' ||
+            'content-disposition' ||
+            'x-content-type-options' ||
+            'x-frame-options' ||
+            'x-xss-protection':
+          break;
+
+        case 'etag':
+          final etag = values.join(',');
+          to.set('etag', etag.startsWith('"') ? etag : '"$etag"');
+
+        default:
+          to.set(name, values.join(','));
       }
     });
   }
