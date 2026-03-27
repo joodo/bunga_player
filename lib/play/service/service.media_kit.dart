@@ -42,6 +42,7 @@ class MediaKitMediaPlayer extends MediaPlayer {
     _setProperty('sub-visibility', 'yes'); // use mpv subtitle, not media_kit
 
     // Cache
+    _setProperty('cache-on-disk', 'yes');
     _setProperty('demuxer-max-bytes', '500MiB');
 
     // When video loaded
@@ -184,11 +185,13 @@ class MediaKitMediaPlayer extends MediaPlayer {
     String videoUrl = payload.sources.videos[payload.videoSourceIndex].url;
     final httpHeaders = payload.sources.requestHeaders;
 
-    videoUrl = await _videoProxy.startProxy(
-      videoUrl,
-      httpHeaders,
-      proxyNotifier.value,
-    );
+    if (proxyNotifier.value != null) {
+      videoUrl = await _videoProxy.startProxy(
+        videoUrl,
+        httpHeaders,
+        proxyNotifier.value,
+      );
+    }
 
     await _player.open(
       media_kit.Media(videoUrl, httpHeaders: httpHeaders, start: start),
