@@ -248,6 +248,7 @@ class AgoraMediaPlayer extends MediaPlayer {
   ValueListenable<Duration> get positionNotifier => _position;
   @override
   Future<void> seek(Duration position) async {
+    if (_duration.value <= Duration.zero) return;
     if (_samePosition(position, _position.value)) return;
     await _player.seek(position.inMilliseconds);
     _position.value = position;
