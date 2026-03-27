@@ -45,6 +45,10 @@ class _VideoSourcePanelState extends State<VideoSourcePanel> {
       ],
       child: Consumer<PlayPayload>(
         builder: (context, payload, child) => [
+          if (proxy != null)
+            Text('当前使用代理：$proxy')
+                .textColor(Theme.of(context).colorScheme.onSurfaceVariant)
+                .padding(horizontal: 22.0, vertical: 8.0),
           payload.sources.videos.indexed
               .map((entry) {
                 final (index, source) = entry;
@@ -100,10 +104,6 @@ class _VideoSourcePanelState extends State<VideoSourcePanel> {
                   }
                 },
               ),
-          if (proxy != null)
-            Text('当前使用代理：$proxy')
-                .textStyle(Theme.of(context).textTheme.bodySmall!)
-                .padding(horizontal: 8.0, vertical: 20.0),
         ].toColumn(crossAxisAlignment: .start),
       ).scrollable(controller: PrimaryScrollController.of(context)),
     );
