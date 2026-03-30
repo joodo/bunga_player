@@ -4,14 +4,14 @@ import 'package:path/path.dart' as path_tool;
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
-import 'package:bunga_player/bunga_server/global_business.dart';
-import 'package:bunga_player/chat/models/message_data.dart';
-import 'package:bunga_player/chat/client/client.dart';
-import 'package:bunga_player/play/play.dart';
-import 'package:bunga_player/play_sync/play_sync.dart';
-import 'package:bunga_player/screens/player_screen/business.dart';
-import 'package:bunga_player/screens/widgets/slider_item.dart';
-import 'package:bunga_player/utils/extensions/extensions.dart';
+import '/bunga_server/global_business.dart';
+import '/chat/client/client.dart';
+import '/chat/models/message_data.dart';
+import '/play/play.dart';
+import '/play_sync/play_sync.dart';
+import '/screens/player_screen/business.dart';
+import '/screens/widgets/slider_item.dart';
+import '/utils/utils.dart';
 
 import 'panel.dart';
 

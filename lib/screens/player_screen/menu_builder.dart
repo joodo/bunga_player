@@ -5,15 +5,15 @@ import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
-import 'package:bunga_player/play/play.dart';
-import 'package:bunga_player/play_sync/actions.dart';
-import 'package:bunga_player/play/global_business.dart';
-import 'package:bunga_player/screens/dialogs/open_video/open_video.dart';
-import 'package:bunga_player/screens/player_screen/panel/audio_track_panel.dart';
-import 'package:bunga_player/screens/player_screen/panel/subtitle_panel.dart';
-import 'package:bunga_player/screens/player_screen/panel/video_eq_panel.dart';
-import 'package:bunga_player/screens/player_screen/panel/video_source_panel.dart';
-import 'package:bunga_player/utils/business/platform.dart';
+import '/play/global_business.dart';
+import '/play/play.dart';
+import '/play_sync/actions.dart';
+import '/screens/dialogs/open_video/open_video.dart';
+import '/screens/player_screen/panel/audio_track_panel.dart';
+import '/screens/player_screen/panel/subtitle_panel.dart';
+import '/screens/player_screen/panel/video_eq_panel.dart';
+import '/screens/player_screen/panel/video_source_panel.dart';
+import '/utils/platform.dart';
 
 import 'actions.dart';
 import 'business.dart';

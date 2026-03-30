@@ -5,9 +5,8 @@ import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 
 import '/chat/chat.dart';
-import '/utils/extensions/extensions.dart';
-import '/utils/business/value_listenable.dart';
-import '/services/preferences.dart';
+import '/preferences/preferences.dart';
+import '/utils/utils.dart';
 
 import 'models/emoji_data.dart';
 

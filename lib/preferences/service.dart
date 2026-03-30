@@ -1,7 +1,6 @@
-import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/services/services.dart';
-import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '/services/logger.dart';
 
 class Preferences {
   final SharedPreferencesWithCache _pref;
@@ -72,24 +71,5 @@ class Preferences {
       set(key, defaultValue);
       return defaultValue;
     }
-  }
-}
-
-extension BindPreference<R> on ValueNotifier<R> {
-  void bindPreference<T>({
-    required String key,
-    required R Function(T pref) load,
-    required T? Function(R value) update,
-  }) {
-    final pref = getIt<Preferences>();
-
-    final prefValue = pref.get<T>(key);
-    if (prefValue != null) {
-      value = load(prefValue);
-    }
-
-    addListener(() {
-      pref.set(key, update(value));
-    });
   }
 }

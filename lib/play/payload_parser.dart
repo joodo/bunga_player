@@ -1,22 +1,21 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:provider/provider.dart';
-import 'package:collection/collection.dart';
 import 'package:path/path.dart' as path_tool;
+import 'package:provider/provider.dart';
 
-import 'package:bunga_player/bunga_server/global_business.dart';
-import 'package:bunga_player/bunga_server/models/channel_tokens.dart';
-import 'package:bunga_player/utils/extensions/extensions.dart';
-import 'package:bunga_player/alist/business.dart';
-import 'package:bunga_player/alist/extensions.dart';
-import 'package:bunga_player/alist/models.dart';
-import 'package:bunga_player/bilibili/extensions.dart';
-import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/utils/models/file_extensions.dart';
-import 'package:bunga_player/gallery/business.dart' as gallery;
+import '/alist/business.dart';
+import '/alist/extensions.dart';
+import '/alist/models.dart';
+import '/bilibili/extensions.dart';
+import '/bunga_server/global_business.dart';
+import '/bunga_server/models/channel_tokens.dart';
+import '/gallery/business.dart' as gallery;
+import '/services/logger.dart';
+import '/utils/utils.dart';
 
 import 'history.dart';
 import 'models/play_payload.dart';

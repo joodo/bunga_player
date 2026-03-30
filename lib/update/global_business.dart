@@ -2,12 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:ui';
 
-import 'package:bunga_player/network/service.dart';
-import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/services/permissions.dart';
-import 'package:bunga_player/utils/business/platform.dart';
-import 'package:bunga_player/utils/extensions/extensions.dart';
-import 'package:bunga_player/utils/models/network_progress.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
@@ -16,10 +10,15 @@ import 'package:open_file/open_file.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
-
-import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/services/preferences.dart';
 import 'package:version/version.dart';
+
+import '/network/models.dart';
+import '/network/service.dart';
+import '/preferences/preferences.dart';
+import '/services/logger.dart';
+import '/services/permissions.dart';
+import '/services/services.dart';
+import '/utils/utils.dart';
 
 import 'models/update_info.dart';
 import 'utils.dart';
@@ -92,8 +91,8 @@ class _UpdateGlobalBusinessState
     }
 
     _checkUpdate().onError((error, stackTrace) {
-      if (mounted) context.popBar('检查更新失败，请稍后再试。');
       logger.e('Update: error: $error');
+      if (mounted) context.popBar('检查更新失败，请稍后再试。');
       return false;
     });
   }

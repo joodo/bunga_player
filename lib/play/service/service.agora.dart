@@ -1,22 +1,21 @@
 import 'dart:async';
 import 'dart:ui';
 
+import 'package:agora_rtc_engine/agora_rtc_engine.dart' as agora;
 import 'package:async/async.dart';
-import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/utils/business/simple_event.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/foundation.dart';
-import 'package:agora_rtc_engine/agora_rtc_engine.dart' as agora;
 import 'package:styled_widget/styled_widget.dart';
 
-import 'package:bunga_player/utils/models/volume.dart';
-import 'package:bunga_player/utils/extensions/extensions.dart';
+import '/services/logger.dart';
+import '/utils/utils.dart';
+
+import '../models/play_payload.dart';
+import '../models/track.dart';
 
 import 'local_video_proxy.dart';
 import 'service.dart';
-import '../models/play_payload.dart';
-import '../models/track.dart';
 
 class AgoraMediaPlayer extends MediaPlayer {
   static agora.RtcEngine? engine;

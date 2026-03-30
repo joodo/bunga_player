@@ -1,4 +1,4 @@
-import 'package:bunga_player/utils/extensions/string.dart';
+import '/utils/utils.dart';
 
 extension AListPathToId on String {
   String asPathToAListId() => 'alist-$hashStr';

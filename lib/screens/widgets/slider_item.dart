@@ -1,7 +1,8 @@
-import 'package:bunga_player/screens/widgets/text_editing_shortcut_wrapper.dart';
 import 'package:flutter/material.dart';
 import 'package:styled_widget/styled_widget.dart';
-import 'package:bunga_player/utils/extensions/styled_widget.dart';
+
+import '/screens/widgets/text_editing_shortcut_wrapper.dart';
+import '/utils/utils.dart';
 
 class SliderItem extends StatelessWidget {
   final IconData icon;
@@ -130,7 +131,7 @@ class _SliderItemWithTextInputState extends State<SliderItemWithTextInput> {
                   isDense: true,
                   suffixText: widget.suffix,
                 ),
-                    textAlign: .center,
+                textAlign: .center,
                 controller: _controller,
                 focusNode: _focusNode,
               ).constrained(minWidth: 70.0),

@@ -5,9 +5,8 @@ import 'package:http/http.dart' as http;
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 
-import 'package:bunga_player/bunga_server/models/channel_tokens.dart';
-import 'package:bunga_player/utils/extensions/styled_widget.dart';
-import 'package:bunga_player/utils/extensions/http_response.dart';
+import '/bunga_server/models/channel_tokens.dart';
+import '/utils/utils.dart';
 
 import 'models.dart';
 

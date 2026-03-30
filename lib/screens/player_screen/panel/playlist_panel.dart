@@ -4,11 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
-import 'package:bunga_player/play/play.dart';
-import 'package:bunga_player/play_sync/actions.dart';
-import 'package:bunga_player/screens/player_screen/business.dart';
-import 'package:bunga_player/utils/business/run_after_build.dart';
-import 'package:bunga_player/utils/extensions/styled_widget.dart';
+import '/play/play.dart';
+import '/play_sync/actions.dart';
+import '/screens/player_screen/business.dart';
+import '/utils/utils.dart' hide min;
 
 import 'panel.dart';
 

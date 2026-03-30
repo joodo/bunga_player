@@ -1,20 +1,20 @@
 import 'dart:convert';
 
-import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/services/preferences.dart';
-import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/utils/extensions/extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
-import 'package:bunga_player/client_info/global_business.dart';
-import 'package:bunga_player/screens/dialogs/settings/widgets.dart';
-import 'package:bunga_player/screens/player_screen/player_widget/vibe_layer/danmaku.dart';
-import 'package:bunga_player/screens/widgets/widgets.dart';
-import 'package:bunga_player/bunga_server/global_business.dart';
-import 'package:bunga_player/bunga_server/models/channel_tokens.dart';
+import '/bunga_server/global_business.dart';
+import '/bunga_server/models/channel_tokens.dart';
+import '/client_info/global_business.dart';
+import '/preferences/preferences.dart';
+import '/screens/dialogs/settings/widgets.dart';
+import '/screens/player_screen/player_widget/vibe_layer/danmaku.dart';
+import '/screens/widgets/widgets.dart';
+import '/services/logger.dart';
+import '/services/services.dart';
+import '/utils/utils.dart';
 
 class ReactionSettings extends StatefulWidget with SettingsTab {
   @override

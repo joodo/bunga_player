@@ -1,19 +1,18 @@
-import 'package:bunga_player/play_sync/play_sync.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
-import 'package:bunga_player/play/play.dart';
-import 'package:bunga_player/screens/widgets/divider.dart';
-import 'package:bunga_player/utils/business/platform.dart';
-import 'package:bunga_player/utils/models/volume.dart';
-import 'package:bunga_player/utils/extensions/extensions.dart';
-import 'package:bunga_player/ui/global_business.dart';
+import '/play/play.dart';
+import '/play_sync/play_sync.dart';
+import '/screens/widgets/divider.dart';
+import '/ui/global_business.dart';
+import '/utils/utils.dart';
 
 import '../actions.dart';
 import '../business.dart';
-import '../panel/playlist_panel.dart';
 import '../menu_builder.dart';
+import '../panel/playlist_panel.dart';
+
 import 'center_section.dart';
 
 class VideoControl extends StatelessWidget {

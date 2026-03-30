@@ -5,23 +5,21 @@ import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
-import 'package:bunga_player/chat/chat.dart';
-import 'package:bunga_player/reaction/business.dart';
-import 'package:bunga_player/play/play.dart';
-import 'package:bunga_player/play_sync/play_sync.dart';
-import 'package:bunga_player/screens/widgets/back_listener.dart';
-import 'package:bunga_player/voice_call/client/client.dart';
-import 'package:bunga_player/screens/dialogs/open_video/open_video.dart';
-import 'package:bunga_player/ui/global_business.dart';
-import 'package:bunga_player/ui/shortcuts.dart';
-import 'package:bunga_player/utils/business/provider.dart';
-import 'package:bunga_player/utils/business/run_after_build.dart';
-import 'package:bunga_player/utils/extensions/styled_widget.dart';
-import 'package:bunga_player/voice_call/business.dart';
+import '/chat/chat.dart';
+import '/play/play.dart';
+import '/play_sync/play_sync.dart';
+import '/reaction/business.dart';
+import '/screens/dialogs/open_video/open_video.dart';
+import '/screens/widgets/back_listener.dart';
+import '/ui/global_business.dart';
+import '/ui/shortcuts.dart';
+import '/utils/utils.dart';
+import '/voice_call/business.dart';
+import '/voice_call/client/client.dart';
 
 import 'actions.dart';
-import 'play_progress_slide_business.dart';
 import 'panel/panel.dart';
+import 'play_progress_slide_business.dart';
 
 @immutable
 class DanmakuVisible {

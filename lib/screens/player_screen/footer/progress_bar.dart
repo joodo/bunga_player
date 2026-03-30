@@ -1,16 +1,14 @@
-import 'package:bunga_player/utils/business/drag_business.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
-import 'package:bunga_player/play/service/service.dart';
-import 'package:bunga_player/play_sync/play_sync.dart';
-import 'package:bunga_player/screens/player_screen/play_progress_slide_business.dart';
-import 'package:bunga_player/ui/global_business.dart';
-import 'package:bunga_player/utils/business/animation_builder.dart';
-import 'package:bunga_player/utils/business/platform.dart';
-import 'package:bunga_player/screens/widgets/slider_dense_track_shape.dart';
+import '/play/service/service.dart';
+import '/play_sync/play_sync.dart';
+import '/screens/player_screen/play_progress_slide_business.dart';
+import '/screens/widgets/slider_dense_track_shape.dart';
+import '/ui/global_business.dart';
+import '/utils/utils.dart';
 
 class VideoProgressBar extends StatefulWidget {
   const VideoProgressBar({super.key});

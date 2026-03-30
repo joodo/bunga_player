@@ -1,4 +1,4 @@
-import 'package:bunga_player/utils/extensions/duration.dart';
+import 'duration.dart';
 
 extension RelativeTime on DateTime {
   String get relativeString {

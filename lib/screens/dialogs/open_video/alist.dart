@@ -1,23 +1,22 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:bunga_player/play/history.dart';
-import 'package:bunga_player/screens/widgets/back_listener.dart';
-import 'package:bunga_player/screens/widgets/context_menu_region.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
-import 'package:bunga_player/services/preferences.dart';
-import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/alist/models.dart';
-import 'package:bunga_player/alist/business.dart';
-import 'package:bunga_player/alist/extensions.dart';
-import 'package:bunga_player/screens/widgets/scroll_optimizer.dart';
-import 'package:bunga_player/screens/dialogs/open_video/history.dart';
-import 'package:bunga_player/screens/dialogs/open_video/open_video.dart';
-import 'package:bunga_player/utils/extensions/int.dart';
-import 'package:bunga_player/utils/extensions/styled_widget.dart';
+import '/alist/business.dart';
+import '/alist/extensions.dart';
+import '/alist/models.dart';
+import '/play/history.dart';
+import '/preferences/service.dart';
+import '/screens/dialogs/open_video/history.dart';
+import '/screens/dialogs/open_video/open_video.dart';
+import '/screens/widgets/back_listener.dart';
+import '/screens/widgets/context_menu_region.dart';
+import '/screens/widgets/scroll_optimizer.dart';
+import '/services/services.dart';
+import '/utils/utils.dart' hide min;
 
 class _AListPrefKey {
   static const recent = 'alist_recent';

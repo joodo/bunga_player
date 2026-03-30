@@ -4,11 +4,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 
-import '/services/logger.dart';
-import '/ui/shortcuts.dart';
-import '/utils/extensions/extensions.dart';
 import '/chat/chat.dart';
 import '/play/play.dart';
+import '/services/logger.dart';
+import '/ui/shortcuts.dart';
+import '/utils/utils.dart';
 
 import 'business.dart';
 

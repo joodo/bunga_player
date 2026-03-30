@@ -1,14 +1,15 @@
 import 'dart:io';
 
-import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/services/services.dart' as services;
-import 'package:bunga_player/wrappers/wrap.dart';
-import 'package:bunga_player/utils/business/platform.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
+
+import '/services/logger.dart';
+import '/services/services.dart' as services;
+import '/utils/platform.dart';
+import '/wrappers/wrap.dart';
 
 void main() async {
   Animate.restartOnHotReload = true;

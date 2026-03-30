@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/widgets.dart';
 
-import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/utils/business/platform.dart';
+import '/services/logger.dart';
+import '/utils/utils.dart';
 
 typedef PresenceCallback = Future<void> Function();
 

@@ -1,8 +1,9 @@
 import 'package:animations/animations.dart';
-import 'package:bunga_player/screens/dialogs/settings/widgets.dart';
-import 'package:bunga_player/utils/business/platform.dart';
 import 'package:flutter/material.dart';
 import 'package:styled_widget/styled_widget.dart';
+
+import '/screens/dialogs/settings/widgets.dart';
+import '/utils/platform.dart';
 
 import 'about.dart';
 import 'advanced.dart';

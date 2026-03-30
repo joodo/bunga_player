@@ -1,13 +1,13 @@
-import 'package:bunga_player/play/global_business.dart';
-import 'package:bunga_player/play/service/service.dart';
-import 'package:bunga_player/utils/business/value_listenable.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
-import 'package:bunga_player/screens/widgets/input_builder.dart';
-import 'package:bunga_player/screens/dialogs/settings/widgets.dart';
-import 'package:bunga_player/network/global_business.dart';
+import '/network/global_business.dart';
+import '/play/global_business.dart';
+import '/play/service/service.dart';
+import '/screens/dialogs/settings/widgets.dart';
+import '/screens/widgets/input_builder.dart';
+import '/utils/utils.dart';
 
 class AdvancedSettings extends StatelessWidget with SettingsTab {
   @override

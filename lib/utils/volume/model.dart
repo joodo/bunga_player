@@ -1,6 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-part 'volume.freezed.dart';
+part 'model.freezed.dart';
 
 @freezed
 abstract class Volume with _$Volume {

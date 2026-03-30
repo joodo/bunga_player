@@ -4,8 +4,7 @@ import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
-import 'package:bunga_player/utils/business/drag_business.dart';
-import 'package:bunga_player/utils/extensions/extensions.dart';
+import '/utils/utils.dart';
 
 typedef SplitPlacement = ({AxisDirection direction, double size});
 

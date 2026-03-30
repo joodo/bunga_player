@@ -1,6 +1,7 @@
-import 'package:bunga_player/utils/business/comparators.dart';
 import 'package:collection/collection.dart';
 import 'package:json_annotation/json_annotation.dart';
+
+import '/utils/utils.dart';
 
 part 'models.g.dart';
 
@@ -25,11 +26,7 @@ class AListFileInfo implements Comparable {
   final int size;
   final AListFileType type;
 
-  AListFileInfo({
-    required this.name,
-    required this.size,
-    required this.type,
-  });
+  AListFileInfo({required this.name, required this.size, required this.type});
 
   factory AListFileInfo.fromJson(Map<String, dynamic> json) =>
       _$AListFileInfoFromJson(json);
@@ -40,9 +37,9 @@ class AListFileInfo implements Comparable {
 
   @override
   int compareTo(other) {
-    final sortFunc = compareBy((AListFileInfo e) => e.type.index).then(
-      compareBy((AListFileInfo e) => e.name, compareNatural),
-    );
+    final sortFunc = compareBy(
+      (AListFileInfo e) => e.type.index,
+    ).then(compareBy((AListFileInfo e) => e.name, compareNatural));
     return sortFunc(this, other);
   }
 }

@@ -1,11 +1,11 @@
-import 'package:bunga_player/play/history.dart';
-import 'package:bunga_player/play/payload_parser.dart';
-import 'package:bunga_player/utils/extensions/datetime.dart';
-import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
+
+import '/play/history.dart';
+import '/play/payload_parser.dart';
+import '/utils/utils.dart';
 
 import 'open_video.dart';
 

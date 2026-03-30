@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
-import 'package:bunga_player/screens/widgets/split_view.dart';
-import 'package:bunga_player/ui/global_business.dart';
-import 'package:bunga_player/utils/extensions/extensions.dart';
+import '/screens/widgets/split_view.dart';
+import '/ui/global_business.dart';
+import '/utils/utils.dart';
 
+import 'business.dart';
 import 'footer/footer.dart';
 import 'header/header.dart';
 import 'panel/panel.dart';
 import 'player_widget/player_widget.dart';
-import 'business.dart';
 
 class PlayerScreen extends StatelessWidget {
   static final playerKey = GlobalKey();

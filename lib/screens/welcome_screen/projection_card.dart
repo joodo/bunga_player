@@ -1,12 +1,13 @@
 import 'dart:typed_data';
 
-import 'package:bunga_player/chat/models/message_data.dart';
-import 'package:bunga_player/chat/models/user.dart';
-import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/utils/extensions/http_response.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:styled_widget/styled_widget.dart';
+
+import '/chat/models/message_data.dart';
+import '/chat/models/user.dart';
+import '/services/logger.dart';
+import '/utils/utils.dart';
 
 class ProjectionCard extends StatefulWidget {
   final StartProjectionMessageData data;

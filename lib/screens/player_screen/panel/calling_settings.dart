@@ -1,9 +1,10 @@
-import 'package:bunga_player/utils/extensions/styled_widget.dart';
-import 'package:bunga_player/voice_call/client/client.agora.dart';
-import 'package:bunga_player/voice_call/client/client.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
+
+import '/utils/utils.dart';
+import '/voice_call/client/client.agora.dart';
+import '/voice_call/client/client.dart';
 
 import 'panel.dart';
 

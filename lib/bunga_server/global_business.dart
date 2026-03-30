@@ -1,19 +1,16 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:http/http.dart' as http;
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 
-import 'package:bunga_player/client_info/models/client_account.dart';
-import 'package:bunga_player/console/service.dart';
-import 'package:bunga_player/play/models/play_payload.dart';
-import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/services/preferences.dart';
-import 'package:bunga_player/utils/business/run_after_build.dart';
-import 'package:bunga_player/utils/extensions/http_response.dart';
-import 'package:bunga_player/utils/typedef.dart';
+import '/client_info/models/client_account.dart';
+import '/console/service.dart';
+import '/play/models/play_payload.dart';
+import '/preferences/preferences.dart';
+import '/services/logger.dart';
+import '/utils/utils.dart';
 
 import 'models/channel_tokens.dart';
 

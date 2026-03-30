@@ -1,15 +1,4 @@
 import 'package:animations/animations.dart';
-import 'package:bunga_player/gallery/models/models.dart';
-import 'package:bunga_player/play/history.dart';
-import 'package:bunga_player/play/payload_parser.dart';
-import 'package:bunga_player/screens/widgets/back_listener.dart';
-import 'package:bunga_player/screens/widgets/widgets.dart';
-import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/utils/business/image.dart';
-import 'package:bunga_player/utils/business/run_after_build.dart';
-import 'package:bunga_player/utils/extensions/extensions.dart';
-import 'package:bunga_player/utils/models/file_extensions.dart';
-import 'package:bunga_player/gallery/business.dart' as gallery;
 import 'package:collection/collection.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
@@ -17,6 +6,15 @@ import 'package:provider/provider.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:styled_widget/styled_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import '/gallery/business.dart' as gallery;
+import '/gallery/models/models.dart';
+import '/play/history.dart';
+import '/play/payload_parser.dart';
+import '/screens/widgets/back_listener.dart';
+import '/screens/widgets/widgets.dart';
+import '/services/logger.dart';
+import '/utils/utils.dart';
 
 import 'open_video.dart';
 

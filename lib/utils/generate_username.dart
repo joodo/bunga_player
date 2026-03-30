@@ -1,6 +1,7 @@
-import 'dart:math';
-import 'package:crypto/crypto.dart';
 import 'dart:convert';
+import 'dart:math';
+
+import 'package:crypto/crypto.dart';
 
 String generateUsername(String seed) {
   final bytes = utf8.encode(seed);

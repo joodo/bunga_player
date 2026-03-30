@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
-import 'package:bunga_player/reaction/business.dart';
-import 'package:bunga_player/reaction/models/emoji_data.dart';
-import 'package:bunga_player/screens/widgets/widgets.dart';
-import 'package:bunga_player/utils/extensions/extensions.dart';
+import '/reaction/business.dart';
+import '/reaction/models/emoji_data.dart';
+import '/screens/widgets/widgets.dart';
+import '/utils/utils.dart';
 
 import 'blur_chip.dart';
 

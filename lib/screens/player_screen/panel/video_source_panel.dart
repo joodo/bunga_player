@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
-import 'package:bunga_player/network/service.dart';
-import 'package:bunga_player/play/play.dart';
-import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/utils/extensions/int.dart';
-import 'package:bunga_player/utils/extensions/styled_widget.dart';
+import '/network/service.dart';
+import '/play/play.dart';
+import '/services/services.dart';
+import '/utils/utils.dart';
 
 import 'panel.dart';
 

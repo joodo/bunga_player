@@ -1,9 +1,8 @@
-import 'package:bunga_player/utils/business/provider.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 
-import 'package:bunga_player/utils/business/list_wrapper.dart';
-import 'package:bunga_player/chat/models/models.dart';
+import '/chat/models/models.dart';
+import '/utils/utils.dart';
 
 typedef ChannelSubtitle = ({String title, String url, User sharer});
 

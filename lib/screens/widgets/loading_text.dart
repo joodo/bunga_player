@@ -1,5 +1,6 @@
-import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:flutter/material.dart';
+
+import '/utils/utils.dart';
 
 class LoadingText extends StatelessWidget {
   final String text;

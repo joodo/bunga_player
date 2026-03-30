@@ -6,11 +6,11 @@ import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
-import 'package:bunga_player/play/play.dart';
-import 'package:bunga_player/reaction/models/emoji_data.dart';
-import 'package:bunga_player/reaction/business.dart';
-import 'package:bunga_player/chat/models/models.dart';
-import 'package:bunga_player/utils/business/value_listenable.dart';
+import '/chat/models/models.dart';
+import '/play/play.dart';
+import '/reaction/business.dart';
+import '/reaction/models/emoji_data.dart';
+import '/utils/utils.dart';
 
 import 'spark_particle.dart';
 

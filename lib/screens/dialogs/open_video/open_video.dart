@@ -1,11 +1,11 @@
 import 'package:animations/animations.dart';
-import 'package:bunga_player/ui/global_business.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
-import 'package:bunga_player/utils/extensions/styled_widget.dart';
-import 'package:bunga_player/bunga_server/models/channel_tokens.dart';
+import '/bunga_server/models/channel_tokens.dart';
+import '/ui/global_business.dart';
+import '/utils/utils.dart';
 
 import 'alist.dart';
 import 'gallery.dart';

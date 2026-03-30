@@ -5,11 +5,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 
-import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/services/preferences.dart';
-import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/bunga_server/global_business.dart';
-import 'package:bunga_player/utils/typedef.dart';
+import '/bunga_server/global_business.dart';
+import '/preferences/preferences.dart';
+import '/services/logger.dart';
+import '/services/services.dart';
+import '/utils/typedef.dart';
 
 import 'models/models.dart';
 

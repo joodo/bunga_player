@@ -10,16 +10,15 @@ import 'package:media_kit_video/media_kit_video.dart' as media_kit;
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 
-import 'package:bunga_player/services/permissions.dart';
-import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/network/service.dart';
-import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/utils/models/volume.dart';
-import 'package:bunga_player/utils/business/simple_event.dart';
-import 'package:bunga_player/utils/extensions/extensions.dart';
+import '/network/service.dart';
+import '/services/logger.dart';
+import '/services/permissions.dart';
+import '/services/services.dart';
+import '/utils/utils.dart';
 
 import '../models/play_payload.dart';
 import '../models/track.dart';
+
 import 'local_video_proxy.dart';
 import 'service.dart';
 

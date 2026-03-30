@@ -1,9 +1,9 @@
 import 'package:async/async.dart';
-import 'package:bunga_player/reaction/business.dart';
 import 'package:flutter/material.dart';
 
-import 'package:bunga_player/play/service/service.dart';
-import 'package:bunga_player/utils/extensions/rect.dart';
+import '/play/service/service.dart';
+import '/reaction/business.dart';
+import '/utils/utils.dart';
 
 class SparkSendController {
   final BuildContext _context;

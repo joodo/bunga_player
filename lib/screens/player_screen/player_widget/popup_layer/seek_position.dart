@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
-import 'package:bunga_player/screens/widgets/popup_widget.dart';
-import 'package:bunga_player/screens/player_screen/play_progress_slide_business.dart';
-import 'package:bunga_player/utils/extensions/extensions.dart';
+import '/screens/player_screen/play_progress_slide_business.dart';
+import '/screens/widgets/popup_widget.dart';
+import '/utils/utils.dart';
 
 import 'blur_chip.dart';
 

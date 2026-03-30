@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:styled_widget/styled_widget.dart';
 
-import 'package:bunga_player/utils/extensions/styled_widget.dart';
+import '/utils/utils.dart';
 
 extension BlurToastExtension on Widget {
   Widget blurToast() => Theme(

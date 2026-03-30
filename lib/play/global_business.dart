@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 
-import 'package:bunga_player/services/presence_callbacks.dart';
-import 'package:bunga_player/services/preferences.dart';
-import 'package:bunga_player/services/services.dart';
+import '/preferences/preferences.dart';
+import '/services/presence_callbacks.dart';
+import '/services/services.dart';
 
 import 'history.dart';
 import 'service/service.agora.dart';

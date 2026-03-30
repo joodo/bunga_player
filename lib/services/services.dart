@@ -1,12 +1,12 @@
 import 'package:get_it/get_it.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
-import 'package:bunga_player/console/service.dart';
-import 'package:bunga_player/network/service.dart';
+import '/console/service.dart';
+import '/network/service.dart';
+import '/preferences/preferences.dart';
 
-import 'preferences.dart';
-import 'presence_callbacks.dart';
 import 'permissions.dart';
+import 'presence_callbacks.dart';
 
 final getIt = GetIt.instance;
 

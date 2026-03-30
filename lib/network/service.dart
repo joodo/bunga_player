@@ -1,12 +1,13 @@
 import 'dart:io';
+
 import 'package:http/http.dart' as http;
 
-import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/services/preferences.dart';
-import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/utils/extensions/http_response.dart';
-import 'package:bunga_player/utils/models/network_progress.dart';
+import '/preferences/preferences.dart';
+import '/services/logger.dart';
+import '/services/services.dart';
+import '/utils/utils.dart';
 
+import 'models.dart';
 import 'video_source.dart';
 
 typedef SourceInfo = ({String location, int bps});

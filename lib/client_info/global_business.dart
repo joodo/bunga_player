@@ -1,13 +1,13 @@
+import 'package:flutter/material.dart';
 import 'package:nanoid_plus/nanoid_plus.dart';
 import 'package:nested/nested.dart';
-import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:bunga_player/console/service.dart';
-import 'package:bunga_player/services/preferences.dart';
-import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/utils/business/generate_username.dart';
-import 'package:bunga_player/utils/business/generate_password.dart';
+import '/console/service.dart';
+import '/preferences/preferences.dart';
+import '/services/services.dart';
+import '/utils/generate_password.dart';
+import '/utils/generate_username.dart';
 
 import 'models/client_account.dart';
 

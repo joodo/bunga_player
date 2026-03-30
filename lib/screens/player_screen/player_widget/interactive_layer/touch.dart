@@ -7,15 +7,13 @@ import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
-import 'package:bunga_player/utils/business/value_listenable.dart';
-import 'package:bunga_player/utils/models/volume.dart';
-import 'package:bunga_player/utils/business/drag_business.dart';
-import 'package:bunga_player/reaction/business.dart';
-import 'package:bunga_player/voice_call/business.dart';
-import 'package:bunga_player/play/play.dart';
-import 'package:bunga_player/ui/global_business.dart';
-import 'package:bunga_player/screens/player_screen/play_progress_slide_business.dart';
-import 'package:bunga_player/voice_call/client/client.dart';
+import '/play/play.dart';
+import '/reaction/business.dart';
+import '/screens/player_screen/play_progress_slide_business.dart';
+import '/ui/global_business.dart';
+import '/utils/utils.dart';
+import '/voice_call/business.dart';
+import '/voice_call/client/client.dart';
 
 import 'spark_send_controller.dart';
 

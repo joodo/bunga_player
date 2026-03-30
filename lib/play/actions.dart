@@ -1,17 +1,16 @@
 import 'dart:io';
 
-import 'package:bunga_player/ui/shortcuts.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:path/path.dart' as path_tool;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
-import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/ui/audio_player.dart';
-import 'package:bunga_player/ui/global_business.dart';
-import 'package:bunga_player/utils/extensions/extensions.dart';
-import 'package:bunga_player/utils/models/volume.dart';
+import '/services/logger.dart';
+import '/ui/audio_player.dart';
+import '/ui/global_business.dart';
+import '/ui/shortcuts.dart';
+import '/utils/utils.dart';
 
 import 'history.dart';
 import 'models/models.dart';

@@ -1,8 +1,9 @@
-import 'package:bunga_player/play/models/track.dart';
-import 'package:bunga_player/play/service/service.dart';
-import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:styled_widget/styled_widget.dart';
+
+import '/play/models/track.dart';
+import '/play/service/service.dart';
+import '/utils/utils.dart';
 
 import 'panel.dart';
 

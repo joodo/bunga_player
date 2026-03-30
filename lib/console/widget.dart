@@ -8,18 +8,18 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
-import 'package:bunga_player/bunga_server/global_business.dart';
-import 'package:bunga_player/bunga_server/models/channel_tokens.dart';
-import 'package:bunga_player/client_info/models/client_account.dart';
-import 'package:bunga_player/restart/global_business.dart';
-import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/services/preferences.dart';
-import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/services/presence_callbacks.dart';
-import 'package:bunga_player/utils/extensions/extensions.dart';
+import '/bunga_server/global_business.dart';
+import '/bunga_server/models/channel_tokens.dart';
+import '/client_info/models/client_account.dart';
+import '/preferences/preferences.dart';
+import '/restart/global_business.dart';
+import '/services/logger.dart';
+import '/services/presence_callbacks.dart';
+import '/services/services.dart';
+import '/utils/utils.dart';
 
-import 'wrapper.dart';
 import 'service.dart';
+import 'wrapper.dart';
 
 class Console extends StatelessWidget {
   const Console({super.key});

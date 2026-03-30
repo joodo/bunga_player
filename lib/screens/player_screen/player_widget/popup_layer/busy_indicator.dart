@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
-import 'package:bunga_player/play_sync/play_sync.dart';
-import 'package:bunga_player/chat/chat.dart';
-import 'package:bunga_player/utils/extensions/extensions.dart';
-import 'package:bunga_player/screens/widgets/popup_widget.dart';
-import 'package:bunga_player/ui/global_business.dart';
+import '/chat/chat.dart';
+import '/play_sync/play_sync.dart';
+import '/screens/widgets/popup_widget.dart';
+import '/ui/global_business.dart';
+import '/utils/utils.dart';
 
 import 'blur_chip.dart';
 

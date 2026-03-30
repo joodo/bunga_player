@@ -1,14 +1,15 @@
-import 'package:bunga_player/console/wrapper.dart';
-import 'package:bunga_player/screens/dialogs/settings/widgets.dart';
-import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/update/global_business.dart';
-import 'package:bunga_player/update/wrapper.dart';
-import 'package:bunga_player/utils/extensions/extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
+
+import '/console/wrapper.dart';
+import '/screens/dialogs/settings/widgets.dart';
+import '/services/services.dart';
+import '/update/global_business.dart';
+import '/update/wrapper.dart';
+import '/utils/utils.dart';
 
 class AboutSetting extends StatelessWidget with SettingsTab {
   @override

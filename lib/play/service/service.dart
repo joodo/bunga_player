@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
-import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/utils/models/volume.dart';
+import '/services/services.dart';
+import '/utils/utils.dart';
 
 import '../models/play_payload.dart';
 import '../models/track.dart';

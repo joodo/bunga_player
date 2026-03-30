@@ -1,12 +1,13 @@
 import 'package:animations/animations.dart';
-import 'package:bunga_player/bunga_server/global_business.dart';
-import 'package:bunga_player/bunga_server/models/channel_tokens.dart';
-import 'package:bunga_player/screens/dialogs/settings/reaction.dart';
-import 'package:bunga_player/screens/dialogs/settings/settings.dart';
-import 'package:bunga_player/screens/widgets/loading_button_icon.dart';
-import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+import '/bunga_server/global_business.dart';
+import '/bunga_server/models/channel_tokens.dart';
+import '/screens/dialogs/settings/reaction.dart';
+import '/screens/dialogs/settings/settings.dart';
+import '/screens/widgets/loading_button_icon.dart';
+import '/utils/utils.dart';
 
 class SettingButton extends StatelessWidget {
   const SettingButton({super.key});

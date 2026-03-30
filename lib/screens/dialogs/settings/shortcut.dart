@@ -1,10 +1,11 @@
-import 'package:bunga_player/screens/dialogs/settings/widgets.dart';
-import 'package:bunga_player/ui/shortcuts.dart';
-import 'package:bunga_player/utils/extensions/single_activator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
+
+import '/screens/dialogs/settings/widgets.dart';
+import '/ui/shortcuts.dart';
+import '/utils/utils.dart';
 
 class ShortcutSettings extends StatefulWidget with SettingsTab {
   @override

@@ -6,11 +6,10 @@ import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
-import 'package:bunga_player/reaction/business.dart';
-import 'package:bunga_player/reaction/models/emoji_data.dart';
-import 'package:bunga_player/screens/widgets/widgets.dart';
-import 'package:bunga_player/utils/business/platform.dart';
-import 'package:bunga_player/utils/business/run_after_build.dart';
+import '/reaction/business.dart';
+import '/reaction/models/emoji_data.dart';
+import '/screens/widgets/widgets.dart';
+import '/utils/utils.dart' hide min;
 
 import 'panel.dart';
 

@@ -3,14 +3,12 @@ import 'dart:async';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:flutter/material.dart';
 
-import 'package:bunga_player/bunga_server/models/channel_tokens.dart';
-import 'package:bunga_player/play/service/service.agora.dart';
-import 'package:bunga_player/play/service/service.dart' as service;
-import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/utils/business/platform.dart';
-import 'package:bunga_player/utils/extensions/double_lerp.dart';
-import 'package:bunga_player/utils/models/volume.dart';
+import '/bunga_server/models/channel_tokens.dart';
+import '/play/service/service.agora.dart';
+import '/play/service/service.dart' as service;
+import '/services/logger.dart';
+import '/services/services.dart';
+import '/utils/utils.dart';
 
 import 'client.dart';
 

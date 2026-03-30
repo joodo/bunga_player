@@ -7,16 +7,13 @@ import 'package:provider/provider.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 import 'package:window_manager/window_manager.dart';
 
-import 'package:bunga_player/console/service.dart';
-import 'package:bunga_player/play/service/service.dart';
-import 'package:bunga_player/utils/models/volume.dart';
-import 'package:bunga_player/services/preferences.dart';
-import 'package:bunga_player/utils/business/platform.dart';
-import 'package:bunga_player/utils/business/simple_event.dart';
-import 'package:bunga_player/utils/business/value_listenable.dart';
+import '/console/service.dart';
+import '/play/service/service.dart';
+import '/preferences/preferences.dart';
+import '/utils/utils.dart';
 
-import 'shortcuts.dart';
 import 'audio_player.dart';
+import 'shortcuts.dart';
 
 class AlwaysOnTopNotifier extends ValueNotifier<bool> {
   AlwaysOnTopNotifier() : super(false) {

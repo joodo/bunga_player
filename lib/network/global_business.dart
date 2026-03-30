@@ -1,10 +1,11 @@
-import 'package:bunga_player/play/service/service.dart';
-import 'package:bunga_player/services/preferences.dart';
-import 'package:bunga_player/services/services.dart';
-import 'package:bunga_player/utils/business/run_after_build.dart';
 import 'package:flutter/material.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
+
+import '/play/play.dart';
+import '/preferences/preferences.dart';
+import '/services/services.dart';
+import '/utils/utils.dart';
 
 import 'service.dart';
 

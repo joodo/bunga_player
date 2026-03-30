@@ -1,7 +1,8 @@
-import 'package:bunga_player/utils/extensions/styled_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:styled_widget/styled_widget.dart';
+
+import '/utils/utils.dart';
 
 class WaitWidget extends StatelessWidget {
   const WaitWidget({super.key});
@@ -9,9 +10,7 @@ class WaitWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return [
-      Lottie.asset(
-        'assets/images/watch_movie.zip',
-      ),
+      Lottie.asset('assets/images/watch_movie.zip'),
       const Text('正在等待其他人放映……')
           .textStyle(Theme.of(context).textTheme.headlineLarge!)
           .breath()

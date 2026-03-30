@@ -4,10 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:styled_widget/styled_widget.dart';
 
-import 'package:bunga_player/screens/widgets/popup_widget.dart';
-import 'package:bunga_player/play/play.dart';
-import 'package:bunga_player/utils/business/value_listenable.dart';
-import 'package:bunga_player/utils/extensions/styled_widget.dart';
+import '/play/play.dart';
+import '/screens/widgets/popup_widget.dart';
+import '/utils/utils.dart';
 
 class PlaySyncMessage extends StatefulWidget {
   const PlaySyncMessage({super.key});

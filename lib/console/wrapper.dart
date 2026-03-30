@@ -1,10 +1,10 @@
-import 'package:bunga_player/screens/widgets/split_view.dart';
-import 'package:bunga_player/services/preferences.dart';
-import 'package:bunga_player/utils/enum.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
+
+import '/preferences/preferences.dart';
+import '/screens/widgets/split_view.dart';
 
 import 'widget.dart';
 
@@ -14,7 +14,13 @@ class ConsolePositionNotifier extends ValueNotifier<AxisDirection> {
   ConsolePositionNotifier() : super(.left) {
     bindPreference<String>(
       key: 'console_position',
-      load: (pref) => enumFromString(AxisDirection.values, pref) ?? .left,
+      load: (pref) {
+        try {
+          return AxisDirection.values.byName(pref);
+        } catch (_) {
+          return .left;
+        }
+      },
       update: (value) => value.name,
     );
   }
