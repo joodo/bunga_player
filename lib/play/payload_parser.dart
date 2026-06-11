@@ -377,7 +377,7 @@ class _BiliVideoParser extends _BiliParser {
 
   _BiliVideoParser(super.context);
 
-  // See https://github.com/SocialSisterYi/bilibili-API-collect/blob/master/docs/video/info.md
+  // See https://github.com/joodo/catlair-_-bilibili-api-collect/blob/master/video/info.md
   @override
   Future<VideoRecord> parseUrl(Uri url) async {
     final regex = RegExp(r'\/BV(?<bvid>[A-Za-z0-9]*)\/?');
@@ -428,7 +428,7 @@ class _BiliVideoParser extends _BiliParser {
     );
   }
 
-  // See https://github.com/SocialSisterYi/bilibili-API-collect/blob/master/docs/video/videostream_url.md
+  // See https://github.com/joodo/catlair-_-bilibili-api-collect/blob/master/video/videostream_url.md
   @override
   Future<PlayPayload> parseVideoRecord(VideoRecord record) async {
     assert(record.source == recordSource);
@@ -438,7 +438,7 @@ class _BiliVideoParser extends _BiliParser {
     final query = {
       'bvid': bvid,
       'cid': cid,
-      'fnval': '16',
+      'fnval': '1',
     }.asBiliQueryEncWbi(biliToken?.mixinKey);
     final response = await http.get(
       Uri.parse('https://api.bilibili.com/x/player/playurl?$query'),
@@ -513,7 +513,7 @@ class _BiliBangumiParser extends _BiliParser {
 
   _BiliBangumiParser(super.context);
 
-  // See https://github.com/SocialSisterYi/bilibili-API-collect/blob/master/docs/bangumi/info.md
+  // See https://github.com/joodo/catlair-_-bilibili-api-collect/blob/master/bangumi/info.md
   @override
   Future<VideoRecord> parseUrl(Uri url) async {
     final idString = url.pathSegments[2];
@@ -568,7 +568,7 @@ class _BiliBangumiParser extends _BiliParser {
     );
   }
 
-  // See https://github.com/SocialSisterYi/bilibili-API-collect/blob/master/docs/bangumi/videostream_url.md
+  // See https://github.com/joodo/catlair-_-bilibili-api-collect/blob/master/bangumi/videostream_url.md
   @override
   Future<PlayPayload> parseVideoRecord(VideoRecord record) async {
     assert(record.source == recordSource);
@@ -582,7 +582,7 @@ class _BiliBangumiParser extends _BiliParser {
 
     final response = await http.get(
       Uri.parse(
-        'https://api.bilibili.com/pgc/player/web/playurl?ep_id=$ep&fnval=16',
+        'https://api.bilibili.com/pgc/player/web/playurl?ep_id=$ep&fnval=1',
       ),
       headers: biliHeaders,
     );
