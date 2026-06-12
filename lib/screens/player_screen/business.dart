@@ -196,8 +196,8 @@ class _PlayScreenBusinessState extends SingleChildState<PlayScreenBusiness> {
         ? widget
               .reactionBusiness()
               .withPlaySync()
-              .withChat()
               .voiceCallBusiness()
+              .withChat()
         : _wrapJoinInAction(widget);
     final businessWrap = channelWrap.withPlay();
     final provider = Provider.value(
