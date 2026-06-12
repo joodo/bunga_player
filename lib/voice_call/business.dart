@@ -291,10 +291,11 @@ class _VoiceCallBusinessState extends SingleChildState<VoiceCallBusiness> {
         case CallMessageData(:final action):
           if (message.sender.id == myId) break;
           _handleCallAction(senderId: message.sender.id, action: action);
+        // FIXME: 状态管理让server按照agora sdk 来
         case TalkStatusMessageData(:final status):
           _handleTalkStatus(message.sender.id, status);
         case ByeMessageData():
-          _handleTalkStatus(message.sender.id, TalkStatus.end);
+          _handleTalkStatus(message.sender.id, .end);
         case HereAreMessageData(:final talking):
           _talkerIdsNotifier.value = Set.from(talking);
         default:
@@ -347,7 +348,7 @@ class _VoiceCallBusinessState extends SingleChildState<VoiceCallBusiness> {
       },
     );
 
-    return MultiProvider(
+    final providers = MultiProvider(
       providers: [
         ValueListenableProvider.value(value: _callStatusNotifier),
         ValueListenableProxyProvider(
@@ -356,6 +357,22 @@ class _VoiceCallBusinessState extends SingleChildState<VoiceCallBusiness> {
         ),
       ],
       child: actionWrap,
+    );
+
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+
+        try {
+          if (_callStatusNotifier.value == .talking) {
+            await _stopTalking();
+          }
+        } finally {
+          if (context.mounted) Navigator.of(context).pop();
+        }
+      },
+      child: providers,
     );
   }
 
@@ -376,8 +393,17 @@ class _VoiceCallBusinessState extends SingleChildState<VoiceCallBusiness> {
   }) {
     switch (action) {
       case .call:
-        if (_callStatusNotifier.value == .none) {
-          _callStatusNotifier.value = .callIn;
+        switch (_callStatusNotifier.value) {
+          case .none:
+            _callStatusNotifier.value = .callIn;
+          case .callIn:
+            break;
+          case .callOut:
+            _requestTimeOutTimer.cancel();
+            _callStatusNotifier.value = .talking;
+            _startTalking();
+          case .talking:
+            context.sendMessage(CallMessageData(action: .accept));
         }
 
       case .cancel:
