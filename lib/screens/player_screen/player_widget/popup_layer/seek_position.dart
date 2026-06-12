@@ -17,10 +17,15 @@ class SeekPosition extends StatelessWidget {
 
     final content = ValueListenableBuilder(
       valueListenable: business.positionNotifier,
-      builder: (context, position, child) => Text(
-        position.hhmmss,
-        style: Theme.of(context).textTheme.headlineMedium,
-      ),
+      builder: (context, position, child) {
+        final deltaSeconds = (position - business.startValue).inSeconds;
+        final t = deltaSeconds.abs() < 60
+            ? deltaSeconds > 0
+                  ? '+$deltaSeconds s'
+                  : '$deltaSeconds s'
+            : position.hhmmss;
+        return Text(t, style: Theme.of(context).textTheme.headlineMedium);
+      },
     ).padding(horizontal: 24.0, vertical: 12.0).blurToast();
 
     final link = LayerLink();
