@@ -6,6 +6,7 @@ import 'package:async/async.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:http_cache_stream/http_cache_stream.dart';
 import 'package:styled_widget/styled_widget.dart';
 
 import '/services/logger.dart';
@@ -187,6 +188,7 @@ class AgoraMediaPlayer extends MediaPlayer {
 
   // Open
   final _videoProxy = LocalVideoProxy();
+  HttpCacheStream? _cacheStream;
   Completer? _openTask;
   @override
   Future<void> open(PlayPayload payload, [Duration? start]) async {
@@ -195,9 +197,13 @@ class AgoraMediaPlayer extends MediaPlayer {
     await stop();
 
     // Headers
-    String url = payload.sources.videos[payload.videoSourceIndex].url;
+    final url = payload.sources.videos[payload.videoSourceIndex].url;
     final headers = payload.sources.requestHeaders;
-    url = await _videoProxy.startProxy(url, headers, proxyNotifier.value);
+
+    // Cache proxy
+    _cacheStream = HttpCacheManager.instance.createStream(Uri.parse(url));
+    _cacheStream!.config.requestHeaders = headers ?? {};
+    final proxyedUri = _cacheStream!.cacheUrl;
 
     // Open
     if (_openTask?.isCompleted == false) {
@@ -207,7 +213,7 @@ class AgoraMediaPlayer extends MediaPlayer {
     await _player.openWithMediaSource(
       agora.MediaSource(
         autoPlay: false,
-        url: url,
+        url: proxyedUri.toString(),
         startPos: start?.inMilliseconds ?? 0,
         enableCache: true,
       ),
@@ -275,11 +281,14 @@ class AgoraMediaPlayer extends MediaPlayer {
   }
 
   @override
-  Future<void> stop() {
+  Future<void> stop() async {
+    await _cacheStream?.dispose();
+    _cacheStream = null;
+
     _position.value = Duration.zero;
     _duration.value = Duration.zero;
     _playStatus.value = .stop;
-    return _player.stop();
+    await _player.stop();
   }
 
   final _finishNotifier = SimpleEvent();

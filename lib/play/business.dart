@@ -1,5 +1,6 @@
 import 'package:async/async.dart';
 import 'package:flutter/material.dart';
+import 'package:http_cache_stream/http_cache_stream.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 
@@ -53,6 +54,8 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
     _history = context.read<History>();
 
     MediaPlayer.i.positionNotifier.addListener(_updateExpectedPosition);
+
+    _initCacheManager();
   }
 
   @override
@@ -70,6 +73,14 @@ class _PlayBusinessState extends SingleChildState<PlayBusiness> {
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
     return child!;
+  }
+
+  Future<void> _initCacheManager() async {
+    await HttpCacheManager.init();
+
+    final instance = HttpCacheManager.instance;
+    instance.config.rangeRequestSplitThreshold = 2 * 1024 * 1024;
+    await instance.deleteCache();
   }
 
   void _updateProgress() {

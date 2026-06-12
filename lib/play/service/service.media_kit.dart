@@ -185,6 +185,7 @@ class MediaKitMediaPlayer extends MediaPlayer {
     final httpHeaders = payload.sources.requestHeaders;
 
     if (proxyNotifier.value != null) {
+      // TODO: use http_cache_stream instead
       videoUrl = await _videoProxy.startProxy(
         videoUrl,
         httpHeaders,

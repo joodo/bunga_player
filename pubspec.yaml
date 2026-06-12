@@ -17,7 +17,7 @@ dependencies:
   media_kit_video: ^2.0.1
   media_kit_libs_video: ^1.0.7
   wakelock_plus: ^1.4.0
-  ffi: ^2.2.0
+  http_cache_stream: ^0.0.6
 
   # Communication
   agora_rtc_engine: ^6.6.3
