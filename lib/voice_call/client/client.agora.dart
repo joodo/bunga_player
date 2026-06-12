@@ -135,8 +135,8 @@ class AgoraClient extends VoiceCallClient {
 
     // Profile
     await _engine.setAudioProfile(
-      profile: AudioProfileType.audioProfileDefault,
-      scenario: AudioScenarioType.audioScenarioChorus,
+      profile: .audioProfileDefault,
+      scenario: .audioScenarioGameStreaming,
     );
 
     if (kIsDesktop) {
