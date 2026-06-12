@@ -28,14 +28,9 @@ void main() async {
     'libagora_video_quality_analyzer_extension.dll.lib',
     'libagora_video_encoder_extension.dll',
     'libagora_video_encoder_extension.dll.lib',
-    'libagora_video_decoder_extension.dll',
-    'libagora_video_decoder_extension.dll.lib',
-    'libagora_video_av1_decoder_extension.dll',
-    'libagora_video_av1_decoder_extension.dll.lib',
     'libagora_video_av1_encoder_extension.dll',
     'libagora_video_av1_encoder_extension.dll.lib',
     'video_enc.dll',
-    'video_dec.dll',
     'libagora-wgc.dll',
   ];
 
