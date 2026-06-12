@@ -1,7 +1,7 @@
 import 'package:async/async.dart';
-import 'package:bunga_player/play/play.dart';
-import 'package:bunga_player/services/logger.dart';
-import 'package:bunga_player/ui/global_business.dart';
+import '/play/play.dart';
+import '/services/logger.dart';
+import '/ui/global_business.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -49,6 +49,7 @@ class PlayProgressSlideBusiness {
 
   bool _isPlayingBeforeSlide = false;
   Duration _startValue = Duration.zero;
+  Duration get startValue => _startValue;
 
   void startSlide(Duration value) {
     _playerPositionNotifier.removeListener(_followPlayerPosition);

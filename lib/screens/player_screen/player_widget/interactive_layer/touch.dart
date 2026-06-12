@@ -182,6 +182,12 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
     final play = MediaPlayer.i;
     final startPosition = play.positionNotifier.value;
 
+    Duration posByDistance(int start, double distance) {
+      final newValue = start + distance * 200;
+      final newPos = newValue.milliseconds;
+      return newPos.clamp(.zero, play.duration);
+    }
+
     _slideAccept = false;
     _dragBusiness = DragBusiness<int>(
       startPosition: details.localPosition,
@@ -197,8 +203,8 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
           }
         }
 
-        final newValue = startValue + distance * 200;
-        return business.updateSlide(newValue.milliseconds);
+        final newPos = posByDistance(startValue, distance);
+        return business.updateSlide(newPos);
       },
       onEnd: (startValue, distance) {
         if (!_slideAccept) {
@@ -209,8 +215,8 @@ class _TouchInteractiveLayerState extends State<TouchInteractiveLayer> {
           }
         }
 
-        final newValue = startValue + distance * 200;
-        return business.finishSlide(newValue.milliseconds);
+        final newPos = posByDistance(startValue, distance);
+        return business.finishSlide(newPos);
       },
       onCancel: business.cancelSlide,
     );

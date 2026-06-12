@@ -91,11 +91,15 @@ class _VideoProgressBarState extends State<VideoProgressBar> {
       final player = MediaPlayer.i;
       return LayoutBuilder(
         builder: (context, constraints) {
-          double getDelta(double distance) {
-            final width = constraints.maxWidth;
+          Duration posByDistance(double startValue, double distance) {
             final duration = player.durationNotifier.value;
+
+            final width = constraints.maxWidth;
             final deltaD = duration * (distance / width);
-            return deltaD.inMilliseconds.toDouble();
+
+            final start = startValue.milliseconds;
+            final newPos = start + deltaD;
+            return newPos.clamp(.zero, duration);
           }
 
           final slideSeekingBusiness = context
@@ -112,14 +116,12 @@ class _VideoProgressBarState extends State<VideoProgressBar> {
                 orientation: .horizontal,
                 startValue: initValue,
                 onUpdate: (startValue, distance) {
-                  final delta = getDelta(distance);
-                  final newPosition = startValue + delta;
-                  slideSeekingBusiness.updateSlide(newPosition.milliseconds);
+                  final newPosition = posByDistance(startValue, distance);
+                  slideSeekingBusiness.updateSlide(newPosition);
                 },
                 onEnd: (startValue, distance) {
-                  final delta = getDelta(distance);
-                  final newPosition = startValue + delta;
-                  slideSeekingBusiness.finishSlide(newPosition.milliseconds);
+                  final newPosition = posByDistance(startValue, distance);
+                  slideSeekingBusiness.finishSlide(newPosition);
                 },
                 onCancel: slideSeekingBusiness.cancelSlide,
               );
