@@ -2,10 +2,37 @@ import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
 
+import '/services/logger.dart';
+
 class LocalVideoProxy {
+  LocalVideoProxy() {
+    _cleanOldProxyCaches();
+  }
+
+  Future<void> _cleanOldProxyCaches() async {
+    try {
+      final tempDir = await getApplicationCacheDirectory();
+
+      if (await tempDir.exists()) {
+        await for (final entity in tempDir.list(
+          recursive: false,
+          followLinks: false,
+        )) {
+          if (entity is Directory &&
+              entity.path.contains('bunga_proxy_cache_')) {
+            await entity.delete(recursive: true);
+          }
+        }
+      }
+    } catch (e) {
+      logger.w('Failed to clean playing cache: $e');
+    }
+  }
+
   HttpServer? _server;
   Directory? _cacheDir;
   final Map<String, _CacheEntry> _cacheEntries = {};
+
   final _httpClient = HttpClient()
     ..badCertificateCallback = (X509Certificate cert, String host, int port) =>
         true;
